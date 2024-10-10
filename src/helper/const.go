@@ -1,0 +1,15 @@
+package helper
+
+const PORT = "8003"
+const MYSQL_HOST = "localhost"
+const MYSQL_DB_NAME = "sen_master_db"
+const MYSQL_USER = "sen_master"
+const MYSQL_PASSWORD = "6Yw4rmmaDUkpZtdm"
+const MYSQL_PORT = "3306"
+const CREDENTIALS = "cmd/credentials/client_credentials.json"
+const ValueInputOption = "USER_ENTERED"
+const Scope = "https://spreadsheets.google.com/feeds"
+const SheetEntryId = "1qoEWX8UdHjDW9SYJpcorSr2pPFzrDDFG6g4iImnG0rU"
+const LocationSheetId = "1VFlUjgFllmOk94BfXkU1Dd7oF6MF39FCfiO3qksi7RU"
+const SheetName = "default"
+const SendEmail = "techbot.co@gmail.com"

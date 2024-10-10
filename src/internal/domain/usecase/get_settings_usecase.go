@@ -1,0 +1,399 @@
+package usecase
+
+import (
+	"encoding/json"
+	log "github.com/sirupsen/logrus"
+	"sen-global-api/internal/data/repository"
+)
+
+type GetSettingsUseCase struct {
+	*repository.SettingRepository
+}
+
+type ImportSetting struct {
+	SettingName    string `json:"setting_name"`
+	SpreadSheetUrl string `json:"spreadsheet_url"`
+	AutoImport     bool   `json:"auto"`
+	Interval       uint64 `json:"interval"`
+}
+
+type OutputSetting struct {
+	FolderId    string `json:"folder_id"`
+	SettingName string `json:"setting_name"`
+}
+
+type SummarySetting struct {
+	SpreadsheetId string `json:"spreadsheet_id"`
+	SettingName   string `json:"setting_name"`
+}
+
+type APIDistributerSetting struct {
+	SettingName    string `json:"setting_name"`
+	SpreadSheetUrl string `json:"spreadsheet_url"`
+}
+
+type SignUpTextButtonSetting struct {
+	Name        string `json:"name"`
+	Value       string `json:"value"`
+	SettingName string `json:"setting_name"`
+}
+
+type AppSettings struct {
+	Form                     *ImportSetting
+	Form2                    *ImportSetting
+	Form3                    *ImportSetting
+	Form4                    *ImportSetting
+	Url                      *ImportSetting
+	Output                   *OutputSetting
+	Summary                  *SummarySetting
+	SyncDevices              *ImportSetting
+	SyncToDos                *ImportSetting
+	EmailSetting             *SummarySetting
+	OutputTemplate           *SummarySetting
+	OutputTemplateForTeacher *SummarySetting
+	SignUpButton1            *SignUpTextButtonSetting
+	SignUpButton2            *SignUpTextButtonSetting
+	SignUpButton3            *SignUpTextButtonSetting
+	SignUpButton4            *SignUpTextButtonSetting
+	RegistrationForm         *SummarySetting
+	RegistrationSubmission   *SummarySetting
+	RegistrationPreset       *SummarySetting
+	APIDistributer           *APIDistributerSetting
+	CodeCountingData         *APIDistributerSetting
+	SignUpForms              *ImportSetting
+}
+
+func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
+	formSettingsData, err := receiver.SettingRepository.GetFormSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	formSettingsData2, err := receiver.SettingRepository.GetFormSettings2()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	formSettingsData3, err := receiver.SettingRepository.GetFormSettings3()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	formSettingsData4, err := receiver.SettingRepository.GetFormSettings4()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	urlSettingsData, err := receiver.SettingRepository.GetUrlSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+	outputSettingsData, err := receiver.SettingRepository.GetOutputSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	summarySettingsData, err := receiver.SettingRepository.GetSummarySettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	syncDevicesSettingsData, err := receiver.SettingRepository.GetSyncDevicesSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	syncToDosSettingsData, err := receiver.SettingRepository.GetSyncToDosSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	emailSettingsData, err := receiver.SettingRepository.GetEmailSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	outputTemplateSettingData, err := receiver.SettingRepository.GetOutputTemplateSettings()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	outputTemplateForTeacherSettingData, err := receiver.SettingRepository.GetOutputTemplateSettingsForTeacher()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpButton1SettingData, err := receiver.SettingRepository.GetSignUpButton1Setting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpButton2SettingData, err := receiver.SettingRepository.GetSignUpButton2Setting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpButton3SettingData, err := receiver.SettingRepository.GetSignUpButton3Setting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpButton4SettingData, err := receiver.SettingRepository.GetSignUpButton4Setting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	registrationFormSettingData, err := receiver.SettingRepository.GetRegistrationFormSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	registrationSubmissionSettingData, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	registrationPresetSettingData, err := receiver.SettingRepository.GetRegistrationPresetSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	apiDistributerSettingData, err := receiver.SettingRepository.GetAPIDistributerSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	codeCountingData, err := receiver.SettingRepository.GetCodeCountingDataSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpFormSettingData, err := receiver.SettingRepository.GetImportSignUpFormsSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	var formSettings *ImportSetting = nil
+	var formSettings2 *ImportSetting = nil
+	var formSettings3 *ImportSetting = nil
+	var formSettings4 *ImportSetting = nil
+	var urlSettings *ImportSetting = nil
+	var outputSettings *OutputSetting = nil
+	var summarySettings *SummarySetting = nil
+	var syncDevicesSettings *ImportSetting = nil
+	var syncToDosSettings *ImportSetting = nil
+	var emailSettings *SummarySetting = nil
+	var outputTemplateSettings *SummarySetting = nil
+	var outputTemplateForTeacherSettings *SummarySetting = nil
+	var signUpButton1Settings *SignUpTextButtonSetting = nil
+	var signUpButton2Settings *SignUpTextButtonSetting = nil
+	var signUpButton3Settings *SignUpTextButtonSetting = nil
+	var signUpButton4Settings *SignUpTextButtonSetting = nil
+	var registrationFormSettings *SummarySetting = nil
+	var registrationSubmissionSettings *SummarySetting = nil
+	var registrationPresetSettings *SummarySetting = nil
+	var apiDistributerSettings *APIDistributerSetting = nil
+	var codeCountingSettings *APIDistributerSetting = nil
+	var signUpFormSettings *ImportSetting = nil
+
+	if formSettingsData != nil {
+		err = json.Unmarshal(formSettingsData.Settings, &formSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		formSettings.SettingName = formSettingsData.SettingName
+	}
+
+	if formSettingsData2 != nil {
+		err = json.Unmarshal(formSettingsData2.Settings, &formSettings2)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		formSettings2.SettingName = formSettingsData2.SettingName
+	}
+
+	if formSettingsData3 != nil {
+		err = json.Unmarshal(formSettingsData3.Settings, &formSettings3)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		formSettings3.SettingName = formSettingsData3.SettingName
+	}
+
+	if formSettingsData4 != nil {
+		err = json.Unmarshal(formSettingsData4.Settings, &formSettings4)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		formSettings4.SettingName = formSettingsData4.SettingName
+	}
+
+	if urlSettingsData != nil {
+		err = json.Unmarshal(urlSettingsData.Settings, &urlSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		urlSettings.SettingName = urlSettingsData.SettingName
+	}
+
+	if outputSettingsData != nil {
+		err = json.Unmarshal(outputSettingsData.Settings, &outputSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		outputSettings.SettingName = outputSettingsData.SettingName
+	}
+
+	if summarySettingsData != nil {
+		err = json.Unmarshal(summarySettingsData.Settings, &summarySettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		summarySettings.SettingName = summarySettingsData.SettingName
+	}
+
+	if syncDevicesSettingsData != nil {
+		err = json.Unmarshal(syncDevicesSettingsData.Settings, &syncDevicesSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		syncDevicesSettings.SettingName = syncDevicesSettingsData.SettingName
+	}
+
+	if syncToDosSettingsData != nil {
+		err = json.Unmarshal(syncToDosSettingsData.Settings, &syncToDosSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		syncToDosSettings.SettingName = syncToDosSettingsData.SettingName
+	}
+
+	if emailSettingsData != nil {
+		err = json.Unmarshal(emailSettingsData.Settings, &emailSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		emailSettings.SettingName = emailSettingsData.SettingName
+	}
+
+	if outputTemplateSettingData != nil {
+		err = json.Unmarshal(outputTemplateSettingData.Settings, &outputTemplateSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		outputTemplateSettings.SettingName = outputTemplateSettingData.SettingName
+	}
+
+	if outputTemplateForTeacherSettingData != nil {
+		err = json.Unmarshal(outputTemplateForTeacherSettingData.Settings, &outputTemplateForTeacherSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		outputTemplateForTeacherSettings.SettingName = outputTemplateForTeacherSettingData.SettingName
+	}
+
+	if signUpButton1SettingData != nil {
+		err = json.Unmarshal(signUpButton1SettingData.Settings, &signUpButton1Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButton1Settings.SettingName = signUpButton1SettingData.SettingName
+	}
+
+	if signUpButton2SettingData != nil {
+		err = json.Unmarshal(signUpButton2SettingData.Settings, &signUpButton2Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButton2Settings.SettingName = signUpButton2SettingData.SettingName
+	}
+
+	if signUpButton3SettingData != nil {
+		err = json.Unmarshal(signUpButton3SettingData.Settings, &signUpButton3Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButton3Settings.SettingName = signUpButton3SettingData.SettingName
+	}
+
+	if signUpButton4SettingData != nil {
+		err = json.Unmarshal(signUpButton4SettingData.Settings, &signUpButton4Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButton4Settings.SettingName = signUpButton4SettingData.SettingName
+	}
+
+	if registrationFormSettingData != nil {
+		err = json.Unmarshal(registrationFormSettingData.Settings, &registrationFormSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		registrationFormSettings.SettingName = registrationFormSettingData.SettingName
+	}
+
+	if registrationSubmissionSettingData != nil {
+		err = json.Unmarshal(registrationSubmissionSettingData.Settings, &registrationSubmissionSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		registrationSubmissionSettings.SettingName = registrationSubmissionSettingData.SettingName
+	}
+
+	if registrationPresetSettingData != nil {
+		err = json.Unmarshal(registrationPresetSettingData.Settings, &registrationPresetSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		registrationPresetSettings.SettingName = registrationPresetSettingData.SettingName
+	}
+
+	if apiDistributerSettingData != nil {
+		err = json.Unmarshal(apiDistributerSettingData.Settings, &apiDistributerSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		apiDistributerSettings.SettingName = apiDistributerSettingData.SettingName
+	}
+
+	if codeCountingData != nil {
+		err = json.Unmarshal(codeCountingData.Settings, &codeCountingSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		codeCountingSettings.SettingName = codeCountingData.SettingName
+	}
+
+	if signUpFormSettingData != nil {
+		err = json.Unmarshal(signUpFormSettingData.Settings, &signUpFormSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpFormSettings.SettingName = signUpFormSettingData.SettingName
+	}
+
+	return &AppSettings{
+		Form:                     formSettings,
+		Form2:                    formSettings2,
+		Form3:                    formSettings3,
+		Form4:                    formSettings4,
+		Url:                      urlSettings,
+		Output:                   outputSettings,
+		Summary:                  summarySettings,
+		SyncDevices:              syncDevicesSettings,
+		SyncToDos:                syncToDosSettings,
+		EmailSetting:             emailSettings,
+		OutputTemplate:           outputTemplateSettings,
+		OutputTemplateForTeacher: outputTemplateForTeacherSettings,
+		SignUpButton1:            signUpButton1Settings,
+		SignUpButton2:            signUpButton2Settings,
+		SignUpButton3:            signUpButton3Settings,
+		SignUpButton4:            signUpButton4Settings,
+		RegistrationForm:         registrationFormSettings,
+		RegistrationSubmission:   registrationSubmissionSettings,
+		RegistrationPreset:       registrationPresetSettings,
+		APIDistributer:           apiDistributerSettings,
+		CodeCountingData:         codeCountingSettings,
+		SignUpForms:              signUpFormSettings,
+	}, nil
+}
