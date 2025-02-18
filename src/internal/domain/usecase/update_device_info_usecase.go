@@ -3,13 +3,15 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/tiendc/gofn"
 )
 
 type UpdateDeviceInfoUseCase struct {
@@ -19,7 +21,15 @@ type UpdateDeviceInfoUseCase struct {
 	Writer            *sheet.Writer
 }
 
-func (c *UpdateDeviceInfoUseCase) Execute(device entity.SDevice, version *string, userInfo3 *string) error {
+func (c *UpdateDeviceInfoUseCase) Execute(user entity.SUserEntity, deviceId string, version *string) error {
+	device, ok := gofn.First(gofn.Filter(user.Devices, func(device entity.SDevice) bool {
+		return device.ID == deviceId
+	}))
+
+	if !ok {
+		return errors.New("device not found")
+	}
+
 	setting, err := c.SettingRepository.GetSyncDevicesSettings()
 	if err != nil || setting == nil {
 		return err
@@ -57,7 +67,7 @@ func (c *UpdateDeviceInfoUseCase) Execute(device entity.SDevice, version *string
 		return err
 	}
 
-	rowNo, err := c.findFirstRow(device.DeviceId, values, 11)
+	rowNo, err := c.findFirstRow(device.ID, values, 11)
 
 	if err != nil || rowNo == 0 {
 		log.Error("failed to find device id in devices sheet")
@@ -72,7 +82,7 @@ func (c *UpdateDeviceInfoUseCase) Execute(device entity.SDevice, version *string
 	deviceData = append(deviceData, []interface{}{nil})
 	deviceData = append(deviceData, []interface{}{nil})
 	deviceData = append(deviceData, []interface{}{nil})
-	deviceData = append(deviceData, []interface{}{userInfo3})
+	deviceData = append(deviceData, []interface{}{nil})
 	_, err = c.Writer.UpdateRange(sheet.WriteRangeParams{
 		Range:     "Devices!M" + strconv.Itoa(rowNo),
 		Rows:      deviceData,
@@ -84,10 +94,10 @@ func (c *UpdateDeviceInfoUseCase) Execute(device entity.SDevice, version *string
 		return err
 	}
 
-	_ = c.DeviceRepository.UpdateDeviceInfo(device, version, userInfo3)
+	_ = c.DeviceRepository.UpdateDeviceInfo(device, version)
 
 	//TODO: Write App sheet
-	err = c.updateAppSheet(device, version, userInfo3)
+	err = c.updateAppSheet(user, version)
 
 	return err
 }
@@ -104,9 +114,15 @@ func (receiver *UpdateDeviceInfoUseCase) findFirstRow(id string, values [][]inte
 	return rowNo, errors.New("Cannot determine row number for device id: " + id)
 }
 
-func (c *UpdateDeviceInfoUseCase) updateAppSheet(device entity.SDevice, version *string, info3 *string) error {
+func (c *UpdateDeviceInfoUseCase) updateAppSheet(user entity.SUserEntity, version *string) error {
+	if user.UserConfig == nil {
+		log.Error("user config is nil")
+		return errors.New("user config is nil")
+	}
+
+	topButtonConfig := user.UserConfig.TopButtonConfig
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(device.ScreenButtonValue)
+	match := re.FindStringSubmatch(topButtonConfig)
 
 	if len(match) < 2 {
 		log.Error("failed to get spreadsheet id to log accounts")
@@ -117,7 +133,7 @@ func (c *UpdateDeviceInfoUseCase) updateAppSheet(device entity.SDevice, version 
 
 	//Init Account Sheet
 	infoRows := make([][]interface{}, 0)
-	infoRows = append(infoRows, []interface{}{info3})
+	infoRows = append(infoRows, []interface{}{nil})
 	infoRows = append(infoRows, []interface{}{version})
 	accountSheetParams := sheet.WriteRangeParams{
 		Range:     "Account!M14",

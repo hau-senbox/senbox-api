@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"gorm.io/datatypes"
-	"sen-global-api/internal/domain/value"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type Messaging struct {
@@ -25,24 +25,13 @@ type SubmissionData struct {
 }
 
 type SSubmission struct {
-	ID                 uint64                 `gorm:"primary_key;auto_increment;not null"`
-	FormId             uint64                 `gorm:"not null"`
-	FormName           string                 `gorm:"type:varchar(255);not null;default:''"`
-	FormNote           string                 `gorm:"type:varchar(255);not null;default:''"`
-	FormSpreadsheetUrl string                 `gorm:"type:varchar(255);not null;default:''"`
-	DeviceId           string                 `gorm:"not null"`
-	DeviceFirstValue   string                 `gorm:"type:varchar(255);not null"`
-	DeviceSecondValue  string                 `gorm:"type:varchar(255);not null"`
-	DeviceThirdValue   string                 `gorm:"type:varchar(255);not null"`
-	DeviceName         string                 `gorm:"type:varchar(255);not null;default:''"`
-	DeviceNote         string                 `gorm:"type:varchar(255);not null:default:''"`
-	SpreadsheetId      string                 `gorm:"type:varchar(255);not null"`
-	SheetName          string                 `gorm:"type:varchar(255);not null"`
-	SubmissionData     datatypes.JSON         `gorm:"type:json;not null;default:'{}'"`
-	SubmissionType     value.SubmissionType   `gorm:"not null"`
-	Status             value.SubmissionStatus `gorm:"not null;default:1"`
-	OpenedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	NumberAttempt      uint64                 `gorm:"not null;default:0"`
-	CreatedAt          time.Time              `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	UpdatedAt          time.Time              `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	ID             uint64         `gorm:"primary_key;auto_increment;"`
+	FormId         uint64         `gorm:"column:form_id;"`
+	Form           SForm          `gorm:"foreignKey:FormId;references:id;constraint:OnDelete:CASCADE"`
+	DeviceId       string         `gorm:"column:device_id;"`
+	Device         SDevice        `gorm:"foreignKey:DeviceId;references:id;constraint:OnDelete:CASCADE"`
+	SubmissionData datatypes.JSON `gorm:"type:json;not null;default:'{}'"`
+	OpenedAt       time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CreatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	UpdatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
 }

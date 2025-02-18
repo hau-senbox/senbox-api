@@ -87,7 +87,7 @@ func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequ
 		return err
 	}
 
-	if req.AutoImport == false {
+	if !req.AutoImport {
 		receiver.machine.ScheduleSyncToDos(0)
 	} else {
 		receiver.machine.ScheduleSyncToDos(req.Interval)
@@ -98,7 +98,7 @@ func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequ
 
 func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}) error {
 	if len(row) > 9 {
-		if row[0].(string) != "" && strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") != true && row[1].(string) != "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
+		if row[0].(string) != "" && !strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") && row[1].(string) != "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
 			re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 			match := re.FindStringSubmatch(row[1].(string))
 
@@ -122,7 +122,7 @@ func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}
 			historySpreadsheetId = match[1]
 
 			return receiver.importToDo(spreadsheetId, tabName, row[0].(string), historySpreadsheetId)
-		} else if row[0].(string) != "" && strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") == true && row[1].(string) == "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
+		} else if row[0].(string) != "" && strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") && row[1].(string) == "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
 			re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 			match := re.FindStringSubmatch(row[9].(string))
 			if len(match) < 2 {
@@ -175,7 +175,7 @@ func (receiver *ImportToDoListUseCase) importToDo(spreadsheetId string, tabName 
 		if rowNum <= 1 {
 			continue
 		}
-		if len(row) > 3 && strings.Contains(strings.ToLower(row[1].(string)), "[todo]") == false {
+		if len(row) > 3 && !strings.Contains(strings.ToLower(row[1].(string)), "[todo]") {
 			if row[0].(string) != "" && row[1].(string) != "" && row[2].(string) != "" {
 				index, err := strconv.Atoi(row[0].(string))
 				if err != nil {
@@ -229,7 +229,7 @@ func (receiver *ImportToDoListUseCase) importToDo(spreadsheetId string, tabName 
 				}
 			}
 		} else if len(row) > 1 {
-			if strings.Contains(strings.ToLower(row[1].(string)), "[todo") == true {
+			if strings.Contains(strings.ToLower(row[1].(string)), "[todo") {
 				index, err := strconv.Atoi(row[0].(string))
 				if err != nil {
 					continue
@@ -278,7 +278,7 @@ func (receiver *ImportToDoListUseCase) importToDoTypeCompose(qrCode, tabName, sp
 }
 
 func (receiver *ImportToDoListUseCase) ImportPartiallyToDos(spreadsheetURL string, sheetName string) error {
-	monitor.SendMessageViaTelegram(fmt.Sprintf("[INFO][SYNC] Start import partially Todos"))
+	monitor.SendMessageViaTelegram("[INFO][SYNC] Start import partially Todos")
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(spreadsheetURL)
 

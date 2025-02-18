@@ -1,5 +1,6 @@
 package request
 
 type TakeNoteRequest struct {
-	Note string `json:"note" binding:"required"`
+	DeviceId string `json:"device_id" binding:"required"`
+	Note     string `json:"note" binding:"required"`
 }

@@ -2,10 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,6 +9,11 @@ import (
 	"sen-global-api/pkg/monitor"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 // Helper function to check if an IP address is localhost
@@ -101,7 +102,7 @@ func Backup() {
 
 	file, err := os.Open("sen_master_db.tar.gz")
 	if err != nil {
-		log.Error("Error: %v", err)
+		log.Errorf("Error: %v", err)
 		monitor.SendMessageViaTelegram(
 			"[URGENT] Error when backup database: " + err.Error(),
 		)
@@ -127,7 +128,7 @@ func Backup() {
 	}
 	_, err = srv.Files.Create(f).Media(file).Do()
 	if err != nil {
-		log.Error("Error: %v", err)
+		log.Errorf("Error: %v", err)
 		monitor.SendMessageViaTelegram(
 			"[URGENT] Error when upload database: " + err.Error(),
 		)

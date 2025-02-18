@@ -19,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App) {
+func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App) {
 	sessionRepository := repository.SessionRepository{
 		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
 
@@ -27,10 +27,11 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	}
 	driveService, err := drive.NewService(context.Background(), option.WithCredentialsFile("./credentials/google_service_account.json"))
 	if err != nil {
-		log.Fatalf("Unable to access Drive API:", err)
+		log.Fatal("Unable to access Drive API:", err)
 	}
 	formRepo := &repository.FormRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize}
 	deviceRepository := &repository.DeviceRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl}
+	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,
 		UpdateDeviceSheetUseCase: &usecase.UpdateDeviceSheetUseCase{
@@ -41,7 +42,6 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			DeviceRepository:  deviceRepository,
 			SessionRepository: &sessionRepository,
 			SettingRepository: &repository.SettingRepository{DBConn: dbConn},
-			OutputRepository:  repository.NewOutputRepository(dbConn),
 			Writer:            userSpreadsheet.Writer,
 			Reader:            userSpreadsheet.Reader,
 		},
@@ -70,6 +70,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			SubmissionRepository:   &repository.SubmissionRepository{DBConn: dbConn},
 			SettingRepository:      &repository.SettingRepository{DBConn: dbConn},
 			FormQuestionRepository: &repository.FormQuestionRepository{DBConn: dbConn},
+			DeviceRepository:       deviceRepository,
+			UserEntityRepository:   &userEntityRepository,
 			CodeCountingRepository: repository.NewCodeCountingRepository(),
 			Writer:                 userSpreadsheet.Writer,
 			Reader:                 userSpreadsheet.Reader,
@@ -94,8 +96,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			Writer:            userSpreadsheet.Writer,
 		},
 		SyncSubmissionUseCase: &usecase.SyncSubmissionUseCase{
-			SubmissionRepository:  &repository.SubmissionRepository{DBConn: dbConn},
-			DeviceRepository:      deviceRepository,
+			SubmissionRepository: &repository.SubmissionRepository{DBConn: dbConn},
+			// DeviceRepository:      deviceRepository,
 			FormRepository:        formRepo,
 			QuestionRepository:    &repository.QuestionRepository{DBConn: dbConn},
 			SettingRepository:     &repository.SettingRepository{DBConn: dbConn},
@@ -110,6 +112,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 				DeviceRepository: deviceRepository,
 				Reader:           userSpreadsheet.Reader,
 			},
+			UserEntityRepository: &userEntityRepository,
 		},
 		GetModeLUseCase: &usecase.GetModeLUseCase{
 			Reader: userSpreadsheet.Reader,
@@ -136,14 +139,26 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		RegisterFcmDeviceUseCase:           usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
 		SendNotificationUseCase:            usecase.NewSendNotificationUseCase(dbConn, fcm),
 		ResetCodeCountingUseCase:           usecase.NewResetCodeCountingUseCase(dbConn),
+		GetDevicesByUserIdUseCase: &usecase.GetDevicesByUserIdUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: userEntityRepository,
+			SessionRepository:    sessionRepository,
+		},
+		GetUserDeviceUseCase: &usecase.GetUserDeviceUseCase{
+			UserEntityRepository: &userEntityRepository,
+		},
 	}
 
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
 	v1 := engine.Group("v1/device")
 	{
+		v1.GET("/:device_id", deviceController.GetDeviceById)
+		v1.GET("/user/:user_id", deviceController.GetAllDeviceByUserId)
 		// Init for first setting
-		v1.POST("/init", deviceController.InitDeviceV1)
+		v1.POST("/init", secureMiddleware.Secured(), deviceController.InitDeviceV1)
 		v1.POST("/refresh-token", deviceController.RefreshAccessToken)
 		v1.POST("/messaging/fcm/register", deviceController.RegisterFCM)
 		v1.PUT("/note", secureMiddleware.Secured(), deviceController.TakeNote)
@@ -164,7 +179,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 		v1.PUT("/update-info", secureMiddleware.Secured(), deviceController.UpdateDeviceInfo)
 
-		v1.GET("/status", secureMiddleware.Secured(), deviceController.GetDeviceStatus)
+		v1.GET("/status/:device_id", secureMiddleware.Secured(), deviceController.GetDeviceStatus)
 
 		v1.POST("/reserve", deviceController.Reserve)
 		v1.GET("/mode-l", secureMiddleware.Secured(), deviceController.GetModeL)
@@ -178,7 +193,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 		v1.POST("/sign-up/form", deviceController.SubmitSignUpForm)
 
-		v1.GET("/sign-up/pre-set", deviceController.GetPreset)
+		v1.GET("/sign-up/pre-set-2", deviceController.GetPreset2)
+
+		v1.GET("/sign-up/pre-set-1", deviceController.GetPreset1)
 	}
 
 	form := engine.Group("v1/form", secureMiddleware.Secured())
@@ -204,7 +221,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	setting := engine.Group("v1/buttons")
 	{
-		setting.GET("/screen", deviceController.GetScreenButtons)
+		setting.GET("/screen/:device_id", deviceController.GetScreenButtons)
 		setting.GET("/top", deviceController.GetTopButtons)
 		setting.POST("/notification", secureMiddleware.Secured(), deviceController.SenNotification)
 	}

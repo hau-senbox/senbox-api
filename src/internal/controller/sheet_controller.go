@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/usecase"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Location list from sheet
@@ -19,7 +20,7 @@ func LocationGetListController(c *gin.Context) {
 		)
 		return
 	}
-	err, d := usecase.GetLocationListDao(c, req)
+	d, err := usecase.GetLocationListDao(c, req)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest, gin.H{
@@ -31,6 +32,4 @@ func LocationGetListController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, d)
-
-	return
 }

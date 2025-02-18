@@ -9,11 +9,12 @@ type Messaging struct {
 }
 
 type QuestionAttributes struct {
-	Value     string              `json:"value"`
-	Number    int                 `json:"number"`
-	Steps     int                 `json:"steps"`
-	Options   []map[string]string `json:"options"`
-	Messaging Messaging           `json:"messaging"`
+	Value                string              `json:"value"`
+	Number               int                 `json:"number"`
+	Steps                int                 `json:"steps"`
+	Options              []map[string]string `json:"options"`
+	ButtonConfigurations []map[string]string `json:"button_configurations"`
+	Messaging            Messaging           `json:"messaging"`
 }
 
 type QuestionListData struct {

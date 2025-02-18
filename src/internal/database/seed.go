@@ -26,12 +26,33 @@ var (
 func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 
 	// Migrate the schema
-	err := db.AutoMigrate(&entity.SAppKey{}, &entity.SUser{}, &entity.SQuestion{}, &entity.SForm{},
-		&entity.SRedirectUrl{}, &entity.SSetting{}, &entity.SToDo{},
-		&entity.SOutput{}, &entity.SDeviceFormDataset{}, entity.STeacherOutput{}, &entity.SSubmission{}, &entity.SFormQuestion{},
+	err := db.AutoMigrate(
+		&entity.SAppKey{},
+		&entity.SUser{},
+		&entity.SQuestion{},
+		&entity.SForm{},
+		&entity.SRedirectUrl{},
+		&entity.SSetting{},
+		&entity.SToDo{},
+		&entity.SDeviceFormDataset{},
+		&entity.SSubmission{},
+		&entity.SFormQuestion{},
 		&entity.SMobileDevice{},
 		&entity.SCodeCounting{},
 		&entity.SDevice{},
+		&entity.SCompany{},
+		&entity.SDeviceComponentValues{},
+		&entity.SRole{},
+		&entity.SUserEntity{},
+		&entity.SRolePolicy{},
+		&entity.SUserGuardians{},
+		&entity.SUserRoles{},
+		&entity.SRoleClaim{},
+		&entity.SRolePolicyRoles{},
+		&entity.SRolePolicyClaims{},
+		&entity.SUserPolicies{},
+		&entity.SUserDevices{},
+		&entity.SUserConfig{},
 	)
 
 	// Seed

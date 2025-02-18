@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type FormController struct {
@@ -56,7 +57,7 @@ func (receiver *FormController) CreateForm(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SaveFormResponse{Data: response.SaveFormResponseData{
-		Id:          form.FormId,
+		Id:          form.ID,
 		Spreadsheet: form.SpreadsheetUrl,
 		Password:    form.Password,
 		Note:        form.Note,
@@ -204,7 +205,7 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, response.UpdateFormResponse{
 		Data: response.GetFormListResponseData{
-			Id:          form.FormId,
+			Id:          form.ID,
 			Spreadsheet: form.SpreadsheetUrl,
 			Password:    form.Password,
 			Note:        form.Note,

@@ -125,7 +125,9 @@ func (receiver *SettingRepository) updateFormSettingByType(req request.ImportFor
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -161,7 +163,9 @@ func (receiver *SettingRepository) UpdateUrlSetting(req request.ImportRedirectUr
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -193,7 +197,9 @@ func (receiver *SettingRepository) UpdateSubmissionSetting(id string, name strin
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -238,7 +244,9 @@ func (receiver *SettingRepository) UpdateOutputSummarySetting(spreadsheetId stri
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -278,7 +286,9 @@ func (receiver *SettingRepository) SaveSyncDevicesSettings(req request.SyncDevic
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -318,7 +328,9 @@ func (receiver *SettingRepository) UpdateSyncToDoSetting(req request.ImportFormR
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -354,7 +366,9 @@ func (receiver *SettingRepository) UpdateEmaiHistorySetting(spreadsheetId string
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -386,7 +400,9 @@ func (receiver *SettingRepository) UpdateOutputTemplateSetting(spreadsheetId str
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -426,7 +442,9 @@ func (receiver *SettingRepository) UpdateOutputTemplateSettingForTeacher(spreads
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -448,6 +466,14 @@ func (receiver *SettingRepository) GetSignUpButton4Setting() (*entity.SSetting, 
 	return receiver.getSettingsByType(value.SettingTypeSignUpButton4)
 }
 
+func (receiver *SettingRepository) GetSignUpButton5Setting() (*entity.SSetting, error) {
+	return receiver.getSettingsByType(value.SettingTypeSignUpButton5)
+}
+
+func (receiver *SettingRepository) GetSignUpButtonConfigurationSetting() (*entity.SSetting, error) {
+	return receiver.getSettingsByType(value.SettingTypeSignUpButtonConfiguration)
+}
+
 func (receiver *SettingRepository) GetRegistrationFormSetting() (*entity.SSetting, error) {
 	return receiver.getSettingsByType(value.SettingTypeSignUpForm)
 }
@@ -456,8 +482,8 @@ func (receiver *SettingRepository) GetRegistrationSubmissionSetting() (*entity.S
 	return receiver.getSettingsByType(value.SettingTypeSignUpOutput)
 }
 
-func (receiver *SettingRepository) GetRegistrationPresetSetting() (*entity.SSetting, error) {
-	return receiver.getSettingsByType(value.SettingTypeSignUpPresetValue12)
+func (receiver *SettingRepository) GetRegistrationPreset2Setting() (*entity.SSetting, error) {
+	return receiver.getSettingsByType(value.SettingTypeSignUpPresetValue2)
 }
 
 func (receiver *SettingRepository) UpdateSignUpButton1(name string, v string) (*entity.SSetting, error) {
@@ -488,7 +514,9 @@ func (receiver *SettingRepository) UpdateSignUpButton1(name string, v string) (*
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return setting, err
@@ -522,7 +550,9 @@ func (receiver *SettingRepository) UpdateSignUpButton2(name string, v string) (*
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return setting, err
@@ -556,7 +586,9 @@ func (receiver *SettingRepository) UpdateSignUpButton3(name string, v string) (*
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return setting, err
@@ -590,7 +622,45 @@ func (receiver *SettingRepository) UpdateSignUpButton4(name string, v string) (*
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
+	}
+
+	return setting, err
+}
+
+func (receiver *SettingRepository) UpdateSignUpButton5(name string, v string) (*entity.SSetting, error) {
+	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpButton5)
+	if setting == nil {
+		importSetting := SignUpTextButtonSetting{
+			Name:  name,
+			Value: v,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		result := receiver.DBConn.Create(&entity.SSetting{
+			Settings: datatypes.JSON(string(b)),
+			Type:     value.SettingTypeSignUpButton5,
+		})
+
+		return nil, result.Error
+	} else {
+		importSetting := SignUpTextButtonSetting{
+			Name:  name,
+			Value: v,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		setting.Settings = datatypes.JSON(string(b))
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return setting, err
@@ -624,7 +694,48 @@ func (receiver *SettingRepository) UpdateRegistrationForm(formId uint64, url str
 		}
 		setting.Settings = datatypes.JSON(string(b))
 
-		err = receiver.DBConn.Save(&setting).Error
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
+	}
+	return setting, err
+}
+
+func (receiver *SettingRepository) UpdateSignUpButtonConfiguration(formId uint64, url string) (*entity.SSetting, error) {
+	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpButtonConfiguration)
+	type SignUpButton struct {
+		FormId        uint64 `json:"form_id"`
+		SpreadSheetId string `json:"spreadsheet_id"`
+	}
+	if setting == nil {
+		importSetting := SignUpButton{
+			FormId:        formId,
+			SpreadSheetId: url,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		result := receiver.DBConn.Create(&entity.SSetting{
+			Settings: datatypes.JSON(string(b)),
+			Type:     value.SettingTypeSignUpButtonConfiguration,
+		})
+
+		return nil, result.Error
+	} else {
+		importSetting := SignUpButton{
+			FormId:        formId,
+			SpreadSheetId: url,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		setting.Settings = datatypes.JSON(string(b))
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 	return setting, err
 }
@@ -654,13 +765,16 @@ func (receiver *SettingRepository) UpdateRegistrationSubmission(url string) (*en
 			return nil, err
 		}
 		setting.Settings = datatypes.JSON(string(b))
-		err = receiver.DBConn.Save(&setting).Error
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 	return setting, err
 }
 
-func (receiver *SettingRepository) UpdateRegistrationPreset(url string) (*entity.SSetting, error) {
-	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpPresetValue12)
+func (receiver *SettingRepository) UpdateRegistrationPreset2(url string) (*entity.SSetting, error) {
+	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpPresetValue2)
 	if setting == nil {
 		importSetting := SignUpFormSetting{
 			SpreadSheetId: url,
@@ -671,7 +785,7 @@ func (receiver *SettingRepository) UpdateRegistrationPreset(url string) (*entity
 		}
 		result := receiver.DBConn.Create(&entity.SSetting{
 			Settings: datatypes.JSON(string(b)),
-			Type:     value.SettingTypeSignUpPresetValue12,
+			Type:     value.SettingTypeSignUpPresetValue2,
 		})
 
 		return nil, result.Error
@@ -684,7 +798,10 @@ func (receiver *SettingRepository) UpdateRegistrationPreset(url string) (*entity
 			return nil, err
 		}
 		setting.Settings = datatypes.JSON(string(b))
-		err = receiver.DBConn.Save(&setting).Error
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return setting, err
@@ -730,7 +847,10 @@ func (receiver *SettingRepository) UpdateAPIDistributerSetting(spreadsheetId str
 			return err
 		}
 		setting.Settings = datatypes.JSON(string(b))
-		err = receiver.DBConn.Save(&setting).Error
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -771,7 +891,10 @@ func (receiver *SettingRepository) UpdateCodeCountingDataSetting(spreadsheetId s
 			return err
 		}
 		setting.Settings = b
-		err = receiver.DBConn.Save(&setting).Error
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -835,6 +958,44 @@ func (receiver *SettingRepository) GetImportSignUpFormsSetting() (*entity.SSetti
 
 func (receiver *SettingRepository) UpdateSignUpFormSetting(req request.ImportFormRequest) error {
 	return receiver.updateFormSettingByType(req, value.SettingTypeImportSignUpForms)
+}
+
+func (receiver *SettingRepository) GetRegistrationPreset1Setting() (*entity.SSetting, error) {
+	return receiver.getSettingsByType(value.SettingTypeSignUpPresetValue1)
+}
+
+func (receiver *SettingRepository) UpdateRegistrationPreset1(url string) (*entity.SSetting, error) {
+	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpPresetValue1)
+	if setting == nil {
+		importSetting := SignUpFormSetting{
+			SpreadSheetId: url,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		result := receiver.DBConn.Create(&entity.SSetting{
+			Settings: datatypes.JSON(string(b)),
+			Type:     value.SettingTypeSignUpPresetValue1,
+		})
+
+		return nil, result.Error
+	} else {
+		importSetting := SignUpFormSetting{
+			SpreadSheetId: url,
+		}
+		b, err := json.Marshal(importSetting)
+		if err != nil {
+			return nil, err
+		}
+		setting.Settings = datatypes.JSON(string(b))
+
+		if err = receiver.DBConn.Save(&setting).Error; err != nil {
+			return nil, err
+		}
+	}
+
+	return setting, err
 }
 
 func FindDeviceSyncSetting(conn *gorm.DB) (entity.SSetting, error) {

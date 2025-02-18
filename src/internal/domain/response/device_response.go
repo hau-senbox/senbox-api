@@ -38,15 +38,6 @@ type SendEmailResponse struct {
 	Data SendEmailResponseData `json:"data"`
 }
 
-type AuthorizedDeviceResponseData struct {
-	AccessToken  string `json:"accessToken" binding:"required"`
-	RefreshToken string `json:"refreshToken" binding:"required"`
-}
-
-type AuthorizedDeviceResponse struct {
-	Data AuthorizedDeviceResponseData `json:"data"`
-}
-
 type DeviceAttributeResponse struct {
 	Name string `json:"name"`
 }
@@ -56,31 +47,47 @@ type DeviceListResponseButton struct {
 	ButtonValue string `json:"button_value" binding:"required"`
 }
 
-type DeviceListResponseData struct {
-	DeviceUUID            string                 `json:"device_uuid"`
-	DeviceName            string                 `json:"device_name"`
-	Attribute1            string                 `json:"attribute_1"`
-	Attribute2            string                 `json:"attribute_2"`
-	Attribute3            string                 `json:"attribute_3"`
-	InputMode             string                 `json:"input_mode"`
-	Status                string                 `json:"status"`
-	ProfilePicture        string                 `json:"profile_picture"`
-	SpreadsheetUrl        string                 `json:"spreadsheet_url"`
-	Message               string                 `json:"message"`
-	ButtonUrl             string                 `json:"button_url"`
-	ScreenButtonType      value.ScreenButtonType `json:"screen_button_type"`
-	ScreenButtonValue     string                 `json:"screen_button_value"`
-	AppVersion            string                 `json:"app_version"`
-	Note                  string                 `json:"note"`
-	UpdatedAt             string                 `json:"updated_at"`
-	TeacherSpreadsheetUrl string                 `json:"teacher_spreadsheet_url"`
+type DeviceResponseData struct {
+	DeviceUUID        string                 `json:"device_uuid"`
+	DeviceName        string                 `json:"device_name"`
+	InputMode         string                 `json:"input_mode"`
+	Status            string                 `json:"status"`
+	DeactivateMessage string                 `json:"deactivate_message"`
+	ButtonUrl         string                 `json:"button_url"`
+	ScreenButtonType  value.ScreenButtonType `json:"screen_button_type"`
+	AppVersion        string                 `json:"app_version"`
+	Note              string                 `json:"note"`
+	UpdatedAt         string                 `json:"updated_at"`
+}
+
+type DeviceResponseDataV2 struct {
+	Id                string `json:"id"`
+	DeviceName        string `json:"device_name"`
+	InputMode         string `json:"input_mode"`
+	Status            string `json:"status"`
+	DeactivateMessage string `json:"deactivate_message"`
+	ButtonUrl         string `json:"button_url"`
+	AppVersion        string `json:"app_version"`
+	Note              string `json:"note"`
+	CreatedAt         string `json:"created_at"`
+	UpdatedAt         string `json:"updated_at"`
 }
 
 type DeviceListResponse struct {
-	Data   []DeviceListResponseData `json:"data"`
-	Paging Pagination               `json:"pagination"`
+	Data   []DeviceResponseData `json:"data"`
+	Paging Pagination           `json:"pagination"`
+}
+
+type DeviceListResponseV2 struct {
+	Data   []DeviceResponseDataV2 `json:"data"`
+	Paging Pagination             `json:"pagination"`
 }
 
 type UpdateDeviceResponse struct {
-	Data DeviceListResponseData `json:"data"`
+	Data DeviceResponseData `json:"data"`
+}
+
+type DeviceResponseV2 struct {
+	ID         string `json:"id"`
+	DeviceName string `json:"device_name"`
 }

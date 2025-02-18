@@ -22,12 +22,6 @@ type SendEmailUseCase struct {
 	GetSettingMessageUseCase *GetSettingMessageUseCase
 }
 
-func encodeRFC2047(String string) string {
-	// use mail's rfc2047 to encode any string
-	addr := mail.Address{String, ""}
-	return strings.Trim(addr.String(), " <>")
-}
-
 func (receiver *SendEmailUseCase) SendEmail(target string, subject string, content string, device entity.SDevice) error {
 	_, err := mail.ParseAddress(target)
 	if err != nil {
@@ -42,8 +36,8 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 		smtpServer,
 	)
 
-	from := mail.Address{"SENBOX", receiver.SMTPConfig.Username}
-	to := mail.Address{target, target}
+	from := mail.Address{Name: "SENBOX", Address: receiver.SMTPConfig.Username}
+	to := mail.Address{Name: target, Address: target}
 	title := subject
 
 	body := content
@@ -69,12 +63,12 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 		[]byte(message),
 	)
 
-	receiver.logHistory(target, subject, content, device)
+	receiver.logHistory(target, subject, device)
 
 	return err
 }
 
-func (receiver *SendEmailUseCase) logHistory(target string, subject string, content string, device entity.SDevice) {
+func (receiver *SendEmailUseCase) logHistory(target string, subject string, device entity.SDevice) {
 	setting, err := receiver.SettingRepository.GetEmailSettings()
 	if err != nil {
 		monitor.SendMessageViaTelegram("Error when get email settings: " + err.Error())
@@ -100,12 +94,12 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, cont
 
 	log := make([][]interface{}, 0)
 	log = append(log, []interface{}{time.Now().Format("2006-01-02 15:04:05")})
-	log = append(log, []interface{}{device.DeviceId})
+	log = append(log, []interface{}{device.ID})
 	log = append(log, []interface{}{device.DeviceName})
 	log = append(log, []interface{}{target})
-	log = append(log, []interface{}{device.PrimaryUserInfo})
-	log = append(log, []interface{}{device.SecondaryUserInfo})
-	log = append(log, []interface{}{device.TertiaryUserInfo})
+	log = append(log, []interface{}{nil})
+	log = append(log, []interface{}{nil})
+	log = append(log, []interface{}{nil})
 	log = append(log, []interface{}{subject})
 
 	_, err = receiver.Writer.WriteRanges(sheet.WriteRangeParams{
@@ -129,7 +123,7 @@ func (receiver *SendEmailUseCase) SendMessage(subject string, bccList []string, 
 		smtpServer,
 	)
 
-	from := mail.Address{"SENBOX", receiver.SMTPConfig.Username}
+	from := mail.Address{Name: "SENBOX", Address: receiver.SMTPConfig.Username}
 
 	header := make(map[string]string)
 	header["From"] = from.String()

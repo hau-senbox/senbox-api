@@ -34,7 +34,7 @@ func (c *UpdateOutputTemplateSettingUseCase) Execute(req request.UpdateOutputTem
 
 	if len(match) < 2 {
 		log.Error("failed to parse spreadsheet id from sync devices sheet")
-		return errors.New("Invalid spreadsheet url")
+		return errors.New("invalid spreadsheet url")
 	}
 
 	spreadsheetID := match[1]
@@ -69,6 +69,9 @@ func (c *UpdateOutputTemplateSettingUseCase) Execute(req request.UpdateOutputTem
 
 	//Update setting
 	err = c.SettingRepository.UpdateOutputTemplateSetting(spreadsheetID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

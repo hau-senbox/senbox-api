@@ -25,23 +25,22 @@ func (receiver *SyncQuestionsUseCase) GetStatusFromString(status string) (value.
 }
 
 func (receiver *SyncQuestionsUseCase) unmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.QuestionType) (string, error) {
-
 	switch questionType {
-	case value.QuestionTime:
+	case value.QuestionTime,
+		value.QuestionDate,
+		value.QuestionDateTime,
+		value.QuestionDurationForward,
+		value.QuestionScale,
+		value.QuestionQRCode,
+		value.QuestionText,
+		value.QuestionCount,
+		value.QuestionNumber:
 		return "{}", nil
-	case value.QuestionDate:
-		return "{}", nil
-	case value.QuestionDateTime:
-		return "{}", nil
-	case value.QuestionDurationForward:
-		return "{}", nil
-	case value.QuestionDurationBackward:
+	case value.QuestionDurationBackward,
+		value.QuestionPhoto,
+		value.QuestionButtonCount:
 		//TODO: validate attributes
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionScale:
-		return "{}", nil
-	case value.QuestionQRCode:
-		return "{}", nil
 	case value.QuestionSelection:
 		rawOptions := strings.Split(rawQuestion.Attributes, ",")
 		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
@@ -64,16 +63,6 @@ func (receiver *SyncQuestionsUseCase) unmarshalAttributes(rawQuestion parameters
 			return "", err
 		}
 		return string(result), nil
-	case value.QuestionText:
-		return "{}", nil
-	case value.QuestionCount:
-		return "{}", nil
-	case value.QuestionNumber:
-		return "{}", nil
-	case value.QuestionPhoto:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButtonCount:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionMultipleChoice:
 		multiselect := "single_select"
 		rawAdditionalOptions := strings.Split(rawQuestion.AdditionalOptions, ":")
@@ -106,6 +95,4 @@ func (receiver *SyncQuestionsUseCase) unmarshalAttributes(rawQuestion parameters
 	default:
 		return "", errors.New("invalid question type")
 	}
-
-	return "", errors.New("invalid question type")
 }

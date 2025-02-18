@@ -2,11 +2,12 @@ package job
 
 import (
 	"fmt"
-	"github.com/go-co-op/gocron"
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/pkg/monitor"
 	"sync"
 	"time"
+
+	"github.com/go-co-op/gocron"
+	log "github.com/sirupsen/logrus"
 )
 
 var instantiated *TimeMachine = nil
@@ -91,6 +92,20 @@ func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, devi
 		fmt.Sprint("todoInterval: ", todoInterval),
 		fmt.Sprint("submissionSyncInterval: ", submissionSyncInterval),
 	)
+}
+
+func (receiver *TimeMachine) Stop() {
+	receiver.formCron.Clear()
+	receiver.form2Cron.Clear()
+	receiver.form3Cron.Clear()
+	receiver.form4Cron.Clear()
+	receiver.urlCron.Clear()
+	receiver.deviceSyncCron.Clear()
+	receiver.todoCron.Clear()
+	receiver.googleQPIRequestMonitorCron.Clear()
+	receiver.submissionSyncCron.Clear()
+
+	monitor.SendMessageViaTelegram("Time machine has been stopped")
 }
 
 func (receiver *TimeMachine) SubscribeFormsExec(exec IntervalTaskExecutor) {

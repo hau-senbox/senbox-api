@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/messaging"
@@ -33,7 +32,7 @@ type SendNotificationParams struct {
 	DeviceToken string
 }
 
-func (receiver *SendNotificationUseCase) Execute(params request.SendNotificationRequest, device entity.SDevice) error {
+func (receiver *SendNotificationUseCase) Execute(params request.SendNotificationRequest) error {
 	md, err := receiver.repository.FindByDeviceID(params.DeviceId, receiver.DB)
 
 	if err != nil {

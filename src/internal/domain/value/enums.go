@@ -70,6 +70,28 @@ const (
 	QuestionQRCodeGenerator
 	QuestionSignUpPreSetValue2
 	QuestionWebUser
+	QuestionSignUpPresetDob
+	QuestionSignUpPresetPassword
+	QuestionSignUpPresetRole
+	QuestionSignUpPresetConditionAccept
+	QuestionSignUpPresetRoleSelectWorkingAddress
+	SignUpButtonConfiguration1
+	SignUpButtonConfiguration2
+	SignUpButtonConfiguration3
+	SignUpButtonConfiguration4
+	SignUpButtonConfiguration5
+	SignUpButtonConfiguration6
+	SignUpButtonConfiguration7
+	SignUpButtonConfiguration8
+	SignUpButtonConfiguration9
+	SignUpButtonConfiguration10
+	UserInformationValue1
+	UserInformationValue2
+	UserInformationValue3
+	UserInformationValue4
+	UserInformationValue5
+	UserInformationValue6
+	UserInformationValue7
 )
 
 type DeviceStatus int
@@ -203,6 +225,50 @@ func GetRawValue(questionType QuestionType) string {
 		return "preset_value3"
 	case QuestionSignUpPreSetValue2:
 		return "preset_value2"
+	case QuestionSignUpPresetDob:
+		return "preset_dob"
+	case QuestionSignUpPresetPassword:
+		return "preset_password"
+	case QuestionSignUpPresetConditionAccept:
+		return "preset_condition_accept"
+	case QuestionSignUpPresetRole:
+		return "preset_role"
+	case QuestionSignUpPresetRoleSelectWorkingAddress:
+		return "preset_role_select_working_address"
+	case SignUpButtonConfiguration1:
+		return "preset_sign_up_button_1"
+	case SignUpButtonConfiguration2:
+		return "preset_sign_up_button_2"
+	case SignUpButtonConfiguration3:
+		return "preset_sign_up_button_3"
+	case SignUpButtonConfiguration4:
+		return "preset_sign_up_button_4"
+	case SignUpButtonConfiguration5:
+		return "preset_sign_up_button_5"
+	case SignUpButtonConfiguration6:
+		return "preset_sign_up_button_6"
+	case SignUpButtonConfiguration7:
+		return "preset_sign_up_button_7"
+	case SignUpButtonConfiguration8:
+		return "preset_sign_up_button_8"
+	case SignUpButtonConfiguration9:
+		return "preset_sign_up_button_9"
+	case SignUpButtonConfiguration10:
+		return "preset_sign_up_button_10"
+	case UserInformationValue1:
+		return "user_information_value_1"
+	case UserInformationValue2:
+		return "user_information_value_2"
+	case UserInformationValue3:
+		return "user_information_value_3"
+	case UserInformationValue4:
+		return "user_information_value_4"
+	case UserInformationValue5:
+		return "user_information_value_5"
+	case UserInformationValue6:
+		return "user_information_value_6"
+	case UserInformationValue7:
+		return "user_information_value_7"
 	case QuestionFormSection:
 		return "form_section"
 	case QuestionFormSendImmediately:
@@ -340,6 +406,50 @@ func GetStringValue(questionType QuestionType) string {
 		return "preset_value3"
 	case QuestionSignUpPreSetValue2:
 		return "preset_value2"
+	case QuestionSignUpPresetDob:
+		return "preset_dob"
+	case QuestionSignUpPresetPassword:
+		return "preset_password"
+	case QuestionSignUpPresetConditionAccept:
+		return "preset_condition_accept"
+	case QuestionSignUpPresetRole:
+		return "preset_role"
+	case QuestionSignUpPresetRoleSelectWorkingAddress:
+		return "preset_role_select_working_address"
+	case SignUpButtonConfiguration1:
+		return "preset_sign_up_button_1"
+	case SignUpButtonConfiguration2:
+		return "preset_sign_up_button_2"
+	case SignUpButtonConfiguration3:
+		return "preset_sign_up_button_3"
+	case SignUpButtonConfiguration4:
+		return "preset_sign_up_button_4"
+	case SignUpButtonConfiguration5:
+		return "preset_sign_up_button_5"
+	case SignUpButtonConfiguration6:
+		return "preset_sign_up_button_6"
+	case SignUpButtonConfiguration7:
+		return "preset_sign_up_button_7"
+	case SignUpButtonConfiguration8:
+		return "preset_sign_up_button_8"
+	case SignUpButtonConfiguration9:
+		return "preset_sign_up_button_9"
+	case SignUpButtonConfiguration10:
+		return "preset_sign_up_button_10"
+	case UserInformationValue1:
+		return "user_information_value_1"
+	case UserInformationValue2:
+		return "user_information_value_2"
+	case UserInformationValue3:
+		return "user_information_value_3"
+	case UserInformationValue4:
+		return "user_information_value_4"
+	case UserInformationValue5:
+		return "user_information_value_5"
+	case UserInformationValue6:
+		return "user_information_value_6"
+	case UserInformationValue7:
+		return "user_information_value_7"
 	case QuestionDraggableList:
 		return "draggable_list"
 	case QuestionSendMessage:
@@ -415,6 +525,50 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return QuestionSignUpPreSetValue3, nil
 	case "preset_value2":
 		return QuestionSignUpPreSetValue2, nil
+	case "preset_dob":
+		return QuestionSignUpPresetDob, nil
+	case "preset_password":
+		return QuestionSignUpPresetPassword, nil
+	case "preset_condition_accept":
+		return QuestionSignUpPresetConditionAccept, nil
+	case "preset_role":
+		return QuestionSignUpPresetRole, nil
+	case "preset_role_select_working_address":
+		return QuestionSignUpPresetRoleSelectWorkingAddress, nil
+	case "preset_sign_up_button_1":
+		return SignUpButtonConfiguration1, nil
+	case "preset_sign_up_button_2":
+		return SignUpButtonConfiguration2, nil
+	case "preset_sign_up_button_3":
+		return SignUpButtonConfiguration3, nil
+	case "preset_sign_up_button_4":
+		return SignUpButtonConfiguration4, nil
+	case "preset_sign_up_button_5":
+		return SignUpButtonConfiguration5, nil
+	case "preset_sign_up_button_6":
+		return SignUpButtonConfiguration6, nil
+	case "preset_sign_up_button_7":
+		return SignUpButtonConfiguration7, nil
+	case "preset_sign_up_button_8":
+		return SignUpButtonConfiguration8, nil
+	case "preset_sign_up_button_9":
+		return SignUpButtonConfiguration9, nil
+	case "preset_sign_up_button_10":
+		return SignUpButtonConfiguration10, nil
+	case "user_information_value_1":
+		return UserInformationValue1, nil
+	case "user_information_value_2":
+		return UserInformationValue2, nil
+	case "user_information_value_3":
+		return UserInformationValue3, nil
+	case "user_information_value_4":
+		return UserInformationValue4, nil
+	case "user_information_value_5":
+		return UserInformationValue5, nil
+	case "user_information_value_6":
+		return UserInformationValue6, nil
+	case "user_information_value_7":
+		return UserInformationValue7, nil
 	case "form_section":
 		return QuestionFormSection, nil
 	case "send_immediately":
@@ -491,81 +645,66 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 
 func IsGeneralQuestionType(questionType QuestionType) bool {
 	switch questionType {
-	case QuestionDate:
+	case QuestionDate,
+		QuestionTime,
+		QuestionDateTime,
+		QuestionDurationForward,
+		QuestionDurationBackward,
+		QuestionScale,
+		QuestionQRCode,
+		QuestionSelection,
+		QuestionText,
+		QuestionCount,
+		QuestionNumber,
+		QuestionPhoto,
+		QuestionMultipleChoice,
+		QuestionButtonCount,
+		QuestionSingleChoice,
+		QuestionButtonList,
+		QuestionMessageBox,
+		QuestionShowPic,
+		QuestionButton,
+		QuestionPlayVideo,
+		QuestionQRCodeFront,
+		QuestionChoiceToggle,
+		QuestionSection,
+		QuestionFormSection,
+		QuestionFormSendImmediately,
+		QuestionSignature,
+		QuestionWeb,
+		QuestionSignUpPreSetValue1,
+		QuestionSignUpPreSetValue3,
+		QuestionSignUpPreSetValue2,
+		QuestionDraggableList,
+		QuestionSendMessage,
+		QuestionSendNotification,
+		QuestionCodeCounting,
+		QuestionRandomizer,
+		QuestionDocument,
+		QuestionQRCodeGenerator,
+		QuestionSignUpPresetDob,
+		QuestionSignUpPresetPassword,
+		QuestionSignUpPresetConditionAccept,
+		QuestionSignUpPresetRole,
+		QuestionSignUpPresetRoleSelectWorkingAddress,
+		SignUpButtonConfiguration1,
+		SignUpButtonConfiguration2,
+		SignUpButtonConfiguration3,
+		SignUpButtonConfiguration4,
+		SignUpButtonConfiguration5,
+		SignUpButtonConfiguration6,
+		SignUpButtonConfiguration7,
+		SignUpButtonConfiguration8,
+		SignUpButtonConfiguration9,
+		SignUpButtonConfiguration10,
+		UserInformationValue1,
+		UserInformationValue2,
+		UserInformationValue3,
+		UserInformationValue4,
+		UserInformationValue5,
+		UserInformationValue6,
+		UserInformationValue7:
 		return true
-	case QuestionTime:
-		return true
-	case QuestionDateTime:
-		return true
-	case QuestionDurationForward:
-		return true
-	case QuestionDurationBackward:
-		return true
-	case QuestionScale:
-		return true
-	case QuestionQRCode:
-		return true
-	case QuestionSelection:
-		return true
-	case QuestionText:
-		return true
-	case QuestionCount:
-		return true
-	case QuestionNumber:
-		return true
-	case QuestionPhoto:
-		return true
-	case QuestionMultipleChoice:
-		return true
-	case QuestionButtonCount:
-		return true
-	case QuestionSingleChoice:
-		return true
-	case QuestionButtonList:
-		return true
-	case QuestionMessageBox:
-		return true
-	case QuestionShowPic:
-		return true
-	case QuestionButton:
-		return true
-	case QuestionPlayVideo:
-		return true
-	case QuestionQRCodeFront:
-		return true
-	case QuestionChoiceToggle:
-		return true
-	case QuestionSection:
-		return true
-	case QuestionFormSection:
-		return true
-	case QuestionFormSendImmediately:
-		return true
-	case QuestionSignature:
-		return true
-	case QuestionWeb:
-		return true
-	case QuestionSignUpPreSetValue1:
-		return true
-	case QuestionSignUpPreSetValue3:
-		return true
-	case QuestionSignUpPreSetValue2:
-		return true
-	case QuestionDraggableList:
-		return true
-	case QuestionSendMessage:
-		return true
-	case QuestionSendNotification:
-		return true
-	case QuestionCodeCounting:
-		return true
-	case QuestionRandomizer:
-		return true
-	case QuestionDocument:
-		return true
-	case QuestionQRCodeGenerator:
-		return true
-
 	default:
 		return false
 	}
@@ -705,29 +844,32 @@ func GetImportSpreadsheetStatusFromString(importSpreadsheetStatus string) (Impor
 type SettingType int
 
 const (
-	SettingTypeSubmission            SettingType = iota + 1
-	SettingTypeImportForms                       = SettingTypeSubmission + 1
-	SettingTypeImportUrls                        = SettingTypeSubmission + 2
-	SettingTypeSummary                           = SettingTypeSubmission + 3
-	SettingTypeSyncDevices                       = SettingTypeSubmission + 4
-	SettingTypeSyncToDos                         = SettingTypeSubmission + 5
-	SettingTypeEmailHistory                      = SettingTypeSubmission + 6
-	SettingTypeOutputTemplate                    = SettingTypeSubmission + 7
-	SettingTypeOutputTemplateTeacher             = SettingTypeSubmission + 8
-	SettingTypeImportForms2                      = SettingTypeSubmission + 9
-	SettingTypeImportForms3                      = SettingTypeSubmission + 10
-	SettingTypeImportForms4                      = SettingTypeSubmission + 11
-	SettingTypeSignUpButton1                     = SettingTypeSubmission + 12
-	SettingTypeSignUpButton2                     = SettingTypeSubmission + 13
-	SettingTypeSignUpButton3                     = SettingTypeSubmission + 14
-	SettingTypeSignUpButton4                     = SettingTypeSubmission + 15
-	SettingTypeSignUpForm                        = SettingTypeSubmission + 16
-	SettingTypeSignUpOutput                      = SettingTypeSubmission + 17
-	SettingTypeSignUpPresetValue12               = SettingTypeSubmission + 18
-	SettingTypeAPIDistributer                    = SettingTypeSubmission + 19
-	SettingTypeCodeCountingData                  = SettingTypeSubmission + 20
-	SettingTypeLogoRefreshInterval               = SettingTypeSubmission + 21
-	SettingTypeImportSignUpForms                 = SettingTypeSubmission + 22
+	SettingTypeSubmission                SettingType = iota + 1
+	SettingTypeImportForms                           = SettingTypeSubmission + 1
+	SettingTypeImportUrls                            = SettingTypeSubmission + 2
+	SettingTypeSummary                               = SettingTypeSubmission + 3
+	SettingTypeSyncDevices                           = SettingTypeSubmission + 4
+	SettingTypeSyncToDos                             = SettingTypeSubmission + 5
+	SettingTypeEmailHistory                          = SettingTypeSubmission + 6
+	SettingTypeOutputTemplate                        = SettingTypeSubmission + 7
+	SettingTypeOutputTemplateTeacher                 = SettingTypeSubmission + 8
+	SettingTypeImportForms2                          = SettingTypeSubmission + 9
+	SettingTypeImportForms3                          = SettingTypeSubmission + 10
+	SettingTypeImportForms4                          = SettingTypeSubmission + 11
+	SettingTypeSignUpButton1                         = SettingTypeSubmission + 12
+	SettingTypeSignUpButton2                         = SettingTypeSubmission + 13
+	SettingTypeSignUpButton3                         = SettingTypeSubmission + 14
+	SettingTypeSignUpButton4                         = SettingTypeSubmission + 15
+	SettingTypeSignUpForm                            = SettingTypeSubmission + 16
+	SettingTypeSignUpOutput                          = SettingTypeSubmission + 17
+	SettingTypeSignUpPresetValue2                    = SettingTypeSubmission + 18
+	SettingTypeAPIDistributer                        = SettingTypeSubmission + 19
+	SettingTypeCodeCountingData                      = SettingTypeSubmission + 20
+	SettingTypeLogoRefreshInterval                   = SettingTypeSubmission + 21
+	SettingTypeImportSignUpForms                     = SettingTypeSubmission + 22
+	SettingTypeSignUpPresetValue1                    = SettingTypeSubmission + 23
+	SettingTypeSignUpButton5                         = SettingTypeSubmission + 24
+	SettingTypeSignUpButtonConfiguration             = SettingTypeSubmission + 25
 )
 
 type ButtonType int
@@ -759,18 +901,6 @@ func GetRawButtonTypeValue(buttonType ButtonType) string {
 	}
 }
 
-type SubmissionType int
-
-const (
-	SubmissionTypeValues SubmissionType = iota + 1
-	SubmissionTypeBoth
-	SubmissionTypeQrCode
-	SubmissionTypeTeacher
-	SubmissionTypeTeacherAndQRCode
-	SubmissionTypeSignUpRegistration
-	SubmissionTypeSignUpWriteToMemoryForm
-)
-
 type FormSyncStrategy string
 
 const (
@@ -781,32 +911,6 @@ const (
 const (
 	WorkingHoursStart = "08:00"
 	WorkingHoursEnd   = "20:00"
-)
-
-func GetSubmissionTypeFromString(typeInString string) SubmissionType {
-	switch strings.ToLower(typeInString) {
-	case "value12":
-		return SubmissionTypeValues
-	case "value12_qrcode":
-		return SubmissionTypeBoth
-	case "qrcode":
-		return SubmissionTypeQrCode
-	case "value32":
-		return SubmissionTypeTeacher
-	case "value32_qrcode":
-		return SubmissionTypeTeacherAndQRCode
-	default:
-		return SubmissionTypeBoth
-	}
-}
-
-type SubmissionStatus int
-
-const (
-	SubmissionStatusAccepted SubmissionStatus = iota + 1
-	SubmissionStatusSynced
-	SubmissionStatusRejected
-	SubmissionStatusAttempted
 )
 
 type ToDoType string

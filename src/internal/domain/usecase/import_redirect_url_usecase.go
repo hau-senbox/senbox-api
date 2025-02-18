@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -11,6 +10,8 @@ import (
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ImportRedirectUrlsUseCase struct {
@@ -45,7 +46,7 @@ func (receiver *ImportRedirectUrlsUseCase) SyncUrls(req request.ImportRedirectUr
 	}
 	for rowNo, row := range values {
 		if len(row) >= 5 && cap(row) >= 5 {
-			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[0].(string), row[1].(string), row[2].(string), row[3].(string), row[4].(string), "", nil)
+			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[1].(string), row[2].(string), row[3].(string), row[4].(string), "", nil)
 			if importErr != nil {
 				log.Error(importErr)
 			} else {
@@ -102,7 +103,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 				hash := row[9].(string)
 				hashPwd = &hash
 			}
-			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[0].(string), row[1].(string), row[2].(string), row[3].(string), row[4].(string), hint, hashPwd)
+			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[1].(string), row[2].(string), row[3].(string), row[4].(string), hint, hashPwd)
 			if importErr != nil {
 				log.Error(importErr)
 			} else {
@@ -119,7 +120,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 		}
 	}
 
-	if req.AutoImport == false {
+	if !req.AutoImport {
 		receiver.TimeMachine.ScheduleSyncUrls(0)
 	} else {
 		receiver.TimeMachine.ScheduleSyncUrls(req.Interval)
@@ -157,7 +158,7 @@ func (receiver *ImportRedirectUrlsUseCase) ImportPartially(url string, sheetName
 				hash := row[9].(string)
 				hashPwd = &hash
 			}
-			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[0].(string), row[1].(string), row[2].(string), row[3].(string), row[4].(string), hint, hashPwd)
+			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[1].(string), row[2].(string), row[3].(string), row[4].(string), hint, hashPwd)
 			if importErr != nil {
 				log.Error(importErr)
 			} else {

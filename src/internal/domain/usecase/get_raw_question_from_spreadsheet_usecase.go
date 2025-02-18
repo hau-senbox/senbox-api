@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/internal/domain/parameters"
 	"sen-global-api/pkg/sheet"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetRawQuestionFromSpreadsheetUseCase struct {
@@ -37,8 +38,5 @@ func (receiver *GetRawQuestionFromSpreadsheetUseCase) GetRawQuestions() ([]param
 		}
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	return result, err
 }

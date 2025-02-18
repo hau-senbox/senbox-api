@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/value"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type SecuredMiddleware struct {
@@ -32,12 +33,12 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 			log.Info(err)
 			context.AbortWithStatus(http.StatusForbidden)
 		} else if token.Valid {
-			deviceId, err := receiver.SessionRepository.ExtractDeviceIdFromToken(tokenString)
+			userId, err := receiver.SessionRepository.ExtractUserIdFromToken(tokenString)
 			if err != nil {
 				log.Info(err)
 				context.AbortWithStatus(http.StatusForbidden)
 			}
-			context.Set(ContextKeyDeviceId, *deviceId)
+			context.Set(ContextKeyUserId, *userId)
 			context.Next()
 		} else {
 			log.Info("Token is not valid")

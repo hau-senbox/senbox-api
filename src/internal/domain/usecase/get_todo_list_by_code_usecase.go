@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
+
+	"gorm.io/gorm"
 )
 
 type GetToDoListByQRCodeUseCase struct {
@@ -60,6 +61,9 @@ func (c *GetToDoListByQRCodeUseCase) getTasksByComposeTodo(todo entity.SToDo) (e
 
 	todo.Name = todoName
 	_, err = c.ToDoRepository.Save(c.dbConn, &todo)
+	if err != nil {
+		return c.ToDoRepository.GetToDoListByQRCode(todo.ID, c.dbConn)
+	}
 
 	return c.ToDoRepository.GetToDoListByQRCode(todo.ID, c.dbConn)
 }

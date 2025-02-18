@@ -2,15 +2,16 @@ package router
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"sen-global-api/config"
 	"sen-global-api/internal/controller"
 	"sen-global-api/pkg/sheet"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-func setupToDoRoutes(engine *gin.Engine, conn *gorm.DB, appConfig config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet) {
+func setupToDoRoutes(engine *gin.Engine, conn *gorm.DB, appConfig config.AppConfig) {
 	v1 := engine.Group("/v1")
 	{
 		ctx := context.Background()

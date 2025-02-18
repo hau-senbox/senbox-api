@@ -1,10 +1,11 @@
 package entity
 
 import (
-	"gorm.io/datatypes"
-	"gorm.io/gorm"
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type SSetting struct {
@@ -50,7 +51,7 @@ func (s *SSetting) BeforeSave(tx *gorm.DB) (err error) {
 		s.SettingName = "Sign Up Form"
 	case value.SettingTypeSignUpOutput:
 		s.SettingName = "Sign Up Output"
-	case value.SettingTypeSignUpPresetValue12:
+	case value.SettingTypeSignUpPresetValue2:
 		s.SettingName = "Sign Up Preset Value12"
 	case value.SettingTypeSubmission:
 		s.SettingName = "Submission"

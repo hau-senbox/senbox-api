@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
@@ -19,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type FormsUploaderIndex int
@@ -70,7 +71,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 	}
 
 	for _, sheetName := range sheets {
-		if strings.HasPrefix(strings.ToLower(sheetName), "[up]") == false {
+		if !strings.HasPrefix(strings.ToLower(sheetName), "[up]") {
 			continue
 		}
 		values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
@@ -127,24 +128,14 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 						//Skip row if code or spreadsheet url is empty
 						continue
 					}
-					var submissionType value.SubmissionType = value.SubmissionTypeValues
-					var submissionSheetId string = ""
 					if len(row) >= 15 {
-						submissionType = value.GetSubmissionTypeFromString(row[14].(string))
 						if len(row) >= 16 {
 							//Just required column Z (#15) in case of submission type is in (2,3,5)
-							switch submissionType {
-							case value.SubmissionTypeBoth, value.SubmissionTypeQrCode, value.SubmissionTypeTeacherAndQRCode:
-								re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-								match := re.FindStringSubmatch(row[15].(string))
+							re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+							match := re.FindStringSubmatch(row[15].(string))
 
-								if len(match) < 2 {
-									continue
-								} else {
-									submissionSheetId = match[1]
-								}
-							default:
-								break
+							if len(match) < 2 {
+								continue
 							}
 						}
 					}
@@ -152,15 +143,11 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 					if len(row) >= 17 {
 						tabName = row[16].(string)
 					}
-					outputSheetName := "Answers"
-					if len(row) >= 18 {
-						outputSheetName = row[17].(string)
-					}
 					syncStrategy := value.FormSyncStrategyOnSubmit
 					if len(row) >= 19 {
 						syncStrategy = value.GetFormSyncStrategyFromString(row[18].(string))
 					}
-					importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetId, tabName, outputSheetName, syncStrategy)
+					reason, importErr := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), tabName, syncStrategy)
 					if importErr != nil {
 						log.Error(importErr)
 						monitor.LogGoogleAPIRequestImportForm()
@@ -249,7 +236,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 	}
 
 	for _, sheetName := range sheets {
-		if strings.HasPrefix(strings.ToLower(sheetName), "[up]") == false {
+		if !strings.HasPrefix(strings.ToLower(sheetName), "[up]") {
 			continue
 		}
 		values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
@@ -306,40 +293,26 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 						//Skip row if code or spreadsheet url is empty
 						continue
 					}
-					var submissionType value.SubmissionType = value.SubmissionTypeValues
-					var submissionSheetId string = ""
 					if len(row) >= 15 {
-						submissionType = value.GetSubmissionTypeFromString(row[14].(string))
 						if len(row) >= 16 {
-							//Just required column Z (#15) in case of submission type is in (2,3,5)
-							switch submissionType {
-							case value.SubmissionTypeBoth, value.SubmissionTypeQrCode, value.SubmissionTypeTeacherAndQRCode:
-								re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-								match := re.FindStringSubmatch(row[15].(string))
+							// //Just required column Z (#15) in case of submission type is in (2,3,5)
+							// re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+							// match := re.FindStringSubmatch(row[15].(string))
 
-								if len(match) < 2 {
-									continue
-								} else {
-									submissionSheetId = match[1]
-								}
-							default:
-								break
-							}
+							// if len(match) < 2 {
+							// 	break
+							// }
 						}
 					}
 					var tabName string = ""
 					if len(row) >= 17 {
 						tabName = row[16].(string)
 					}
-					outputSheetName := "Answers"
-					if len(row) >= 18 {
-						outputSheetName = row[17].(string)
-					}
 					syncStrategy := value.FormSyncStrategyOnSubmit
 					if len(row) >= 19 {
 						syncStrategy = value.GetFormSyncStrategyFromString(row[18].(string))
 					}
-					importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetId, tabName, outputSheetName, syncStrategy)
+					reason, importErr := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), tabName, syncStrategy)
 					if importErr != nil {
 						log.Error(importErr)
 						monitor.LogGoogleAPIRequestImportForm()
@@ -370,7 +343,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 	}
 
 	var interval uint64 = 0
-	if req.AutoImport != false {
+	if req.AutoImport {
 		interval = req.Interval
 	}
 
@@ -444,8 +417,7 @@ func (c *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheetNameToR
 
 	if len(match) < 2 {
 		log.Error("Import Sign Up Form Invalid spreadsheet url: ", spreadsheetUrl)
-		return entity.SForm{},
-			fmt.Errorf(fmt.Sprintf("Import Sign Up Form Invalid spreadsheet url: %s", spreadsheetUrl))
+		return entity.SForm{}, fmt.Errorf("import sign up form invalid spreadsheet url: %s", spreadsheetUrl)
 	}
 
 	spreadsheetId := match[1]
@@ -494,18 +466,15 @@ func (c *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheetNameToR
 		}
 	}
 
-	f, err, msg := c.CreateSignUpForm(parameters.SaveFormParams{
-		Note:              note,
-		Name:              formName,
-		SpreadsheetUrl:    spreadsheetUrl,
-		SpreadsheetId:     spreadsheetId,
-		Password:          "",
-		RawQuestions:      rawQuestions,
-		SubmissionType:    value.SubmissionTypeSignUpRegistration,
-		SubmissionSheetId: "",
-		SheetName:         sheetNameToRead,
-		OutputSheetName:   "",
-		SyncStrategy:      value.FormSyncStrategyOnSubmit,
+	f, msg, err := c.CreateSignUpForm(parameters.SaveFormParams{
+		Note:           note,
+		Name:           formName,
+		SpreadsheetUrl: spreadsheetUrl,
+		SpreadsheetId:  spreadsheetId,
+		Password:       "",
+		RawQuestions:   rawQuestions,
+		SheetName:      sheetNameToRead,
+		SyncStrategy:   value.FormSyncStrategyOnSubmit,
 	})
 
 	if err != nil {
@@ -518,12 +487,12 @@ func (c *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheetNameToR
 	return *f, nil
 }
 
-func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl string, password string, status string, submissionType value.SubmissionType, submissionSheetId string, sheetName string, outputSheetName string, syncStrategy value.FormSyncStrategy) (error, string) {
+func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl string, password string, sheetName string, syncStrategy value.FormSyncStrategy) (string, error) {
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(spreadsheetUrl)
 
 	if len(match) < 2 {
-		return fmt.Errorf("invalid spreadsheet url"), "Invalid spreadsheet url"
+		return "Invalid spreadsheet url", fmt.Errorf("invalid spreadsheet url")
 	}
 
 	spreadsheetId := match[1]
@@ -538,7 +507,7 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 	})
 	if err != nil || values == nil {
 		log.Error(err)
-		return err, fmt.Sprintf("Cannot read tab %s from %s ERROR %s", sheetNameToRead, spreadsheetUrl, err.Error())
+		return fmt.Sprintf("Cannot read tab %s from %s ERROR %s", sheetNameToRead, spreadsheetUrl, err.Error()), err
 	}
 
 	var rawQuestions = make([]parameters.RawQuestion, 0)
@@ -575,34 +544,31 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 		}
 	}
 
-	_, err, reason := receiver.saveForm(parameters.SaveFormParams{
-		Note:              code,
-		Name:              formName,
-		SpreadsheetUrl:    spreadsheetUrl,
-		SpreadsheetId:     spreadsheetId,
-		Password:          password,
-		RawQuestions:      rawQuestions,
-		SubmissionType:    submissionType,
-		SubmissionSheetId: submissionSheetId,
-		SheetName:         sheetNameToRead,
-		OutputSheetName:   outputSheetName,
-		SyncStrategy:      syncStrategy,
+	_, reason, err := receiver.saveForm(parameters.SaveFormParams{
+		Note:           code,
+		Name:           formName,
+		SpreadsheetUrl: spreadsheetUrl,
+		SpreadsheetId:  spreadsheetId,
+		Password:       password,
+		RawQuestions:   rawQuestions,
+		SheetName:      sheetNameToRead,
+		SyncStrategy:   syncStrategy,
 	})
 
-	return err, reason
+	return reason, err
 }
 
-func (receiver *ImportFormsUseCase) CreateSignUpForm(params parameters.SaveFormParams) (*entity.SForm, error, string) {
+func (receiver *ImportFormsUseCase) CreateSignUpForm(params parameters.SaveFormParams) (*entity.SForm, string, error) {
 	return receiver.saveForm(params)
 }
 
-func (receiver *ImportFormsUseCase) saveForm(params parameters.SaveFormParams) (*entity.SForm, error, string) {
+func (receiver *ImportFormsUseCase) saveForm(params parameters.SaveFormParams) (*entity.SForm, string, error) {
 	err := receiver.QuestionRepository.DeleteQuestionsFormNote(params.Note)
 	if err != nil {
-		return nil, err, "System Error: cannot delete questions belong to this form: " + params.Note
+		return nil, "System Error: cannot delete questions belong to this form: " + params.Note, err
 	}
 
-	questions, err, invalidQuestions := receiver.saveQuestions(params.RawQuestions)
+	questions, invalidQuestions, err := receiver.saveQuestions(params.RawQuestions)
 	var reason string
 	if len(invalidQuestions) > 0 {
 		reason = "Invalid questions: "
@@ -611,13 +577,13 @@ func (receiver *ImportFormsUseCase) saveForm(params parameters.SaveFormParams) (
 		}
 	}
 	if err != nil {
-		return nil, err, "" + err.Error() + " " + reason
+		return nil, "" + err.Error() + " " + reason, err
 	}
 	log.Debug(questions)
 
 	form, err := receiver.createForm(questions, params)
 
-	return form, err, reason
+	return form, reason, err
 }
 
 type InvalidQuestionRow struct {
@@ -625,7 +591,7 @@ type InvalidQuestionRow struct {
 	Reason    string
 }
 
-func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQuestion) ([]entity.SQuestion, error, []InvalidQuestionRow) {
+func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQuestion) ([]entity.SQuestion, []InvalidQuestionRow, error) {
 	var params = make([]repository.CreateQuestionParams, 0)
 	var invalidQuestions = make([]InvalidQuestionRow, 0)
 	for i, rawQuestion := range rawQuestions {
@@ -658,26 +624,26 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 		}
 
 		param := repository.CreateQuestionParams{
-			QuestionId:     rawQuestion.QuestionId,
-			QuestionName:   rawQuestion.Question,
-			QuestionType:   strings.ToLower(rawQuestion.Type),
-			Question:       rawQuestion.Question,
-			Attributes:     attString,
-			Status:         value.GetRawStatusValue(status),
-			Set:            rawQuestion.Attributes,
-			EnableOnMobile: rawQuestion.EnableOnMobile,
+			QuestionId:       rawQuestion.QuestionId,
+			QuestionName:     rawQuestion.Question,
+			QuestionType:     strings.ToLower(rawQuestion.Type),
+			Question:         rawQuestion.Question,
+			Attributes:       attString,
+			Status:           value.GetRawStatusValue(status),
+			Set:              rawQuestion.Attributes,
+			EnableOnMobile:   rawQuestion.EnableOnMobile,
 			QuestionUniqueId: rawQuestion.QuestionUniqueId,
 		}
 		params = append(params, param)
 	}
 
 	if len(params) == 0 {
-		return nil, errors.New("this form does not have any valid format questions"), make([]InvalidQuestionRow, 0)
+		return nil, make([]InvalidQuestionRow, 0), errors.New("this form does not have any valid format questions")
 	}
 
 	questions, err := receiver.QuestionRepository.Create(params)
 
-	return questions, err, invalidQuestions
+	return questions, invalidQuestions, err
 }
 
 func GetStatusFromString(status string) (value.Status, error) {
@@ -694,15 +660,43 @@ func GetStatusFromString(status string) (value.Status, error) {
 func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.QuestionType) (string, error) {
 
 	switch questionType {
-	case value.QuestionTime:
+	case value.QuestionTime,
+		value.QuestionDate,
+		value.QuestionDateTime,
+		value.QuestionDurationForward,
+		value.QuestionQRCode,
+		value.QuestionText,
+		value.QuestionCount,
+		value.QuestionNumber,
+		value.QuestionQRCodeFront,
+		value.UserInformationValue1,
+		value.UserInformationValue2,
+		value.UserInformationValue3,
+		value.UserInformationValue4,
+		value.UserInformationValue5,
+		value.UserInformationValue6,
+		value.UserInformationValue7:
 		return "{}", nil
-	case value.QuestionDate:
-		return "{}", nil
-	case value.QuestionDateTime:
-		return "{}", nil
-	case value.QuestionDurationForward:
-		return "{}", nil
-	case value.QuestionDurationBackward:
+	case value.QuestionDurationBackward,
+		value.QuestionShowPic,
+		value.QuestionButton,
+		value.QuestionPlayVideo,
+		value.QuestionRandomizer,
+		value.QuestionDocument,
+		value.QuestionQRCodeGenerator,
+		value.QuestionCodeCounting,
+		value.QuestionPhoto,
+		value.QuestionButtonCount,
+		value.QuestionSection,
+		value.QuestionFormSection,
+		value.QuestionFormSendImmediately,
+		value.QuestionSignature,
+		value.QuestionSignUpPreSetValue1,
+		value.QuestionSignUpPreSetValue2,
+		value.QuestionSignUpPreSetValue3,
+		value.QuestionSendNotification,
+		value.QuestionSignUpPresetDob,
+		value.QuestionSignUpPresetRoleSelectWorkingAddress:
 		//TODO: validate attributes
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionScale:
@@ -727,9 +721,13 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 			return "", errors.New("scale question data is invalid " + err.Error())
 		}
 		return "{\"number\" : " + strconv.Itoa(totalValues) + ", \"steps\": " + strconv.Itoa(stepValue) + "}", nil
-	case value.QuestionQRCode:
-		return "{}", nil
-	case value.QuestionSelection:
+	case value.QuestionSelection,
+		value.QuestionMultipleChoice,
+		value.QuestionSingleChoice,
+		value.QuestionChoiceToggle,
+		value.QuestionDraggableList,
+		value.QuestionSignUpPresetConditionAccept,
+		value.QuestionSignUpPresetRole:
 		rawOptions := strings.Split(rawQuestion.Attributes, ";")
 		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
 		type Option struct {
@@ -751,59 +749,6 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 			return "", err
 		}
 		return string(result), nil
-	case value.QuestionText:
-		return "{}", nil
-	case value.QuestionCount:
-		return "{}", nil
-	case value.QuestionNumber:
-		return "{}", nil
-	case value.QuestionPhoto:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButtonCount:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionMultipleChoice:
-		rawOptions := strings.Split(rawQuestion.Attributes, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return "", errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return "", err
-		}
-		return string(result), nil
-	case value.QuestionSingleChoice:
-		rawOptions := strings.Split(rawQuestion.Attributes, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return "", errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return "", err
-		}
-		return string(result), nil
-
 	case value.QuestionButtonList:
 		re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 		match := re.FindStringSubmatch(rawQuestion.Attributes)
@@ -813,89 +758,13 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		}
 
 		return `{"spreadsheet_id" : "` + match[1] + `"}`, nil
-
 	case value.QuestionMessageBox:
 		message := strings.Replace(rawQuestion.Attributes, "\n", "\\n", -1)
 		jsonMsg := `{"value": "` + message + `"}`
 		return jsonMsg, nil
-	case value.QuestionShowPic:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButton:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionPlayVideo:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionQRCodeFront:
-		return "{}", nil
-	case value.QuestionRandomizer:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionDocument:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionQRCodeGenerator:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionCodeCounting:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionChoiceToggle:
-		rawOptions := strings.Split(rawQuestion.Attributes, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return "", errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return "", err
-		}
-		return string(result), nil
-
-	case value.QuestionSection:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-
-	case value.QuestionFormSection:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-
-	case value.QuestionFormSendImmediately:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionSignature:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionWeb:
 		attInbase64 := base64.StdEncoding.EncodeToString([]byte(rawQuestion.Attributes))
 		return `{"value": "` + attInbase64 + `"}`, nil
-	case value.QuestionSignUpPreSetValue1:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionSignUpPreSetValue2:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionSignUpPreSetValue3:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionDraggableList:
-		rawOptions := strings.Split(rawQuestion.Attributes, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return "", errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return "", err
-		}
-		return string(result), nil
 	case value.QuestionSendMessage:
 		type Msg struct {
 			Email          []string `json:"email"`
@@ -917,12 +786,41 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 			return "", err
 		}
 		return string(result), nil
-	case value.QuestionSendNotification:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	default:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
+	case value.SignUpButtonConfiguration1,
+		value.SignUpButtonConfiguration2,
+		value.SignUpButtonConfiguration3,
+		value.SignUpButtonConfiguration4,
+		value.SignUpButtonConfiguration5,
+		value.SignUpButtonConfiguration6,
+		value.SignUpButtonConfiguration7,
+		value.SignUpButtonConfiguration8,
+		value.SignUpButtonConfiguration9,
+		value.SignUpButtonConfiguration10:
+		rawButtonConfigurations := strings.Split(rawQuestion.Attributes, ";")
+		type ButtonConfiguration struct {
+			Color  string `json:"color"`
+			QrCode string `json:"qr_code"`
+		}
+		type ButtonConfigurations struct {
+			ButtonConfigurations []ButtonConfiguration `json:"button_configurations"`
+		}
+		var configurationList = make([]ButtonConfiguration, 0)
+		if rawButtonConfigurations[0] == "" || rawButtonConfigurations[1] == "" {
+			return "", errors.New("invalid configuration")
+		}
+		configurationList = append(configurationList, ButtonConfiguration{
+			Color:  rawButtonConfigurations[0],
+			QrCode: rawButtonConfigurations[1],
+		})
+		configurations := ButtonConfigurations{ButtonConfigurations: configurationList}
+		result, err := json.Marshal(configurations)
+		if err != nil {
+			return "", err
+		}
+		return string(result), nil
 	}
 
+	return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 }
 
 func (receiver *ImportFormsUseCase) createForm(questions []entity.SQuestion, params parameters.SaveFormParams) (*entity.SForm, error) {
@@ -947,7 +845,7 @@ func (receiver *ImportFormsUseCase) createForm(questions []entity.SQuestion, par
 			AnswerRequired: answerRequired,
 		})
 	}
-	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.FormId, formQuestions)
+	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.ID, formQuestions)
 	if err != nil {
 		return nil, err
 	}
@@ -971,7 +869,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 	})
 	if err != nil {
 		log.Error(err)
-		return errors.New(fmt.Sprintf("Error reading spreadsheet: %s", err.Error()))
+		return fmt.Errorf("error reading spreadsheet: %w", err)
 	}
 	for rowNo, row := range values {
 		if len(row) >= 4 && cap(row) >= 4 {
@@ -1019,64 +917,64 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 					//Skip row if code or spreadsheet url is empty
 					continue
 				}
-				var submissionType value.SubmissionType = value.SubmissionTypeValues
-				var submissionSheetId string = ""
-				if len(row) >= 15 {
-					submissionType = value.GetSubmissionTypeFromString(row[14].(string))
-					if len(row) >= 16 {
-						//Just required column Z (#15) in case of submission type is in (2,3,5)
-						switch submissionType {
-						case value.SubmissionTypeBoth, value.SubmissionTypeQrCode, value.SubmissionTypeTeacherAndQRCode: //5
-							re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-							match := re.FindStringSubmatch(row[15].(string))
+				// var submissionType value.SubmissionType = value.SubmissionTypeValues
+				// var submissionSheetId string = ""
+				// if len(row) >= 15 {
+				// 	submissionType = value.GetSubmissionTypeFromString(row[14].(string))
+				// 	if len(row) >= 16 {
+				// 		//Just required column Z (#15) in case of submission type is in (2,3,5)
+				// 		switch submissionType {
+				// 		case value.SubmissionTypeBoth, value.SubmissionTypeQrCode, value.SubmissionTypeTeacherAndQRCode: //5
+				// 			re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+				// 			match := re.FindStringSubmatch(row[15].(string))
 
-							if len(match) < 2 {
-								continue
-							} else {
-								submissionSheetId = match[1]
-							}
-						default:
-							break
-						}
-					}
-				}
-				var tabName string = ""
-				if len(row) >= 17 {
-					tabName = row[16].(string)
-				}
-				outputSheetName := "Answers"
-				if len(row) >= 18 {
-					outputSheetName = row[17].(string)
-				}
-				syncStrategy := value.FormSyncStrategyOnSubmit
-				if len(row) >= 19 {
-					syncStrategy = value.GetFormSyncStrategyFromString(row[18].(string))
-				}
-				importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetId, tabName, outputSheetName, syncStrategy)
-				if importErr != nil {
-					log.Error(importErr)
-					monitor.LogGoogleAPIRequestImportForm()
-					_, err = receiver.SpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
-						Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
-						Dimension: "ROWS",
-						Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-					}, spreadsheetId)
-					if err != nil {
-						log.Debug("Row No: ", rowNo)
-						log.Error(err)
-					}
-				} else {
-					monitor.LogGoogleAPIRequestImportForm()
-					_, err = receiver.SpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
-						Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
-						Dimension: "ROWS",
-						Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-					}, spreadsheetId)
-					if err != nil {
-						log.Debug("Row No: ", rowNo)
-						log.Error(err)
-					}
-				}
+				// 			if len(match) < 2 {
+				// 				continue
+				// 			} else {
+				// 				submissionSheetId = match[1]
+				// 			}
+				// 		default:
+				// 			break
+				// 		}
+				// 	}
+				// }
+				// var tabName string = ""
+				// if len(row) >= 17 {
+				// 	tabName = row[16].(string)
+				// }
+				// outputSheetName := "Answers"
+				// if len(row) >= 18 {
+				// 	outputSheetName = row[17].(string)
+				// }
+				// syncStrategy := value.FormSyncStrategyOnSubmit
+				// if len(row) >= 19 {
+				// 	syncStrategy = value.GetFormSyncStrategyFromString(row[18].(string))
+				// }
+				// importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetId, tabName, outputSheetName, syncStrategy)
+				// if importErr != nil {
+				// 	log.Error(importErr)
+				// 	monitor.LogGoogleAPIRequestImportForm()
+				// 	_, err = receiver.SpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
+				// 		Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
+				// 		Dimension: "ROWS",
+				// 		Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
+				// 	}, spreadsheetId)
+				// 	if err != nil {
+				// 		log.Debug("Row No: ", rowNo)
+				// 		log.Error(err)
+				// 	}
+				// } else {
+				// 	monitor.LogGoogleAPIRequestImportForm()
+				// 	_, err = receiver.SpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
+				// 		Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
+				// 		Dimension: "ROWS",
+				// 		Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
+				// 	}, spreadsheetId)
+				// 	if err != nil {
+				// 		log.Debug("Row No: ", rowNo)
+				// 		log.Error(err)
+				// 	}
+				// }
 			}
 		}
 	}

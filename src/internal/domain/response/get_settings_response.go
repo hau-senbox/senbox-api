@@ -34,12 +34,15 @@ type GetSettingsResponseData struct {
 	SignUpButton2             *GetSettingsResponseTextButton     `json:"sign_up_button_2"`
 	SignUpButton3             *GetSettingsResponseTextButton     `json:"sign_up_button_3"`
 	SignUpButton4             *GetSettingsResponseTextButton     `json:"sign_up_button_4"`
+	SignUpButton5             *GetSettingsResponseTextButton     `json:"sign_up_button_5"`
+	SignUpButtonConfiguration *GetSettingsResponseDataSummary    `json:"sign_up_button_configuration"`
 	RegistrationForm          *GetSettingsResponseDataSummary    `json:"registration_form"`
 	RegistrationSubmission    *GetSettingsResponseDataSummary    `json:"registration_submission"`
-	RegistrationPreset        *GetSettingsResponseDataSummary    `json:"registration_preset"`
+	RegistrationPreset2       *GetSettingsResponseDataSummary    `json:"registration_preset_2"`
 	APIDistributer            *GetSettingsResponseAPIDistributor `json:"api_distributer"`
 	CodeCountingData          *GetSettingsResponseAPIDistributor `json:"code_counting_data"`
 	SignUpFormsSetting        *GetSettingsResponseDataImport     `json:"import_signup_forms"`
+	RegistrationPreset1       *GetSettingsResponseDataSummary    `json:"registration_preset_1"`
 }
 
 type GetSettingsResponse struct {

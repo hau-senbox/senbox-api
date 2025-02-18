@@ -3,7 +3,6 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
@@ -13,6 +12,8 @@ import (
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type UpdateFormUseCase struct {
@@ -41,6 +42,9 @@ func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.Update
 	}
 
 	err = receiver.FormQuestionRepository.Update(form, questions, rawQuestions)
+	if err != nil {
+		return nil, err
+	}
 
 	log.Debug(questions)
 
@@ -76,9 +80,6 @@ func (receiver *UpdateFormUseCase) getRawQuestions(spreadsheetId string) ([]para
 		}
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	return result, err
 }
 
@@ -127,15 +128,22 @@ func (receiver *UpdateFormUseCase) getStatusFromString(status string) (value.Sta
 func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.QuestionType) (string, error) {
 
 	switch questionType {
-	case value.QuestionTime:
+	case value.QuestionTime,
+		value.QuestionDate,
+		value.QuestionDateTime,
+		value.QuestionDurationForward,
+		value.QuestionQRCode,
+		value.QuestionText,
+		value.QuestionCount,
+		value.QuestionNumber:
 		return "{}", nil
-	case value.QuestionDate:
-		return "{}", nil
-	case value.QuestionDateTime:
-		return "{}", nil
-	case value.QuestionDurationForward:
-		return "{}", nil
-	case value.QuestionDurationBackward:
+	case value.QuestionDurationBackward,
+		value.QuestionPhoto,
+		value.QuestionButtonCount,
+		value.QuestionMessageBox,
+		value.QuestionShowPic,
+		value.QuestionButton,
+		value.QuestionPlayVideo:
 		//TODO: validate attributes
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionScale:
@@ -160,8 +168,6 @@ func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.Ra
 			return "", errors.New("scale question data is invalid " + err.Error())
 		}
 		return "{\"number\" : " + strconv.Itoa(totalValues) + ", \"steps\": " + strconv.Itoa(stepValue) + "}", nil
-	case value.QuestionQRCode:
-		return "{}", nil
 	case value.QuestionSelection:
 		rawOptions := strings.Split(rawQuestion.Attributes, ",")
 		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
@@ -184,16 +190,6 @@ func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.Ra
 			return "", err
 		}
 		return string(result), nil
-	case value.QuestionText:
-		return "{}", nil
-	case value.QuestionCount:
-		return "{}", nil
-	case value.QuestionNumber:
-		return "{}", nil
-	case value.QuestionPhoto:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButtonCount:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionMultipleChoice:
 		multiselect := "single_select"
 		rawAdditionalOptions := strings.Split(rawQuestion.AdditionalOptions, ":")
@@ -232,19 +228,7 @@ func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.Ra
 		}
 
 		return `{"spreadsheet_id" : "` + match[1] + `"}`, nil
-
-	case value.QuestionMessageBox:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-
-	case value.QuestionShowPic:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButton:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionPlayVideo:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	default:
 		return "", errors.New("invalid question type")
 	}
-
-	return "", errors.New("invalid question type")
 }

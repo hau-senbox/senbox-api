@@ -14,9 +14,15 @@ type GetBrandLogoCase struct {
 	Writer *sheet.Writer
 }
 
-func (receiver *GetBrandLogoCase) Execute(device entity.SDevice) (string, error) {
+func (receiver *GetBrandLogoCase) Execute(user entity.SUserEntity) (string, error) {
+	if user.UserConfig == nil {
+		log.Error("user config is nil")
+		return "", errors.New("user config is nil")
+	}
+
+	topButtonConfig := user.UserConfig.TopButtonConfig
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(device.ScreenButtonValue)
+	match := re.FindStringSubmatch(topButtonConfig)
 
 	if len(match) < 2 {
 		log.Error("failed to get spreadsheet id to log accounts")

@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/sheet"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetTimeTableUseCase struct {
@@ -16,9 +17,15 @@ type GetTimeTableUseCase struct {
 	*sheet.Reader
 }
 
-func (receiver *GetTimeTableUseCase) Execute(device entity.SDevice) (*response.GetTimeTableResponse, error) {
+func (receiver *GetTimeTableUseCase) Execute(user entity.SUserEntity) (*response.GetTimeTableResponse, error) {
+	if user.UserConfig == nil {
+		log.Error("user config is nil")
+		return nil, errors.New("user config is nil")
+	}
+
+	topButtonConfig := user.UserConfig.TopButtonConfig
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(device.ScreenButtonValue)
+	match := re.FindStringSubmatch(topButtonConfig)
 
 	if len(match) < 2 {
 		return nil, errors.New("invalid spreadsheet url please contact BO")

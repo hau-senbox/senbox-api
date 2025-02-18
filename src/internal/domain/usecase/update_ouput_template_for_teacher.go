@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 	"io"
 	"os"
 	"regexp"
@@ -14,6 +11,10 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/pkg/monitor"
+
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 type UpdateOutputTemplateSettingForTeacherUseCase struct {
@@ -33,7 +34,7 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 
 	if len(match) < 2 {
 		log.Error("failed to parse spreadsheet id from sync devices sheet")
-		return errors.New("Invalid spreadsheet url")
+		return errors.New("invalid spreadsheet url")
 	}
 
 	spreadsheetID := match[1]
@@ -68,6 +69,9 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 
 	//Update setting
 	err = receiver.SettingRepository.UpdateOutputTemplateSettingForTeacher(spreadsheetID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

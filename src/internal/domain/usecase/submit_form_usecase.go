@@ -22,6 +22,8 @@ import (
 )
 
 type SubmitFormUseCase struct {
+	*repository.DeviceRepository
+	*repository.UserEntityRepository
 	*repository.FormRepository
 	*repository.QuestionRepository
 	*repository.SubmissionRepository
@@ -37,43 +39,13 @@ type SubmitFormUseCase struct {
 	DB                  *gorm.DB
 }
 
-func (receiver *SubmitFormUseCase) AnswerForm(id uint64, device entity.SDevice, req request.SubmitFormRequest) error {
+func (receiver *SubmitFormUseCase) AnswerForm(id uint64, userDevice entity.SUserDevices, req request.SubmitFormRequest) error {
 	form, err := receiver.FormRepository.GetFormById(id)
 	if err != nil {
 		return err
 	}
 
-	switch form.SubmissionType {
-	case value.SubmissionTypeValues:
-		return receiver.answerFormSaveToDeviceOutputSheet(form, device, req)
-	case value.SubmissionTypeQrCode:
-		return receiver.answerFormSaveToFormOutputSheet(form, device, req)
-	case value.SubmissionTypeBoth:
-		err = receiver.answerFormSaveToDeviceOutputSheet(form, device, req)
-		if err != nil {
-			return err
-		}
-		err = receiver.answerFormSaveToFormOutputSheet(form, device, req)
-		if err != nil {
-			return err
-		}
-		return nil
-	case value.SubmissionTypeTeacher:
-		return receiver.answerFormSaveToTeacherOutputSheet(form, device, req)
-	case value.SubmissionTypeTeacherAndQRCode:
-		err = receiver.answerFormSaveToTeacherOutputSheet(form, device, req)
-		if err != nil {
-			return err
-		}
-		err = receiver.answerFormSaveToFormOutputSheet(form, device, req)
-		if err != nil {
-			return err
-		}
-	case value.SubmissionTypeSignUpRegistration:
-		return errors.New("wrong registration from submission api")
-	}
-
-	return err
+	return receiver.answerFormSaveToFormOutputSheet(form, userDevice, req)
 }
 
 func Map[T, U any](ts []T, f func(T) U) []U {
@@ -84,74 +56,11 @@ func Map[T, U any](ts []T, f func(T) U) []U {
 	return us
 }
 
-func (receiver *SubmitFormUseCase) answerFormSaveToDeviceOutputSheet(form *entity.SForm, device entity.SDevice, req request.SubmitFormRequest) error {
+func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.SForm, userDevice entity.SUserDevices, req request.SubmitFormRequest) error {
 	submissionItems := make([]repository.SubmissionDataItem, 0)
 	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
 	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
-	}
-
-	for _, answer := range req.Answers {
-		for _, question := range questions {
-			if answer.QuestionId == question.QuestionId {
-				var msg *repository.Messaging = nil
-				if answer.Messaging != nil {
-					msg = &repository.Messaging{
-						Email:        answer.Messaging.Email,
-						Value3:       answer.Messaging.Value3,
-						MessageBox:   answer.Messaging.MessageBox,
-						QuestionType: answer.Messaging.QuestionType,
-					}
-				}
-				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionId: question.QuestionId,
-					Question:   question.Question,
-					Answer:     answer.Answer,
-					Messaging:  msg,
-				})
-			}
-		}
-	}
-
-	submissionData := repository.SubmissionData{
-		Items: submissionItems,
-	}
-
-	createSubmissionParmas := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           device.DeviceId,
-		DeviceFirstValue:   device.PrimaryUserInfo,
-		DeviceSecondValue:  device.SecondaryUserInfo,
-		DeviceThirdValue:   device.TertiaryUserInfo,
-		DeviceName:         device.DeviceName,
-		DeviceNote:         device.Note,
-		SpreadsheetId:      device.SpreadsheetId,
-		SheetName:          form.OutputSheetName,
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeValues,
-		OpenedAt:           req.OpenedAt,
-	}
-	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParmas)
-	if err != nil {
-		log.Debug(err)
-		return errors.New("system cannot handle the submission")
-	}
-
-	defer func() {
-		receiver.sendNotification(form, device)
-	}()
-
-	return nil
-}
-
-func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.SForm, device entity.SDevice, req request.SubmitFormRequest) error {
-	submissionItems := make([]repository.SubmissionDataItem, 0)
-	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
-	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
+		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
 	for _, answer := range req.Answers {
@@ -180,101 +89,30 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		Items: submissionItems,
 	}
 	createSubmissionParams := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           device.DeviceId,
-		DeviceFirstValue:   device.PrimaryUserInfo,
-		DeviceSecondValue:  device.SecondaryUserInfo,
-		DeviceThirdValue:   device.TertiaryUserInfo,
-		DeviceName:         device.DeviceName,
-		DeviceNote:         device.Note,
-		SpreadsheetId:      form.SubmissionSpreadsheetId,
-		SheetName:          form.OutputSheetName,
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeTeacher,
-		OpenedAt:           req.OpenedAt,
+		FormId:         form.ID,
+		DeviceId:       userDevice.DeviceId,
+		SubmissionData: submissionData,
+		OpenedAt:       req.OpenedAt,
 	}
 	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParams)
 	if err != nil {
-		log.Debug(err)
+		log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
 		return errors.New("system cannot handle the submission")
 	}
 
 	defer func() {
-		receiver.sendNotification(form, device)
+		receiver.sendNotification(form)
 	}()
 
 	return nil
 }
 
-func (receiver *SubmitFormUseCase) answerFormSaveToTeacherOutputSheet(form *entity.SForm, device entity.SDevice, req request.SubmitFormRequest) error {
-	submissionItems := make([]repository.SubmissionDataItem, 0)
-
-	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
+func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
+	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
 	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
+		log.Error("Form ", form.Note, " has not send notification question")
+		return
 	}
-
-	for _, answer := range req.Answers {
-		for _, question := range questions {
-			if answer.QuestionId == question.QuestionId {
-				var msg *repository.Messaging = nil
-				if answer.Messaging != nil {
-					msg = &repository.Messaging{
-						Email:        answer.Messaging.Email,
-						Value3:       answer.Messaging.Value3,
-						MessageBox:   answer.Messaging.MessageBox,
-						QuestionType: answer.Messaging.QuestionType,
-					}
-				}
-				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionId: question.QuestionId,
-					Question:   question.Question,
-					Answer:     answer.Answer,
-					Messaging:  msg,
-				})
-			}
-		}
-	}
-
-	submissionData := repository.SubmissionData{
-		Items: submissionItems,
-	}
-	createSubmissionParams := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           device.DeviceId,
-		DeviceFirstValue:   device.PrimaryUserInfo,
-		DeviceSecondValue:  device.SecondaryUserInfo,
-		DeviceThirdValue:   device.TertiaryUserInfo,
-		DeviceName:         device.DeviceName,
-		DeviceNote:         device.Note,
-		SpreadsheetId:      device.TeacherSpreadsheetId,
-		SheetName:          form.OutputSheetName,
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeTeacher,
-		OpenedAt:           req.OpenedAt,
-	}
-
-	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParams)
-	if err != nil {
-		log.Debug(err)
-		return errors.New("system cannot handle the submission")
-	}
-
-	defer func() {
-		receiver.sendNotification(form, device)
-	}()
-
-	return nil
-}
-
-func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm, device entity.SDevice) {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.FormId)
 	sendNotificationQuestion := model.FormQuestionItem{}
 	for _, q := range questions {
 		if q.QuestionType == value.GetStringValue(value.QuestionSendNotification) {

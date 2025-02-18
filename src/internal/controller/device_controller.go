@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/internal/middleware"
 	"sen-global-api/pkg/monitor"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"github.com/tiendc/gofn"
 	"gorm.io/gorm"
 )
 
@@ -43,6 +44,93 @@ type DeviceController struct {
 	*usecase.RegisterFcmDeviceUseCase
 	*usecase.SendNotificationUseCase
 	*usecase.ResetCodeCountingUseCase
+	*usecase.GetDevicesByUserIdUseCase
+	*usecase.GetUserFromTokenUseCase
+	*usecase.GetUserDeviceUseCase
+}
+
+func (receiver *DeviceController) GetDeviceById(c *gin.Context) {
+	deviceId := c.Param("device_id")
+	if deviceId == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "device id is required",
+				},
+			},
+		)
+		return
+	}
+
+	device, err := receiver.GetDeviceByIdUseCase.Get(deviceId)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusInternalServerError,
+					Message: err.Error(),
+				},
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Data: &response.DeviceResponseDataV2{
+			Id:                device.ID,
+			DeviceName:        device.DeviceName,
+			InputMode:         string(device.InputMode),
+			Status:            string(device.Status),
+			DeactivateMessage: device.DeactivateMessage,
+			ButtonUrl:         device.ButtonUrl,
+			AppVersion:        device.AppVersion,
+			Note:              device.Note,
+			CreatedAt:         device.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt:         device.UpdatedAt.Format("2006-01-02 15:04:05"),
+		},
+	})
+}
+
+func (receiver *DeviceController) GetAllDeviceByUserId(c *gin.Context) {
+	userId := c.Param("user_id")
+	if userId == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "user id is required",
+				},
+			},
+		)
+		return
+	}
+
+	devices, err := receiver.GetDevicesByUserIdUseCase.GetDevicesByUserId(userId)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusInternalServerError,
+					Message: err.Error(),
+				},
+			},
+		)
+		return
+	}
+
+	var deviceResponse []response.DeviceResponseV2
+
+	for _, device := range *devices {
+		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
+			ID:         device.ID,
+			DeviceName: device.DeviceName,
+		})
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Data: deviceResponse,
+	})
 }
 
 // Init a device godoc
@@ -57,10 +145,10 @@ type DeviceController struct {
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/init [post]
-func (receiver *DeviceController) InitDeviceV1(c *gin.Context) {
+func (receiver *DeviceController) InitDeviceV1(context *gin.Context) {
 	var req request.RegisterDeviceRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(
+	if err := context.BindJSON(&req); err != nil {
+		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Error: response.Cause{
 					Code:    http.StatusBadRequest,
@@ -70,11 +158,23 @@ func (receiver *DeviceController) InitDeviceV1(c *gin.Context) {
 		)
 		return
 	}
-	log.Info("Init Device: ", req)
-	monitor.SendMessageViaTelegram("Init Device: ", req.DeviceUUID, req.Primary.Fullname, req.Secondary.Fullname, req.AppVersion)
-	device, err := receiver.RegisterDeviceUseCase.RegisterDevice(req)
+
+	monitor.SendMessageViaTelegram("Init Device: ", req.DeviceUUID, req.AppVersion)
+
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
-		c.JSON(
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	deviceId, err := receiver.RegisterDeviceUseCase.RegisterDevice(user, req)
+	if err != nil {
+		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
 				Error: response.Cause{
 					Code:    http.StatusInternalServerError,
@@ -85,21 +185,9 @@ func (receiver *DeviceController) InitDeviceV1(c *gin.Context) {
 		return
 	}
 
-	if err != nil {
-		c.JSON(
-			http.StatusUnauthorized, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusUnauthorized,
-					Message: "Cannot authorize device",
-				},
-			},
-		)
-		return
-	}
-
-	c.JSON(http.StatusOK, device)
-
-	return
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Data: deviceId,
+	})
 }
 
 // Deactivate Device godoc
@@ -148,8 +236,6 @@ func (receiver *DeviceController) DeactivateDevice(context *gin.Context) {
 			Message: "Deactivated",
 		},
 	})
-
-	return
 }
 
 // Aactivate Device godoc
@@ -197,8 +283,6 @@ func (receiver *DeviceController) ActivateDevice(context *gin.Context) {
 			Message: "Activated",
 		},
 	})
-
-	return
 }
 
 // Update Device godoc
@@ -222,7 +306,7 @@ func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
 			http.StatusBadRequest, response.FailedResponse{
 				Error: response.Cause{
 					Code:    http.StatusBadRequest,
-					Message: "Device Id is required",
+					Message: "device id is required",
 				},
 			},
 		)
@@ -254,24 +338,84 @@ func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.UpdateDeviceResponse{
-		Data: response.DeviceListResponseData{
-			DeviceUUID:            device.DeviceId,
-			DeviceName:            device.DeviceName,
-			Attribute1:            device.PrimaryUserInfo,
-			Attribute2:            device.SecondaryUserInfo,
-			Attribute3:            device.TertiaryUserInfo,
-			InputMode:             string(device.InputMode),
-			Status:                value.GetDeviceStatusStringAtMode(device.Status),
-			ProfilePicture:        device.ProfilePictureUrl,
-			SpreadsheetUrl:        "https://docs.google.com/spreadsheets/d/" + device.SpreadsheetId,
-			Message:               device.Message,
-			ButtonUrl:             device.ButtonUrl,
-			ScreenButtonType:      device.ScreenButtonType,
-			ScreenButtonValue:     device.ScreenButtonValue,
-			AppVersion:            device.AppVersion,
-			Note:                  device.Note,
-			UpdatedAt:             device.UpdatedAt.Format("2006-01-02 15:04:05"),
-			TeacherSpreadsheetUrl: "https://docs.google.com/spreadsheets/d/" + device.TeacherSpreadsheetId,
+		Data: response.DeviceResponseData{
+			DeviceUUID:        device.ID,
+			DeviceName:        device.DeviceName,
+			InputMode:         string(device.InputMode),
+			Status:            value.GetDeviceStatusStringAtMode(device.Status),
+			DeactivateMessage: device.DeactivateMessage,
+			ButtonUrl:         device.ButtonUrl,
+			ScreenButtonType:  device.ScreenButtonType,
+			AppVersion:        device.AppVersion,
+			Note:              device.Note,
+			UpdatedAt:         device.UpdatedAt.Format("2006-01-02 15:04:05"),
+		},
+	})
+}
+
+func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
+	deviceId := context.Param("device_id")
+	if deviceId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "Device Id is required",
+				},
+			},
+		)
+		return
+	}
+	var req request.UpdateDeviceRequestV2
+	if err := context.BindJSON(&req); err != nil {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: err.Error(),
+				},
+			},
+		)
+		return
+	}
+	device, err := receiver.UpdateDeviceUseCase.UpdateDeviceV2(deviceId, req)
+	if err != nil {
+		context.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusInternalServerError,
+					Message: err.Error(),
+				},
+			},
+		)
+		return
+	}
+
+	go func() {
+		// err = usecase.SyncDevice(deviceId)
+		// if err != nil {
+		// 	context.JSON(http.StatusInternalServerError, response.FailedResponse{
+		// 		Error: response.Cause{
+		// 			Code:    http.StatusInternalServerError,
+		// 			Message: err.Error(),
+		// 		},
+		// 	})
+		// 	return
+		// }
+	}()
+
+	context.JSON(http.StatusOK, response.UpdateDeviceResponse{
+		Data: response.DeviceResponseData{
+			DeviceUUID:        device.ID,
+			DeviceName:        device.DeviceName,
+			InputMode:         string(device.InputMode),
+			Status:            value.GetDeviceStatusStringAtMode(device.Status),
+			DeactivateMessage: device.DeactivateMessage,
+			ButtonUrl:         device.ButtonUrl,
+			ScreenButtonType:  device.ScreenButtonType,
+			AppVersion:        device.AppVersion,
+			Note:              device.Note,
+			UpdatedAt:         device.UpdatedAt.Format("2006-01-02 15:04:05"),
 		},
 	})
 }
@@ -300,7 +444,7 @@ func (receiver *DeviceController) TakeNote(context *gin.Context) {
 		})
 		return
 	}
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -310,7 +454,26 @@ func (receiver *DeviceController) TakeNote(context *gin.Context) {
 		})
 		return
 	}
-	err = receiver.TakeNoteUseCase.TakeNote(takeNoteRequest, device)
+
+	userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(takeNoteRequest.DeviceId)
+	var userIds []string
+	for _, userDevice := range *userDevices {
+		userIds = append(userIds, userDevice.UserId.String())
+	}
+	isExist := gofn.ContainSlice(userIds, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	err = receiver.TakeNoteUseCase.TakeNote(takeNoteRequest, takeNoteRequest.DeviceId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -352,6 +515,7 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		})
 		return
 	}
+
 	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(req.QRCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -362,7 +526,8 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		})
 		return
 	}
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -372,11 +537,43 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		})
 		return
 	}
+
+	userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(req.DeviceId)
+	var userIds []string
+	for _, userDevice := range *userDevices {
+		userIds = append(userIds, userDevice.UserId.String())
+	}
+	isExist := gofn.ContainSlice(userIds, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: "unauthorized",
+			},
+		})
+		return
+	}
+
+	ud, found := gofn.Find(*userDevices, func(ud entity.SUserDevices) bool {
+		return ud.UserId.String() == user.ID.String()
+	})
+	if !found {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
 	reportMsgHeader := fmt.Sprintf("[FORM SUMBITTING]: %s", context.Request.Header)
-	reportMsgBody := fmt.Sprintf("\n[FORM] ID: %d - \nNOTE:%s \nSUBMISSION TYPE: %s \n [SUBMITTED by DEVICE]: %s \n %s - \n %s \n %s\n", form.FormId, form.Note, form.SubmissionType, device.DeviceId, device.PrimaryUserInfo, device.SpreadsheetId, req)
-	userInfo := fmt.Sprintf("\nSUBMITTED with [USER INFO] 1: %s \n [USER INFO] 2:%s \n", device.PrimaryUserInfo, device.SecondaryUserInfo)
+	userInfo := fmt.Sprintf("\nSUBMITTED with [USER INFO] 1: %s \n [USER INFO] 2:%s \n", user.Fullname, user.Company.CompanyName)
+	reportMsgBody := fmt.Sprintf("\n[FORM] ID: %d - \nNOTE:%s \n [SUBMITTED by DEVICE]: %s \n %s - \n %v\n", form.ID, form.Note, ud.DeviceId, user.Fullname, req)
 	monitor.SendMessageViaTelegram(reportMsgHeader, reportMsgBody, userInfo)
-	err = receiver.SubmitFormUseCase.AnswerForm(form.FormId, *device, req)
+	err = receiver.SubmitFormUseCase.AnswerForm(form.ID, ud, req)
 	if err != nil {
 		context.JSON(http.StatusNotAcceptable, response.FailedResponse{
 			Error: response.Cause{
@@ -386,17 +583,15 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		})
 		return
 	}
+
+	// defer receiver.SyncSubmissionUseCase.Execute()
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.Cause{
 			Code:    http.StatusOK,
 			Message: "Succeed",
 		},
 	})
-
-	defer func() {
-		receiver.SyncSubmissionUseCase.Execute()
-	}()
-	return
 }
 
 type getLastSubmissionFromFormRequest struct {
@@ -454,9 +649,22 @@ func (receiver *DeviceController) GetLastSubmissionByForm(context *gin.Context) 
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router       /v1/buttons/screen [get]
+// @Router       /v1/buttons/screen/:device_id [get]
 func (receiver *DeviceController) GetScreenButtons(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	deviceId := context.Param("device_id")
+	if deviceId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "device id is required",
+				},
+			},
+		)
+		return
+	}
+
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -467,7 +675,7 @@ func (receiver *DeviceController) GetScreenButtons(context *gin.Context) {
 		return
 	}
 
-	buttons, err := receiver.GetScreenButtonsByDeviceUseCase.GetScreenButtons(*device)
+	buttons, err := receiver.GetScreenButtonsByDeviceUseCase.GetScreenButtons(deviceId, user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -496,7 +704,7 @@ func (receiver *DeviceController) GetScreenButtons(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/buttons/top [get]
 func (receiver *DeviceController) GetTopButtons(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -507,7 +715,7 @@ func (receiver *DeviceController) GetTopButtons(context *gin.Context) {
 		return
 	}
 
-	buttons, err := receiver.GetScreenButtonsByDeviceUseCase.GetTopButtons(*device)
+	buttons, err := receiver.GetScreenButtonsByDeviceUseCase.GetTopButtons(*user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -537,7 +745,7 @@ func (receiver *DeviceController) GetTopButtons(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/time-table [get]
 func (receiver *DeviceController) GetTimeTable(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -547,7 +755,7 @@ func (receiver *DeviceController) GetTimeTable(context *gin.Context) {
 		})
 		return
 	}
-	times, err := receiver.GetTimeTableUseCase.Execute(*device)
+	times, err := receiver.GetTimeTableUseCase.Execute(*user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -573,7 +781,7 @@ func (receiver *DeviceController) GetTimeTable(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/messages [get]
 func (receiver *DeviceController) GetSettingMessage(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -583,7 +791,73 @@ func (receiver *DeviceController) GetSettingMessage(context *gin.Context) {
 		})
 		return
 	}
-	times, err := receiver.GetSettingMessageUseCase.Execute(*device)
+	times, err := receiver.GetSettingMessageUseCase.Execute(*user)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+	context.JSON(http.StatusOK, times)
+}
+
+func (receiver *DeviceController) GetSettingMessageV2(context *gin.Context) {
+	deviceId := context.Param("device_id")
+	if deviceId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "device id is required",
+				},
+			},
+		)
+		return
+	}
+
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(deviceId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	var userIds []string
+	for _, userDevice := range *userDevices {
+		userIds = append(userIds, userDevice.UserId.String())
+	}
+	isExist := gofn.ContainSlice(userIds, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: "unauthorized",
+			},
+		})
+		return
+	}
+
+	times, err := receiver.GetSettingMessageUseCase.Execute(*user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -654,8 +928,8 @@ func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
 }
 
 type updateDeviceInfoRequest struct {
-	Version   *string `json:"app_version"`
-	UserInfo3 *string `json:"user_info_3"`
+	DeviceId string  `json:"device_id" binding:"required"`
+	Version  *string `json:"app_version"`
 }
 
 // Update Device Info godoc
@@ -683,7 +957,7 @@ func (receiver *DeviceController) UpdateDeviceInfo(context *gin.Context) {
 		})
 		return
 	}
-	if request.UserInfo3 == nil && request.Version == nil {
+	if request.Version == nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Error: response.Cause{
 				Code:    http.StatusBadRequest,
@@ -693,7 +967,7 @@ func (receiver *DeviceController) UpdateDeviceInfo(context *gin.Context) {
 		return
 	}
 
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -704,7 +978,7 @@ func (receiver *DeviceController) UpdateDeviceInfo(context *gin.Context) {
 		return
 	}
 
-	err = receiver.UpdateDeviceInfoUseCase.Execute(*device, request.Version, request.UserInfo3)
+	err = receiver.UpdateDeviceInfoUseCase.Execute(*user, request.DeviceId, request.Version)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -740,9 +1014,61 @@ type getDeviceStatusResponse struct {
 // @Failure      401  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router       /v1/device/status [get]
+// @Router       /v1/device/status/:device_id [get]
 func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	deviceId := context.Param("device_id")
+	if deviceId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: response.Cause{
+					Code:    http.StatusBadRequest,
+					Message: "Device Id is required",
+				},
+			},
+		)
+		return
+	}
+
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		monitor.SendMessageViaTelegram(fmt.Sprintf("Get Device Status Failed: %s", err.Error()))
+		return
+	}
+
+	userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(deviceId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+	var userIds []string
+	for _, userDevice := range *userDevices {
+		userIds = append(userIds, userDevice.UserId.String())
+	}
+	isExist := gofn.ContainSlice(userIds, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: "unauthorized",
+			},
+		})
+		return
+	}
+
+	device, err := receiver.GetDeviceByIdUseCase.GetDeviceById(deviceId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -774,9 +1100,6 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 type reserveRequest struct {
 	DeviceId   string `json:"device_id" binding:"required"`
 	AppVersion string `json:"app_version" binding:"required"`
-}
-
-type reserveResponse struct {
 }
 
 // Reserve Device godoc
@@ -859,9 +1182,9 @@ type getBrandLogoResponse struct {
 // @Failure      401  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router       /v1/device/brand-logo [get]
+// @Router       /v1/user/brand-logo [get]
 func (receiver *DeviceController) GetBrandLogo(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -872,7 +1195,7 @@ func (receiver *DeviceController) GetBrandLogo(context *gin.Context) {
 		return
 	}
 
-	modeL, err := receiver.GetBrandLogoCase.Execute(*device)
+	modeL, err := receiver.GetBrandLogoCase.Execute(*user)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -907,7 +1230,7 @@ type getModeLResponse struct {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/mode-l [get]
 func (receiver *DeviceController) GetModeL(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -918,7 +1241,7 @@ func (receiver *DeviceController) GetModeL(context *gin.Context) {
 		return
 	}
 
-	modeL, err := receiver.GetModeLUseCase.Execute(*device)
+	modeL, err := receiver.GetModeLUseCase.Execute(*user)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -940,10 +1263,7 @@ type discoverRequest struct {
 }
 
 type discoverResponse struct {
-	DeviceId  string `json:"device_id"`
-	UserInfo1 string `json:"user_info_1"`
-	UserInfo2 string `json:"user_info_2"`
-	UserInfo3 string `json:"user_info_3"`
+	DeviceId string `json:"device_id"`
 }
 
 // Discover godoc
@@ -995,10 +1315,7 @@ func (receiver *DeviceController) Discover(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: discoverResponse{
-			DeviceId:  res.DeviceId,
-			UserInfo1: res.UserInfo1,
-			UserInfo2: res.UserInfo2,
-			UserInfo3: res.UserInfo3,
+			DeviceId: res.DeviceId,
 		},
 	})
 }
@@ -1013,6 +1330,7 @@ type getSignUpResponse struct {
 	Button2 getSignUpResponseTextButton `json:"button_2" binding:"required"`
 	Button3 getSignUpResponseTextButton `json:"button_3" binding:"required"`
 	Button4 getSignUpResponseTextButton `json:"button_4" binding:"required"`
+	Button5 getSignUpResponseTextButton `json:"button_5" binding:"required"`
 }
 
 // Get Sign Up godoc
@@ -1054,6 +1372,10 @@ func (receiver *DeviceController) GetSignUp(context *gin.Context) {
 			Button4: getSignUpResponseTextButton{
 				Name:  setting.Button4.Name,
 				Value: setting.Button4.Value,
+			},
+			Button5: getSignUpResponseTextButton{
+				Name:  setting.Button5.Name,
+				Value: setting.Button5.Value,
 			},
 		},
 	})
@@ -1098,7 +1420,7 @@ func (receiver *DeviceController) GetSignUpForm(context *gin.Context) {
 		}
 
 		context.JSON(http.StatusOK, response.SucceedResponse{
-			Data: r,
+			Data: r.Data,
 		})
 
 		return
@@ -1116,20 +1438,8 @@ func (receiver *DeviceController) GetSignUpForm(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: r,
+		Data: r.Data,
 	})
-}
-
-type signUpRequestUri struct {
-	FormId int `uri:"form_id" binding:"required"`
-}
-
-type signUpRequestBody struct {
-	Answers  []request.Answer `json:"answers" binding:"required"`
-	OpenedAt time.Time        `json:"opened_at,default=now()"`
-}
-
-type SubmitFormRequest struct {
 }
 
 // Sign Up godoc
@@ -1191,21 +1501,21 @@ func (receiver *DeviceController) SubmitSignUpForm(context *gin.Context) {
 }
 
 type getPresetResponse struct {
-	Value12 *string `json:"value_12"`
+	Value *string `json:"value"`
 }
 
 // Get Preset Form godoc
-// @Summary      Get Preset Form
-// @Description  Get Preset Form
+// @Summary      Get Preset 2 Form
+// @Description  Get Preset 2 Form
 // @Tags         Device
 // @Accept       json
 // @Produce      json
 // @Success 200 {object} getPresetResponse
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router       /v1/device/sign-up/pre-set [get]
-func (receiver *DeviceController) GetPreset(context *gin.Context) {
-	r := receiver.DeviceSignUpUseCases.GetSigGnUpPresetSetting()
+// @Router       /v1/device/sign-up/pre-set-2 [get]
+func (receiver *DeviceController) GetPreset2(context *gin.Context) {
+	r := receiver.DeviceSignUpUseCases.GetSignUpPreset2Setting()
 	if r == nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -1217,7 +1527,35 @@ func (receiver *DeviceController) GetPreset(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: getPresetResponse{
-			Value12: r,
+			Value: r,
+		},
+	})
+}
+
+// Get Preset Form godoc
+// @Summary      Get Preset 1 Form
+// @Description  Get Preset 1 Form
+// @Tags         Device
+// @Accept       json
+// @Produce      json
+// @Success 200 {object} getPresetResponse
+// @Failure      400  {object}  response.FailedResponse
+// @Failure      500  {object}  response.FailedResponse
+// @Router       /v1/device/sign-up/pre-set-1 [get]
+func (receiver *DeviceController) GetPreset1(context *gin.Context) {
+	r := receiver.DeviceSignUpUseCases.GetSignUpPreset1Setting()
+	if r == nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: "Could not get sign up form",
+			},
+		})
+		return
+	}
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Data: getPresetResponse{
+			Value: r,
 		},
 	})
 }
@@ -1280,17 +1618,6 @@ func (receiver *DeviceController) RegisterFCM(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/buttons/notification [post]
 func (receiver *DeviceController) SenNotification(context *gin.Context) {
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		return
-	}
-
 	var req request.SendNotificationRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -1302,7 +1629,7 @@ func (receiver *DeviceController) SenNotification(context *gin.Context) {
 		return
 	}
 
-	err = receiver.SendNotificationUseCase.Execute(req, *device)
+	err := receiver.SendNotificationUseCase.Execute(req)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{

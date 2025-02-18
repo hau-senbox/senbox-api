@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
-	firebase "firebase.google.com/go/v4"
 	"fmt"
+	"math/rand"
+	"net/http"
 	"os"
 	"os/signal"
 	"sen-global-api/config"
@@ -15,13 +16,29 @@ import (
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/mysql"
 	"sen-global-api/pkg/sheet"
+	"strconv"
 	"syscall"
+	"time"
+
+	"sen-global-api/internal/domain/usecase"
+
+	firebase "firebase.google.com/go/v4"
+	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/consul/api/watch"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+const (
+	serviceName = "go-main-service"
+	ttl         = time.Second * 8
+	checkId     = "health-check"
+)
+
+var serviceId = fmt.Sprintf("%s-%d", serviceName, rand.Intn(100))
 
 func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	monitor.SendMessageViaTelegram("Server is starting...")
@@ -78,13 +95,38 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 
 	monitor.SendMessageViaTelegram("Server is up and running...")
 
+	consulHost := appConfig.Config.Consul.Host
+	if consulHost == "" {
+		// Fallback to localhost if the host is not set in the config
+		consulHost = "localhost"
+	}
+
+	// Consul client setup
+	client, err := api.NewClient(&api.Config{
+		Address: fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port), // Consul server address
+		HttpClient: &http.Client{
+			Timeout: 30 * time.Second, // Increase timeout to 30 seconds
+		},
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to create Consul client: %v", err)
+	}
+
+	setupConsul(client, consulHost, appConfig)
+	go updateHealthCheck(client)
+	usecase.ConsulClient = client
+	handler.GET("/health", healthCheck)
+
 	select {
 	case s := <-interrupt:
 		monitor.SendMessageViaTelegram("Server is interrupting...", s.String())
 		log.Info("app - Run - signal: " + s.String())
+		deregisterConsul(client)
 	case err := <-httpServer.Notify():
 		monitor.SendMessageViaTelegram("Server is shutting down...", err.Error())
 		log.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+		deregisterConsul(client)
 	}
 
 	// Shutdown
@@ -92,7 +134,99 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	if err != nil {
 		log.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
 		monitor.SendMessageViaTelegram("Server is shutting down...", err.Error())
+		deregisterConsul(client)
 	}
 
 	return err
+}
+
+func healthCheck(c *gin.Context) {
+	c.Status(200)
+}
+
+func updateHealthCheck(client *api.Client) {
+	ticker := time.NewTicker(time.Second * 5)
+
+	for {
+		err := client.Agent().UpdateTTL(checkId, "online", api.HealthPassing)
+		// _, _, err := client.Agent().AgentHealthServiceByID(serviceId)
+		if err != nil {
+			// log.Fatalf("Failed to update health check: %v", err)
+			log.Fatalf("Failed to check AgentHealthService: %v", err)
+		}
+		<-ticker.C
+	}
+}
+
+func setupConsul(client *api.Client, consulHost string, appConfig *config.AppConfig) {
+	hostname := appConfig.Config.Registry.Host
+	// hostname, _ := os.Hostname()
+	port, _ := strconv.Atoi(appConfig.Config.HTTP.Port)
+
+	// healthCheckHost := "localhost"
+	// if appConfig.Config.Consul.Host != "localhost" {
+	// 	// Fallback to localhost if the host is not set in the config
+	// 	healthCheckHost = serviceName
+	// }
+
+	// Health check (optional but recommended)
+	check := &api.AgentServiceCheck{
+		// HTTP:     fmt.Sprintf("http://%s:%v/health", healthCheckHost, port), // Health check endpoint
+		// Interval: "10s",                                                     // Interval for health check
+		// Timeout:  "30s",
+		DeregisterCriticalServiceAfter: ttl.String(),
+		TTL:                            ttl.String(),
+		CheckID:                        checkId,
+	}
+
+	// Service registration
+	registration := &api.AgentServiceRegistration{
+		ID:      serviceId,   // Unique service ID
+		Name:    serviceName, // Service name
+		Port:    port,        // Service port
+		Address: hostname,    // Service address
+		Tags:    []string{"go", "main", "user-service"},
+		Check:   check,
+	}
+
+	query := map[string]any{
+		"type":        "service",
+		"service":     "mycluster",
+		"passingonly": true,
+	}
+
+	plan, err := watch.Parse(query)
+	if err != nil {
+		log.Fatalf("Failed to watch for changes: %v", err)
+	}
+
+	plan.HybridHandler = func(index watch.BlockingParamVal, result any) {
+		switch msg := result.(type) {
+		case []*api.ServiceEntry:
+			for _, entry := range msg {
+				println("new member joined: ", entry.Service)
+			}
+		}
+	}
+
+	go func() {
+		plan.RunWithConfig(fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port), api.DefaultConfig())
+	}()
+
+	err = client.Agent().ServiceRegister(registration)
+	if err != nil {
+		log.Panic(err)
+		log.Printf("Failed to register service: %s:%v ", hostname, port)
+		log.Fatalf("Failed to register health check: %v", err)
+	}
+
+	log.Printf("successfully register service: %s:%v", hostname, port)
+}
+
+func deregisterConsul(client *api.Client) {
+	// Deregister service
+	err := client.Agent().ServiceDeregister(serviceId)
+	if err != nil {
+		log.Fatalf("Failed to deregister service: %v", err)
+	}
 }

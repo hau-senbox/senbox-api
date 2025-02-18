@@ -3,8 +3,6 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"net/http"
 	"regexp"
 	"sen-global-api/internal/data/repository"
@@ -13,6 +11,9 @@ import (
 	"sen-global-api/internal/domain/value"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type GetQuestionsByFormUseCase struct {
@@ -22,11 +23,9 @@ type GetQuestionsByFormUseCase struct {
 	*gorm.DB
 }
 
-//response.QuestionListResponse
-//response.FailedResponse
-
 func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, device entity.SDevice) (*response.QuestionListResponse, *response.FailedResponse) {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.FormId)
+	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
+
 	if err != nil {
 		return nil, &response.FailedResponse{
 			Error: response.Cause{
@@ -68,7 +67,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, 
 		if err != nil {
 			continue
 		}
-		if value.IsGeneralQuestionType(qType) == true {
+		if value.IsGeneralQuestionType(qType) {
 			// Check code counting & code generation
 			if qType == value.QuestionCodeCounting {
 				q, err := receiver.BuildCodeCountingQuestion(rawQuestion)
@@ -96,7 +95,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, 
 				result = append(result, rawQuestion)
 			}
 		} else {
-			q, err := receiver.BuildQuestion(rawQuestion, qType, device.DeviceId)
+			q, err := receiver.BuildQuestion(rawQuestion, qType, device.ID)
 			if err != nil {
 				return nil, &response.FailedResponse{
 					Error: response.Cause{
@@ -134,13 +133,16 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 	var att response.QuestionAttributes
 	attInJSONString := "{}"
 	switch qType {
-	case value.QuestionDateUser:
-		attInJSONString = "{}"
-	case value.QuestionTimeUser:
-		attInJSONString = "{}"
-	case value.QuestionDateTimeUser:
-		attInJSONString = "{}"
-	case value.QuestionDurationForwardUser:
+	case value.QuestionDateUser,
+		value.QuestionTimeUser,
+		value.QuestionDateTimeUser,
+		value.QuestionDurationForwardUser,
+		value.QuestionQRCodeUser,
+		value.QuestionTextUser,
+		value.QuestionCountUser,
+		value.QuestionNumberUser,
+		value.QuestionPhotoUser,
+		value.QuestionQRCodeFrontUser:
 		attInJSONString = "{}"
 	case value.QuestionDurationBackwardUser:
 		attInJSONString = `{"value": "` + dataset.QuestionDurationBackward + `"}`
@@ -167,9 +169,10 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 		}
 
 		attInJSONString = "{\"number\" : " + strconv.Itoa(totalValues) + ", \"steps\": " + strconv.Itoa(stepValue) + "}"
-	case value.QuestionQRCodeUser:
-		attInJSONString = "{}"
-	case value.QuestionSelectionUser:
+	case value.QuestionSelectionUser,
+		value.QuestionMultipleChoiceUser,
+		value.QuestionSingleChoiceUser,
+		value.QuestionChoiceToggleUser:
 		rawOptions := strings.Split(dataset.QuestionSelection, ";")
 		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
 		type Option struct {
@@ -191,58 +194,8 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 			return nil, err
 		}
 		attInJSONString = string(result)
-	case value.QuestionTextUser:
-		attInJSONString = "{}"
-	case value.QuestionCountUser:
-		attInJSONString = "{}"
-	case value.QuestionNumberUser:
-		attInJSONString = "{}"
-	case value.QuestionPhotoUser:
-		attInJSONString = "{}"
 	case value.QuestionButtonCountUser:
 		attInJSONString = `{"value": "` + dataset.QuestionButtonCount + `"}`
-	case value.QuestionMultipleChoiceUser:
-		rawOptions := strings.Split(dataset.QuestionMultipleChoice, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return nil, errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return nil, err
-		}
-		attInJSONString = string(result)
-	case value.QuestionSingleChoiceUser:
-		rawOptions := strings.Split(dataset.QuestionSingleChoice, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return nil, errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return nil, err
-		}
-		attInJSONString = string(result)
 	case value.QuestionButtonListUser:
 		re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 		match := re.FindStringSubmatch(dataset.QuestionButtonList)
@@ -252,7 +205,6 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 		}
 
 		attInJSONString = `{"spreadsheet_id" : "` + match[1] + `"}`
-
 	case value.QuestionMessageBoxUser:
 		message := strings.Replace(dataset.QuestionMessageBox, "\n", "\\n", -1)
 		jsonMsg := `{"value": "` + message + `"}`
@@ -263,34 +215,10 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 		attInJSONString = `{"value": "` + dataset.QuestionButton + `"}`
 	case value.QuestionPlayVideoUser:
 		attInJSONString = `{"value": "` + dataset.QuestionPlayVideo + `"}`
-	case value.QuestionQRCodeFrontUser:
-		attInJSONString = "{}"
-	case value.QuestionChoiceToggleUser:
-		rawOptions := strings.Split(dataset.QuestionChoiceToggle, ";")
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return nil, errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return nil, err
-		}
-		attInJSONString = string(result)
 	case value.QuestionSignature:
 		attInJSONString = `{"value": "` + dataset.QuestionSignature + `"}`
-	case value.QuestionWeb:
-		attInJSONString = `{"value": "` + dataset.QuestionWeb + `"}`
-	case value.QuestionWebUser:
+	case value.QuestionWeb,
+		value.QuestionWebUser:
 		attInJSONString = `{"value": "` + dataset.QuestionWeb + `"}`
 
 	default:
@@ -316,7 +244,7 @@ func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.Quest
 }
 
 func (receiver *GetQuestionsByFormUseCase) GetQuestionsBySignUpForm(form entity.SForm) *response.QuestionListResponse {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.FormId)
+	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
 	if err != nil {
 		return nil
 	}
@@ -346,7 +274,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionsBySignUpForm(form entity.
 		if err != nil {
 			continue
 		}
-		if value.IsGeneralQuestionType(qType) == true {
+		if value.IsGeneralQuestionType(qType) {
 			result = append(result, rawQuestion)
 		}
 	}

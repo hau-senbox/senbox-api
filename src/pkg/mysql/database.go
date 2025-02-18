@@ -2,15 +2,18 @@ package mysql
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"sen-global-api/config"
+	"time"
+
+	_ "time/tzdata"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"log"
-	"os"
-	"sen-global-api/config"
-	"time"
 )
 
 func Establish(appConfig config.AppConfig) (*gorm.DB, error) {

@@ -2,14 +2,16 @@ package repository
 
 import (
 	"errors"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"math"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DeviceRepository struct {
@@ -20,7 +22,7 @@ type DeviceRepository struct {
 
 func (receiver *DeviceRepository) FindDeviceById(id string) (*entity.SDevice, error) {
 	var device entity.SDevice
-	err := receiver.DBConn.First(&device, "device_id = ?", id).Error
+	err := receiver.DBConn.First(&device, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -39,17 +41,14 @@ func (receiver *DeviceRepository) GetDeviceList(request request.GetListDeviceReq
 	var err error
 	var count int64
 	if request.Keyword != "" {
-		err = receiver.DBConn.Raw("SELECT * FROM s_device WHERE device_name LIKE ? OR device_id LIKE ? "+
-			" primary_user_info LIKE ? OR secondary_user_info LIKE ? OR tertiary_user_info LIKE ? AND row_no != ?"+
-			"ORDER BY created_at DESC LIMIT ? OFFSET ?", "%"+request.Keyword+"%", "%"+request.Keyword+"%",
-			"%"+request.Keyword+"%", "%"+request.Keyword+"%", "%"+request.Keyword+"%", 0,
+		err = receiver.DBConn.Raw("SELECT * FROM s_device WHERE device_name LIKE ? OR id LIKE ? AND row_no != ?"+
+			"ORDER BY created_at DESC LIMIT ? OFFSET ?", "%"+request.Keyword+"%", "%"+request.Keyword+"%", 0,
 			limit, (request.Page-1)*limit).
 			Find(&devices).Error
 		if err == nil {
 			err = receiver.DBConn.Model(&entity.SDevice{}).
-				Where("device_id LIKE ? AND row_no != ?", "%"+request.Keyword+"%", 0).
-				Or("device_id LIKE ?", "%"+request.Keyword+"%").
-				Or("attributes LIKE ?", "%"+request.Keyword+"%").
+				Where("id LIKE ? AND row_no != ?", "%"+request.Keyword+"%", 0).
+				Or("id LIKE ?", "%"+request.Keyword+"%").
 				Count(&count).Error
 		}
 	} else {
@@ -65,7 +64,7 @@ func (receiver *DeviceRepository) GetDeviceList(request request.GetListDeviceReq
 			Limit:     limit,
 			TotalPage: int(math.Ceil(float64(count) / float64(limit))),
 			Total:     count,
-		}, errors.New("Invalid page number")
+		}, errors.New("invalid page number")
 	}
 
 	if err != nil {
@@ -79,15 +78,15 @@ func (receiver *DeviceRepository) GetDeviceList(request request.GetListDeviceReq
 	}, err
 }
 
-func (receiver *DeviceRepository) DeactivateDevice(id string, message string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", id).Updates(map[string]interface{}{"status": value.Inactive, "message": message}).Error
+func (receiver *DeviceRepository) DeactivateDevice(id string, deactivateMessage string) error {
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", id).Updates(map[string]interface{}{"status": value.Inactive, "deactivate_message": deactivateMessage}).Error
 }
 
-func (receiver *DeviceRepository) ActivateDevice(id string, message string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", id).Updates(map[string]interface{}{"status": value.Active, "message": message}).Error
+func (receiver *DeviceRepository) ActivateDevice(id string, deactivateMessage string) error {
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", id).Updates(map[string]interface{}{"status": value.Active, "deactivate_message": deactivateMessage}).Error
 }
 
-func (receiver *DeviceRepository) CreateDevice(req request.RegisterDeviceRequest, spreadsheetId string, teacherSpreadsheetId string) (*entity.SDevice, error) {
+func (receiver *DeviceRepository) CreateDevice(req request.RegisterDeviceRequest) (*entity.SDevice, error) {
 	input, err := value.GetUserInfoInputTypeFromString(req.InputMode)
 	if err != nil {
 		return nil, err
@@ -96,19 +95,13 @@ func (receiver *DeviceRepository) CreateDevice(req request.RegisterDeviceRequest
 		return nil, errors.New("invalid input mode for device client")
 	}
 	device := entity.SDevice{
-		DeviceId:             req.DeviceUUID,
-		DeviceName:           "",
-		PrimaryUserInfo:      req.Primary.Fullname,
-		SecondaryUserInfo:    req.Secondary.Fullname,
-		TertiaryUserInfo:     req.Tertiary.Fullname,
-		InputMode:            value.GetInfoInputTypeFromString(req.InputMode),
-		Status:               value.DeviceModeT,
-		ProfilePictureUrl:    req.ProfilePictureUrl,
-		SpreadsheetId:        spreadsheetId,
-		TeacherSpreadsheetId: teacherSpreadsheetId,
-		AppVersion:           req.AppVersion,
-		CreatedAt:            time.Now(),
-		UpdatedAt:            time.Now(),
+		ID:         req.DeviceUUID,
+		DeviceName: "",
+		InputMode:  value.GetInfoInputTypeFromString(req.InputMode),
+		Status:     value.DeviceModeT,
+		AppVersion: req.AppVersion,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 	err = receiver.DBConn.Create(&device).Error
 	if err != nil {
@@ -119,7 +112,7 @@ func (receiver *DeviceRepository) CreateDevice(req request.RegisterDeviceRequest
 
 func (receiver *DeviceRepository) GetDeviceById(deviceId string) (*entity.SDevice, error) {
 	var device entity.SDevice
-	err := receiver.DBConn.First(&device, "device_id = ?", deviceId).Error
+	err := receiver.DBConn.First(&device, "id = ?", deviceId).Error
 	if err != nil {
 		return nil, err
 	}
@@ -134,24 +127,6 @@ func (receiver *DeviceRepository) UpdateDevice(device *entity.SDevice) (*entity.
 	return device, err
 }
 
-func (receiver *DeviceRepository) ReinitDevice(device entity.SDevice, req request.RegisterDeviceRequest) error {
-	input, err := value.GetUserInfoInputTypeFromString(req.InputMode)
-	if err != nil {
-		return err
-	}
-	if input == value.UserInfoInputTypeBackOffice {
-		return errors.New("invalid input mode for device client")
-	}
-	device.PrimaryUserInfo = req.Primary.Fullname
-	device.SecondaryUserInfo = req.Secondary.Fullname
-	device.TertiaryUserInfo = req.Tertiary.Fullname
-	device.InputMode = value.GetInfoInputTypeFromString(req.InputMode)
-	device.ProfilePictureUrl = req.ProfilePictureUrl
-	device.AppVersion = req.AppVersion
-
-	return receiver.DBConn.Save(&device).Error
-}
-
 func (receiver *DeviceRepository) CopyUserInfoToDevice(device entity.SDevice, req request.RegisterDeviceRequest) error {
 	input, err := value.GetUserInfoInputTypeFromString(req.InputMode)
 	if err != nil {
@@ -160,27 +135,13 @@ func (receiver *DeviceRepository) CopyUserInfoToDevice(device entity.SDevice, re
 	if input == value.UserInfoInputTypeBackOffice {
 		return errors.New("invalid input mode for device client")
 	}
-	device.PrimaryUserInfo = req.Primary.Fullname
-	device.SecondaryUserInfo = req.Secondary.Fullname
-	device.TertiaryUserInfo = req.Tertiary.Fullname
 	device.InputMode = value.GetInfoInputTypeFromString(req.InputMode)
-	device.ProfilePictureUrl = req.ProfilePictureUrl
 	device.AppVersion = req.AppVersion
 
 	return receiver.DBConn.Save(&device).Error
 }
 
-func (receiver *DeviceRepository) FindByUserInfo(userInfo1 string, userInfo2 string) (*entity.SDevice, error) {
-	var device entity.SDevice
-	err := receiver.DBConn.First(&device, "primary_user_info LIKE ? AND secondary_user_info LIKE ?", userInfo1, userInfo2).Error
-	if err != nil {
-		return nil, err
-	}
-	return &device, err
-}
-
 func (receiver *DeviceRepository) CopyOutputFromDevice(sourceDevice entity.SDevice, targetDevice entity.SDevice, req *request.RegisterDeviceRequest) error {
-	targetDevice.SpreadsheetId = sourceDevice.SpreadsheetId
 	targetDevice.AppVersion = req.AppVersion
 	return receiver.DBConn.Save(&targetDevice).Error
 }
@@ -192,24 +153,29 @@ func (receiver *DeviceRepository) SaveDevices(devices []entity.SDevice) error {
 	return receiver.DBConn.Transaction(func(tx *gorm.DB) error {
 		for _, device := range devices {
 			err := tx.Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "device_id"}},
-				DoUpdates: clause.AssignmentColumns([]string{"device_name", "attributes", "primary_user_info", "secondary_user_info", "screen_button", "status", "profile_picture_url", "spreadsheet_id", "message", "button_url", "note", "app_version", "teacher_spreadsheet_id"}),
+				Columns: []clause.Column{{Name: "id"}},
+				DoUpdates: clause.AssignmentColumns([]string{
+					"device_name",
+					"input_mode",
+					"screen_button_type",
+					"status",
+					"deactivate_message",
+					"button_url",
+					"note",
+					"app_version",
+				}),
 			}).Save(&device).Error
 			if err != nil {
 				return err
 			}
-			return nil
 		}
 		return nil
 	})
 }
 
-func (receiver *DeviceRepository) UpdateDeviceInfo(device entity.SDevice, version *string, userInfo3 *string) error {
+func (receiver *DeviceRepository) UpdateDeviceInfo(device entity.SDevice, version *string) error {
 	if version != nil {
 		device.AppVersion = *version
-	}
-	if userInfo3 != nil {
-		device.TertiaryUserInfo = *userInfo3
 	}
 
 	return receiver.DBConn.Save(&device).Error
@@ -222,54 +188,60 @@ func (receiver *DeviceRepository) SaveOrUpdateDevices(devices []entity.SDevice) 
 	return receiver.DBConn.Transaction(func(tx *gorm.DB) error {
 		for _, device := range devices {
 			err := tx.Clauses(clause.OnConflict{
-				Columns: []clause.Column{{Name: "device_id"}},
-				DoUpdates: clause.AssignmentColumns([]string{"device_name", "primary_user_info", "secondary_user_info", "tertiary_user_info", "screen_button_type", "screen_button_value", "status",
-					"profile_picture_url", "message", "button_url", "note", "app_version",
-					"teacher_spreadsheet_id", "row_no"},
-				),
+				Columns: []clause.Column{{Name: "id"}},
+				DoUpdates: clause.AssignmentColumns([]string{
+					"device_name",
+					"input_mode",
+					"screen_button_type",
+					"status",
+					"deactivate_message",
+					"button_url",
+					"note",
+					"app_version",
+					"row_no",
+				}),
 			}).Create(&device).Error
 			if err != nil {
 				return err
 			}
-			return nil
 		}
 		return nil
 	})
 }
 
 func (receiver *DeviceRepository) UpdateDeviceName(deviceID string, name string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", deviceID).Update("device_name", name).Error
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", deviceID).Update("device_name", name).Error
 }
 
-func (receiver *DeviceRepository) UpdateDeviceMessage(deviceID string, message string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", deviceID).Update("message", message).Error
+func (receiver *DeviceRepository) UpdateDeviceDeactivateMessage(deviceID string, deactivateMessage string) error {
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", deviceID).Update("deactivate_message", deactivateMessage).Error
 }
 
 func (receiver *DeviceRepository) UpdateDeviceNote(deviceID string, note string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", deviceID).Update("note", note).Error
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", deviceID).Update("note", note).Error
 }
 
 func (receiver *DeviceRepository) UpdateDeviceMode(deviceID string, deviceMode string) error {
-	return receiver.DBConn.Model(&entity.SDevice{}).Where("device_id = ?", deviceID).Update("status", deviceMode).Error
+	return receiver.DBConn.Model(&entity.SDevice{}).Where("id = ?", deviceID).Update("status", deviceMode).Error
 }
 
-func (receiver *DeviceRepository) UpdateAppSettingSpreadsheetUrl(deviceID string, spreadsheetUrl string) error {
-	return receiver.
-		DBConn.
-		Model(&entity.SDevice{}).
-		Where("device_id = ?", deviceID).
-		Update("screen_button_value", spreadsheetUrl).
-		Error
-}
+// func (receiver *DeviceRepository) UpdateAppSettingSpreadsheetUrl(deviceID string, spreadsheetUrl string) error {
+// 	return receiver.
+// 		DBConn.
+// 		Model(&entity.SDevice{}).
+// 		Where("id = ?", deviceID).
+// 		Update("screen_button_value", spreadsheetUrl).
+// 		Error
+// }
 
-func (receiver *DeviceRepository) UpdateOutputSpreadsheetUrl(deviceID string, spreadsheetUrl string) error {
-	return receiver.
-		DBConn.
-		Model(&entity.SDevice{}).
-		Where("device_id = ?", deviceID).
-		Update("spreadsheet_id", spreadsheetUrl).
-		Error
-}
+// func (receiver *DeviceRepository) UpdateOutputSpreadsheetUrl(deviceID string, spreadsheetUrl string) error {
+// 	return receiver.
+// 		DBConn.
+// 		Model(&entity.SDevice{}).
+// 		Where("id = ?", deviceID).
+// 		Update("spreadsheet_id", spreadsheetUrl).
+// 		Error
+// }
 
 func NewDeviceRepository(db *gorm.DB) *DeviceRepository {
 	return &DeviceRepository{
@@ -281,7 +253,144 @@ func NewDeviceRepository(db *gorm.DB) *DeviceRepository {
 
 func FindDeviceByDeviceID(deviceID string, conn *gorm.DB) (entity.SDevice, error) {
 	var device entity.SDevice
-	err := conn.Where("device_id = ?", deviceID).First(&device).Error
+	err := conn.Where("id = ?", deviceID).First(&device).Error
 
 	return device, err
+}
+
+func (receiver *DeviceRepository) GetDevicesByUserId(userId string) (*[]entity.SDevice, error) {
+	var userDevices []entity.SUserDevices
+	err := receiver.DBConn.Table("s_user_devices").Where("user_id = ?", userId).Find(&userDevices).Error
+
+	if err != nil {
+		log.Error("DeviceRepository.GetDevicesByUserId: " + err.Error())
+		return nil, err
+	}
+
+	var devices []entity.SDevice
+	for _, userDevice := range userDevices {
+		device, err := receiver.FindDeviceById(userDevice.DeviceId)
+
+		if err != nil {
+			log.Error("DeviceRepository.GetDevicesByUserId: " + err.Error())
+			return nil, err
+		}
+
+		devices = append(devices, *device)
+	}
+
+	return &devices, nil
+}
+
+func (receiver *DeviceRepository) CheckUserDeviceExist(req request.RegisteringDeviceForUser) error {
+	queryCheck := receiver.DBConn.Table("s_user_devices").Where("user_id = ? AND device_id = ?", req.UserId, req.DeviceId)
+
+	var userDevice *entity.SUserDevices
+	err := queryCheck.First(&userDevice).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.CheckUserDeviceExist: " + err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return errors.New("failed to get user device")
+	}
+
+	if userDevice != nil {
+		return errors.New("device already exist and assigned to user")
+	}
+
+	return nil
+}
+
+func (receiver *DeviceRepository) CheckDeviceLimitation(req request.RegisteringDeviceForUser) error {
+	queryCheck := receiver.DBConn.Table("s_user_devices").Where("user_id = ? AND device_id != ?", req.UserId, req.DeviceId)
+
+	var deviceCount int64
+	err := queryCheck.Count(&deviceCount).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.CheckDeviceLimitation: " + err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+
+		return errors.New("failed to get device count")
+	}
+
+	if deviceCount > 1 {
+		return errors.New("device limitation reached")
+	}
+
+	return nil
+}
+
+func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEntity, req request.RegisterDeviceRequest) (*string, error) {
+	var deviceId *string
+	err := receiver.DBConn.Transaction(func(tx *gorm.DB) error {
+		device, err := receiver.FindDeviceById(req.DeviceUUID)
+		if err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("failed to get device")
+			}
+		}
+
+		if device != nil {
+			if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
+				UserId:   user.ID.String(),
+				DeviceId: device.ID,
+			}); err != nil {
+				return err
+			} else {
+				if err := receiver.CheckDeviceLimitation(request.RegisteringDeviceForUser{
+					UserId:   user.ID.String(),
+					DeviceId: device.ID,
+				}); err != nil {
+					return err
+				}
+
+				// add new user_device
+				userDeviceResult := receiver.DBConn.Create(&entity.SUserDevices{
+					UserId:   user.ID,
+					DeviceId: device.ID,
+				})
+
+				if userDeviceResult.Error != nil {
+					log.Error("UserEntityRepository.UpdateUser: " + userDeviceResult.Error.Error())
+					return errors.New("failed to register device for user")
+				}
+			}
+
+			deviceId = &device.ID
+			return nil
+		}
+
+		device, err = receiver.CreateDevice(req)
+		if err != nil {
+			return errors.New("failed to create new device")
+		}
+
+		if err := receiver.CheckDeviceLimitation(request.RegisteringDeviceForUser{
+			UserId:   user.ID.String(),
+			DeviceId: device.ID,
+		}); err != nil {
+			return err
+		}
+
+		// add new user_device
+		userDeviceResult := receiver.DBConn.Create(&entity.SUserDevices{
+			UserId:   user.ID,
+			DeviceId: device.ID,
+		})
+
+		if userDeviceResult.Error != nil {
+			log.Error("UserEntityRepository.UpdateUser: " + userDeviceResult.Error.Error())
+			return errors.New("failed to register device for user")
+		}
+
+		deviceId = &device.ID
+		return nil
+	})
+
+	return deviceId, err
 }

@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -35,11 +36,22 @@ const (
 	ModeProduction  Environment = "production"
 )
 
+type Consul struct {
+	Host string `env-required:"true" yaml:"host"`
+	Port string `env-required:"true" yaml:"port"`
+}
+
+type Registry struct {
+	Host string `env-required:"true" yaml:"host"`
+}
+
 type Config struct {
 	HTTP     `yaml:"http"`
 	Log      `yaml:"logger"`
 	Database `yaml:"mysql"`
 	Env      Environment `env-required:"true" yaml:"environment" env:"ENVIRONMENT"`
+	Consul   Consul      `yaml:"consul"`
+	Registry Registry    `yaml:"registry"`
 }
 
 func NewConfigFromYAMLFile(yamlFile string) (*Config, error) {

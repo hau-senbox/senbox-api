@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/internal/data/repository"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetSettingsUseCase struct {
@@ -39,28 +40,31 @@ type SignUpTextButtonSetting struct {
 }
 
 type AppSettings struct {
-	Form                     *ImportSetting
-	Form2                    *ImportSetting
-	Form3                    *ImportSetting
-	Form4                    *ImportSetting
-	Url                      *ImportSetting
-	Output                   *OutputSetting
-	Summary                  *SummarySetting
-	SyncDevices              *ImportSetting
-	SyncToDos                *ImportSetting
-	EmailSetting             *SummarySetting
-	OutputTemplate           *SummarySetting
-	OutputTemplateForTeacher *SummarySetting
-	SignUpButton1            *SignUpTextButtonSetting
-	SignUpButton2            *SignUpTextButtonSetting
-	SignUpButton3            *SignUpTextButtonSetting
-	SignUpButton4            *SignUpTextButtonSetting
-	RegistrationForm         *SummarySetting
-	RegistrationSubmission   *SummarySetting
-	RegistrationPreset       *SummarySetting
-	APIDistributer           *APIDistributerSetting
-	CodeCountingData         *APIDistributerSetting
-	SignUpForms              *ImportSetting
+	Form                      *ImportSetting
+	Form2                     *ImportSetting
+	Form3                     *ImportSetting
+	Form4                     *ImportSetting
+	Url                       *ImportSetting
+	Output                    *OutputSetting
+	Summary                   *SummarySetting
+	SyncDevices               *ImportSetting
+	SyncToDos                 *ImportSetting
+	EmailSetting              *SummarySetting
+	OutputTemplate            *SummarySetting
+	OutputTemplateForTeacher  *SummarySetting
+	SignUpButton1             *SignUpTextButtonSetting
+	SignUpButton2             *SignUpTextButtonSetting
+	SignUpButton3             *SignUpTextButtonSetting
+	SignUpButton4             *SignUpTextButtonSetting
+	SignUpButton5             *SignUpTextButtonSetting
+	SignUpButtonConfiguration *SummarySetting
+	RegistrationForm          *SummarySetting
+	RegistrationSubmission    *SummarySetting
+	RegistrationPreset2       *SummarySetting
+	APIDistributer            *APIDistributerSetting
+	CodeCountingData          *APIDistributerSetting
+	SignUpForms               *ImportSetting
+	RegistrationPreset1       *SummarySetting
 }
 
 func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
@@ -143,6 +147,16 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 		log.Info(err.Error())
 	}
 
+	signUpButton5SettingData, err := receiver.SettingRepository.GetSignUpButton5Setting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	signUpButtonConfigurationSettingData, err := receiver.SettingRepository.GetSignUpButtonConfigurationSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
 	registrationFormSettingData, err := receiver.SettingRepository.GetRegistrationFormSetting()
 	if err != nil {
 		log.Info(err.Error())
@@ -153,7 +167,7 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 		log.Info(err.Error())
 	}
 
-	registrationPresetSettingData, err := receiver.SettingRepository.GetRegistrationPresetSetting()
+	registrationPreset2SettingData, err := receiver.SettingRepository.GetRegistrationPreset2Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
@@ -169,6 +183,11 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 	}
 
 	signUpFormSettingData, err := receiver.SettingRepository.GetImportSignUpFormsSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	registrationPreset1SettingData, err := receiver.SettingRepository.GetRegistrationPreset1Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
@@ -189,12 +208,15 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 	var signUpButton2Settings *SignUpTextButtonSetting = nil
 	var signUpButton3Settings *SignUpTextButtonSetting = nil
 	var signUpButton4Settings *SignUpTextButtonSetting = nil
+	var signUpButton5Settings *SignUpTextButtonSetting = nil
+	var signUpButtonConfigurationSettings *SummarySetting = nil
 	var registrationFormSettings *SummarySetting = nil
 	var registrationSubmissionSettings *SummarySetting = nil
-	var registrationPresetSettings *SummarySetting = nil
+	var registrationPreset2Settings *SummarySetting = nil
 	var apiDistributerSettings *APIDistributerSetting = nil
 	var codeCountingSettings *APIDistributerSetting = nil
 	var signUpFormSettings *ImportSetting = nil
+	var registrationPreset1Settings *SummarySetting = nil
 
 	if formSettingsData != nil {
 		err = json.Unmarshal(formSettingsData.Settings, &formSettings)
@@ -324,6 +346,22 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 		signUpButton4Settings.SettingName = signUpButton4SettingData.SettingName
 	}
 
+	if signUpButton5SettingData != nil {
+		err = json.Unmarshal(signUpButton5SettingData.Settings, &signUpButton5Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButton5Settings.SettingName = signUpButton5SettingData.SettingName
+	}
+
+	if signUpButtonConfigurationSettingData != nil {
+		err = json.Unmarshal(signUpButtonConfigurationSettingData.Settings, &signUpButtonConfigurationSettings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		signUpButtonConfigurationSettings.SettingName = signUpButtonConfigurationSettingData.SettingName
+	}
+
 	if registrationFormSettingData != nil {
 		err = json.Unmarshal(registrationFormSettingData.Settings, &registrationFormSettings)
 		if err != nil {
@@ -340,12 +378,12 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 		registrationSubmissionSettings.SettingName = registrationSubmissionSettingData.SettingName
 	}
 
-	if registrationPresetSettingData != nil {
-		err = json.Unmarshal(registrationPresetSettingData.Settings, &registrationPresetSettings)
+	if registrationPreset2SettingData != nil {
+		err = json.Unmarshal(registrationPreset2SettingData.Settings, &registrationPreset2Settings)
 		if err != nil {
 			log.Info(err.Error())
 		}
-		registrationPresetSettings.SettingName = registrationPresetSettingData.SettingName
+		registrationPreset2Settings.SettingName = registrationPreset2SettingData.SettingName
 	}
 
 	if apiDistributerSettingData != nil {
@@ -372,28 +410,39 @@ func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
 		signUpFormSettings.SettingName = signUpFormSettingData.SettingName
 	}
 
+	if registrationPreset1SettingData != nil {
+		err = json.Unmarshal(registrationPreset1SettingData.Settings, &registrationPreset1Settings)
+		if err != nil {
+			log.Info(err.Error())
+		}
+		registrationPreset1Settings.SettingName = registrationPreset1SettingData.SettingName
+	}
+
 	return &AppSettings{
-		Form:                     formSettings,
-		Form2:                    formSettings2,
-		Form3:                    formSettings3,
-		Form4:                    formSettings4,
-		Url:                      urlSettings,
-		Output:                   outputSettings,
-		Summary:                  summarySettings,
-		SyncDevices:              syncDevicesSettings,
-		SyncToDos:                syncToDosSettings,
-		EmailSetting:             emailSettings,
-		OutputTemplate:           outputTemplateSettings,
-		OutputTemplateForTeacher: outputTemplateForTeacherSettings,
-		SignUpButton1:            signUpButton1Settings,
-		SignUpButton2:            signUpButton2Settings,
-		SignUpButton3:            signUpButton3Settings,
-		SignUpButton4:            signUpButton4Settings,
-		RegistrationForm:         registrationFormSettings,
-		RegistrationSubmission:   registrationSubmissionSettings,
-		RegistrationPreset:       registrationPresetSettings,
-		APIDistributer:           apiDistributerSettings,
-		CodeCountingData:         codeCountingSettings,
-		SignUpForms:              signUpFormSettings,
+		Form:                      formSettings,
+		Form2:                     formSettings2,
+		Form3:                     formSettings3,
+		Form4:                     formSettings4,
+		Url:                       urlSettings,
+		Output:                    outputSettings,
+		Summary:                   summarySettings,
+		SyncDevices:               syncDevicesSettings,
+		SyncToDos:                 syncToDosSettings,
+		EmailSetting:              emailSettings,
+		OutputTemplate:            outputTemplateSettings,
+		OutputTemplateForTeacher:  outputTemplateForTeacherSettings,
+		SignUpButton1:             signUpButton1Settings,
+		SignUpButton2:             signUpButton2Settings,
+		SignUpButton3:             signUpButton3Settings,
+		SignUpButton4:             signUpButton4Settings,
+		SignUpButton5:             signUpButton5Settings,
+		SignUpButtonConfiguration: signUpButtonConfigurationSettings,
+		RegistrationForm:          registrationFormSettings,
+		RegistrationSubmission:    registrationSubmissionSettings,
+		RegistrationPreset2:       registrationPreset2Settings,
+		APIDistributer:            apiDistributerSettings,
+		CodeCountingData:          codeCountingSettings,
+		SignUpForms:               signUpFormSettings,
+		RegistrationPreset1:       registrationPreset1Settings,
 	}, nil
 }

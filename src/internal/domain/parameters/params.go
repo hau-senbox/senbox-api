@@ -12,19 +12,16 @@ type RawQuestion struct {
 	AnswerRequired    string                  `json:"answer_required"`
 	RowNumber         int                     `json:"row_number"`
 	EnableOnMobile    value.QuestionForMobile `json:"enable_on_mobile"`
-	QuestionUniqueId  *string `json:"question_unique_id"`
+	QuestionUniqueId  *string                 `json:"question_unique_id"`
 }
 
 type SaveFormParams struct {
-	Note              string
-	Name              string
-	SpreadsheetUrl    string
-	SpreadsheetId     string
-	Password          string
-	RawQuestions      []RawQuestion
-	SubmissionType    value.SubmissionType
-	SubmissionSheetId string
-	SheetName         string
-	OutputSheetName   string
-	SyncStrategy      value.FormSyncStrategy
+	Note           string
+	Name           string
+	SpreadsheetUrl string
+	SpreadsheetId  string
+	Password       string
+	RawQuestions   []RawQuestion
+	SheetName      string
+	SyncStrategy   value.FormSyncStrategy
 }

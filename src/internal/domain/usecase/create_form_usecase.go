@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type CreateFormUseCase struct {
@@ -20,7 +21,7 @@ func (receiver *CreateFormUseCase) CreateForm(req request.CreateFormRequest) (*e
 		return nil, err
 	}
 
-	formQuestions, err := receiver.FormQuestionRepository.CreateFormQuestions(form.FormId, req.Questions)
+	formQuestions, err := receiver.FormQuestionRepository.CreateFormQuestions(form.ID, req.Questions)
 	if err != nil {
 		return nil, err
 	}

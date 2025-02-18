@@ -45,7 +45,7 @@ func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string) ([]RecentSub
 		return []RecentSubmissionItem{}, errors.New("this form does not support recent submission")
 	}
 
-	s, err := g.submissionRepository.FindRecentByFormId(form.FormId)
+	s, err := g.submissionRepository.FindRecentByFormId(form.ID)
 	if err != nil {
 		return []RecentSubmissionItem{}, nil
 	}

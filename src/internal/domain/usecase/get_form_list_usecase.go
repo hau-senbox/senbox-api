@@ -19,7 +19,7 @@ func (receiver *GetFormListUseCase) GetFormList(request request.GetFormListReque
 	var formList []response.GetFormListResponseData
 	for _, form := range forms {
 		formList = append(formList, response.GetFormListResponseData{
-			Id:          form.FormId,
+			Id:          form.ID,
 			Spreadsheet: form.SpreadsheetUrl,
 			Password:    form.Password,
 			Note:        form.Note,

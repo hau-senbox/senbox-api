@@ -1,12 +1,14 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
-	_ "sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+
+	"github.com/gin-gonic/gin"
+	"github.com/tiendc/gofn"
+	"gorm.io/gorm"
 )
 
 type QuestionController struct {
@@ -24,6 +26,8 @@ type QuestionController struct {
 	GetButtonsQuestionDetailUseCase      usecase.GetButtonsQuestionDetailUseCase
 	GetShowPicsQuestionDetailUseCase     usecase.GetShowPicsQuestionDetailUseCase
 	FindDeviceFromRequestCase            usecase.FindDeviceFromRequestCase
+	GetUserDeviceUseCase                 usecase.GetUserDeviceUseCase
+	GetDeviceByIdUseCase                 usecase.GetDeviceByIdUseCase
 }
 
 // Get Form's Questions by QR Code godoc
@@ -38,19 +42,19 @@ type QuestionController struct {
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router /v1/form [get]
+// @Router /v1/form [post]
 func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
-	qrCode, succeed := context.GetQuery("qr_code")
-	if !succeed {
+	var request request.GetFormRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Error: response.Cause{
 				Code:    http.StatusBadRequest,
-				Message: "qr_code is required",
+				Message: err.Error(),
 			},
 		})
 		return
 	}
-	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(qrCode)
+	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(request.QrCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Error: response.Cause{
@@ -61,7 +65,7 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 		return
 	}
 
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(context)
+	user, err := receiver.GetUserFromTokenUseCase.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{
@@ -71,6 +75,45 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 		})
 		return
 	}
+
+	userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(request.DeviceId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+	var userIds []string
+	for _, userDevice := range *userDevices {
+		userIds = append(userIds, userDevice.UserId.String())
+	}
+	isExist := gofn.ContainSlice(userIds, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusUnauthorized,
+				Message: "unauthorized",
+			},
+		})
+		return
+	}
+
+	device, err := receiver.GetDeviceByIdUseCase.GetDeviceById(request.DeviceId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
 	if form == nil {
 		context.JSON(http.StatusNotFound, response.FailedResponse{
 			Error: response.Cause{
@@ -80,28 +123,14 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 		})
 		return
 	}
-
 	succeedRes, failedRes := receiver.GetQuestionByFormUseCase.GetQuestionByForm(*form, *device)
-
-	if succeedRes != nil {
-		context.JSON(http.StatusOK, succeedRes)
-		return
-	}
 
 	if failedRes != nil {
 		context.JSON(http.StatusBadRequest, failedRes)
 		return
 	}
 
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusNotImplemented,
-				Message: err.Error(),
-			},
-		})
-		return
-	}
+	context.JSON(http.StatusOK, succeedRes)
 }
 
 // Get Buttons Question Detail godoc
@@ -165,7 +194,7 @@ func (receiver *QuestionController) GetShowPicsQuestion(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Error: response.Cause{
 				Code:    http.StatusBadRequest,
-				Message: err.Error(),
+				Message: "photo not found",
 			},
 		})
 		return

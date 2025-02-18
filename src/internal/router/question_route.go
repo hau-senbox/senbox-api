@@ -2,8 +2,6 @@ package router
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"sen-global-api/config"
 	controller "sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
@@ -11,15 +9,19 @@ import (
 	"sen-global-api/internal/middleware"
 	"sen-global-api/pkg/sheet"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet) {
+func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppConfig) {
 
 	sessionRepository := repository.SessionRepository{
 		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
 
 		TokenExpireTimeInHour: time.Duration(config.TokenExpireDurationInHour),
 	}
+	userEntityRepository := repository.UserEntityRepository{DBConn: conn}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 	userRepository := repository.UserRepository{DBConn: conn}
 	questionRepository := repository.QuestionRepository{DBConn: conn}
@@ -35,8 +37,8 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			},
 		},
 		GetUserFromTokenUseCase: usecase.GetUserFromTokenUseCase{
-			UserRepository:    userRepository,
-			SessionRepository: sessionRepository,
+			UserEntityRepository: userEntityRepository,
+			SessionRepository:    sessionRepository,
 		},
 		GetQuestionByIdUseCase: usecase.GetQuestionByIdUseCase{
 			QuestionRepository: questionRepository,
@@ -79,11 +81,17 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			DeviceRepository:  &repository.DeviceRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl},
 			SessionRepository: &sessionRepository,
 		},
+		GetUserDeviceUseCase: usecase.GetUserDeviceUseCase{
+			UserEntityRepository: &userEntityRepository,
+		},
+		GetDeviceByIdUseCase: usecase.GetDeviceByIdUseCase{
+			DeviceRepository: &repository.DeviceRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl},
+		},
 	}
 
 	form := engine.Group("v1/form", secureMiddleware.Secured())
 	{
-		form.GET("", controller.GetFormQRCode)
+		form.POST("", controller.GetFormQRCode)
 	}
 
 	question := engine.Group("v1/question", secureMiddleware.Secured())

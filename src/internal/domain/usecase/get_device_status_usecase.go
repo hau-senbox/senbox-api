@@ -32,6 +32,6 @@ func statusInStringFrom(status value.DeviceMode) string {
 func (receiver *GetDeviceStatusUseCase) Execute(device entity.SDevice) (response.GetDeviceStatusResponseData, error) {
 	return response.GetDeviceStatusResponseData{
 		Status:  statusInStringFrom(device.Status),
-		Message: device.Message,
+		Message: device.DeactivateMessage,
 	}, nil
 }

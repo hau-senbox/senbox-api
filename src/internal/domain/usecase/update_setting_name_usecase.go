@@ -1,11 +1,12 @@
 package usecase
 
 import (
-	"gorm.io/gorm"
+	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
+
+	"gorm.io/gorm"
 )
-import "sen-global-api/internal/data/repository"
 
 type UpdateSettingNameUseCase struct {
 	db         *gorm.DB
@@ -132,6 +133,20 @@ func (u *UpdateSettingNameUseCase) Execute(req request.UpdateSettingNameRequest)
 		}
 	}
 
+	if req.SignUpButton5Setting != nil {
+		err := u.repository.SetName(*req.SignUpButton5Setting, value.SettingTypeSignUpButton5)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.SignUpButtonConfiguration != nil {
+		err := u.repository.SetName(*req.SignUpButtonConfiguration, value.SettingTypeSignUpButtonConfiguration)
+		if err != nil {
+			return err
+		}
+	}
+
 	if req.RegistrationFormSetting != nil {
 		err := u.repository.SetName(*req.RegistrationFormSetting, value.SettingTypeSignUpForm)
 		if err != nil {
@@ -146,8 +161,8 @@ func (u *UpdateSettingNameUseCase) Execute(req request.UpdateSettingNameRequest)
 		}
 	}
 
-	if req.RegistrationPresetSetting != nil {
-		err := u.repository.SetName(*req.RegistrationPresetSetting, value.SettingTypeSignUpPresetValue12)
+	if req.RegistrationPreset2Setting != nil {
+		err := u.repository.SetName(*req.RegistrationPreset2Setting, value.SettingTypeSignUpPresetValue2)
 		if err != nil {
 			return err
 		}

@@ -2,14 +2,14 @@ package repository
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"math"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type RedirectUrlRepository struct {
@@ -41,7 +41,7 @@ func (receiver *RedirectUrlRepository) GetList(req request.GetRedirectUrlListReq
 			Limit:     limit,
 			TotalPage: 0,
 			Total:     0,
-		}, errors.New("Invalid page number")
+		}, errors.New("invalid page number")
 	}
 	var err error
 	var count int64
@@ -59,7 +59,7 @@ func (receiver *RedirectUrlRepository) GetList(req request.GetRedirectUrlListReq
 			Limit:     limit,
 			TotalPage: int(math.Ceil(float64(count) / float64(limit))),
 			Total:     count,
-		}, errors.New("Invalid page number")
+		}, errors.New("invalid page number")
 	}
 
 	if err != nil {
@@ -100,25 +100,24 @@ func (receiver *RedirectUrlRepository) GetByQRCode(qrCode string) (*entity.SRedi
 	return &url, nil
 }
 
-func (receiver *RedirectUrlRepository) SaveRedirectUrl(number string, qrCode string, targetUrl string, password string, status string, hint string, hashPwd *string) error {
+func (receiver *RedirectUrlRepository) SaveRedirectUrl(qrCode string, targetUrl string, password string, status string, hint string, hashPwd *string) error {
 	spreadSheetStatus, err := value.GetImportSpreadsheetStatusFromString(status)
 	if err != nil {
 		return err
 	}
-	log.Debug("spreadSheetStatus: ", spreadSheetStatus)
 	switch spreadSheetStatus {
 	case value.ImportSpreadsheetStatusNew:
-		return receiver.saveNewRedirectUrl(number, qrCode, targetUrl, password, hint, hashPwd)
+		return receiver.saveNewRedirectUrl(qrCode, targetUrl, password, hint, hashPwd)
 	case value.ImportSpreadsheetStatusDeleted:
 		return receiver.DBConn.Where("qr_code = ?", qrCode).Delete(&entity.SRedirectUrl{}).Error
 	case value.ImportSpreadsheetStatusSkip:
 		return nil
 	default:
-		return errors.New("Invalid status")
+		return errors.New("invalid status")
 	}
 }
 
-func (receiver *RedirectUrlRepository) saveNewRedirectUrl(number string, code string, url string, password string, hint string, hashPwd *string) error {
+func (receiver *RedirectUrlRepository) saveNewRedirectUrl(code string, url string, password string, hint string, hashPwd *string) error {
 	var pwd *string = nil
 	if password != "" {
 		pwd = &password

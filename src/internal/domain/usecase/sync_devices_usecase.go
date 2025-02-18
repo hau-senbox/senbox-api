@@ -16,12 +16,15 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type SyncDevicesUseCase struct {
 	*repository.SettingRepository
 	*repository.DeviceRepository
 	*repository.DeviceFormDatasetRepository
+	*repository.UserEntityRepository
+	*repository.UserConfigRepository
 	*sheet.Reader
 	*sheet.Writer
 	TimeMachine           *job.TimeMachine
@@ -72,7 +75,7 @@ func (receiver *SyncDevicesUseCase) ImportDevices(req request.SyncDevicesRequest
 
 		device, err := receiver.CreateDevice(row, rowNo+11)
 		if err != nil {
-			log.Error(err)
+			// log.Error(err)
 			continue
 		}
 		devices = append(devices, device)
@@ -84,13 +87,13 @@ func (receiver *SyncDevicesUseCase) ImportDevices(req request.SyncDevicesRequest
 			log.Error(err)
 			continue
 		}
-		if device.DeviceId == "" {
+		if device.ID == "" {
 			continue
 		}
 
 		defer receiver.fetchDatasets(device)
 
-		rowNo, err := receiver.findFirstRow(device.DeviceId, values, 11)
+		rowNo, err := receiver.findFirstRow(device.ID, values, 11)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -116,9 +119,13 @@ func (receiver *SyncDevicesUseCase) ImportDevices(req request.SyncDevicesRequest
 			Rows:      deviceData,
 			Dimension: "COLUMNS",
 		}, spreadsheetId)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
 	}
 
-	if req.AutoImport == false {
+	if !req.AutoImport {
 		receiver.TimeMachine.ScheduleSyncDevices(0)
 	} else {
 		receiver.TimeMachine.ScheduleSyncDevices(req.Interval)
@@ -170,7 +177,7 @@ func (receiver *SyncDevicesUseCase) SyncDevices(req request.SyncDevicesRequest) 
 
 		device, err := receiver.CreateDevice(row, rowNo+11)
 		if err != nil {
-			log.Error(err)
+			// log.Error(err)
 			continue
 		}
 		devices = append(devices, device)
@@ -182,13 +189,13 @@ func (receiver *SyncDevicesUseCase) SyncDevices(req request.SyncDevicesRequest) 
 			log.Error(err)
 			continue
 		}
-		if device.DeviceId == "" {
+		if device.ID == "" {
 			continue
 		}
 
 		defer receiver.fetchDatasets(device)
 
-		rowNo, err := receiver.findFirstRow(device.DeviceId, values, 11)
+		rowNo, err := receiver.findFirstRow(device.ID, values, 11)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -214,6 +221,11 @@ func (receiver *SyncDevicesUseCase) SyncDevices(req request.SyncDevicesRequest) 
 			Rows:      deviceData,
 			Dimension: "COLUMNS",
 		}, spreadsheetId)
+
+		if err != nil {
+			log.Error(err)
+			continue
+		}
 	}
 
 	return nil
@@ -239,10 +251,11 @@ func (receiver *SyncDevicesUseCase) CreateDevice(rawData []interface{}, rowNo in
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(rawData[12].(string))
 
-	if len(match) < 2 {
-		return entity.SDevice{}, fmt.Errorf("invalid spreadsheet url")
+	outputSpreadsheetId := ""
+	if len(match) >= 2 {
+		// return entity.SDevice{}, fmt.Errorf("invalid spreadsheet url")
+		outputSpreadsheetId = match[1]
 	}
-	outputSpreadsheetId := match[1]
 
 	status := value.DeviceModeSuspended
 	if len(rawData) > 14 {
@@ -251,11 +264,6 @@ func (receiver *SyncDevicesUseCase) CreateDevice(rawData []interface{}, rowNo in
 			return entity.SDevice{}, err
 		}
 		status = _status
-	}
-
-	type ScreenButtons struct {
-		ButtonType  value.ButtonType `json:"button_type"`
-		ButtonTitle string           `json:"button_title"`
 	}
 
 	screenButtonType := value.ScreenButtonType_Scan
@@ -291,21 +299,84 @@ func (receiver *SyncDevicesUseCase) CreateDevice(rawData []interface{}, rowNo in
 		}
 	}
 
+	userDevices, err := receiver.UserEntityRepository.GetUserDeviceById(rawData[1].(string))
+
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.SDevice{}, err
+		}
+	}
+
+	log.Info("userDevices: ", userDevices)
+	for _, ud := range *userDevices {
+		user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: ud.UserId.String()})
+		if err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return entity.SDevice{}, err
+			}
+		}
+
+		var userConfig *entity.SUserConfig
+		if user.UserConfig != nil {
+			userConfig, err = receiver.UserConfigRepository.GetByID(uint(user.UserConfigID.Int64))
+			if err != nil {
+				if !errors.Is(err, gorm.ErrRecordNotFound) {
+					return entity.SDevice{}, err
+				}
+
+				userConfig = nil
+			}
+
+			// update config
+			if userConfig != nil {
+				err = receiver.UserConfigRepository.UpdateUserConfig(request.UpdateUserConfigRequest{
+					ID:                   uint(userConfig.ID),
+					TopButtonConfig:      screenButtonValue,
+					StudentOutputSheetId: outputSpreadsheetId,
+					TeacherOutputSheetId: teacherSpreadsheetId,
+				})
+				if err != nil {
+					return entity.SDevice{}, err
+				}
+
+				usrConfigId := uint(userConfig.ID)
+				receiver.UserEntityRepository.UpdateUser(request.UpdateUserEntityRequest{
+					ID:         user.ID.String(),
+					Username:   user.Username,
+					UserConfig: &usrConfigId,
+				})
+			}
+		}
+
+		if userConfig == nil {
+			// create config
+			userConfigId, err := receiver.UserConfigRepository.CreateUserConfig(request.CreateUserConfigRequest{
+				TopButtonConfig:      screenButtonValue,
+				StudentOutputSheetId: outputSpreadsheetId,
+				TeacherOutputSheetId: teacherSpreadsheetId,
+			})
+			if err != nil {
+				return entity.SDevice{}, err
+			}
+
+			usrConfigId := uint(*userConfigId)
+			receiver.UserEntityRepository.UpdateUser(request.UpdateUserEntityRequest{
+				ID:         user.ID.String(),
+				Username:   user.Username,
+				UserConfig: &usrConfigId,
+			})
+		}
+	}
+
 	device := entity.SDevice{
-		DeviceId:             rawData[1].(string),
-		DeviceName:           rawData[5].(string),
-		PrimaryUserInfo:      rawData[7].(string),
-		SecondaryUserInfo:    rawData[8].(string),
-		TertiaryUserInfo:     rawData[9].(string),
-		ScreenButtonType:     screenButtonType,
-		ScreenButtonValue:    screenButtonValue,
-		Status:               status,
-		SpreadsheetId:        outputSpreadsheetId,
-		InputMode:            input,
-		TeacherSpreadsheetId: teacherSpreadsheetId,
-		Message:              message,
-		ButtonUrl:            rawData[10].(string),
-		RowNo:                rowNo,
+		ID:                rawData[1].(string),
+		DeviceName:        rawData[5].(string),
+		ScreenButtonType:  screenButtonType,
+		Status:            status,
+		InputMode:         input,
+		DeactivateMessage: message,
+		ButtonUrl:         rawData[10].(string),
+		RowNo:             rowNo,
 	}
 	return device, nil
 }
@@ -355,74 +426,92 @@ func (receiver *SyncDevicesUseCase) eraseDeviceAtRow(rowNo int, spreadsheetID st
 }
 
 func (receiver *SyncDevicesUseCase) fetchDatasets(device entity.SDevice) {
-	datasets := []entity.SDeviceFormDataset{}
-	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(device.ScreenButtonValue)
 
-	if len(match) < 2 {
-		return
-	}
-
-	spreadsheetId := match[1]
-
-	setData, err := receiver.UserSpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
-		ReadRange:     `USER_FORM!K11:WW`,
-	})
-
+	userDevices, err := receiver.UserEntityRepository.GetUserDeviceById(device.ID)
 	if err != nil {
-		log.Error(err)
 		return
 	}
 
-	if len(setData) > 0 {
-		for i := 1; i < len(setData)-1; i++ {
-			setValues := make(map[string]string)
-			if len(setData[i]) == 0 {
-				continue
-			}
-			setValues["set"] = setData[i][0].(string)
-			if setValues["set"] == "" {
-				continue
-			}
-			for j := 1; j < len(setData[i]); j++ {
-				if setData[i][j] != nil {
-					setValues[strings.ToLower(setData[0][j].(string))] = setData[i][j].(string)
-				}
-			}
+	datasets := []entity.SDeviceFormDataset{}
+	for _, userDevice := range *userDevices {
+		user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: userDevice.UserId.String()})
+		if err != nil {
+			return
+		}
 
-			dataset := entity.SDeviceFormDataset{
-				ID:                       device.DeviceId + "_" + setData[i][0].(string),
-				DeviceId:                 device.DeviceId,
-				Set:                      setValues["set"],
-				QuestionDate:             setValues[value.GetStringValue(value.QuestionDate)],
-				QuestionTime:             setValues[value.GetStringValue(value.QuestionTime)],
-				QuestionDateTime:         setValues[value.GetStringValue(value.QuestionDateTime)],
-				QuestionDurationForward:  setValues[value.GetStringValue(value.QuestionDurationForward)],
-				QuestionDurationBackward: setValues[value.GetStringValue(value.QuestionDurationBackward)],
-				QuestionScale:            setValues[value.GetStringValue(value.QuestionScale)],
-				QuestionQRCode:           setValues[value.GetStringValue(value.QuestionQRCode)],
-				QuestionSelection:        setValues[value.GetStringValue(value.QuestionSelection)],
-				QuestionText:             setValues[value.GetStringValue(value.QuestionText)],
-				QuestionCount:            setValues[value.GetStringValue(value.QuestionCount)],
-				QuestionNumber:           setValues[value.GetStringValue(value.QuestionNumber)],
-				QuestionPhoto:            setValues[value.GetStringValue(value.QuestionPhoto)],
-				QuestionMultipleChoice:   setValues[value.GetStringValue(value.QuestionMultipleChoice)],
-				QuestionButtonCount:      setValues[value.GetStringValue(value.QuestionButtonCount)],
-				QuestionSingleChoice:     setValues[value.GetStringValue(value.QuestionSingleChoice)],
-				QuestionButtonList:       setValues[value.GetStringValue(value.QuestionButtonList)],
-				QuestionMessageBox:       setValues[value.GetStringValue(value.QuestionMessageBox)],
-				QuestionShowPic:          setValues[value.GetStringValue(value.QuestionShowPic)],
-				QuestionButton:           setValues[value.GetStringValue(value.QuestionButton)],
-				QuestionPlayVideo:        setValues[value.GetStringValue(value.QuestionPlayVideo)],
-				QuestionQRCodeFront:      setValues[value.GetStringValue(value.QuestionQRCodeFront)],
-				QuestionChoiceToggle:     setValues[value.GetStringValue(value.QuestionChoiceToggle)],
-				QuestionSignature:        setValues[value.GetStringValue(value.QuestionSignature)],
-				QuestionWeb:              setValues[value.GetStringValue(value.QuestionWeb)],
-				QuestionDraggableList:    setValues[value.GetStringValue(value.QuestionDraggableList)],
-				QuestionSendMessage:      setValues[value.GetStringValue(value.QuestionSendMessage)],
+		userConfig, err := receiver.UserConfigRepository.GetByID(uint(user.UserConfigID.Int64))
+		if err != nil || userConfig == nil {
+			return
+		}
+
+		re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+		match := re.FindStringSubmatch(userConfig.TopButtonConfig)
+
+		if len(match) < 2 {
+			return
+		}
+
+		spreadsheetId := match[1]
+
+		setData, err := receiver.UserSpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
+			SpreadsheetId: spreadsheetId,
+			ReadRange:     `USER_FORM!K11:WW`,
+		})
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		if len(setData) > 0 {
+			for i := 1; i < len(setData)-1; i++ {
+				setValues := make(map[string]string)
+				if len(setData[i]) == 0 {
+					continue
+				}
+				setValues["set"] = setData[i][0].(string)
+				if setValues["set"] == "" {
+					continue
+				}
+				for j := 1; j < len(setData[i]); j++ {
+					if setData[i][j] != nil {
+						setValues[strings.ToLower(setData[0][j].(string))] = setData[i][j].(string)
+					}
+				}
+
+				dataset := entity.SDeviceFormDataset{
+					ID:                       device.ID + "_" + setData[i][0].(string),
+					DeviceId:                 device.ID,
+					Set:                      setValues["set"],
+					QuestionDate:             setValues[value.GetStringValue(value.QuestionDate)],
+					QuestionTime:             setValues[value.GetStringValue(value.QuestionTime)],
+					QuestionDateTime:         setValues[value.GetStringValue(value.QuestionDateTime)],
+					QuestionDurationForward:  setValues[value.GetStringValue(value.QuestionDurationForward)],
+					QuestionDurationBackward: setValues[value.GetStringValue(value.QuestionDurationBackward)],
+					QuestionScale:            setValues[value.GetStringValue(value.QuestionScale)],
+					QuestionQRCode:           setValues[value.GetStringValue(value.QuestionQRCode)],
+					QuestionSelection:        setValues[value.GetStringValue(value.QuestionSelection)],
+					QuestionText:             setValues[value.GetStringValue(value.QuestionText)],
+					QuestionCount:            setValues[value.GetStringValue(value.QuestionCount)],
+					QuestionNumber:           setValues[value.GetStringValue(value.QuestionNumber)],
+					QuestionPhoto:            setValues[value.GetStringValue(value.QuestionPhoto)],
+					QuestionMultipleChoice:   setValues[value.GetStringValue(value.QuestionMultipleChoice)],
+					QuestionButtonCount:      setValues[value.GetStringValue(value.QuestionButtonCount)],
+					QuestionSingleChoice:     setValues[value.GetStringValue(value.QuestionSingleChoice)],
+					QuestionButtonList:       setValues[value.GetStringValue(value.QuestionButtonList)],
+					QuestionMessageBox:       setValues[value.GetStringValue(value.QuestionMessageBox)],
+					QuestionShowPic:          setValues[value.GetStringValue(value.QuestionShowPic)],
+					QuestionButton:           setValues[value.GetStringValue(value.QuestionButton)],
+					QuestionPlayVideo:        setValues[value.GetStringValue(value.QuestionPlayVideo)],
+					QuestionQRCodeFront:      setValues[value.GetStringValue(value.QuestionQRCodeFront)],
+					QuestionChoiceToggle:     setValues[value.GetStringValue(value.QuestionChoiceToggle)],
+					QuestionSignature:        setValues[value.GetStringValue(value.QuestionSignature)],
+					QuestionWeb:              setValues[value.GetStringValue(value.QuestionWeb)],
+					QuestionDraggableList:    setValues[value.GetStringValue(value.QuestionDraggableList)],
+					QuestionSendMessage:      setValues[value.GetStringValue(value.QuestionSendMessage)],
+				}
+				datasets = append(datasets, dataset)
 			}
-			datasets = append(datasets, dataset)
 		}
 	}
 

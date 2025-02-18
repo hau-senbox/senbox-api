@@ -45,12 +45,26 @@ func (c *AdminSignUpUseCases) UpdateSignUpButton4(name string, value string) err
 	return err
 }
 
+func (c *AdminSignUpUseCases) UpdateSignUpButton5(name string, value string) error {
+	_, err := c.SettingRepository.UpdateSignUpButton5(name, value)
+	return err
+}
+
 func (c *AdminSignUpUseCases) UpdateRegistrationForm(url string) error {
-	f, err := c.importForm(url, "Signup_RegistrationForm", "Sign Up")
+	f, err := c.importForm(url, "SENBOX.ORG/[SIGNUP]:default", "Sign Up 0")
 	if err != nil {
 		return err
 	}
-	_, err = c.SettingRepository.UpdateRegistrationForm(f.FormId, url)
+	_, err = c.SettingRepository.UpdateRegistrationForm(f.ID, url)
+	return err
+}
+
+func (c *AdminSignUpUseCases) UpdateSignUpButtonConfiguration(url string) error {
+	f, err := c.importForm(url, "SENBOX.ORG/[SIGNUP-BUTTON]:Configuration", "Configuration")
+	if err != nil {
+		return err
+	}
+	_, err = c.SettingRepository.UpdateSignUpButtonConfiguration(f.ID, url)
 	return err
 }
 
@@ -59,8 +73,13 @@ func (c *AdminSignUpUseCases) UpdateRegistrationSubmission(url string) error {
 	return err
 }
 
-func (c *AdminSignUpUseCases) UpdateRegistrationPreset(url string) error {
-	_, err := c.SettingRepository.UpdateRegistrationPreset(url)
+func (c *AdminSignUpUseCases) UpdateRegistrationPreset2(url string) error {
+	_, err := c.SettingRepository.UpdateRegistrationPreset2(url)
+	return err
+}
+
+func (c *AdminSignUpUseCases) UpdateRegistrationPreset1(url string) error {
+	_, err := c.SettingRepository.UpdateRegistrationPreset1(url)
 	return err
 }
 
@@ -70,15 +89,14 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 
 	if len(match) < 2 {
 		log.Error("Import Sign Up Form Invalid spreadsheet url: ", spreadsheetUrl)
-		return entity.SForm{},
-			fmt.Errorf(fmt.Sprintf("Import Sign Up Form Invalid spreadsheet url: %s", spreadsheetUrl))
+		return entity.SForm{}, fmt.Errorf("import sign up form invalid spreadsheet url: %s", spreadsheetUrl)
 	}
 
 	spreadsheetId := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 	values, err := c.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetId: spreadsheetId,
-		ReadRange:     sheetNameToRead + `!` + c.AppConfig.Google.FirstColumn + strconv.Itoa(c.AppConfig.Google.FirstRow+1) + `:Q`,
+		ReadRange:     sheetNameToRead + `!` + c.AppConfig.Google.FirstColumn + strconv.Itoa(c.AppConfig.Google.FirstRow-1) + `:Q`,
 	})
 	if err != nil || values == nil {
 		log.Error(fmt.Sprintf("Error reading spreadsheet: %s - note : %s", err.Error(), note))
@@ -92,6 +110,10 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 			formName = row[0].(string)
 			continue
 		} else if len(row) >= 4 && cap(row) >= 4 && index > 1 && row[1].(string) != "" {
+			if row[1].(string) == "" {
+				continue
+			}
+
 			additionalInfo := ""
 			if len(row) >= 6 {
 				additionalInfo = row[5].(string)
@@ -114,18 +136,15 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 		}
 	}
 
-	f, err, msg := c.ImportFormsUseCase.CreateSignUpForm(parameters.SaveFormParams{
-		Note:              note,
-		Name:              formName,
-		SpreadsheetUrl:    spreadsheetUrl,
-		SpreadsheetId:     spreadsheetId,
-		Password:          "",
-		RawQuestions:      rawQuestions,
-		SubmissionType:    value.SubmissionTypeSignUpRegistration,
-		SubmissionSheetId: "",
-		SheetName:         sheetNameToRead,
-		OutputSheetName:   "",
-		SyncStrategy:      value.FormSyncStrategyOnSubmit,
+	f, msg, err := c.ImportFormsUseCase.CreateSignUpForm(parameters.SaveFormParams{
+		Note:           note,
+		Name:           formName,
+		SpreadsheetUrl: spreadsheetUrl,
+		SpreadsheetId:  spreadsheetId,
+		Password:       "",
+		RawQuestions:   rawQuestions,
+		SheetName:      sheetNameToRead,
+		SyncStrategy:   value.FormSyncStrategyOnSubmit,
 	})
 
 	if err != nil {

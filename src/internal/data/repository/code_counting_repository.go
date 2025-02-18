@@ -46,10 +46,6 @@ func (receiver *CodeCountingRepository) CreateForQuestion(question entity.SQuest
 	result := db.Where("token = ? AND deleted_at IS NULL", att.Value).
 		Order("current_value desc").
 		First(&existing)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error(err)
-		return "", err
-	}
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		// insert new

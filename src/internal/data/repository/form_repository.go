@@ -2,14 +2,15 @@ package repository
 
 import (
 	"errors"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"math"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/parameters"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FormRepository struct {
@@ -28,7 +29,7 @@ func (receiver *FormRepository) Create(form *entity.SForm) (*entity.SForm, error
 
 func (receiver *FormRepository) GetFormById(id uint64) (*entity.SForm, error) {
 	var form entity.SForm
-	err := receiver.DBConn.Where("form_id = ?", id).First(&form).Error
+	err := receiver.DBConn.Where("id = ?", id).First(&form).Error
 	if err != nil {
 		return nil, err
 	}
@@ -38,25 +39,21 @@ func (receiver *FormRepository) GetFormById(id uint64) (*entity.SForm, error) {
 
 func (receiver *FormRepository) SaveForm(request parameters.SaveFormParams) (*entity.SForm, error) {
 	form := entity.SForm{
-		Note:                    request.Note,
-		Name:                    request.Name,
-		SpreadsheetUrl:          request.SpreadsheetUrl,
-		SpreadsheetId:           request.SpreadsheetId,
-		Password:                request.Password,
-		Status:                  value.Active,
-		SubmissionType:          request.SubmissionType,
-		SubmissionSpreadsheetId: request.SubmissionSheetId,
-		SheetName:               request.SheetName,
-		OutputSheetName:         request.OutputSheetName,
-		SyncStrategy:            request.SyncStrategy,
+		Note:           request.Note,
+		Name:           request.Name,
+		SpreadsheetUrl: request.SpreadsheetUrl,
+		SpreadsheetId:  request.SpreadsheetId,
+		Password:       request.Password,
+		Status:         value.Active,
+		SheetName:      request.SheetName,
+		SyncStrategy:   request.SyncStrategy,
 	}
 	err := receiver.DBConn.Table("s_form").Clauses(
 		clause.OnConflict{
 			Columns: []clause.Column{{Name: "note"}},
 			DoUpdates: clause.AssignmentColumns([]string{
-				"spreadsheet_url", "spreadsheet_id", "password", "status", "submission_type",
-				"submission_spreadsheet_id", "name", "sheet_name", "output_sheet_name",
-				"sync_strategy",
+				"spreadsheet_url", "spreadsheet_id", "password", "status",
+				"name", "sheet_name", "sync_strategy",
 			}),
 		}).Create(&form).Error
 	if err != nil {
@@ -67,7 +64,7 @@ func (receiver *FormRepository) SaveForm(request parameters.SaveFormParams) (*en
 
 func (receiver *FormRepository) DeleteForm(formId uint64) error {
 	form := entity.SForm{}
-	err := receiver.DBConn.Where("form_id = ?", formId).First(&form).Error
+	err := receiver.DBConn.Where("id = ?", formId).First(&form).Error
 	if err != nil {
 		return err
 	}
@@ -95,7 +92,7 @@ func (receiver *FormRepository) GetFormList(request request.GetFormListRequest) 
 			Limit:     limit,
 			TotalPage: 0,
 			Total:     0,
-		}, errors.New("Invalid page number")
+		}, errors.New("invalid page number")
 	}
 	var err error
 	var count int64
@@ -113,7 +110,7 @@ func (receiver *FormRepository) GetFormList(request request.GetFormListRequest) 
 			Limit:     limit,
 			TotalPage: int(math.Ceil(float64(count) / float64(limit))),
 			Total:     count,
-		}, errors.New("Invalid page number")
+		}, errors.New("invalid page number")
 	}
 
 	if err != nil {

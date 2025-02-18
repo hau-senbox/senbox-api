@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -63,11 +62,14 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	var signUpButton2 *response.GetSettingsResponseTextButton = nil
 	var signUpButton3 *response.GetSettingsResponseTextButton = nil
 	var signUpButton4 *response.GetSettingsResponseTextButton = nil
+	var signUpButton5 *response.GetSettingsResponseTextButton = nil
+	var signUpButtonConfiguration *response.GetSettingsResponseDataSummary = nil
 	var registrationForm *response.GetSettingsResponseDataSummary = nil
 	var registrationSubmission *response.GetSettingsResponseDataSummary = nil
-	var registrationPreset *response.GetSettingsResponseDataSummary = nil
+	var registrationPreset2 *response.GetSettingsResponseDataSummary = nil
 	var apiDistributer *response.GetSettingsResponseAPIDistributor = nil
 	var codeCountingSetting *response.GetSettingsResponseAPIDistributor = nil
+	var registrationPreset1 *response.GetSettingsResponseDataSummary = nil
 
 	if settings.Form != nil {
 		formSettings = &response.GetSettingsResponseDataImport{
@@ -199,6 +201,21 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 		}
 	}
 
+	if settings.SignUpButton5 != nil {
+		signUpButton5 = &response.GetSettingsResponseTextButton{
+			SettingName: settings.SignUpButton5.SettingName,
+			Name:        settings.SignUpButton5.Name,
+			Value:       settings.SignUpButton5.Value,
+		}
+	}
+
+	if settings.SignUpButtonConfiguration != nil {
+		signUpButtonConfiguration = &response.GetSettingsResponseDataSummary{
+			SettingName:    settings.SignUpButtonConfiguration.SettingName,
+			SpreadSheetUrl: settings.SignUpButtonConfiguration.SpreadsheetId,
+		}
+	}
+
 	if settings.RegistrationForm != nil {
 		registrationForm = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.RegistrationForm.SettingName,
@@ -213,10 +230,10 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 		}
 	}
 
-	if settings.RegistrationPreset != nil {
-		registrationPreset = &response.GetSettingsResponseDataSummary{
-			SettingName:    settings.RegistrationPreset.SettingName,
-			SpreadSheetUrl: settings.RegistrationPreset.SpreadsheetId,
+	if settings.RegistrationPreset2 != nil {
+		registrationPreset2 = &response.GetSettingsResponseDataSummary{
+			SettingName:    settings.RegistrationPreset2.SettingName,
+			SpreadSheetUrl: settings.RegistrationPreset2.SpreadsheetId,
 		}
 	}
 
@@ -243,6 +260,13 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 		}
 	}
 
+	if settings.RegistrationPreset1 != nil {
+		registrationPreset1 = &response.GetSettingsResponseDataSummary{
+			SettingName:    settings.RegistrationPreset1.SettingName,
+			SpreadSheetUrl: settings.RegistrationPreset1.SpreadsheetId,
+		}
+	}
+
 	context.JSON(http.StatusOK, response.GetSettingsResponse{
 		Data: response.GetSettingsResponseData{
 			ImportFormsSetting:        formSettings,
@@ -261,12 +285,15 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 			SignUpButton2:             signUpButton2,
 			SignUpButton3:             signUpButton3,
 			SignUpButton4:             signUpButton4,
+			SignUpButton5:             signUpButton5,
+			SignUpButtonConfiguration: signUpButtonConfiguration,
 			RegistrationForm:          registrationForm,
 			RegistrationSubmission:    registrationSubmission,
-			RegistrationPreset:        registrationPreset,
+			RegistrationPreset2:       registrationPreset2,
 			APIDistributer:            apiDistributer,
 			CodeCountingData:          codeCountingSetting,
 			SignUpFormsSetting:        signupformsSettings,
+			RegistrationPreset1:       registrationPreset1,
 		},
 	})
 }
@@ -368,7 +395,7 @@ func (receiver *SettingController) UpdateOutputSummarySettings(context *gin.Cont
 // @Failure 401 {object} response.FailedResponse
 // @Failure 403 {object} response.FailedResponse
 // @Failure 500 {object} response.FailedResponse
-// @Router /v1/admin/sync-devices [post]
+// @Router /v1/admin/settings/sync-devices [post]
 func (receiver *SettingController) SyncDevices(context *gin.Context) {
 	var req request.SyncDevicesRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -390,7 +417,7 @@ func (receiver *SettingController) SyncDevices(context *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("DONEEEEEEE")
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.Cause{
 			Code:    http.StatusOK,
@@ -714,6 +741,51 @@ func (receiver *SettingController) UpdateSignUpButton4(context *gin.Context) {
 	})
 }
 
+// Update Sign Up Button 5 godoc
+// @Summary      Update Sign Up Button 5
+// @Description  Update Sign Up Button 5
+// @Tags         Admin
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer {token}"
+// @Param request body updateSignUpTextButtonRequest true "Update Sign Up Button 5"
+// @Success 200 {object} response.SucceedResponse
+// @Failure 400 {object} response.FailedResponse
+// @Failure 401 {object} response.FailedResponse
+// @Failure 403 {object} response.FailedResponse
+// @Failure 500 {object} response.FailedResponse
+// @Router /v1/admin/settings/sign-up-button-5 [post]
+func (receiver *SettingController) UpdateSignUpButton5(context *gin.Context) {
+	var req updateSignUpTextButtonRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusBadRequest,
+				Message: "Invalid request body",
+			},
+		})
+		return
+	}
+
+	err := receiver.AdminSignUpUseCases.UpdateSignUpButton5(req.Name, req.Value)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Data: response.Cause{
+			Code:    http.StatusOK,
+			Message: "Sign Up Button was saved successfully",
+		},
+	})
+}
+
 type updateRegistrationSpreadsheetRequest struct {
 	SpreadSheetUrl string `json:"spreadsheet_url" binding:"required"`
 }
@@ -759,6 +831,55 @@ func (receiver *SettingController) UpdateRegistrationForm(context *gin.Context) 
 		Data: response.Cause{
 			Code:    http.StatusOK,
 			Message: "Registration Form was saved successfully",
+		},
+	})
+}
+
+type updateSignUpButtonConfigurationRequest struct {
+	SpreadSheetUrl string `json:"spreadsheet_url" binding:"required"`
+}
+
+// Update SignUpButtonConfiguration Form godoc
+// @Summary      Update SignUpButtonConfiguration Form
+// @Description  Update SignUpButtonConfiguration Form
+// @Tags         Admin
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer {token}"
+// @Param request body updateSignUpButtonConfigurationRequest true "Update SignUpButtonConfiguration Form"
+// @Success 200 {object} response.SucceedResponse
+// @Failure 400 {object} response.FailedResponse
+// @Failure 401 {object} response.FailedResponse
+// @Failure 403 {object} response.FailedResponse
+// @Failure 500 {object} response.FailedResponse
+// @Router /v1/admin/settings/sign-up-button-configuration [post]
+func (receiver *SettingController) UpdateSignUpButtonConfiguration(context *gin.Context) {
+	var req updateSignUpButtonConfigurationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusBadRequest,
+				Message: "invalid request body",
+			},
+		})
+		return
+	}
+
+	err := receiver.AdminSignUpUseCases.UpdateSignUpButtonConfiguration(req.SpreadSheetUrl)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Data: response.Cause{
+			Code:    http.StatusOK,
+			Message: "sign up buttons configuration was saved successfully",
 		},
 	})
 }
@@ -825,8 +946,8 @@ type updateRegistrationPresetRequest struct {
 // @Failure 401 {object} response.FailedResponse
 // @Failure 403 {object} response.FailedResponse
 // @Failure 500 {object} response.FailedResponse
-// @Router /v1/admin/settings/registration-preset [post]
-func (receiver *SettingController) UpdateRegistrationPreset(context *gin.Context) {
+// @Router /v1/admin/settings/registration-preset-2 [post]
+func (receiver *SettingController) UpdateRegistrationPreset2(context *gin.Context) {
 	var req updateRegistrationPresetRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -838,7 +959,52 @@ func (receiver *SettingController) UpdateRegistrationPreset(context *gin.Context
 		return
 	}
 
-	err := receiver.AdminSignUpUseCases.UpdateRegistrationPreset(req.FormNote)
+	err := receiver.AdminSignUpUseCases.UpdateRegistrationPreset2(req.FormNote)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusInternalServerError,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Data: response.Cause{
+			Code:    http.StatusOK,
+			Message: "Registration Preset was saved successfully",
+		},
+	})
+}
+
+// Update Registration Preset godoc
+// @Summary      Update Registration Preset
+// @Description  Update Registration Preset
+// @Tags         Admin
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer {token}"
+// @Param request body updateRegistrationPresetRequest true "Update Registration Preset"
+// @Success 200 {object} response.SucceedResponse
+// @Failure 400 {object} response.FailedResponse
+// @Failure 401 {object} response.FailedResponse
+// @Failure 403 {object} response.FailedResponse
+// @Failure 500 {object} response.FailedResponse
+// @Router /v1/admin/settings/registration-preset-1 [post]
+func (receiver *SettingController) UpdateRegistrationPreset1(context *gin.Context) {
+	var req updateRegistrationPresetRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusBadRequest,
+				Message: "Invalid request body",
+			},
+		})
+		return
+	}
+
+	err := receiver.AdminSignUpUseCases.UpdateRegistrationPreset1(req.FormNote)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: response.Cause{

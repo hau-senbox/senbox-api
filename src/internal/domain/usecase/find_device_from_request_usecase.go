@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type FindDeviceFromRequestCase struct {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
@@ -14,6 +13,8 @@ import (
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type SaveFormUseCase struct {
@@ -58,10 +59,6 @@ func (receiver *SaveFormUseCase) SaveForm(req request.SaveFormRequest) (*entity.
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	form, err := receiver.saveForm(parameters.SaveFormParams{
@@ -134,15 +131,22 @@ func (receiver *SaveFormUseCase) getStatusFromString(status string) (value.Statu
 func (receiver *SaveFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.QuestionType) (string, error) {
 
 	switch questionType {
-	case value.QuestionTime:
+	case value.QuestionTime,
+		value.QuestionDate,
+		value.QuestionDateTime,
+		value.QuestionDurationForward,
+		value.QuestionQRCode,
+		value.QuestionText,
+		value.QuestionCount,
+		value.QuestionNumber:
 		return "{}", nil
-	case value.QuestionDate:
-		return "{}", nil
-	case value.QuestionDateTime:
-		return "{}", nil
-	case value.QuestionDurationForward:
-		return "{}", nil
-	case value.QuestionDurationBackward:
+	case value.QuestionDurationBackward,
+		value.QuestionPhoto,
+		value.QuestionButtonCount,
+		value.QuestionMessageBox,
+		value.QuestionShowPic,
+		value.QuestionButton,
+		value.QuestionPlayVideo:
 		//TODO: validate attributes
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionScale:
@@ -167,8 +171,6 @@ func (receiver *SaveFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQ
 			return "", errors.New("scale question data is invalid " + err.Error())
 		}
 		return "{\"number\" : " + strconv.Itoa(totalValues) + ", \"steps\": " + strconv.Itoa(stepValue) + "}", nil
-	case value.QuestionQRCode:
-		return "{}", nil
 	case value.QuestionSelection:
 		rawOptions := strings.Split(rawQuestion.Attributes, ",")
 		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
@@ -191,16 +193,6 @@ func (receiver *SaveFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQ
 			return "", err
 		}
 		return string(result), nil
-	case value.QuestionText:
-		return "{}", nil
-	case value.QuestionCount:
-		return "{}", nil
-	case value.QuestionNumber:
-		return "{}", nil
-	case value.QuestionPhoto:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButtonCount:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	case value.QuestionMultipleChoice:
 		multiselect := "single_select"
 		rawAdditionalOptions := strings.Split(rawQuestion.AdditionalOptions, ":")
@@ -239,16 +231,6 @@ func (receiver *SaveFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQ
 		}
 
 		return `{"spreadsheet_id" : "` + match[1] + `"}`, nil
-
-	case value.QuestionMessageBox:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-
-	case value.QuestionShowPic:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionButton:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
-	case value.QuestionPlayVideo:
-		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	}
 
 	return "", errors.New("invalid question type")
@@ -276,7 +258,7 @@ func (receiver *SaveFormUseCase) createForm(questions []entity.SQuestion, params
 			AnswerRequired: answerRequired,
 		})
 	}
-	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.FormId, formQuestions)
+	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.ID, formQuestions)
 	if err != nil {
 		return nil, err
 	}

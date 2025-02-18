@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type LoginController struct {
@@ -15,7 +16,7 @@ type LoginController struct {
 }
 
 func (receiver LoginController) Login(c *gin.Context) {
-	var req request.LoginInputReq
+	var req request.UserLoginRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -42,13 +43,14 @@ func (receiver LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
-	return
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Data: data,
+	})
 }
 
 // Login godoc
 // @Summary      Retrieve a token
-// @Description  login using loginId and password
+// @Description  login using username and password
 // @Tags         Admin
 // @Accept       json
 // @Produce      json
@@ -57,9 +59,9 @@ func (receiver LoginController) Login(c *gin.Context) {
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
-// @Router       /v1/admin/login [post]
-func (receiver LoginController) LoginV1(c *gin.Context) {
-	var req request.LoginInputReq
+// @Router       /v1/login [post]
+func (receiver LoginController) UserLogin(c *gin.Context) {
+	var req request.UserLoginRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -72,7 +74,7 @@ func (receiver LoginController) LoginV1(c *gin.Context) {
 		return
 	}
 
-	data, err := receiver.AuthorizeUseCase.LoginInputDao(req)
+	data, err := receiver.AuthorizeUseCase.UserLoginUsecase(req)
 
 	if err != nil {
 		c.JSON(
@@ -89,5 +91,4 @@ func (receiver LoginController) LoginV1(c *gin.Context) {
 	c.JSON(http.StatusOK, response.LoginResponse{
 		Data: data,
 	})
-	return
 }

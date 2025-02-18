@@ -2,12 +2,13 @@ package repository
 
 import (
 	"errors"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/parameters"
 	"sen-global-api/internal/domain/request"
 	"strings"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FormQuestionRepository struct {
@@ -44,7 +45,7 @@ func (receiver *FormQuestionRepository) Update(form *entity.SForm, questions []e
 	formQuestions := make([]entity.SFormQuestion, 0)
 	for _, rawQuestion := range rawQuestions {
 		formQuestions = append(formQuestions, entity.SFormQuestion{
-			FormId:         form.FormId,
+			FormId:         form.ID,
 			QuestionId:     rawQuestion.QuestionId,
 			Order:          rawQuestion.RowNumber,
 			AnswerRequired: strings.ToLower(rawQuestion.AnswerRequired) == "true",
@@ -68,7 +69,7 @@ func (receiver *FormQuestionRepository) Update(form *entity.SForm, questions []e
 
 func (receiver *FormQuestionRepository) GetFormQuestionsByForm(form entity.SForm) ([]entity.SFormQuestion, error) {
 	var formQuestions []entity.SFormQuestion
-	err := receiver.DBConn.Where("form_id = ?", form.FormId).Find(&formQuestions).Error
+	err := receiver.DBConn.Where("form_id = ?", form.ID).Find(&formQuestions).Error
 	if err != nil {
 		return nil, err
 	}

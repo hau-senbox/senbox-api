@@ -4,53 +4,53 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/parameters"
 	"sen-global-api/internal/domain/request"
-	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (receiver *SubmitFormUseCase) SubmitSignUpForm(form entity.SForm, rq request.SubmitFormRequest) error {
-	setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
-	if err != nil {
-		return err
-	}
+	// setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
+	// if err != nil {
+	// 	return err
+	// }
 
-	if setting == nil {
-		return errors.New("registration submission setting is not set")
-	}
+	// if setting == nil {
+	// 	return errors.New("registration submission setting is not set")
+	// }
 
-	type summarySetting struct {
-		SpreadsheetId string `json:"spreadsheet_id"`
-	}
+	// type summarySetting struct {
+	// 	SpreadsheetId string `json:"spreadsheet_id"`
+	// }
 
-	var summary summarySetting
-	err = json.Unmarshal(setting.Settings, &summary)
-	if err != nil {
-		return err
-	}
+	// var summary summarySetting
+	// err = json.Unmarshal(setting.Settings, &summary)
+	// if err != nil {
+	// 	return err
+	// }
 
-	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(summary.SpreadsheetId)
+	// re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+	// match := re.FindStringSubmatch(summary.SpreadsheetId)
 
-	if len(match) < 2 {
-		return errors.New("invalid spreadsheet url from sign up submission setting")
-	}
+	// if len(match) < 2 {
+	// 	return errors.New("invalid spreadsheet url from sign up submission setting")
+	// }
 
-	spreadsheetId := match[1]
+	// spreadsheetId := match[1]
 
 	submissionItems := make([]repository.SubmissionDataItem, 0)
 	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(rq.Answers, func(answer request.Answer) string { return answer.QuestionId }))
 	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
+		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
 	for _, answer := range rq.Answers {
@@ -74,37 +74,19 @@ func (receiver *SubmitFormUseCase) SubmitSignUpForm(form entity.SForm, rq reques
 			}
 		}
 	}
-
-	type DeviceAtt struct {
-		Att1 request.RegisterDeviceUser `json:"user_01"`
-		Att2 request.RegisterDeviceUser `json:"user_02"`
-		Att3 request.RegisterDeviceUser `json:"user_03"`
-	}
-
 	submissionData := repository.SubmissionData{
 		Items: submissionItems,
 	}
 
 	createSubmissionParmas := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceFirstValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceSecondValue:  "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceThirdValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceName:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceNote:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		SpreadsheetId:      spreadsheetId,
-		SheetName:          "Registered",
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeSignUpRegistration,
-		OpenedAt:           rq.OpenedAt,
+		FormId:         form.ID,
+		DeviceId:       "SignedUp_At_" + time.Now().Format("20060102150405"),
+		SubmissionData: submissionData,
+		OpenedAt:       rq.OpenedAt,
 	}
 	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParmas)
 	if err != nil {
-		log.Debug(err)
+		log.Error("SubmitFormUseCase.SubmitSignUpForm", err)
 		return errors.New("system cannot handle the submission")
 	}
 
@@ -234,46 +216,46 @@ func (receiver *SubmitFormUseCase) createSignUpMemoryForm(form entity.SForm, rq 
 		})
 	}
 
-	setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
-	if err != nil {
-		return err
-	}
+	// setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
+	// if err != nil {
+	// 	return err
+	// }
 
-	if setting == nil {
-		return errors.New("registration submission setting is not set")
-	}
+	// if setting == nil {
+	// 	return errors.New("registration submission setting is not set")
+	// }
 
-	err = json.Unmarshal(setting.Settings, &summary)
-	if err != nil {
-		return err
-	}
+	// err = json.Unmarshal(setting.Settings, &summary)
+	// if err != nil {
+	// 	return err
+	// }
 
-	re = regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match = re.FindStringSubmatch(summary.SpreadsheetId)
+	// re = regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+	// match = re.FindStringSubmatch(summary.SpreadsheetId)
 
-	if len(match) < 2 {
-		return errors.New("invalid spreadsheet url from sign up submission setting")
-	}
+	// if len(match) < 2 {
+	// 	return errors.New("invalid spreadsheet url from sign up submission setting")
+	// }
 
-	submissionSpreadsheetID := match[1]
+	// submissionSpreadsheetID := match[1]
 
 	newForm, err := receiver.FormRepository.SaveForm(parameters.SaveFormParams{
-		Note:              targetSpreadsheetName,
-		Name:              targetSpreadsheetName,
-		SpreadsheetUrl:    "https://docs.google.com/spreadsheets/d/" + duplicateSpreadsheetResult.SpreadsheetId,
-		SpreadsheetId:     duplicateSpreadsheetResult.SpreadsheetId,
-		Password:          "",
-		SubmissionType:    form.SubmissionType,
-		SubmissionSheetId: submissionSpreadsheetID,
-		SheetName:         targetSheetName,
-		OutputSheetName:   form.OutputSheetName,
-		SyncStrategy:      form.SyncStrategy,
+		Note:           targetSpreadsheetName,
+		Name:           targetSpreadsheetName,
+		SpreadsheetUrl: "https://docs.google.com/spreadsheets/d/" + duplicateSpreadsheetResult.SpreadsheetId,
+		SpreadsheetId:  duplicateSpreadsheetResult.SpreadsheetId,
+		Password:       "",
+		SheetName:      targetSheetName,
+		SyncStrategy:   form.SyncStrategy,
 	})
 
 	if err != nil {
 		return err
 	}
-	err = receiver.FormQuestionRepository.DeleteByFormID(newForm.FormId)
+	err = receiver.FormQuestionRepository.DeleteByFormID(newForm.ID)
+	if err != nil {
+		return err
+	}
 
 	err = receiver.saveQuestions(rawQuestions)
 	if err != nil {
@@ -298,7 +280,7 @@ func (receiver *SubmitFormUseCase) createSignUpMemoryForm(form entity.SForm, rq 
 			AnswerRequired: answerRequired,
 		})
 	}
-	_, err = receiver.FormQuestionRepository.CreateFormQuestions(newForm.FormId, formQuestionItems)
+	_, err = receiver.FormQuestionRepository.CreateFormQuestions(newForm.ID, formQuestionItems)
 	if err != nil {
 		return err
 	}
@@ -331,11 +313,6 @@ func (receiver *SubmitFormUseCase) updateMemorySignUpFormIntoDeviceUploader(devi
 	setting, err := receiver.SettingRepository.GetSyncDevicesSettings()
 	if err != nil {
 		log.Error("Device uploader setting not found: ", err.Error())
-		return
-	}
-
-	if err != nil {
-		log.Error("failed to get sync devices settings")
 		return
 	}
 
@@ -414,7 +391,7 @@ func (receiver *SubmitFormUseCase) UpdateSignUpMemoryForm(rq request.SubmitFormR
 	submissionItems := make([]repository.SubmissionDataItem, 0)
 	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(rq.Answers, func(answer request.Answer) string { return answer.QuestionId }))
 	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
+		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
 	for _, answer := range rq.Answers {
@@ -439,59 +416,31 @@ func (receiver *SubmitFormUseCase) UpdateSignUpMemoryForm(rq request.SubmitFormR
 		}
 	}
 
-	type DeviceAtt struct {
-		Att1 request.RegisterDeviceUser `json:"user_01"`
-		Att2 request.RegisterDeviceUser `json:"user_02"`
-		Att3 request.RegisterDeviceUser `json:"user_03"`
-	}
-
 	submissionData := repository.SubmissionData{
 		Items: submissionItems,
 	}
 
 	createSubmissionParams := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceFirstValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceSecondValue:  "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceThirdValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceName:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceNote:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		SpreadsheetId:      form.SubmissionSpreadsheetId,
-		SheetName:          "Registered",
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeSignUpRegistration,
-		OpenedAt:           rq.OpenedAt,
+		FormId:         form.ID,
+		DeviceId:       "SignedUp_At_" + time.Now().Format("20060102150405"),
+		SubmissionData: submissionData,
+		OpenedAt:       rq.OpenedAt,
 	}
 	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParams)
 	if err != nil {
-		log.Debug(err)
+		log.Error("SubmitFormUseCase.UpdateSignUpMemoryForm", err)
 		return errors.New("system cannot handle the submission")
 	}
 
 	createSubmissionParams = repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceFirstValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceSecondValue:  "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceThirdValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceName:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceNote:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		SpreadsheetId:      form.SubmissionSpreadsheetId,
-		SheetName:          "Registered",
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeSignUpWriteToMemoryForm,
-		OpenedAt:           rq.OpenedAt,
+		FormId:         form.ID,
+		DeviceId:       "SignedUp_At_" + time.Now().Format("20060102150405"),
+		SubmissionData: submissionData,
+		OpenedAt:       rq.OpenedAt,
 	}
 	err = receiver.SubmissionRepository.DublicateSubmissions(createSubmissionParams)
 	if err != nil {
-		log.Debug(err)
+		log.Error("SubmitFormUseCase.SubmitSignUpForm", err)
 		return errors.New("system cannot handle the submission")
 	}
 
@@ -507,7 +456,7 @@ func (receiver *SubmitFormUseCase) duplicateSubmissions(systemSignUpForm entity.
 		}),
 		)
 	if err != nil {
-		return errors.New(fmt.Sprintf("System cannot find questions for this form: %s", form.Name))
+		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
 	for _, answer := range rq.Answers {
@@ -536,64 +485,45 @@ func (receiver *SubmitFormUseCase) duplicateSubmissions(systemSignUpForm entity.
 		}
 	}
 
-	type DeviceAtt struct {
-		Att1 request.RegisterDeviceUser `json:"user_01"`
-		Att2 request.RegisterDeviceUser `json:"user_02"`
-		Att3 request.RegisterDeviceUser `json:"user_03"`
-	}
-
 	submissionData := repository.SubmissionData{
 		Items: submissionItems,
 	}
 
-	setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
-	if err != nil {
-		return err
-	}
+	// setting, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
+	// if err != nil {
+	// 	return err
+	// }
 
-	if setting == nil {
-		return errors.New("registration submission setting is not set")
-	}
+	// if setting == nil {
+	// 	return errors.New("registration submission setting is not set")
+	// }
 
-	type summarySetting struct {
-		SpreadsheetId string `json:"spreadsheet_id"`
-	}
+	// type summarySetting struct {
+	// 	SpreadsheetId string `json:"spreadsheet_id"`
+	// }
 
-	var summary summarySetting
-	err = json.Unmarshal(setting.Settings, &summary)
-	if err != nil {
-		return err
-	}
+	// var summary summarySetting
+	// err = json.Unmarshal(setting.Settings, &summary)
+	// if err != nil {
+	// 	return err
+	// }
 
-	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-	match := re.FindStringSubmatch(summary.SpreadsheetId)
+	// re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
+	// match := re.FindStringSubmatch(summary.SpreadsheetId)
 
-	if len(match) < 2 {
-		return errors.New("invalid spreadsheet url from sign up submission setting")
-	}
-
-	spreadsheetId := match[1]
+	// if len(match) < 2 {
+	// 	return errors.New("invalid spreadsheet url from sign up submission setting")
+	// }
 
 	createSubmissionParmas := repository.CreateSubmissionParams{
-		FormId:             form.FormId,
-		FormName:           form.Name,
-		FormNote:           form.Note,
-		FormSpreadsheetUrl: form.SpreadsheetUrl,
-		DeviceId:           "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceFirstValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceSecondValue:  "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceThirdValue:   "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceName:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		DeviceNote:         "SignedUp_At_" + time.Now().Format("20060102150405"),
-		SpreadsheetId:      spreadsheetId,
-		SheetName:          "Registered",
-		SubmissionData:     submissionData,
-		SubmissionType:     value.SubmissionTypeSignUpWriteToMemoryForm,
-		OpenedAt:           rq.OpenedAt,
+		FormId:         form.ID,
+		DeviceId:       "SignedUp_At_" + time.Now().Format("20060102150405"),
+		SubmissionData: submissionData,
+		OpenedAt:       rq.OpenedAt,
 	}
 	err = receiver.SubmissionRepository.DublicateSubmissions(createSubmissionParmas)
 	if err != nil {
-		log.Debug(err)
+		log.Error("SubmitFormUseCase.duplicateSubmissions", err)
 		return errors.New("system cannot handle the submission")
 	}
 

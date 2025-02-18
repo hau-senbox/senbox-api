@@ -102,7 +102,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 
 		file, err := os.Open(templateFilePath)
 		if err != nil {
-			log.Error("Error: %v", err)
+			log.Errorf("Error: %v", err)
 			return entity.SToDo{}, err
 		}
 		log.Debug("File: ", file.Name())
@@ -218,6 +218,9 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 		Rows:      [][]interface{}{{todo.Name}},
 	}
 	_, err = c.SpreadsheetWriter.UpdateRange(updateTodoNameParams, todo.SpreadsheetID)
+	if err != nil {
+		return entity.SToDo{}, err
+	}
 
 	monitor.SendMessageViaTelegram("Todo: ", todo.ID, " at ", todo.SpreadsheetID, " has been updated ")
 

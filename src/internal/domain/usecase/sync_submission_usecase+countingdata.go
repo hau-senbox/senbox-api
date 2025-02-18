@@ -2,21 +2,20 @@ package usecase
 
 import (
 	"encoding/json"
-	"fmt"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/model"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Write new record in to device uploader at CountingData sheet
-func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SSubmission, submissionData entity.SubmissionData) {
+func (receiver *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SSubmission, submissionData entity.SubmissionData) {
 	var codeCountingQuestion model.FormQuestionItem
-	questions, err := self.QuestionRepository.GetQuestionsByFormId(submission.FormId)
+	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(submission.FormId)
 	if err != nil {
 		log.Error("Error when get questions: ", err)
 		return
@@ -65,7 +64,7 @@ func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SS
 		return
 	}
 
-	codeCountingSettingData, err := self.SettingRepository.GetCodeCountingDataSetting()
+	codeCountingSettingData, err := receiver.SettingRepository.GetCodeCountingDataSetting()
 	if err != nil {
 		log.Error("failed to get sync devices settings")
 		return
@@ -95,18 +94,18 @@ func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SS
 	spreadsheetId := match[1]
 
 	//Get data at row 11 from the spreadsheet
-	row11Data, err := self.UserSpreadsheetReader.GetFirstRow(sheet.ReadSpecificRangeParams{
+	row11Data, err := receiver.UserSpreadsheetReader.GetFirstRow(sheet.ReadSpecificRangeParams{
 		SpreadsheetId: spreadsheetId,
 		ReadRange:     "CountingData!U11:Z11",
 	})
 
 	if err != nil {
 		log.Error("Error when get row 11 data from counting data sheet: ", err)
-		monitor.SendMessageViaTelegram(
-			fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot get row 11 data", submission.ID),
-			fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
-			fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
-		)
+		// monitor.SendMessageViaTelegram(
+		// 	fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot get row 11 data", submission.ID),
+		// 	fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
+		// 	fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
+		// )
 		return
 	}
 
@@ -125,7 +124,7 @@ func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SS
 	////Append Question
 	//rows = append(rows, []interface{}{codeValue})
 
-	//_, err = self.UserSpreadsheetWriter.WriteRanges(sheet.WriteRangeParams{
+	//_, err = receiver.UserSpreadsheetWriter.WriteRanges(sheet.WriteRangeParams{
 	//	Range:     "CountingData!K11",
 	//	Rows:      rows,
 	//	Dimension: "COLUMNS",
@@ -145,14 +144,14 @@ func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SS
 	answerRow = append(answerRow, []interface{}{submission.CreatedAt.Format(timeFormat)})
 	answerRow = append(answerRow, []interface{}{time.Now().Format(timeFormat)})
 	answerRow = append(answerRow, []interface{}{submission.DeviceId})
-	answerRow = append(answerRow, []interface{}{submission.DeviceName})
-	answerRow = append(answerRow, []interface{}{submission.DeviceNote})
-	answerRow = append(answerRow, []interface{}{submission.DeviceFirstValue})
-	answerRow = append(answerRow, []interface{}{submission.DeviceSecondValue})
-	answerRow = append(answerRow, []interface{}{submission.DeviceThirdValue})
-	answerRow = append(answerRow, []interface{}{submission.FormNote})
-	answerRow = append(answerRow, []interface{}{submission.FormName})
-	answerRow = append(answerRow, []interface{}{submission.FormSpreadsheetUrl})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
+	answerRow = append(answerRow, []interface{}{nil})
 
 	//Find the code from row 11 begin at column U
 	isExist := false
@@ -183,36 +182,36 @@ func (self *SyncSubmissionUseCase) saveCountingDataIfNeeded(submission entity.SS
 		}
 	}
 
-	if isExist == false {
+	if !isExist {
 		//Update row 11 a column U
-		_, err = self.UserSpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
+		_, err = receiver.UserSpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
 			Range:     "CountingData!U11",
 			Dimension: "COLUMNS",
 			Rows:      newRow11Data,
 		}, spreadsheetId)
 		if err != nil {
 			log.Error("Error when update row 11 data: ", err)
-			monitor.SendMessageViaTelegram(
-				fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot update row 11 data", submission.ID),
-				fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
-				fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
-			)
+			// monitor.SendMessageViaTelegram(
+			// 	fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot update row 11 data", submission.ID),
+			// 	fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
+			// 	fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
+			// )
 			return
 		}
 	}
 
-	_, err = self.UserSpreadsheetWriter.WriteRanges(sheet.WriteRangeParams{
+	_, err = receiver.UserSpreadsheetWriter.WriteRanges(sheet.WriteRangeParams{
 		Range:     "CountingData!K11",
 		Rows:      answerRow,
 		Dimension: "COLUMNS",
 	}, spreadsheetId)
 	if err != nil {
 		log.Error("Error when append counting data: ", err)
-		monitor.SendMessageViaTelegram(
-			fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot append new record to counting data", submission.ID),
-			fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
-			fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
-		)
+		// monitor.SendMessageViaTelegram(
+		// 	fmt.Sprintf("[ERROR][SUBMISSION: %d] Cannot append new record to counting data", submission.ID),
+		// 	fmt.Sprintf("Target Form Note %s - Form Name %s", submission.FormNote, submission.FormName),
+		// 	fmt.Sprintf("[GOOGLE API]: %s", err.Error()),
+		// )
 		return
 	}
 }

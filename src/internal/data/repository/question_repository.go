@@ -2,14 +2,14 @@ package repository
 
 import (
 	"encoding/json"
-	"errors"
+	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/model"
+	"sen-global-api/internal/domain/value"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"sen-global-api/internal/domain/entity"
-	"sen-global-api/internal/domain/model"
-	"sen-global-api/internal/domain/value"
 )
 
 type QuestionRepository struct {
@@ -149,9 +149,6 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 	default:
 		return receiver.unmarshalUserQuestion(param)
 	}
-
-	log.Error("Unmarshal faield ", param)
-	return nil, errors.New("invalid question params")
 }
 
 func (receiver *QuestionRepository) unmarshalDateQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
@@ -618,11 +615,12 @@ func (receiver *QuestionRepository) GetQuestionsByFormId(id uint64) ([]model.For
 		"s_question.question_type as question_type, s_question.attributes as attributes, s_question.status as status, "+
 		"s_question.created_at as created_at, s_question.updated_at as updated_at, s_form_question.order as `order`, s_form_question.answer_required as answer_required, s_question.question as question,"+
 		"s_question.enable_on_mobile as enable_on_mobile, s_question.question_unique_id as question_unique_id "+
-		"FROM s_question LEFT JOIN s_form_question ON s_form_question.question_id = s_question.question_id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
-	defer rows.Close()
+		"FROM s_question RIGHT JOIN s_form_question ON s_form_question.question_id = s_question.question_id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
+
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var question model.FormQuestionItem
 		err := receiver.DBConn.ScanRows(rows, &question)
@@ -678,7 +676,7 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 }
 
 func (receiver *QuestionRepository) DeleteQuestionsFormNote(note string) error {
-	return receiver.DBConn.Exec("DELETE s FROM s_question s INNER JOIN s_form_question fq ON fq.question_id = s.question_id INNER JOIN s_form f ON f.form_id = fq.form_id WHERE f.note = ?", note).Error
+	return receiver.DBConn.Exec("DELETE s FROM s_question s INNER JOIN s_form_question fq ON fq.question_id = s.question_id INNER JOIN s_form f ON f.id = fq.form_id WHERE f.note = ?", note).Error
 }
 
 func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {

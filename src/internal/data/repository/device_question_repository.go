@@ -1,9 +1,10 @@
 package repository
 
 import (
+	"sen-global-api/internal/domain/entity"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"sen-global-api/internal/domain/entity"
 )
 
 type CreateUserQuestionParams struct {
@@ -26,9 +27,9 @@ type UserQuestion struct {
 	EnableOnMobile string `sql:"enable_on_mobile"`
 }
 
-func (receiver *DeviceQuestionRepository) GetQuestionsBelongToDevice(user *entity.SDevice) ([]UserQuestion, error) {
+func (receiver *DeviceQuestionRepository) GetQuestionsBelongToDevice(device *entity.SDevice) ([]UserQuestion, error) {
 	var rawUserQuestions []UserQuestion
-	tx := receiver.DBConn.Table("s_device_question").Joins("INNER JOIN s_question ON s_device_question.question_id = s_question.question_id").Where("s_device_question.device_id = ?", user.DeviceId).Select("*").Find(&rawUserQuestions)
+	tx := receiver.DBConn.Table("s_device_question").Joins("INNER JOIN s_question ON s_device_question.question_id = s_question.question_id").Where("s_device_question.device_id = ?", device.ID).Select("*").Find(&rawUserQuestions)
 	err := tx.Find(&rawUserQuestions).Error
 	if err != nil {
 		return nil, err
