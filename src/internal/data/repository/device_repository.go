@@ -303,8 +303,8 @@ func (receiver *DeviceRepository) CheckUserDeviceExist(req request.RegisteringDe
 	return nil
 }
 
-func (receiver *DeviceRepository) CheckDeviceLimitation(req request.RegisteringDeviceForUser) error {
-	queryCheck := receiver.DBConn.Table("s_user_devices").Where("user_id = ? AND device_id != ?", req.UserId, req.DeviceId)
+func (receiver *DeviceRepository) CheckDeviceLimitation(userId string) error {
+	queryCheck := receiver.DBConn.Table("s_user_devices").Where("user_id = ?", userId)
 
 	var deviceCount int64
 	err := queryCheck.Count(&deviceCount).Error
@@ -327,54 +327,43 @@ func (receiver *DeviceRepository) CheckDeviceLimitation(req request.RegisteringD
 
 func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEntity, req request.RegisterDeviceRequest) (*string, error) {
 	var deviceId *string
-	err := receiver.DBConn.Transaction(func(tx *gorm.DB) error {
-		device, err := receiver.FindDeviceById(req.DeviceUUID)
-		if err != nil {
-			if !errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.New("failed to get device")
-			}
+	queryCheck := receiver.DBConn.Table("s_user_devices").Where("user_id = ? AND device_id = ?", user.ID, req.DeviceUUID)
+
+	var userDevice *entity.SUserDevices
+	err := queryCheck.First(&userDevice).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	err = receiver.DBConn.Transaction(func(tx *gorm.DB) error {
+		if err := receiver.CheckDeviceLimitation(user.ID.String()); err != nil {
+			return err
 		}
 
-		if device != nil {
-			if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
-				UserId:   user.ID.String(),
-				DeviceId: device.ID,
-			}); err != nil {
-				return err
-			} else {
-				if err := receiver.CheckDeviceLimitation(request.RegisteringDeviceForUser{
-					UserId:   user.ID.String(),
-					DeviceId: device.ID,
-				}); err != nil {
-					return err
-				}
+		if userDevice.DeviceId != "" {
+			// add new user_device
+			userDeviceResult := receiver.DBConn.Create(&entity.SUserDevices{
+				UserId:   user.ID,
+				DeviceId: userDevice.DeviceId,
+			})
 
-				// add new user_device
-				userDeviceResult := receiver.DBConn.Create(&entity.SUserDevices{
-					UserId:   user.ID,
-					DeviceId: device.ID,
-				})
-
-				if userDeviceResult.Error != nil {
-					log.Error("UserEntityRepository.UpdateUser: " + userDeviceResult.Error.Error())
-					return errors.New("failed to register device for user")
-				}
+			if userDeviceResult.Error != nil {
+				log.Error("UserEntityRepository.UpdateUser: " + userDeviceResult.Error.Error())
+				return errors.New("failed to register device for user")
 			}
 
-			deviceId = &device.ID
+			deviceId = &userDevice.DeviceId
 			return nil
 		}
 
-		device, err = receiver.CreateDevice(req)
-		if err != nil {
-			return errors.New("failed to create new device")
-		}
-
-		if err := receiver.CheckDeviceLimitation(request.RegisteringDeviceForUser{
-			UserId:   user.ID.String(),
-			DeviceId: device.ID,
-		}); err != nil {
-			return err
+		var device *entity.SDevice
+		// check if device already exist
+		device, _ = receiver.GetDeviceById(req.DeviceUUID)
+		if device == nil {
+			device, err = receiver.CreateDevice(req)
+			if err != nil {
+				log.Error("UserEntityRepository.UpdateUser: " + err.Error())
+				return errors.New("failed to create new device")
+			}
 		}
 
 		// add new user_device
@@ -392,5 +381,13 @@ func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEnt
 		return nil
 	})
 
-	return deviceId, err
+	if deviceId != nil {
+		return deviceId, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userDevice.DeviceId, nil
 }

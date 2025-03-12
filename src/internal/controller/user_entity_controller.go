@@ -303,6 +303,17 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 		return
 	}
 
+	// Validate username
+	if err := req.IsUsernameValid(); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: response.Cause{
+				Code:    http.StatusBadRequest,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
 	// Validate the user's age
 	if err := req.IsOver18(); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -325,9 +336,10 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 		return
 	}
 
-	data, err := receiver.AuthorizeUseCase.UserLoginUsecase(request.UserLoginRequest{
-		Username: req.Username,
-		Password: req.Password,
+	data, err := receiver.AuthorizeUseCase.UserLoginUsecase(request.UserLoginFromDeviceReqest{
+		Username:   req.Username,
+		Password:   req.Password,
+		DeviceUUID: req.DeviceUUID,
 	})
 
 	if err != nil {

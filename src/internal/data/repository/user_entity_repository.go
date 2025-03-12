@@ -281,8 +281,6 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 		updatePayload["user_config_id"] = configId
 	}
 
-	log.Info("PAYLOAD: ", updatePayload)
-
 	resultUpdate := receiver.DBConn.Model(&entity.SUserEntity{}).Where("id = ?", req.ID).
 		Updates(updatePayload)
 

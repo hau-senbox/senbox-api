@@ -2,6 +2,7 @@ package request
 
 import (
 	"errors"
+	"strings"
 	"time"
 )
 
@@ -10,11 +11,12 @@ type CreateUserEntityRequest struct {
 	// Fullname *string `json:"fullname"`
 	// Phone    *string `json:"phone"`
 	// Email    *string `json:"email"`
-	Birthday  string    `json:"birthday" binding:"required"`
-	Password  string    `json:"password" binding:"required"`
-	Guardians *[]string `json:"guardians"`
-	Roles     *[]string `json:"roles"`
-	Policies  *[]uint   `json:"policies"`
+	Birthday   string    `json:"birthday" binding:"required"`
+	Password   string    `json:"password" binding:"required"`
+	Guardians  *[]string `json:"guardians"`
+	Roles      *[]string `json:"roles"`
+	Policies   *[]uint   `json:"policies"`
+	DeviceUUID string    `json:"device_uuid" binding:"required"`
 }
 
 // IsOver18 validates if the user is over 18 years old
@@ -37,5 +39,13 @@ func (r *CreateUserEntityRequest) IsOver18() error {
 		return errors.New("user must be at least 18 years old")
 	}
 
+	return nil
+}
+
+// IsUsernameValid checks if the username contains any spaces
+func (r *CreateUserEntityRequest) IsUsernameValid() error {
+	if strings.Contains(r.Username, " ") {
+		return errors.New("username should not contain spaces")
+	}
 	return nil
 }

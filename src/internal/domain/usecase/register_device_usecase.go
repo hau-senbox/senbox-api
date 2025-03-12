@@ -31,11 +31,22 @@ type RegisterDeviceUseCase struct {
 }
 
 func (receiver *RegisterDeviceUseCase) RegisterDevice(user *entity.SUserEntity, req request.RegisterDeviceRequest) (*string, error) {
-	deviceId, err := receiver.DeviceRepository.RegisteringDeviceForUser(user, req)
-	if err != nil {
-		return nil, err
+	err := receiver.DeviceRepository.CheckUserDeviceExist(request.RegisteringDeviceForUser{
+		UserId:   user.ID.String(),
+		DeviceId: req.DeviceUUID,
+	})
+
+	var deviceId *string
+	if err == nil {
+		deviceId, err = receiver.DeviceRepository.RegisteringDeviceForUser(user, req)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	if deviceId == nil {
+		deviceId = &req.DeviceUUID
+	}
 	device, err := receiver.DeviceRepository.FindDeviceById(*deviceId)
 
 	defer receiver.saveNewDeviceToSyncSheet(user, device, req)

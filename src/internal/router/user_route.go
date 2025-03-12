@@ -30,6 +30,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 		AuthorizeUseCase: &usecase.AuthorizeUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 			SessionRepository:    sessionRepository,
 		},
 	}
@@ -89,6 +90,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		loginController := &controller.LoginController{DBConn: dbConn,
 			AuthorizeUseCase: usecase.AuthorizeUseCase{
 				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 				SessionRepository:    sessionRepository,
 			},
 		}

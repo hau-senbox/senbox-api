@@ -61,7 +61,7 @@ func (receiver LoginController) Login(c *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/login [post]
 func (receiver LoginController) UserLogin(c *gin.Context) {
-	var req request.UserLoginRequest
+	var req request.UserLoginFromDeviceReqest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
