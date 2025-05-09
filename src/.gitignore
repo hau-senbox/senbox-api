@@ -4,8 +4,6 @@
 
 *.env
 
-# User-specific stuff
-.idea/
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
@@ -63,8 +61,11 @@ main
 config/config.yaml
 
 
+# User-specific stuff
 credentials
 .vscode
+.idea
 docs
 logs
 sen_master_db.*
+.DS_Store
