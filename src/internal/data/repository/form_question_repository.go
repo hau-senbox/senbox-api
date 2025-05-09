@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/parameters"
 	"sen-global-api/internal/domain/request"
@@ -20,7 +21,7 @@ func (receiver *FormQuestionRepository) CreateFormQuestions(formId uint64, quest
 	for _, questionItem := range questionItems {
 		formQuestions = append(formQuestions, entity.SFormQuestion{
 			FormId:         formId,
-			QuestionId:     questionItem.QuestionId,
+			QuestionId:     uuid.MustParse(questionItem.QuestionId),
 			Order:          questionItem.Order,
 			AnswerRequired: questionItem.AnswerRequired,
 		})
@@ -46,7 +47,7 @@ func (receiver *FormQuestionRepository) Update(form *entity.SForm, questions []e
 	for _, rawQuestion := range rawQuestions {
 		formQuestions = append(formQuestions, entity.SFormQuestion{
 			FormId:         form.ID,
-			QuestionId:     rawQuestion.QuestionId,
+			QuestionId:     uuid.MustParse(rawQuestion.QuestionId),
 			Order:          rawQuestion.RowNumber,
 			AnswerRequired: strings.ToLower(rawQuestion.AnswerRequired) == "true",
 		})

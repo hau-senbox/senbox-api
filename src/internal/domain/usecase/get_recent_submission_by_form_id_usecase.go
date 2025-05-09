@@ -35,7 +35,7 @@ type RecentSubmissionItem struct {
 	Answer     string `json:"answer" binding:"required"`
 }
 
-func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string) ([]RecentSubmissionItem, error) {
+func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string, userId string) ([]RecentSubmissionItem, error) {
 	form, err := g.formRepository.GetFormByQRCode(formId)
 	if err != nil {
 		return []RecentSubmissionItem{}, err
@@ -45,7 +45,7 @@ func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string) ([]RecentSub
 		return []RecentSubmissionItem{}, errors.New("this form does not support recent submission")
 	}
 
-	s, err := g.submissionRepository.FindRecentByFormId(form.ID)
+	s, err := g.submissionRepository.FindRecentByFormId(form.ID, userId)
 	if err != nil {
 		return []RecentSubmissionItem{}, nil
 	}

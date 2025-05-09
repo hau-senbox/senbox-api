@@ -24,12 +24,12 @@ type MarkToDoAsDoneUseCase struct {
 }
 
 func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, index int, selectValue string) error {
-	todoList, err := c.ToDoRepository.GetToDoListByQRCode(code, c.dbConn)
+	todoList, err := c.GetToDoListByQRCode(code, c.dbConn)
 	if err != nil {
 		return err
 	}
 
-	values, err := c.Reader.Get(sheet.ReadSpecificRangeParams{
+	values, err := c.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetId: todoList.SpreadsheetID,
 		ReadRange:     todoList.SheetName + `!K12:K1000`,
 	})
@@ -39,7 +39,7 @@ func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, inde
 		return err
 	}
 
-	var completedTask entity.Task = entity.Task{}
+	completedTask := entity.Task{}
 	updatedTasks := make([]entity.Task, 0)
 	for _, task := range todoList.Tasks.Data.Tasks {
 		if task.Index == index {
@@ -49,7 +49,7 @@ func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, inde
 		updatedTasks = append(updatedTasks, task)
 	}
 	todoList.Tasks.Data.Tasks = updatedTasks
-	c.ToDoRepository.Save(c.dbConn, &todoList)
+	_, _ = c.Save(c.dbConn, &todoList)
 
 	log.Info("completedTask: ", completedTask)
 
@@ -66,7 +66,7 @@ func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, inde
 	completedData = append(completedData, []interface{}{nil})
 	completedData = append(completedData, []interface{}{nil})
 	completedData = append(completedData, []interface{}{device.ID})
-	_, err = c.Writer.UpdateRange(sheet.WriteRangeParams{
+	_, err = c.UpdateRange(sheet.WriteRangeParams{
 		Range:     todoList.SheetName + "!P" + strconv.Itoa(completedRowNo) + ":W",
 		Dimension: "COLUMNS",
 		Rows:      completedData,
@@ -94,7 +94,7 @@ func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, inde
 	historyData = append(historyData, []interface{}{completedTask.Value})
 	historyData = append(historyData, []interface{}{selectValue})
 
-	_, err = c.Writer.WriteRanges(sheet.WriteRangeParams{
+	_, err = c.WriteRanges(sheet.WriteRangeParams{
 		Range:     todoList.HistorySheetName + "!K11",
 		Dimension: "COLUMNS",
 		Rows:      historyData,
@@ -130,7 +130,7 @@ func findFirstRow(id string, values [][]interface{}, startRow int) (int, error) 
 }
 
 func (c *MarkToDoAsDoneUseCase) LogTask(req request.LogTaskRequest, device entity.SDevice) error {
-	todo, err := c.ToDoRepository.FindById(req.ToDoID, c.dbConn)
+	todo, err := c.FindById(req.ToDoID, c.dbConn)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (c *MarkToDoAsDoneUseCase) LogTask(req request.LogTaskRequest, device entit
 
 	historyData = append(historyData, []interface{}{""})
 
-	_, err = c.Writer.WriteRanges(sheet.WriteRangeParams{
+	_, err = c.WriteRanges(sheet.WriteRangeParams{
 		Range:     todo.HistorySheetName + "!K11",
 		Dimension: "COLUMNS",
 		Rows:      historyData,

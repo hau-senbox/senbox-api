@@ -2,6 +2,7 @@ package sheet
 
 import (
 	"context"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/sheets/v4"
 )
@@ -277,7 +278,7 @@ func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (
 		Context(ctx).
 		Do()
 	if err != nil {
-		log.Error("Failed to retrieve spreadsheet: %v", err)
+		log.WithError(err).Error("Failed to retrieve spreadsheet")
 		return DuplicateSpreadsheetResult{}, err
 	}
 
@@ -290,7 +291,7 @@ func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (
 	}
 
 	if signUpSheetId == 0 {
-		log.Error("Failed to find sheet: %v", err)
+		log.WithError(err).Error("Failed to find sheet")
 		return DuplicateSpreadsheetResult{}, err
 	}
 
@@ -315,7 +316,7 @@ func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (
 	})
 
 	if err != nil {
-		log.Error("Failed to copy single sheet: %v", err)
+		log.WithError(err).Error("Failed to copy single sheet")
 		return DuplicateSpreadsheetResult{}, err
 	}
 

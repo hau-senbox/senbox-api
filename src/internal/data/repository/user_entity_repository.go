@@ -27,11 +27,9 @@ func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	query := receiver.DBConn.Table("s_user_entity")
 	err := query.
 		Preload("Roles").
-		Preload("RolePolicies").
 		Preload("Guardians").
 		Preload("Devices").
-		Preload("Company").
-		Preload("UserConfig").
+		Preload("Organizations").
 		Find(&users).Error
 
 	if err != nil {
@@ -42,15 +40,98 @@ func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	return users, err
 }
 
+func (receiver *UserEntityRepository) GetAllUserAuthorize(userId string) ([]entity.SUserFunctionAuthorize, error) {
+	var rights []entity.SUserFunctionAuthorize
+	query := receiver.DBConn.Model(entity.SUserFunctionAuthorize{})
+	err := query.
+		Where("user_id = ?", userId).
+		Preload("User").
+		Preload("FunctionClaim").
+		Preload("FunctionClaimPermission").
+		Find(&rights).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllUserAuthorize: " + err.Error())
+		return nil, errors.New("failed to get all rights")
+	}
+
+	return rights, err
+}
+
+func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUserAuthorizeRequest) error {
+	// check if user exist
+	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	if err != nil {
+		return err
+	}
+
+	// check if function claim exist
+	var functionClaim entity.SFunctionClaim
+	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).First(&functionClaim).Error
+	if err != nil {
+		return err
+	}
+
+	// check if function claim permission exist
+	var functionClaimPermission entity.SFunctionClaimPermission
+	err = receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where("id = ?", req.FunctionClaimPermissionId).First(&functionClaimPermission).Error
+	if err != nil {
+		return err
+	}
+
+	// check if user already have function claim
+	var userFunctionAuthorize entity.SUserFunctionAuthorize
+	err = receiver.DBConn.Model(entity.SUserFunctionAuthorize{}).Where("user_id = ? AND function_claim_id = ?", req.UserId, req.FunctionClaimId).First(&userFunctionAuthorize).Error
+	if err == nil {
+		return errors.New("user already have authorize")
+	}
+
+	// create a new one if user not have function claim
+	userFunctionAuthorize = entity.SUserFunctionAuthorize{
+		UserId:                    user.ID,
+		FunctionClaimId:           functionClaim.ID,
+		FunctionClaimPermissionId: functionClaimPermission.ID,
+	}
+	err = receiver.DBConn.Create(&userFunctionAuthorize).Error
+	if err != nil {
+		log.Error("UserEntityRepository.UpdateUserAuthorize: " + err.Error())
+		return errors.New("failed to create user authorize")
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) DeleteUserAuthorize(req request.DeleteUserAuthorizeRequest) error {
+	// check if user exist
+	_, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	if err != nil {
+		return err
+	}
+
+	// check if function claim exist
+	var functionClaim entity.SFunctionClaim
+	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).First(&functionClaim).Error
+	if err != nil {
+		return err
+	}
+
+	// delete user authorize
+	err = receiver.DBConn.Where("user_id = ? AND function_claim_id = ?", req.UserId, req.FunctionClaimId).Delete(&entity.SUserFunctionAuthorize{}).Error
+	if err != nil {
+		log.Error("UserEntityRepository.DeleteUserAuthorize: " + err.Error())
+		return errors.New("failed to delete user authorize")
+	}
+
+	return nil
+}
+
 func (receiver *UserEntityRepository) GetByID(req request.GetUserEntityByIdRequest) (*entity.SUserEntity, error) {
 	var user entity.SUserEntity
 	err := receiver.DBConn.
 		Preload("Roles").
-		Preload("RolePolicies").
 		Preload("Guardians").
 		Preload("Devices").
-		Preload("Company").
-		Preload("UserConfig").
+		Preload("Organizations").
 		Where("id = ?", req.ID).
 		First(&user).Error
 	if err != nil {
@@ -64,17 +145,19 @@ func (receiver *UserEntityRepository) GetByUsername(req request.GetUserEntityByU
 	var user entity.SUserEntity
 	err := receiver.DBConn.
 		Preload("Roles").
-		Preload("RolePolicies").
 		Preload("Guardians").
 		Preload("Devices").
-		Preload("Company").
-		Preload("UserConfig").
+		Preload("Organizations").
 		Where("username = ?", req.Username).
 		First(&user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
 		log.Error("UserEntityRepository.GetByUsername: " + err.Error())
 		return nil, errors.New("failed to get user")
 	}
+
 	return &user, nil
 }
 
@@ -90,6 +173,49 @@ func (receiver *UserEntityRepository) GetUserDeviceById(deviceId string) (*[]ent
 	}
 
 	return &userDevices, nil
+}
+
+func (receiver *UserEntityRepository) GetUserOrgInfo(userId, organizationId string) (*entity.SUserOrg, error) {
+	var userOrg entity.SUserOrg
+	err := receiver.DBConn.Model(&entity.SUserOrg{}).
+		Where("user_id = ? AND organization_id = ?", userId, organizationId).
+		Find(&userOrg).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetUserOrgInfo: " + err.Error())
+		return nil, errors.New("failed to get user org info")
+	}
+
+	return &userOrg, nil
+}
+
+func (receiver *UserEntityRepository) GetAllOrgManagerInfo(organizationId string) (*[]entity.SUserOrg, error) {
+	var userOrg []entity.SUserOrg
+	err := receiver.DBConn.Model(&entity.SUserOrg{}).
+		Where("organization_id = ? AND is_manager = 1", organizationId).
+		Find(&userOrg).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllOrgManagerInfo: " + err.Error())
+		return nil, errors.New("failed to get all user org info")
+	}
+
+	return &userOrg, nil
+}
+
+func (receiver *UserEntityRepository) UpdateUserOrgInfo(req request.UpdateUserOrgInfoRequest) error {
+	updateResult := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ? AND organization_id = ?", req.UserId, req.OrganizationId).
+		Updates(map[string]interface{}{
+			"user_nick_name": req.UserNickName,
+			"is_manager":     req.IsManager,
+		})
+
+	if updateResult.Error != nil {
+		log.Error("UserEntityRepository.UpdateUserOrgInfo: " + updateResult.Error.Error())
+		return errors.New("failed to update user org info")
+	}
+
+	return nil
 }
 
 func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]response.UserEntityResponseData, error) {
@@ -115,6 +241,7 @@ func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]r
 		result = append(result, response.UserEntityResponseData{
 			ID:       user.ID.String(),
 			Username: user.Username,
+			Nickname: user.Nickname,
 		})
 	}
 
@@ -122,97 +249,104 @@ func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]r
 }
 
 func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityRequest) error {
-	receiver.DBConn.Transaction(func(tx *gorm.DB) error {
-		user, _ := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
+	tx := receiver.DBConn.Begin()
+	_, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 
-		if user != nil {
-			return errors.New("user already existed")
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			tx.Rollback()
+			return err
 		}
+	}
 
-		birthday, err := time.Parse("2006-01-02", req.Birthday)
-		if err != nil {
-			log.Error("UserRepository.CreateUser: " + err.Error())
-			return errors.New("failed to create user " + req.Username)
-		}
+	birthday, err := time.Parse("2006-01-02", req.Birthday)
+	if err != nil {
+		log.Error("UserRepository.CreateUser: " + err.Error())
+		tx.Rollback()
+		return errors.New("failed to create user " + req.Username)
+	}
 
-		var setting entity.SSetting
-		err = receiver.DBConn.Table("s_setting").Where("type = ?", value.SettingTypeSignUpPresetValue1).First(&setting).Error
+	var setting entity.SSetting
+	err = tx.Table("s_setting").Where("type = ?", value.SettingTypeSignUpPresetValue1).First(&setting).Error
 
-		if err != nil {
-			log.Error("UserRepository.CreateUser: " + err.Error())
-			return errors.New("failed to create user " + req.Username)
-		}
+	if err != nil {
+		log.Error("UserRepository.CreateUser: " + err.Error())
+		tx.Rollback()
+		return errors.New("failed to create user " + req.Username)
+	}
 
-		var signupSetting SignUpFormSetting
-		err = json.Unmarshal([]byte(setting.Settings), &signupSetting)
+	var signupSetting SignUpFormSetting
+	err = json.Unmarshal([]byte(setting.Settings), &signupSetting)
 
-		if err != nil {
-			log.Error("UserRepository.CreateUser: " + err.Error())
-			return errors.New("failed to create user " + req.Username)
-		}
+	if err != nil {
+		log.Error("UserRepository.CreateUser: " + err.Error())
+		tx.Rollback()
+		return errors.New("failed to create user " + req.Username)
+	}
 
-		var userReq = entity.SUserEntity{
-			Username:  req.Username,
-			Fullname:  signupSetting.SpreadSheetId,
-			Birthday:  birthday,
-			CompanyId: 1,
-			Password:  req.Password,
-		}
-		userResult := receiver.DBConn.Create(&userReq)
+	var userReq = entity.SUserEntity{
+		Username: req.Username,
+		Nickname: req.Nickname,
+		Fullname: signupSetting.SpreadSheetId,
+		Birthday: birthday,
+		Password: req.Password,
+	}
+	userResult := tx.Create(&userReq)
 
-		if userResult.Error != nil {
-			log.Error("UserRepository.CreateUser: " + userResult.Error.Error())
-			return errors.New("failed to create user " + req.Username)
-		}
+	if userResult.Error != nil {
+		log.Error("UserRepository.CreateUser: " + userResult.Error.Error())
+		tx.Rollback()
+		return errors.New("failed to create user " + req.Username)
+	}
 
-		if req.Guardians != nil {
-			for _, guardian := range *req.Guardians {
-				userGuardianResult := receiver.DBConn.Create(&entity.SUserGuardians{
-					UserId:     userReq.ID,
-					GuardianId: uuid.MustParse(guardian),
-				})
-				if userGuardianResult.Error != nil {
-					log.Error("UserRepository.CreateUser: " + userGuardianResult.Error.Error())
-					return errors.New("failed to create user guardian")
-				}
+	if req.Guardians != nil && len(*req.Guardians) > 0 {
+		for _, guardian := range *req.Guardians {
+			userGuardianResult := tx.Create(&entity.SUserGuardians{
+				UserId:     userReq.ID,
+				GuardianId: uuid.MustParse(guardian),
+			})
+			if userGuardianResult.Error != nil {
+				log.Error("UserRepository.CreateUser: " + userGuardianResult.Error.Error())
+				tx.Rollback()
+				return errors.New("failed to create user guardian")
 			}
 		}
+	}
 
-		if req.Roles != nil {
-			roles := make([]uint, 0)
-			for _, roleName := range *req.Roles {
-				var role entity.SRole
-				err := receiver.DBConn.Model(&entity.SRole{}).Where("role_name = ?", roleName).Find(&role).Error
-				if err != nil {
-					log.Error("UserRepository.CreateUser: " + err.Error())
-					if errors.Is(err, gorm.ErrRecordNotFound) {
-						return errors.New("role does not exist")
-					}
-
-					return errors.New("failed to get role")
-				}
-
-				if role.ID == 0 {
+	if req.Roles != nil && len(*req.Roles) > 0 {
+		roles := make([]uint, 0)
+		for _, roleName := range *req.Roles {
+			var role entity.SRole
+			err := tx.Model(&entity.SRole{}).Where("role_name = ?", roleName).Find(&role).Error
+			if err != nil {
+				log.Error("UserRepository.CreateUser: " + err.Error())
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					tx.Rollback()
 					return errors.New("role does not exist")
 				}
 
-				roles = append(roles, uint(role.ID))
+				tx.Rollback()
+				return errors.New("failed to get role")
 			}
-			err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserId: userReq.ID.String(), Roles: roles})
-			if err != nil {
-				return err
-			}
-		}
 
-		if req.Policies != nil {
-			err := receiver.UpdateUserRolePolicy(request.UpdateUserRolePolicyRequest{UserId: userReq.ID.String(), Policies: *req.Policies})
-			if err != nil {
-				return err
+			if role.ID == 0 {
+				tx.Rollback()
+				return errors.New("role does not exist")
 			}
-		}
 
-		return nil
-	})
+			roles = append(roles, uint(role.ID))
+		}
+		tx.Commit()
+		err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserId: userReq.ID.String(), Roles: roles})
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		log.Warnf("Attempted to commit a transaction that is already committed: %v", err)
+	}
 
 	return nil
 }
@@ -254,15 +388,12 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 		}
 	}
 
-	if req.Policies != nil {
-		err := receiver.UpdateUserRolePolicy(request.UpdateUserRolePolicyRequest{UserId: req.ID, Policies: *req.Policies})
-		if err != nil {
-			return err
-		}
-	}
-
 	updatePayload := map[string]interface{}{}
 	updatePayload["username"] = req.Username
+
+	if req.Nickname != nil {
+		updatePayload["nickname"] = *req.Nickname
+	}
 
 	if req.Fullname != nil {
 		updatePayload["fullname"] = *req.Fullname
@@ -274,11 +405,6 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 
 	if req.Email != nil {
 		updatePayload["email"] = *req.Email
-	}
-
-	if req.UserConfig != nil {
-		configId := *req.UserConfig
-		updatePayload["user_config_id"] = configId
 	}
 
 	resultUpdate := receiver.DBConn.Model(&entity.SUserEntity{}).Where("id = ?", req.ID).
@@ -411,43 +537,45 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 	return nil
 }
 
-func (receiver *UserEntityRepository) UpdateUserRolePolicy(req request.UpdateUserRolePolicyRequest) error {
+func (receiver *UserEntityRepository) UpdateUserRoleClaimPermission(req request.UpdateUserRoleClaimPermissionRequest) error {
 	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
 
 	if err != nil {
-		log.Error("UserEntityRepository.UpdateUserRolePolicy: " + err.Error())
+		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + err.Error())
 		return errors.New("failed to get user")
 	}
 
-	removeResult := receiver.DBConn.Exec("DELETE FROM s_user_policies WHERE user_id = ?", user.ID)
+	tx := receiver.DBConn.Begin()
+
+	removeResult := tx.Exec("DELETE FROM s_user_roles WHERE user_id = ? AND role", user.ID)
 
 	if removeResult.Error != nil {
-		log.Error("UserEntityRepository.UpdateUserRolePolicy: " + removeResult.Error.Error())
+		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + removeResult.Error.Error())
 		return errors.New("failed to remove user policy")
 	}
 
-	for _, policyId := range req.Policies {
-		var policy entity.SRolePolicy
-		err = receiver.DBConn.Where("id = ?", policyId).First(&policy).Error
+	// for _, policyId := range req.Policies {
+	// 	var policy entity.SRolePolicy
+	// 	err = receiver.DBConn.Where("id = ?", policyId).First(&policy).Error
 
-		if err != nil {
-			log.Error("UserEntityRepository.UpdateUserRolePolicy: " + err.Error())
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.New("policy doesn't exist")
-			}
-			return errors.New("failed to get policy")
-		}
+	// 	if err != nil {
+	// 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + err.Error())
+	// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 			return errors.New("policy doesn't exist")
+	// 		}
+	// 		return errors.New("failed to get policy")
+	// 	}
 
-		result := receiver.DBConn.Create(&entity.SUserPolicies{
-			UserId:   user.ID,
-			PolicyId: policy.ID,
-		})
+	// 	result := receiver.DBConn.Create(&entity.SUserPolicies{
+	// 		UserId:   user.RoleId,
+	// 		PolicyId: policy.RoleId,
+	// 	})
 
-		if result.Error != nil {
-			log.Error("UserEntityRepository.UpdateUserRolePolicy: " + result.Error.Error())
-			return errors.New("failed to assign user policy")
-		}
-	}
+	// 	if result.Error != nil {
+	// 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + result.Error.Error())
+	// 		return errors.New("failed to assign user policy")
+	// 	}
+	// }
 
 	return nil
 }

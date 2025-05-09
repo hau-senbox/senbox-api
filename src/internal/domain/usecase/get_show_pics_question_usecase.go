@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/internal/data/repository"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetShowPicsQuestionDetailUseCase struct {
@@ -11,7 +12,7 @@ type GetShowPicsQuestionDetailUseCase struct {
 }
 
 func (receiver *GetShowPicsQuestionDetailUseCase) Execute(questionId string) (string, error) {
-	question, err := receiver.QuestionRepository.FindById(questionId)
+	question, err := receiver.FindById(questionId)
 	if err != nil {
 		return "", err
 	}

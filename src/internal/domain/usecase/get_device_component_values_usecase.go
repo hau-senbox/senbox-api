@@ -10,8 +10,8 @@ type GetDeviceComponentValuesUseCase struct {
 	*repository.DeviceComponentValuesRepository
 }
 
-func (receiver *GetDeviceComponentValuesUseCase) GetDeviceComponentValuesByCompany(req request.GetDeviceComponentValuesByCompanyRequest) (*entity.SDeviceComponentValues, error) {
-	return receiver.GetByCompany(req)
+func (receiver *GetDeviceComponentValuesUseCase) GetDeviceComponentValuesByOrganization(req request.GetDeviceComponentValuesByOrganizationRequest) (*entity.SDeviceComponentValues, error) {
+	return receiver.GetByOrganization(req)
 }
 
 func (receiver *GetDeviceComponentValuesUseCase) GetDeviceComponentValuesByDevice(req request.GetDeviceComponentValuesByDeviceRequest) (*entity.SDeviceComponentValues, error) {

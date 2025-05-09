@@ -2,12 +2,12 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"regexp"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/parameters"
-	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
@@ -96,7 +96,7 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 	monitor.LogGoogleAPIRequestImportForm()
 	values, err := c.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetId: spreadsheetId,
-		ReadRange:     sheetNameToRead + `!` + c.AppConfig.Google.FirstColumn + strconv.Itoa(c.AppConfig.Google.FirstRow-1) + `:Q`,
+		ReadRange:     sheetNameToRead + `!` + c.Google.FirstColumn + strconv.Itoa(c.Google.FirstRow-1) + `:Q`,
 	})
 	if err != nil || values == nil {
 		log.Error(fmt.Sprintf("Error reading spreadsheet: %s - note : %s", err.Error(), note))
@@ -123,7 +123,8 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 				required = row[4].(string)
 			}
 			item := parameters.RawQuestion{
-				QuestionId:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + row[0].(string),
+				// QuestionId:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + row[0].(string),
+				QuestionId:        uuid.NewString(),
 				Question:          row[2].(string),
 				Type:              row[1].(string),
 				Attributes:        strings.ReplaceAll(row[3].(string), "\n", ""),
@@ -144,7 +145,6 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 		Password:       "",
 		RawQuestions:   rawQuestions,
 		SheetName:      sheetNameToRead,
-		SyncStrategy:   value.FormSyncStrategyOnSubmit,
 	})
 
 	if err != nil {

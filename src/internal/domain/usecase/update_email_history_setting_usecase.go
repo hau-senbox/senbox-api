@@ -21,5 +21,5 @@ func (receiver *UpdateEmailHistorySettingUseCase) Execute(req request.UpdateEmai
 
 	spreadsheetId := match[1]
 
-	return receiver.SettingRepository.UpdateEmaiHistorySetting(spreadsheetId)
+	return receiver.UpdateEmaiHistorySetting(spreadsheetId)
 }

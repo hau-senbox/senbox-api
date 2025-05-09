@@ -17,5 +17,5 @@ type Answer struct {
 
 type AnswerFormRequest struct {
 	Answers  []Answer  `json:"answers" binding:"required"`
-	OpenedAt time.Time `json:"opened_at,default=now()"`
+	OpenedAt time.Time `json:"opened_at"`
 }

@@ -35,7 +35,7 @@ import (
 const (
 	serviceName = "go-main-service"
 	ttl         = time.Second * 8
-	checkId     = "health-check"
+	checkId     = "go-main-service-health-check"
 )
 
 var serviceId = fmt.Sprintf("%s-%d", serviceName, rand.Intn(100))
@@ -181,7 +181,7 @@ func setupConsul(client *api.Client, consulHost string, appConfig *config.AppCon
 
 	// Service registration
 	registration := &api.AgentServiceRegistration{
-		ID:      serviceId,   // Unique service ID
+		ID:      serviceId,   // Unique service RoleId
 		Name:    serviceName, // Service name
 		Port:    port,        // Service port
 		Address: hostname,    // Service address
@@ -210,7 +210,7 @@ func setupConsul(client *api.Client, consulHost string, appConfig *config.AppCon
 	}
 
 	go func() {
-		plan.RunWithConfig(fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port), api.DefaultConfig())
+		_ = plan.RunWithConfig(fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port), api.DefaultConfig())
 	}()
 
 	err = client.Agent().ServiceRegister(registration)

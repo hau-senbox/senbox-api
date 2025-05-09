@@ -59,48 +59,17 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	deviceRepository := &repository.DeviceRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl}
 
-	syncDevicesUseCase := &usecase.SyncDevicesUseCase{
-		SettingRepository: settingRepository,
-		DeviceRepository:  deviceRepository,
-		DeviceFormDatasetRepository: &repository.DeviceFormDatasetRepository{
-			DBConn: dbConn,
-		},
-		UserEntityRepository:  &repository.UserEntityRepository{DBConn: dbConn},
-		UserConfigRepository:  &repository.UserConfigRepository{DBConn: dbConn},
-		Reader:                uploaderSpreadsheet.Reader,
-		Writer:                uploaderSpreadsheet.Writer,
-		TimeMachine:           usecase.TheTimeMachine,
-		UserSpreadsheetReader: userSpreadsheet.Reader,
-		UserSpreadsheetWriter: userSpreadsheet.Writer,
-	}
-
 	v1 := engine.Group("/v1/admin")
 	{
-		userRepository := &repository.UserRepository{DBConn: dbConn}
-		userController := &controller.UserController{
-			GetUsersUseCase: usecase.GetUsersUseCase{
-				UserRepository: userRepository,
-			},
-			CreateUserUseCase: usecase.CreateUserUseCase{
-				UserRepository: userRepository,
-			},
-			ChangePasswordUseCase: usecase.ChangePasswordUseCase{
-				SessionRepository: &sessionRepository,
-				UserRepository:    userRepository,
-			},
-		}
 		loginController := &controller.LoginController{DBConn: dbConn,
 			AuthorizeUseCase: usecase.AuthorizeUseCase{
-				UserRepository:    &repository.UserRepository{DBConn: dbConn},
-				SessionRepository: sessionRepository,
+				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
+				SessionRepository:    sessionRepository,
 			},
 		}
 		v1.POST("/login", loginController.Login)
 
-		v1.GET("/users", secureMiddleware.ValidateAdminRole(), userController.GetUserList)
-		v1.PUT("/me/new-password", secureMiddleware.ValidateAdminRole(), userController.ChangePassword)
-
-		v1.POST("/user/create", secureMiddleware.ValidateAdminRole(), userController.CreateUser)
 		form := controller.FormController{
 			SaveFormUseCase: usecase.SaveFormUseCase{
 				FormRepository:         formRepo,
@@ -125,23 +94,23 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 			ImportFormsUseCase: importFormsUseCase,
 		}
-		v1.POST("/form/create", secureMiddleware.ValidateAdminRole(), form.CreateForm)
+		v1.POST("/form/create", secureMiddleware.ValidateSuperAdminRole(), form.CreateForm)
 
-		v1.GET("/form/list", secureMiddleware.ValidateAdminRole(), form.GetFormList)
+		v1.GET("/form/list", secureMiddleware.ValidateSuperAdminRole(), form.GetFormList)
 
-		v1.DELETE("/form/delete/:id", secureMiddleware.ValidateAdminRole(), form.DeleteForm)
+		v1.DELETE("/form/delete/:id", secureMiddleware.ValidateSuperAdminRole(), form.DeleteForm)
 
-		v1.GET("/forms/search", secureMiddleware.ValidateAdminRole(), form.SearchForms)
+		v1.GET("/forms/search", secureMiddleware.ValidateSuperAdminRole(), form.SearchForms)
 
-		v1.PUT("/form/:id", secureMiddleware.ValidateAdminRole(), form.UpdateForm)
+		v1.PUT("/form/:id", secureMiddleware.ValidateSuperAdminRole(), form.UpdateForm)
 
-		v1.POST("/forms/import", secureMiddleware.ValidateAdminRole(), form.ImportForms)
+		v1.POST("/forms/import", secureMiddleware.ValidateSuperAdminRole(), form.ImportForms)
 
-		v1.POST("/forms2/import", secureMiddleware.ValidateAdminRole(), form.ImportForms2)
+		v1.POST("/forms2/import", secureMiddleware.ValidateSuperAdminRole(), form.ImportForms2)
 
-		v1.POST("/forms3/import", secureMiddleware.ValidateAdminRole(), form.ImportForms3)
+		v1.POST("/forms3/import", secureMiddleware.ValidateSuperAdminRole(), form.ImportForms3)
 
-		v1.POST("/forms4/import", secureMiddleware.ValidateAdminRole(), form.ImportForms4)
+		v1.POST("/forms4/import", secureMiddleware.ValidateSuperAdminRole(), form.ImportForms4)
 
 		v1.POST("/forms/partially/import", middleware.NewSecureAppMiddleware(dbConn).Secure(), form.ImportFormsPartially)
 
@@ -153,7 +122,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				DeviceRepository: deviceRepository,
 			},
 			RegisterDeviceUseCase: &usecase.RegisterDeviceUseCase{
-				UserRepository:    &repository.UserRepository{DBConn: dbConn},
 				DeviceRepository:  deviceRepository,
 				SessionRepository: &sessionRepository,
 				Writer:            userSpreadsheet.Writer,
@@ -170,18 +138,15 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				SettingRepository: settingRepository,
 				Writer:            userSpreadsheet.Writer,
 			},
-			GetSettingMessageUseCase: &usecase.GetSettingMessageUseCase{DeviceRepository: deviceRepository, Reader: userSpreadsheet.Reader},
 		}
 
-		v1.GET("/device/message/:device_id", secureMiddleware.ValidateAdminRole(), deviceController.GetSettingMessageV2)
+		v1.PUT("/device/deactivate/:device_id", secureMiddleware.ValidateSuperAdminRole(), deviceController.DeactivateDevice)
 
-		v1.PUT("/device/deactivate/:device_id", secureMiddleware.ValidateAdminRole(), deviceController.DeactivateDevice)
+		v1.PUT("/device/activate/:device_id", secureMiddleware.ValidateSuperAdminRole(), deviceController.ActivateDevice)
 
-		v1.PUT("/device/activate/:device_id", secureMiddleware.ValidateAdminRole(), deviceController.ActivateDevice)
+		v1.PUT("/device/:device_id/update", secureMiddleware.ValidateSuperAdminRole(), deviceController.UpdateDevice)
 
-		v1.PUT("/device/:device_id/update", secureMiddleware.ValidateAdminRole(), deviceController.UpdateDevice)
-
-		v1.PUT("/device/:device_id/updatev2", secureMiddleware.ValidateAdminRole(), deviceController.UpdateDeviceV2)
+		v1.PUT("/device/:device_id/updatev2", secureMiddleware.ValidateSuperAdminRole(), deviceController.UpdateDeviceV2)
 	}
 	redirectUrl := engine.Group("/v1/admin/redirect-url")
 	{
@@ -202,27 +167,27 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			GetRedirectUrlByQRCodeUseCase: nil,
 			ImportRedirectUrlsUseCase:     importUrlsUseCase,
 		}
-		redirectUrl.POST("/create", secureMiddleware.ValidateAdminRole(), redirectController.CreateRedirectUrl)
+		redirectUrl.POST("/create", secureMiddleware.ValidateSuperAdminRole(), redirectController.CreateRedirectUrl)
 
-		redirectUrl.GET("/list", secureMiddleware.ValidateAdminRole(), redirectController.GetRedirectUrlList)
+		redirectUrl.GET("/list", secureMiddleware.ValidateSuperAdminRole(), redirectController.GetRedirectUrlList)
 
-		redirectUrl.DELETE("/:id", secureMiddleware.ValidateAdminRole(), redirectController.DeleteRedirectUrl)
+		redirectUrl.DELETE("/:id", secureMiddleware.ValidateSuperAdminRole(), redirectController.DeleteRedirectUrl)
 
-		redirectUrl.PUT("/:id", secureMiddleware.ValidateAdminRole(), redirectController.UpdateRedirectUrl)
+		redirectUrl.PUT("/:id", secureMiddleware.ValidateSuperAdminRole(), redirectController.UpdateRedirectUrl)
 
-		redirectUrl.POST("/import", secureMiddleware.ValidateAdminRole(), redirectController.ImportRedirectUrls)
+		redirectUrl.POST("/import", secureMiddleware.ValidateSuperAdminRole(), redirectController.ImportRedirectUrls)
 		//Partially import
 		redirectUrl.POST("/import/partially", middleware.NewSecureAppMiddleware(dbConn).Secure(), redirectController.ImportPartiallyRedirectUrls)
 	}
 
 	todo := engine.Group("/v1/admin/todo")
 	{
-		controller := controller.NewImportToDoListController(config, dbConn, uploaderSpreadsheet.Reader, uploaderSpreadsheet.Writer, usecase.TheTimeMachine)
-		todo.POST("/import", secureMiddleware.ValidateAdminRole(), controller.ImportTodos)
-		todo.POST("/import/partially", middleware.NewSecureAppMiddleware(dbConn).Secure(), controller.ImportPartiallyTodos)
+		todoController := controller.NewImportToDoListController(config, dbConn, uploaderSpreadsheet.Reader, uploaderSpreadsheet.Writer, usecase.TheTimeMachine)
+		todo.POST("/import", secureMiddleware.ValidateSuperAdminRole(), todoController.ImportTodos)
+		todo.POST("/import/partially", middleware.NewSecureAppMiddleware(dbConn).Secure(), todoController.ImportPartiallyTodos)
 	}
 
-	system := engine.Group("/v1/admin/settings", secureMiddleware.ValidateAdminRole())
+	system := engine.Group("/v1/admin/settings", secureMiddleware.ValidateSuperAdminRole())
 	{
 		systemController := &controller.SettingController{
 			GetSettingsUseCase: &usecase.GetSettingsUseCase{
@@ -234,7 +199,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UpdateOutputSummarySettingUseCase: &usecase.UpdateOutputSummarySettingUseCase{
 				SettingRepository: settingRepository,
 			},
-			SyncDevicesUseCase: syncDevicesUseCase,
 			UpdateEmailHistorySettingUseCase: &usecase.UpdateEmailHistorySettingUseCase{
 				SettingRepository: settingRepository,
 			},
@@ -271,8 +235,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		system.POST("/output-sheet", systemController.UpdateOutputSubmissionSettings)
 
 		system.POST("/output-summary", systemController.UpdateOutputSummarySettings)
-
-		system.POST("/sync-devices", systemController.SyncDevices)
 
 		system.POST("/email-history", systemController.UpdateEmailHistorySettings)
 
@@ -320,7 +282,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	}
 
 	controller.DBConn = dbConn
-	codeCounter := engine.Group("/v1/admin/code-counting", secureMiddleware.ValidateAdminRole())
+	codeCounter := engine.Group("/v1/admin/code-counting", secureMiddleware.ValidateSuperAdminRole())
 	{
 		codeCounter.GET("/list", controller.GetCodeCounterList)
 		codeCounter.PUT("/update", controller.UpdateCodeCounter)
@@ -329,44 +291,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	executor := &TimeMachineSubscriber{
 		ImportFormsUseCase:        importFormsUseCase,
 		ImportRedirectUrlsUseCase: importUrlsUseCase,
-		SyncDevicesUseCase:        syncDevicesUseCase,
 		SettingRepository:         settingRepository,
 		ImportToDoListUseCase:     usecase.NewImportToDoListUseCase(config, dbConn, uploaderSpreadsheet.Reader, uploaderSpreadsheet.Writer, usecase.TheTimeMachine),
-		SyncSubmissionUseCase: &usecase.SyncSubmissionUseCase{
-			SubmissionRepository: &repository.SubmissionRepository{
-				DBConn: dbConn,
-			},
-			// DeviceRepository:      deviceRepository,
-			FormRepository:        &repository.FormRepository{DBConn: dbConn},
-			QuestionRepository:    &repository.QuestionRepository{DBConn: dbConn},
-			SettingRepository:     settingRepository,
-			UserSpreadsheetReader: userSpreadsheet.Reader,
-			UserSpreadsheetWriter: userSpreadsheet.Writer,
-			SendEmailUseCase: &usecase.SendEmailUseCase{
-				SMTPConfig:        config.SMTP,
-				SettingRepository: settingRepository,
-				Writer:            userSpreadsheet.Writer,
-			},
-			GetSettingMessageUseCase: &usecase.GetSettingMessageUseCase{
-				DeviceRepository: deviceRepository,
-				Reader:           userSpreadsheet.Reader,
-			},
-			UserEntityRepository: &repository.UserEntityRepository{
-				DBConn: dbConn,
-			},
-		},
 	}
 	//usecase.TheTimeMachine.Start(config.CronJobInterval)
-	getSettingsUseCase := &usecase.GetSettingsUseCase{
-		SettingRepository: settingRepository,
-	}
 	// appSetting, _ := getSettingsUseCase.GetSettings()
 	var formInterval uint64 = 0
 	var formInterval2 uint64 = 0
 	var formInterval3 uint64 = 0
 	var formInterval4 uint64 = 0
 	var redirectInterval uint64 = 0
-	var devicesInterval uint64 = 0
 	var toDosInterval uint64 = 0
 	// if appSetting != nil {
 	// 	if appSetting.Form != nil {
@@ -411,17 +345,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		infra.GET("/backup", infrastructure.BackupDatabase())
 	}
 
-	sync := engine.Group("v1/admin/sync")
-	{
-		synchronizeController := &controller.SyncController{
-			SynchronizeUseCase: &usecase.SynchronizeUseCase{},
-			GetSettingsUseCase: getSettingsUseCase,
-		}
-
-		sync.POST("/start", secureMiddleware.ValidateAdminRole(), synchronizeController.StartSync)
-		sync.POST("/stop", secureMiddleware.ValidateAdminRole(), synchronizeController.StopSync)
-	}
-
 	deviceComponentValues := engine.Group("/v1/admin/device-component-values")
 	{
 		deviceComponentValuesRepository := &repository.DeviceComponentValuesRepository{DBConn: dbConn}
@@ -434,16 +357,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		}
 
-		deviceComponentValues.GET("/company/:company_id", deviceComponentValuesController.GetDeviceComponentValuesByCompany)
+		deviceComponentValues.GET("/organization/:organization_id", deviceComponentValuesController.GetDeviceComponentValuesByOrganization)
 
-		deviceComponentValues.GET("/device/:company_id", deviceComponentValuesController.GetDeviceComponentValuesByDevice)
+		deviceComponentValues.GET("/device/:organization_id", deviceComponentValuesController.GetDeviceComponentValuesByDevice)
 
-		deviceComponentValues.POST("/company", secureMiddleware.ValidateAdminRole(), deviceComponentValuesController.SaveDeviceComponentValuesByCompany)
+		deviceComponentValues.POST("/organization", secureMiddleware.ValidateSuperAdminRole(), deviceComponentValuesController.SaveDeviceComponentValuesByOrganization)
 
-		deviceComponentValues.POST("/device", secureMiddleware.ValidateAdminRole(), deviceComponentValuesController.SaveDeviceComponentValuesByCompany)
+		deviceComponentValues.POST("/device", secureMiddleware.ValidateSuperAdminRole(), deviceComponentValuesController.SaveDeviceComponentValuesByOrganization)
 	}
 
-	usecase.TheTimeMachine.Start(formInterval, redirectInterval, devicesInterval, toDosInterval, formInterval2, formInterval3, formInterval4, 0)
+	usecase.TheTimeMachine.Start(formInterval, redirectInterval, toDosInterval, formInterval2, formInterval3, formInterval4)
 
 	usecase.TheTimeMachine.SubscribeFormsExec(executor)
 	usecase.TheTimeMachine.SubscribeForms2Exec(executor)
@@ -453,57 +376,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	usecase.TheTimeMachine.SubscribeSyncDevicesExec(executor)
 	usecase.TheTimeMachine.SubscribeSyncToDosExec(executor)
 	usecase.TheTimeMachine.SubscribeGoogleAPIRequestMonitorExec(executor)
-	usecase.TheTimeMachine.SubscribeSyncSubmissionsExec(executor)
 }
 
 type TimeMachineSubscriber struct {
 	*usecase.ImportFormsUseCase
 	*usecase.ImportRedirectUrlsUseCase
-	*usecase.SyncDevicesUseCase
 	*repository.SettingRepository
 	*usecase.ImportToDoListUseCase
-	*usecase.SyncSubmissionUseCase
-}
-
-func (t *TimeMachineSubscriber) ExecuteSyncDevices() {
-	log.Debug("Start sync devices")
-	monitor.SendMessageViaTelegram("Start sync devices by cron job")
-	type ImportSetting struct {
-		SpreadSheetUrl string `json:"spreadsheet_url"`
-		AutoImport     bool   `json:"auto"`
-		Interval       uint64 `json:"interval"`
-	}
-
-	deviceSetting, err := t.SettingRepository.GetSyncDevicesSettings()
-
-	if err != nil {
-		log.Error(err)
-	} else {
-		log.Debug(deviceSetting)
-		var importSetting ImportSetting
-		err = json.Unmarshal([]byte(deviceSetting.Settings), &importSetting)
-		if err != nil {
-			log.Error(err)
-		} else {
-			var importSetting ImportSetting
-			err = json.Unmarshal([]byte(deviceSetting.Settings), &importSetting)
-			if err != nil {
-				log.Error(err)
-			} else {
-				err = t.SyncDevicesUseCase.SyncDevices(request.SyncDevicesRequest{
-					SpreadsheetUrl: importSetting.SpreadSheetUrl,
-					AutoImport:     importSetting.AutoImport,
-					Interval:       importSetting.Interval,
-				})
-				if err != nil {
-					log.Error(err)
-					monitor.SendMessageViaTelegram("Error sync devices by cron job Err:", err.Error())
-				} else {
-					monitor.SendMessageViaTelegram("Finish sync devices by cron job")
-				}
-			}
-		}
-	}
 }
 
 func (t *TimeMachineSubscriber) ExecuteSyncUrls() {
@@ -514,7 +393,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncUrls() {
 		Interval       uint64 `json:"interval"`
 	}
 
-	urlSetting, err := t.SettingRepository.GetUrlSettings()
+	urlSetting, err := t.GetUrlSettings()
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -524,7 +403,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncUrls() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err = t.ImportRedirectUrlsUseCase.SyncUrls(request.ImportRedirectUrlsRequest{
+			err = t.SyncUrls(request.ImportRedirectUrlsRequest{
 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
 				AutoImport:     importSetting.AutoImport,
 				Interval:       importSetting.Interval,
@@ -545,7 +424,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms() {
 	}
 
 	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
-	formSettings, err := t.SettingRepository.GetFormSettings()
+	formSettings, err := t.GetFormSettings()
 	if err != nil {
 		log.Error(err)
 		return
@@ -556,7 +435,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err = t.ImportFormsUseCase.SyncForms(request.ImportFormRequest{
+			err = t.SyncForms(request.ImportFormRequest{
 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
 				AutoImport:     importSetting.AutoImport,
 				Interval:       importSetting.Interval,
@@ -577,7 +456,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms2() {
 	}
 
 	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
-	formSettings, err := t.SettingRepository.GetFormSettings2()
+	formSettings, err := t.GetFormSettings2()
 	if err != nil {
 		log.Error(err)
 		return
@@ -588,7 +467,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms2() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err = t.ImportFormsUseCase.SyncForms(request.ImportFormRequest{
+			err = t.SyncForms(request.ImportFormRequest{
 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
 				AutoImport:     importSetting.AutoImport,
 				Interval:       importSetting.Interval,
@@ -609,7 +488,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms3() {
 	}
 
 	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
-	formSettings, err := t.SettingRepository.GetFormSettings3()
+	formSettings, err := t.GetFormSettings3()
 	if err != nil {
 		log.Error(err)
 		return
@@ -620,7 +499,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms3() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err = t.ImportFormsUseCase.SyncForms(request.ImportFormRequest{
+			err = t.SyncForms(request.ImportFormRequest{
 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
 				AutoImport:     importSetting.AutoImport,
 				Interval:       importSetting.Interval,
@@ -641,7 +520,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms4() {
 	}
 
 	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
-	formSettings, err := t.SettingRepository.GetFormSettings4()
+	formSettings, err := t.GetFormSettings4()
 	if err != nil {
 		log.Error(err)
 		return
@@ -652,7 +531,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms4() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err = t.ImportFormsUseCase.SyncForms(request.ImportFormRequest{
+			err = t.SyncForms(request.ImportFormRequest{
 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
 				AutoImport:     importSetting.AutoImport,
 				Interval:       importSetting.Interval,
@@ -672,7 +551,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncTodos() {
 		Interval       uint64 `json:"interval"`
 	}
 
-	deviceSetting, err := t.SettingRepository.GetSyncToDosSettings()
+	deviceSetting, err := t.GetSyncToDosSettings()
 
 	if err != nil {
 		log.Error(err)
@@ -688,7 +567,7 @@ func (t *TimeMachineSubscriber) ExecuteSyncTodos() {
 			if err != nil {
 				log.Error(err)
 			} else {
-				err = t.ImportToDoListUseCase.ImportToDoList(request.ImportFormRequest{
+				err = t.ImportToDoList(request.ImportFormRequest{
 					SpreadsheetUrl: importSetting.SpreadSheetUrl,
 					AutoImport:     importSetting.AutoImport,
 					Interval:       importSetting.Interval,
@@ -718,9 +597,4 @@ func (t *TimeMachineSubscriber) ExecuteGoogleAPIRequestMonitor() {
 	}
 
 	monitor.ResetGoogleAPIRequestMonitor()
-}
-
-func (t *TimeMachineSubscriber) ExecuteSubmissionSync() {
-	log.Info("Start interval sync submission")
-	t.SyncSubmissionUseCase.Execute()
 }

@@ -5,10 +5,10 @@ import (
 	"sen-global-api/internal/domain/request"
 )
 
-type DeleteRoleClaimUseCase struct {
-	*repository.RoleClaimRepository
+type DeleteFunctionClaimUseCase struct {
+	*repository.FunctionClaimRepository
 }
 
-func (receiver *DeleteRoleClaimUseCase) DeleteRoleClaim(req request.DeleteRoleClaimRequest) error {
-	return receiver.RoleClaimRepository.DeleteRoleClaim(req)
+func (receiver *DeleteFunctionClaimUseCase) DeleteFunctionClaim(req request.DeleteFunctionClaimRequest) error {
+	return receiver.FunctionClaimRepository.DeleteFunctionClaim(req)
 }

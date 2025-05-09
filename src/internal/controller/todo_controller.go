@@ -19,6 +19,7 @@ type ToDoController struct {
 	markToDoAsDoneUseCase      *usecase.MarkToDoAsDoneUseCase
 	updateToDoTasksUseCase     *usecase.UpdateToDoTasksUseCase
 	findTodoByIdUseCase        *usecase.FindTodoByIdUseCase
+	getDeviceByIdUseCase       *usecase.GetDeviceByIdUseCase
 }
 
 type getTodoByQRCodeParams struct {
@@ -66,10 +67,8 @@ func (c *ToDoController) GetToDoListByQRCode(context *gin.Context) {
 	todoList, err := c.getToDoListByQRCodeUseCase.Execute(params.QRCode)
 	if err != nil {
 		context.JSON(500, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -99,6 +98,7 @@ type markToDoAsDoneRequest struct {
 	QRCode    string `json:"qr_code" binding:"required"`
 	TaskIndex int    `json:"task_index"`
 	Select    string `json:"select"`
+	DeviceID  string `json:"device_id" binding:"required"`
 }
 
 // MarkToDoAsDone godoc
@@ -117,48 +117,42 @@ func (c *ToDoController) MarkToDoAsDone(context *gin.Context) {
 	var req markToDoAsDoneRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(400, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	device, err := c.findDeviceFromRequestCase.FindDevice(context)
+
+	device, err := c.getDeviceByIdUseCase.Get(req.DeviceID)
 	if err != nil || device == nil {
 		context.JSON(http.StatusBadGateway, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadGateway,
-				Message: "Cannot find device",
-			},
+			Code:  http.StatusBadGateway,
+			Error: "Cannot find device",
 		})
 		return
 	}
+
 	_, err = c.findTodoByIdUseCase.Execute(req.QRCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "ToDo not found",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "ToDo not found",
 		})
 		return
 	}
+
 	err = c.markToDoAsDoneUseCase.Execute(*device, req.QRCode, req.TaskIndex, req.Select)
 	if err != nil {
 		context.JSON(500, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
+
 	context.JSON(200, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Mark ToDo As Done successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Mark ToDo As Done successfully",
 	})
 }
 
@@ -169,6 +163,7 @@ func NewToDoController(cfg config.AppConfig, dbConn *gorm.DB, reader *sheet.Read
 		markToDoAsDoneUseCase:      usecase.NewMarkToDoAsDoneUseCase(cfg, dbConn, reader, writer),
 		updateToDoTasksUseCase:     usecase.NewUpdateToDoTasksUseCase(cfg, dbConn, reader, writer),
 		findTodoByIdUseCase:        usecase.NewFindTodoByIdUseCase(dbConn),
+		getDeviceByIdUseCase:       usecase.NewGetDeviceByIdUseCase(dbConn),
 	}
 }
 
@@ -188,10 +183,8 @@ func (c *ToDoController) UpdateToDoTasks(context *gin.Context) {
 	var req request.UpdateToDoTasksRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(400, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -199,19 +192,15 @@ func (c *ToDoController) UpdateToDoTasks(context *gin.Context) {
 	_, err := c.updateToDoTasksUseCase.UpdateTask(req)
 	if err != nil {
 		context.JSON(500, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "ToDo Tasks successfully updated",
-		},
+		Code:    http.StatusOK,
+		Message: "ToDo Tasks successfully updated",
 	})
 }
 
@@ -231,10 +220,8 @@ func (c *ToDoController) LogTask(context *gin.Context) {
 	var req request.LogTaskRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(400, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 
 		return
@@ -243,10 +230,8 @@ func (c *ToDoController) LogTask(context *gin.Context) {
 	device, err := c.findDeviceFromRequestCase.FindDevice(context)
 	if err != nil || device == nil {
 		context.JSON(http.StatusBadGateway, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadGateway,
-				Message: "Cannot find device",
-			},
+			Code:  http.StatusBadGateway,
+			Error: "Cannot find device",
 		})
 		return
 	}
@@ -254,19 +239,15 @@ func (c *ToDoController) LogTask(context *gin.Context) {
 	err = c.markToDoAsDoneUseCase.LogTask(req, *device)
 	if err != nil {
 		context.JSON(500, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
 	}
 
 	context.JSON(200, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Log Task successfully updated",
-		},
+		Code:    http.StatusOK,
+		Message: "Log Task successfully updated",
 	})
 }

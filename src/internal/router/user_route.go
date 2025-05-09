@@ -28,16 +28,22 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
+		UpdateUserRoleUseCase: &usecase.UpdateUserRoleUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
 		AuthorizeUseCase: &usecase.AuthorizeUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 			DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 			SessionRepository:    sessionRepository,
 		},
-	}
-
-	userConfigController := &controller.UserConfigController{
-		GetUserConfigUseCase: &usecase.GetUserConfigUseCase{
-			UserConfigRepository: &repository.UserConfigRepository{DBConn: dbConn},
+		UpdateUserOrgInfoUseCase: &usecase.UpdateUserOrgInfoUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		UpdateUserAuthorizeUseCase: &usecase.UpdateUserAuthorizeUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		DeleteUserAuthorizeUseCase: &usecase.DeleteUserAuthorizeUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
 	}
 
@@ -56,35 +62,36 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 	}
 
-	roleClaimController := &controller.RoleClaimController{
-		GetRoleClaimUseCase: &usecase.GetRoleClaimUseCase{
-			RoleClaimRepository: &repository.RoleClaimRepository{DBConn: dbConn},
+	functionClaimController := &controller.FunctionClaimController{
+		GetFunctionClaimUseCase: &usecase.GetFunctionClaimUseCase{
+			FunctionClaimRepository: &repository.FunctionClaimRepository{DBConn: dbConn},
 		},
-		CreateRoleClaimUseCase: &usecase.CreateRoleClaimUseCase{
-			RoleClaimRepository: &repository.RoleClaimRepository{DBConn: dbConn},
+		CreateFunctionClaimUseCase: &usecase.CreateFunctionClaimUseCase{
+			FunctionClaimRepository: &repository.FunctionClaimRepository{DBConn: dbConn},
 		},
-		UpdateRoleClaimUseCase: &usecase.UpdateRoleClaimUseCase{
-			RoleClaimRepository: &repository.RoleClaimRepository{DBConn: dbConn},
+		UpdateFunctionClaimUseCase: &usecase.UpdateFunctionClaimUseCase{
+			FunctionClaimRepository: &repository.FunctionClaimRepository{DBConn: dbConn},
 		},
-		DeleteRoleClaimUseCase: &usecase.DeleteRoleClaimUseCase{
-			RoleClaimRepository: &repository.RoleClaimRepository{DBConn: dbConn},
+		DeleteFunctionClaimUseCase: &usecase.DeleteFunctionClaimUseCase{
+			FunctionClaimRepository: &repository.FunctionClaimRepository{DBConn: dbConn},
 		},
 	}
 
-	rolePolicyController := &controller.RolePolicyController{
-		GetRolePolicyUseCase: &usecase.GetRolePolicyUseCase{
-			RolePolicyRepository: &repository.RolePolicyRepository{DBConn: dbConn},
+	functionClaimPermissionController := &controller.FunctionClaimPermissionController{
+		GetFunctionClaimPermissionUseCase: &usecase.GetFunctionClaimPermissionUseCase{
+			FunctionClaimPermissionRepository: &repository.FunctionClaimPermissionRepository{DBConn: dbConn},
 		},
-		CreateRolePolicyUseCase: &usecase.CreateRolePolicyUseCase{
-			RolePolicyRepository: &repository.RolePolicyRepository{DBConn: dbConn},
+		CreateFunctionClaimPermissionUseCase: &usecase.CreateFunctionClaimPermissionUseCase{
+			FunctionClaimPermissionRepository: &repository.FunctionClaimPermissionRepository{DBConn: dbConn},
 		},
-		UpdateRolePolicyUseCase: &usecase.UpdateRolePolicyUseCase{
-			RolePolicyRepository: &repository.RolePolicyRepository{DBConn: dbConn},
+		UpdateFunctionClaimPermissionUseCase: &usecase.UpdateFunctionClaimPermissionUseCase{
+			FunctionClaimPermissionRepository: &repository.FunctionClaimPermissionRepository{DBConn: dbConn},
 		},
-		DeleteRolePolicyUseCase: &usecase.DeleteRolePolicyUseCase{
-			RolePolicyRepository: &repository.RolePolicyRepository{DBConn: dbConn},
+		DeleteFunctionClaimPermissionUseCase: &usecase.DeleteFunctionClaimPermissionUseCase{
+			FunctionClaimPermissionRepository: &repository.FunctionClaimPermissionRepository{DBConn: dbConn},
 		},
 	}
+
 	userAccess := engine.Group("v1/")
 	{
 		loginController := &controller.LoginController{DBConn: dbConn,
@@ -106,11 +113,15 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/update", userEntityController.UpdateUserEntity)
-	}
+		user.POST("/role/update", userEntityController.UpdateUserRole)
 
-	userConfig := engine.Group("v1/user-config")
-	{
-		userConfig.GET("/:id", userConfigController.GetUserConfigById)
+		user.GET("/org/:organization_id/:user_id", userEntityController.GetUserOrgInfo)
+		user.GET("/org/:organization_id/manager", userEntityController.GetAllOrgManagerInfo)
+		user.POST("/org/update", userEntityController.UpdateUserOrgInfo)
+
+		user.GET("/:id/func", userEntityController.GetAllUserAuthorize)
+		user.POST("/func", userEntityController.UpdateUserAuthorize)
+		user.DELETE("/func", userEntityController.DeleteUserAuthorize)
 	}
 
 	userRole := engine.Group("v1/user-role")
@@ -125,28 +136,27 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userRole.DELETE("/:id", userRoleController.DeleteRole)
 	}
 
-	roleClaim := engine.Group("v1/role-claim")
+	functionClaim := engine.Group("v1/function-claim")
 	{
-		roleClaim.GET("/all", roleClaimController.GetAllRoleClaim)
-		roleClaim.GET("/all/:role_id", roleClaimController.GetAllRoleClaimByRole)
-		roleClaim.GET("/:id", roleClaimController.GetRoleClaimById)
-		roleClaim.GET("/name/:claim_name", roleClaimController.GetRoleClaimByName)
+		functionClaim.GET("/all", functionClaimController.GetAllFunctionClaim)
+		functionClaim.GET("/:id", functionClaimController.GetFunctionClaimById)
+		functionClaim.GET("/name/:function_name", functionClaimController.GetFunctionClaimByName)
 
-		roleClaim.POST("/init", roleClaimController.CreateRoleClaim)
-		roleClaim.POST("/", roleClaimController.UpdateRoleClaim)
+		functionClaim.POST("/init", functionClaimController.CreateFunctionClaim)
+		functionClaim.POST("/", functionClaimController.UpdateFunctionClaim)
 
-		roleClaim.DELETE("/:id", roleClaimController.DeleteRoleClaim)
+		functionClaim.DELETE("/:id", functionClaimController.DeleteFunctionClaim)
 	}
 
-	rolePolicy := engine.Group("v1/role-policy")
+	functionClaimPermission := engine.Group("v1/function-claim-permission")
 	{
-		rolePolicy.GET("/all", rolePolicyController.GetAllRolePolicy)
-		rolePolicy.GET("/:id", rolePolicyController.GetRolePolicyById)
-		rolePolicy.GET("/name/:policy_name", rolePolicyController.GetRolePolicyByName)
+		functionClaimPermission.GET("/function/:function_claim_id/all", functionClaimPermissionController.GetAllFunctionClaimPermission)
+		functionClaimPermission.GET("/:id", functionClaimPermissionController.GetFunctionClaimPermissionById)
+		functionClaimPermission.GET("/name/:permission_name", functionClaimPermissionController.GetFunctionClaimPermissionByName)
 
-		rolePolicy.POST("/init", rolePolicyController.CreateRolePolicy)
-		rolePolicy.POST("/", rolePolicyController.UpdateRolePolicy)
+		functionClaimPermission.POST("/init", functionClaimPermissionController.CreateFunctionClaimPermission)
+		functionClaimPermission.POST("/", functionClaimPermissionController.UpdateRoleClaimPermission)
 
-		rolePolicy.DELETE("/:id", rolePolicyController.DeleteRolePolicy)
+		functionClaimPermission.DELETE("/:id", functionClaimPermissionController.DeleteRoleClaimPermission)
 	}
 }

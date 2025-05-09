@@ -9,7 +9,6 @@ import (
 )
 
 type GetUserQuestionsUseCase struct {
-	repository.UserRepository
 	repository.DeviceQuestionRepository
 }
 
@@ -22,7 +21,7 @@ func (c GetUserQuestionsUseCase) GetQuestionsBelongToDevice(device *entity.SDevi
 	var result = make([]response.QuestionListData, len(userQuestions))
 	for i, question := range userQuestions {
 		var att response.QuestionAttributes
-		json.Unmarshal([]byte(question.Attributes), &att)
+		_ = json.Unmarshal([]byte(question.Attributes), &att)
 		result[i] = response.QuestionListData{
 			QuestionId:   question.QuestionId,
 			QuestionType: strings.ToUpper(question.QuestionType),

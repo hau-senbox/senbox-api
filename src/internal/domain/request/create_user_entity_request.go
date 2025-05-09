@@ -8,14 +8,14 @@ import (
 
 type CreateUserEntityRequest struct {
 	Username string `json:"username" binding:"required"`
+	Nickname string `json:"nickname" default:""`
 	// Fullname *string `json:"fullname"`
 	// Phone    *string `json:"phone"`
-	// Email    *string `json:"email"`
+	Email      *string   `json:"email"`
 	Birthday   string    `json:"birthday" binding:"required"`
 	Password   string    `json:"password" binding:"required"`
 	Guardians  *[]string `json:"guardians"`
 	Roles      *[]string `json:"roles"`
-	Policies   *[]uint   `json:"policies"`
 	DeviceUUID string    `json:"device_uuid" binding:"required"`
 }
 

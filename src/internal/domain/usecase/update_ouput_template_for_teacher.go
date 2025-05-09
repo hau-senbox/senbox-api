@@ -24,7 +24,12 @@ type UpdateOutputTemplateSettingForTeacherUseCase struct {
 
 func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req request.UpdateOutputTemplateRequest) error {
 	//Download spreadsheet file
-	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile("./credentials/google_service_account.json"))
+	pwd, err := os.Getwd()
+	if err != nil {
+		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
+		return err
+	}
+	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
 	if err != nil {
 		log.Debug("Unable to access Drive API:", err)
 	}
@@ -48,11 +53,6 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 	defer resp.Body.Close()
 
 	// Create the output file
-	pwd, err := os.Getwd()
-	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
-		return err
-	}
 	file, err := os.Create(pwd + "/config/output_template_teacher.xlsx")
 	if err != nil {
 		monitor.SendMessageViaTelegram(fmt.Sprintf("Error creating output file: %s", err))
@@ -68,7 +68,7 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 	}
 
 	//Update setting
-	err = receiver.SettingRepository.UpdateOutputTemplateSettingForTeacher(spreadsheetID)
+	err = receiver.UpdateOutputTemplateSettingForTeacher(spreadsheetID)
 	if err != nil {
 		return err
 	}

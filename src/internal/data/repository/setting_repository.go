@@ -256,44 +256,6 @@ func (receiver *SettingRepository) GetSyncDevicesSettings() (*entity.SSetting, e
 	return receiver.getSettingsByType(value.SettingTypeSyncDevices)
 }
 
-func (receiver *SettingRepository) SaveSyncDevicesSettings(req request.SyncDevicesRequest) error {
-	setting, err := receiver.getSettingsByType(value.SettingTypeSyncDevices)
-	if setting == nil {
-		importSetting := ImportSetting{
-			SpreadSheetUrl: req.SpreadsheetUrl,
-			AutoImport:     req.AutoImport,
-			Interval:       req.Interval,
-		}
-		b, err := json.Marshal(importSetting)
-		if err != nil {
-			return err
-		}
-		result := receiver.DBConn.Create(&entity.SSetting{
-			Settings: datatypes.JSON(string(b)),
-			Type:     value.SettingTypeSyncDevices,
-		})
-
-		return result.Error
-	} else {
-		importSetting := ImportSetting{
-			SpreadSheetUrl: req.SpreadsheetUrl,
-			AutoImport:     req.AutoImport,
-			Interval:       req.Interval,
-		}
-		b, err := json.Marshal(importSetting)
-		if err != nil {
-			return err
-		}
-		setting.Settings = datatypes.JSON(string(b))
-
-		if err = receiver.DBConn.Save(&setting).Error; err != nil {
-			return err
-		}
-	}
-
-	return err
-}
-
 func (receiver *SettingRepository) GetSyncToDosSettings() (*entity.SSetting, error) {
 	return receiver.getSettingsByType(value.SettingTypeSyncToDos)
 }

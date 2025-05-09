@@ -24,7 +24,7 @@ type UpdateFormUseCase struct {
 }
 
 func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.UpdateFormRequest) (*entity.SForm, error) {
-	form, err := receiver.FormRepository.GetFormById(uint64(formId))
+	form, err := receiver.GetFormById(uint64(formId))
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.Update
 		return nil, err
 	}
 
-	err = receiver.FormQuestionRepository.Update(form, questions, rawQuestions)
+	err = receiver.Update(form, questions, rawQuestions)
 	if err != nil {
 		return nil, err
 	}

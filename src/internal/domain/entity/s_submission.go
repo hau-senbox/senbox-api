@@ -28,8 +28,8 @@ type SSubmission struct {
 	ID             uint64         `gorm:"primary_key;auto_increment;"`
 	FormId         uint64         `gorm:"column:form_id;"`
 	Form           SForm          `gorm:"foreignKey:FormId;references:id;constraint:OnDelete:CASCADE"`
-	DeviceId       string         `gorm:"column:device_id;"`
-	Device         SDevice        `gorm:"foreignKey:DeviceId;references:id;constraint:OnDelete:CASCADE"`
+	UserId         string         `gorm:"column:user_id;"`
+	User           SUserEntity    `gorm:"foreignKey:UserId;references:id;constraint:OnDelete:CASCADE"`
 	SubmissionData datatypes.JSON `gorm:"type:json;not null;default:'{}'"`
 	OpenedAt       time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	CreatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`

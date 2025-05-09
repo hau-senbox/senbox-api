@@ -27,7 +27,7 @@ func NewGetToDoListByQRCodeUseCase(cfg config.AppConfig, db *gorm.DB, r *sheet.R
 }
 
 func (c *GetToDoListByQRCodeUseCase) Execute(qrCode string) (entity.SToDo, error) {
-	todo, err := c.ToDoRepository.FindById(qrCode, c.dbConn)
+	todo, err := c.FindById(qrCode, c.dbConn)
 	if err != nil {
 		return entity.SToDo{}, err
 	}
@@ -37,7 +37,7 @@ func (c *GetToDoListByQRCodeUseCase) Execute(qrCode string) (entity.SToDo, error
 	}
 
 	if todo.Type == value.ToDoTypeAssign || todo.SpreadsheetID == "" {
-		return c.ToDoRepository.GetToDoListByQRCode(qrCode, c.dbConn)
+		return c.GetToDoListByQRCode(qrCode, c.dbConn)
 	}
 
 	return c.getTasksByComposeTodo(*todo)
@@ -51,7 +51,7 @@ func (c *GetToDoListByQRCodeUseCase) getTasksByComposeTodo(todo entity.SToDo) (e
 
 	if err != nil {
 		monitor.SendMessageViaTelegram("Cannot retrieve todo name ", todo.ID, " err ", err.Error())
-		return c.ToDoRepository.GetToDoListByQRCode(todo.ID, c.dbConn)
+		return c.GetToDoListByQRCode(todo.ID, c.dbConn)
 	}
 
 	todoName := ""
@@ -60,10 +60,10 @@ func (c *GetToDoListByQRCodeUseCase) getTasksByComposeTodo(todo entity.SToDo) (e
 	}
 
 	todo.Name = todoName
-	_, err = c.ToDoRepository.Save(c.dbConn, &todo)
+	_, err = c.Save(c.dbConn, &todo)
 	if err != nil {
-		return c.ToDoRepository.GetToDoListByQRCode(todo.ID, c.dbConn)
+		return c.GetToDoListByQRCode(todo.ID, c.dbConn)
 	}
 
-	return c.ToDoRepository.GetToDoListByQRCode(todo.ID, c.dbConn)
+	return c.GetToDoListByQRCode(todo.ID, c.dbConn)
 }

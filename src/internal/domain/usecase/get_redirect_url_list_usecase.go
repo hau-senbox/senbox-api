@@ -19,7 +19,7 @@ func (receiver *GetRedirectUrlListUseCase) GetList(req request.GetRedirectUrlLis
 	var urlListResponseData []response.GetRedirectUrlListResponseData
 	for _, url := range redirectUrls {
 		urlListResponseData = append(urlListResponseData, response.GetRedirectUrlListResponseData{
-			Id:           url.RedirectUrlId,
+			Id:           url.ID,
 			QRCode:       url.QRCode,
 			TargetUrl:    url.TargetUrl,
 			Password:     url.Password,

@@ -10,13 +10,13 @@ type TakeNoteUseCase struct {
 }
 
 func (receiver *TakeNoteUseCase) TakeNote(params request.TakeNoteRequest, deviceId string) error {
-	device, err := receiver.DeviceRepository.GetDeviceById(deviceId)
+	device, err := receiver.GetDeviceById(deviceId)
 	if err != nil {
 		return err
 	}
 
 	device.Note = params.Note
-	_, err = receiver.DeviceRepository.UpdateDevice(device)
+	_, err = receiver.UpdateDevice(device)
 	if err != nil {
 		return err
 	}

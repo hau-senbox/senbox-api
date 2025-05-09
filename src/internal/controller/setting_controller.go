@@ -13,7 +13,6 @@ type SettingController struct {
 	*usecase.GetSettingsUseCase
 	*usecase.UpdateOutputSubmissionSettingUseCase
 	*usecase.UpdateOutputSummarySettingUseCase
-	*usecase.SyncDevicesUseCase
 	*usecase.UpdateEmailHistorySettingUseCase
 	*usecase.UpdateOutputTemplateSettingUseCase
 	*usecase.UpdateOutputTemplateSettingForTeacherUseCase
@@ -38,10 +37,8 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	settings, err := receiver.GetSettingsUseCase.GetSettings()
 	if err != nil || settings == nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -315,28 +312,22 @@ func (receiver *SettingController) UpdateOutputSubmissionSettings(context *gin.C
 	var req request.UpdateOutputSubmissionSettingsRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	err := receiver.UpdateOutputSubmissionSettingUseCase.UpdateSubmissionSetting(req.FolderUrl, req.SheetName)
+	err := receiver.UpdateSubmissionSetting(req.FolderUrl, req.SheetName)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Setting was saved successfully",
 	})
 }
 
@@ -357,72 +348,22 @@ func (receiver *SettingController) UpdateOutputSummarySettings(context *gin.Cont
 	var req request.UpdateOutputSummarySettingsRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	err := receiver.UpdateOutputSummarySettingUseCase.UpdateOutputSummarySetting(req.SpreadsheetUrl)
+	err := receiver.UpdateOutputSummarySetting(req.SpreadsheetUrl)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Setting was saved successfully",
-		},
-	})
-}
-
-// Import Sync Devices godoc
-// @Summary Sync Devices
-// @Description Sync Devices
-// @Tags Admin
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer {token}"
-// @Param request body request.SyncDevicesRequest true "Sync Devices Request"
-// @Success 200 {object} response.SucceedResponse
-// @Failure 400 {object} response.FailedResponse
-// @Failure 401 {object} response.FailedResponse
-// @Failure 403 {object} response.FailedResponse
-// @Failure 500 {object} response.FailedResponse
-// @Router /v1/admin/settings/sync-devices [post]
-func (receiver *SettingController) SyncDevices(context *gin.Context) {
-	var req request.SyncDevicesRequest
-	if err := context.ShouldBindJSON(&req); err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		return
-	}
-	err := receiver.SyncDevicesUseCase.ImportDevices(req)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		return
-	}
-
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sync devices successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Setting was saved successfully",
 	})
 }
 
@@ -444,28 +385,22 @@ func (receiver *SettingController) UpdateEmailHistorySettings(context *gin.Conte
 	var req request.UpdateEmailHistorySettingsRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	err := receiver.UpdateEmailHistorySettingUseCase.Execute(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Email Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Email Setting was saved successfully",
 	})
 }
 
@@ -487,10 +422,8 @@ func (receiver *SettingController) UpdateOutputTemplateSettings(context *gin.Con
 	var req request.UpdateOutputTemplateRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -498,18 +431,14 @@ func (receiver *SettingController) UpdateOutputTemplateSettings(context *gin.Con
 	err := receiver.UpdateOutputTemplateSettingUseCase.Execute(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Output Template Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Output Template Setting was saved successfully",
 	})
 }
 
@@ -531,28 +460,22 @@ func (receiver *SettingController) UpdateOutputTemplateSettingsForTeacher(contex
 	var req request.UpdateOutputTemplateRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	err := receiver.UpdateOutputTemplateSettingForTeacherUseCase.Execute(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Output Template Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Output Template Setting was saved successfully",
 	})
 }
 
@@ -579,10 +502,8 @@ func (receiver *SettingController) UpdateSignUpButton1(context *gin.Context) {
 	var req updateSignUpTextButtonRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -590,19 +511,15 @@ func (receiver *SettingController) UpdateSignUpButton1(context *gin.Context) {
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButton1(req.Name, req.Value)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sign Up Button was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Sign Up Button was saved successfully",
 	})
 }
 
@@ -624,10 +541,8 @@ func (receiver *SettingController) UpdateSignUpButton2(context *gin.Context) {
 	var req updateSignUpTextButtonRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -635,19 +550,15 @@ func (receiver *SettingController) UpdateSignUpButton2(context *gin.Context) {
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButton2(req.Name, req.Value)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sign Up Button was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Sign Up Button was saved successfully",
 	})
 }
 
@@ -669,10 +580,8 @@ func (receiver *SettingController) UpdateSignUpButton3(context *gin.Context) {
 	var req updateSignUpTextButtonRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -680,19 +589,15 @@ func (receiver *SettingController) UpdateSignUpButton3(context *gin.Context) {
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButton3(req.Name, req.Value)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sign Up Button was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Sign Up Button was saved successfully",
 	})
 }
 
@@ -714,10 +619,8 @@ func (receiver *SettingController) UpdateSignUpButton4(context *gin.Context) {
 	var req updateSignUpTextButtonRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -725,19 +628,15 @@ func (receiver *SettingController) UpdateSignUpButton4(context *gin.Context) {
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButton4(req.Name, req.Value)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sign Up Button was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Sign Up Button was saved successfully",
 	})
 }
 
@@ -759,10 +658,8 @@ func (receiver *SettingController) UpdateSignUpButton5(context *gin.Context) {
 	var req updateSignUpTextButtonRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -770,19 +667,15 @@ func (receiver *SettingController) UpdateSignUpButton5(context *gin.Context) {
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButton5(req.Name, req.Value)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Sign Up Button was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Sign Up Button was saved successfully",
 	})
 }
 
@@ -808,10 +701,8 @@ func (receiver *SettingController) UpdateRegistrationForm(context *gin.Context) 
 	var req updateRegistrationSpreadsheetRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -819,19 +710,15 @@ func (receiver *SettingController) UpdateRegistrationForm(context *gin.Context) 
 	err := receiver.AdminSignUpUseCases.UpdateRegistrationForm(req.SpreadSheetUrl)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Registration Form was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Registration Form was saved successfully",
 	})
 }
 
@@ -857,10 +744,8 @@ func (receiver *SettingController) UpdateSignUpButtonConfiguration(context *gin.
 	var req updateSignUpButtonConfigurationRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "invalid request body",
 		})
 		return
 	}
@@ -868,19 +753,15 @@ func (receiver *SettingController) UpdateSignUpButtonConfiguration(context *gin.
 	err := receiver.AdminSignUpUseCases.UpdateSignUpButtonConfiguration(req.SpreadSheetUrl)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "sign up buttons configuration was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "sign up buttons configuration was saved successfully",
 	})
 }
 
@@ -902,10 +783,8 @@ func (receiver *SettingController) UpdateRegistrationSubmission(context *gin.Con
 	var req updateRegistrationSpreadsheetRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -913,19 +792,15 @@ func (receiver *SettingController) UpdateRegistrationSubmission(context *gin.Con
 	err := receiver.AdminSignUpUseCases.UpdateRegistrationSubmission(req.SpreadSheetUrl)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Registration Submission was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Registration Submission was saved successfully",
 	})
 }
 
@@ -951,10 +826,8 @@ func (receiver *SettingController) UpdateRegistrationPreset2(context *gin.Contex
 	var req updateRegistrationPresetRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -962,19 +835,15 @@ func (receiver *SettingController) UpdateRegistrationPreset2(context *gin.Contex
 	err := receiver.AdminSignUpUseCases.UpdateRegistrationPreset2(req.FormNote)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Registration Preset was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Registration Preset was saved successfully",
 	})
 }
 
@@ -996,10 +865,8 @@ func (receiver *SettingController) UpdateRegistrationPreset1(context *gin.Contex
 	var req updateRegistrationPresetRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 		return
 	}
@@ -1007,19 +874,15 @@ func (receiver *SettingController) UpdateRegistrationPreset1(context *gin.Contex
 	err := receiver.AdminSignUpUseCases.UpdateRegistrationPreset1(req.FormNote)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Registration Preset was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Registration Preset was saved successfully",
 	})
 }
 
@@ -1045,10 +908,8 @@ func (receiver *SettingController) UpdateAPIDistributor(context *gin.Context) {
 	var req updateDistributerRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 
 		return
@@ -1057,20 +918,16 @@ func (receiver *SettingController) UpdateAPIDistributor(context *gin.Context) {
 	err := receiver.UpdateApiDistributorUseCase.Execute(req.Spreadsheet)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "APIDistributer was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "APIDistributer was saved successfully",
 	})
 }
 
@@ -1092,10 +949,8 @@ func (receiver *SettingController) SetSettingNames(context *gin.Context) {
 	var req request.UpdateSettingNameRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 
 		return
@@ -1103,20 +958,16 @@ func (receiver *SettingController) SetSettingNames(context *gin.Context) {
 
 	if err := receiver.UpdateSettingNameUseCase.Execute(req); err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Setting name has been update successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Setting name has been update successfully",
 	})
 }
 
@@ -1138,10 +989,8 @@ func (receiver *SettingController) UpdateCodeCountingData(context *gin.Context) 
 	var req request.UpdateCodeCountingSettingRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 
 		return
@@ -1149,20 +998,16 @@ func (receiver *SettingController) UpdateCodeCountingData(context *gin.Context) 
 
 	if err := usecase.UpdateCodeCountingDataUseCase(req); err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Code Counting Data has been update successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Code Counting Data has been update successfully",
 	})
 }
 
@@ -1184,10 +1029,8 @@ func (receiver *SettingController) SetupLogoRefreshInterval(context *gin.Context
 	var req request.SetupLogoRefreshIntervalRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Invalid request body",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request body",
 		})
 
 		return
@@ -1195,20 +1038,16 @@ func (receiver *SettingController) SetupLogoRefreshInterval(context *gin.Context
 
 	if err := usecase.SetupLogoRefreshIntervalUseCase(req); err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Logo refresh interval has been setup successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Logo refresh interval has been setup successfully",
 	})
 }
 
@@ -1234,10 +1073,8 @@ func (receiver *SettingController) GetLogoRefreshInterval(context *gin.Context) 
 	interval, err := usecase.GetLogoRefreshIntervalUseCase()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return

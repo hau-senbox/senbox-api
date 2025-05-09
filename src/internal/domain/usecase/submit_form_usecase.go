@@ -8,14 +8,12 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/model"
 	"sen-global-api/internal/domain/request"
-	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/messaging"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 
 	firebase "firebase.google.com/go/v4"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"gorm.io/gorm"
@@ -39,13 +37,13 @@ type SubmitFormUseCase struct {
 	DB                  *gorm.DB
 }
 
-func (receiver *SubmitFormUseCase) AnswerForm(id uint64, userDevice entity.SUserDevices, req request.SubmitFormRequest) error {
-	form, err := receiver.FormRepository.GetFormById(id)
+func (receiver *SubmitFormUseCase) AnswerForm(id uint64, req request.SubmitFormRequest) error {
+	form, err := receiver.GetFormById(id)
 	if err != nil {
 		return err
 	}
 
-	return receiver.answerFormSaveToFormOutputSheet(form, userDevice, req)
+	return receiver.answerFormSaveToFormOutputSheet(form, req)
 }
 
 func Map[T, U any](ts []T, f func(T) U) []U {
@@ -56,16 +54,16 @@ func Map[T, U any](ts []T, f func(T) U) []U {
 	return us
 }
 
-func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.SForm, userDevice entity.SUserDevices, req request.SubmitFormRequest) error {
+func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.SForm, req request.SubmitFormRequest) error {
 	submissionItems := make([]repository.SubmissionDataItem, 0)
-	questions, err := receiver.QuestionRepository.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
+	questions, err := receiver.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
 	if err != nil {
 		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
 	for _, answer := range req.Answers {
 		for _, question := range questions {
-			if answer.QuestionId == question.QuestionId {
+			if answer.QuestionId == question.QuestionId.String() {
 				var msg *repository.Messaging = nil
 				if answer.Messaging != nil {
 					msg = &repository.Messaging{
@@ -76,7 +74,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 					}
 				}
 				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionId: question.QuestionId,
+					QuestionId: question.QuestionId.String(),
 					Question:   question.Question,
 					Answer:     answer.Answer,
 					Messaging:  msg,
@@ -90,11 +88,11 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 	}
 	createSubmissionParams := repository.CreateSubmissionParams{
 		FormId:         form.ID,
-		DeviceId:       userDevice.DeviceId,
+		UserId:         req.UserId,
 		SubmissionData: submissionData,
 		OpenedAt:       req.OpenedAt,
 	}
-	err = receiver.SubmissionRepository.CreateSubmission(createSubmissionParams)
+	err = receiver.CreateSubmission(createSubmissionParams)
 	if err != nil {
 		log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
 		return errors.New("system cannot handle the submission")
@@ -108,7 +106,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 }
 
 func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
+	questions, err := receiver.GetQuestionsByFormId(form.ID)
 	if err != nil {
 		log.Error("Form ", form.Note, " has not send notification question")
 		return
@@ -133,7 +131,7 @@ func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
 		return
 	}
 
-	md, err := receiver.MobileDeviceRepository.FindByDeviceID(att.Value, receiver.DB)
+	md, err := receiver.FindByDeviceID(att.Value, receiver.DB)
 	if err != nil {
 		log.Error("FCM Token could not be found for the device id ", att.Value)
 	}
@@ -149,15 +147,4 @@ func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
 		log.Error("Failed to send notification ", err)
 		monitor.SendMessageViaTelegram("Failed to send notification for a form submission: ", err.Error())
 	}
-}
-
-func generateCode(question entity.SQuestion) (string, error) {
-	var att response.QuestionAttributes
-	err := json.Unmarshal([]byte(question.Attributes), &att)
-	if err != nil {
-		log.Error(err)
-		return "", err
-	}
-
-	return att.Value + uuid.New().String(), nil
 }

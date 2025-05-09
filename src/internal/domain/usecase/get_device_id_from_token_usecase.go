@@ -11,10 +11,10 @@ type GetDeviceIdFromTokenUseCase struct {
 }
 
 func (receiver *GetDeviceIdFromTokenUseCase) GetDeviceFromToken(tokenString string) (*entity.SDevice, error) {
-	deviceId, err := receiver.SessionRepository.ExtractDeviceIdFromToken(tokenString)
+	deviceId, err := receiver.ExtractDeviceIdFromToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
-	return receiver.DeviceRepository.FindDeviceById(*deviceId)
+	return receiver.FindDeviceById(*deviceId)
 }

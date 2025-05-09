@@ -19,7 +19,6 @@ type SendEmailUseCase struct {
 	config.SMTPConfig
 	*repository.SettingRepository
 	*sheet.Writer
-	GetSettingMessageUseCase *GetSettingMessageUseCase
 }
 
 func (receiver *SendEmailUseCase) SendEmail(target string, subject string, content string, device entity.SDevice) error {
@@ -28,15 +27,15 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 		return err
 	}
 
-	smtpServer := receiver.SMTPConfig.Host
+	smtpServer := receiver.Host
 	auth := smtp.PlainAuth(
 		"",
-		receiver.SMTPConfig.Username,
-		receiver.SMTPConfig.Password,
+		receiver.Username,
+		receiver.Password,
 		smtpServer,
 	)
 
-	from := mail.Address{Name: "SENBOX", Address: receiver.SMTPConfig.Username}
+	from := mail.Address{Name: "SENBOX", Address: receiver.Username}
 	to := mail.Address{Name: target, Address: target}
 	title := subject
 
@@ -56,7 +55,7 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
 	err = smtp.SendMail(
-		smtpServer+":"+strconv.Itoa(receiver.SMTPConfig.Port),
+		smtpServer+":"+strconv.Itoa(receiver.Port),
 		auth,
 		from.Address,
 		[]string{to.Address},
@@ -69,7 +68,7 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 }
 
 func (receiver *SendEmailUseCase) logHistory(target string, subject string, device entity.SDevice) {
-	setting, err := receiver.SettingRepository.GetEmailSettings()
+	setting, err := receiver.GetEmailSettings()
 	if err != nil {
 		monitor.SendMessageViaTelegram("Error when get email settings: " + err.Error())
 		return
@@ -102,7 +101,7 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 	log = append(log, []interface{}{nil})
 	log = append(log, []interface{}{subject})
 
-	_, err = receiver.Writer.WriteRanges(sheet.WriteRangeParams{
+	_, err = receiver.WriteRanges(sheet.WriteRangeParams{
 		Range:     "History!K11",
 		Dimension: "COLUMNS",
 		Rows:      log,
@@ -115,15 +114,15 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 }
 
 func (receiver *SendEmailUseCase) SendMessage(subject string, bccList []string, body string) error {
-	smtpServer := receiver.SMTPConfig.Host
+	smtpServer := receiver.Host
 	auth := smtp.PlainAuth(
 		"",
-		receiver.SMTPConfig.Username,
-		receiver.SMTPConfig.Password,
+		receiver.Username,
+		receiver.Password,
 		smtpServer,
 	)
 
-	from := mail.Address{Name: "SENBOX", Address: receiver.SMTPConfig.Username}
+	from := mail.Address{Name: "SENBOX", Address: receiver.Username}
 
 	header := make(map[string]string)
 	header["From"] = from.String()
@@ -139,7 +138,7 @@ func (receiver *SendEmailUseCase) SendMessage(subject string, bccList []string, 
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
 	err := smtp.SendMail(
-		smtpServer+":"+strconv.Itoa(receiver.SMTPConfig.Port),
+		smtpServer+":"+strconv.Itoa(receiver.Port),
 		auth,
 		from.Address,
 		bccList,

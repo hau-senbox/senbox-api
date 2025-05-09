@@ -65,22 +65,18 @@ type IntervalTaskExecutor interface {
 	ExecuteSyncForms3()
 	ExecuteSyncForms4()
 	ExecuteSyncUrls()
-	ExecuteSyncDevices()
 	ExecuteSyncTodos()
 	ExecuteGoogleAPIRequestMonitor()
-	ExecuteSubmissionSync()
 }
 
-func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, deviceInterval uint64, todoInterval uint64, formInterval2 uint64, formInterval3 uint64, formInterval4 uint64, submissionSyncInterval uint64) {
+func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, todoInterval uint64, formInterval2 uint64, formInterval3 uint64, formInterval4 uint64) {
 	receiver.ScheduleSyncForms(formInterval)
 	receiver.ScheduleSyncForms2(formInterval2)
 	receiver.ScheduleSyncForms3(formInterval3)
 	receiver.ScheduleSyncForms4(formInterval4)
 	receiver.ScheduleSyncUrls(urlInterval)
-	receiver.ScheduleSyncDevices(deviceInterval)
 	receiver.ScheduleSyncToDos(todoInterval)
 	receiver.ScheduleGoogleAPIRequestMonitor()
-	receiver.ScheduleSubmissionSync(submissionSyncInterval)
 
 	monitor.SendMessageViaTelegram("Time machine started with ",
 		fmt.Sprint("formInterval: ", formInterval),
@@ -88,9 +84,7 @@ func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, devi
 		fmt.Sprint("formInterval3: ", formInterval3),
 		fmt.Sprint("formInterval4: ", formInterval4),
 		fmt.Sprint("urlInterval: ", urlInterval),
-		fmt.Sprint("deviceInterval: ", deviceInterval),
 		fmt.Sprint("todoInterval: ", todoInterval),
-		fmt.Sprint("submissionSyncInterval: ", submissionSyncInterval),
 	)
 }
 
@@ -146,11 +140,6 @@ func (receiver *TimeMachine) SubscribeSyncToDosExec(exec IntervalTaskExecutor) {
 func (receiver *TimeMachine) SubscribeGoogleAPIRequestMonitorExec(exec IntervalTaskExecutor) {
 	receiver.googleQPIRequestMonitor = append(receiver.googleQPIRequestMonitor, exec)
 	log.Debug("Subscribe google api request monitor exec", receiver.googleQPIRequestMonitor)
-}
-
-func (receiver *TimeMachine) SubscribeSyncSubmissionsExec(exec IntervalTaskExecutor) {
-	receiver.submissionSyncExecutors = append(receiver.submissionSyncExecutors, exec)
-	log.Debug("Subscribe submission sync exec", receiver.submissionSyncExecutors)
 }
 
 func (receiver *TimeMachine) ScheduleSyncForms(interval uint64) {
@@ -283,33 +272,6 @@ func (receiver *TimeMachine) ScheduleSyncUrls(interval uint64) {
 	receiver.urlCron.StartAsync()
 }
 
-func (receiver *TimeMachine) ScheduleSyncDevices(interval uint64) {
-	if interval == 0 {
-		return
-	}
-	receiver.deviceSyncCron.Clear()
-
-	now := time.Now()
-	startAt := now.Add(time.Duration(interval) * time.Minute)
-	task, err := receiver.deviceSyncCron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync devices")
-		for _, executor := range receiver.deviceSyncExecutors {
-			executor.ExecuteSyncDevices()
-		}
-	})
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	} else if task.Error() != nil {
-		log.Error(task.Error())
-		panic(task.Error())
-	} else if task != nil && task.Error() == nil {
-		log.Info("Schedule sync devices every ", interval, " minutes [ERROR]? ", task.Error())
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Schedule sync devices every %d minutes", interval))
-	}
-	receiver.deviceSyncCron.StartAsync()
-}
-
 func (receiver *TimeMachine) ScheduleSyncToDos(interval uint64) {
 	if interval == 0 {
 		return
@@ -357,29 +319,4 @@ func (receiver *TimeMachine) ScheduleGoogleAPIRequestMonitor() {
 		log.Info("Schedule monitor google api request [ERROR]? ", task.Error())
 	}
 	receiver.googleQPIRequestMonitorCron.StartAsync()
-}
-
-func (receiver *TimeMachine) ScheduleSubmissionSync(interval uint64) {
-	if interval == 0 {
-		return
-	}
-	receiver.submissionSyncCron.Clear()
-
-	now := time.Now()
-	startAt := now.Add(time.Duration(interval) * time.Minute)
-	task, err := receiver.submissionSyncCron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		for _, executor := range receiver.submissionSyncExecutors {
-			executor.ExecuteSubmissionSync()
-		}
-	})
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	} else if task.Error() != nil {
-		log.Error(task.Error())
-		panic(task.Error())
-	} else if task != nil && task.Error() == nil {
-		log.Info("Schedule sync submission every ", interval, " minutes [ERROR]? ", task.Error())
-	}
-	receiver.submissionSyncCron.StartAsync()
 }

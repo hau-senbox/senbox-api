@@ -3,12 +3,8 @@ package response
 import "time"
 
 type UserListResponseData struct {
-	UserID string `json:"user_id"`
-	Name   string `json:"name"`
-}
-
-type UserListResponse struct {
-	Data []UserListResponseData `json:"data"`
+	UserID   string `json:"user_id"`
+	Fullname string `json:"fullname"`
 }
 
 type CreateUserResponseData struct {

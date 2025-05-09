@@ -8,28 +8,29 @@ import (
 	"sen-global-api/internal/domain/value"
 
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type AuthorizeUseCase struct {
-	*repository.UserRepository
 	*repository.UserEntityRepository
 	*repository.DeviceRepository
 	repository.SessionRepository
 }
 
 func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (response.LoginResponseData, error) {
-	user := receiver.UserRepository.FindUserByUsername(req.Username)
+	user, _ := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 	if user == nil {
 		log.Info("No user has username matches", req.Username)
 		return response.LoginResponseData{}, errors.New("user not found")
 	}
 
-	err := receiver.SessionRepository.VerifyPassword(req.Password, user.Password)
+	err := receiver.VerifyPassword(req.Password, user.Password)
+
 	if err != nil {
 		return response.LoginResponseData{}, errors.New("invalid username or password")
 	}
 
-	token, err := receiver.SessionRepository.GenerateToken(*user)
+	token, err := receiver.GenerateToken(*user)
 	if err != nil {
 		return response.LoginResponseData{}, errors.New("cannot generate token")
 	}
@@ -40,38 +41,36 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (re
 }
 
 func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDeviceReqest) (response.LoginResponseData, error) {
-	user, err := receiver.UserEntityRepository.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
+	user, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 	if err != nil {
-		return response.LoginResponseData{}, errors.New("user not found")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return response.LoginResponseData{}, errors.New("user not found")
+		}
+		return response.LoginResponseData{}, err
 	}
 
-	reqRegiserDevice := request.RegisterDeviceRequest{
+	reqRegisterDevice := request.RegisterDeviceRequest{
 		UserID:     user.ID.String(),
 		DeviceUUID: req.DeviceUUID,
 		InputMode:  string(value.InfoInputTypeBarcode),
 	}
 
-	if err = receiver.DeviceRepository.CheckUserDeviceExist(request.RegisteringDeviceForUser{
+	if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
 		UserId:   user.ID.String(),
 		DeviceId: req.DeviceUUID,
 	}); err == nil {
-		_, err = receiver.DeviceRepository.RegisteringDeviceForUser(user, reqRegiserDevice)
+		_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
 		if err != nil {
 			return response.LoginResponseData{}, err
 		}
 	}
 
-	if user == nil {
-		log.Info("No user has username matches", req.Username)
-		return response.LoginResponseData{}, errors.New("user not found")
-	}
-
-	err = receiver.SessionRepository.VerifyPassword(req.Password, user.Password)
+	err = receiver.VerifyPassword(req.Password, user.Password)
 	if err != nil {
 		return response.LoginResponseData{}, errors.New("invalid username or password")
 	}
 
-	token, err := receiver.SessionRepository.GenerateTokenV2(*user)
+	token, err := receiver.GenerateToken(*user)
 	if err != nil {
 		return response.LoginResponseData{}, errors.New("cannot generate token")
 	}

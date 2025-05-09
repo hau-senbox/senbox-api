@@ -87,17 +87,17 @@ func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequ
 		return err
 	}
 
-	if !req.AutoImport {
-		receiver.machine.ScheduleSyncToDos(0)
-	} else {
-		receiver.machine.ScheduleSyncToDos(req.Interval)
-	}
+	// if !req.AutoImport {
+	// 	receiver.machine.ScheduleSyncToDos(0)
+	// } else {
+	// 	receiver.machine.ScheduleSyncToDos(req.Interval)
+	// }
 
 	return nil
 }
 
 func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}) error {
-	if len(row) > 9 {
+	if len(row) > 9 && strings.ToLower(row[4].(string)) != "upload" {
 		if row[0].(string) != "" && !strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") && row[1].(string) != "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
 			re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 			match := re.FindStringSubmatch(row[1].(string))
@@ -113,7 +113,7 @@ func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}
 				tabName = row[2].(string)
 			}
 
-			var historySpreadsheetId = ""
+			var historySpreadsheetId string
 			match = re.FindStringSubmatch(row[9].(string))
 			if len(match) < 2 {
 				log.Error("invalid history spreadsheet url")

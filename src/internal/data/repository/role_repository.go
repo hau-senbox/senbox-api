@@ -2,11 +2,10 @@ package repository
 
 import (
 	"errors"
-	"sen-global-api/internal/domain/entity"
-	"sen-global-api/internal/domain/request"
-
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
 )
 
 type RoleRepository struct {
@@ -56,8 +55,7 @@ func (receiver *RoleRepository) CreateRole(req request.CreateRoleRequest) error 
 	}
 
 	result := receiver.DBConn.Create(&entity.SRole{
-		RoleName:    req.RoleName,
-		Description: req.Description,
+		RoleName: req.RoleName,
 	})
 
 	if result.Error != nil {
@@ -69,10 +67,9 @@ func (receiver *RoleRepository) CreateRole(req request.CreateRoleRequest) error 
 }
 
 func (receiver *RoleRepository) UpdateRole(req request.UpdateRoleRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", req.ID).
+	updateResult := receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", req.RoleId).
 		Updates(map[string]interface{}{
-			"role_name":   req.RoleName,
-			"description": req.Description,
+			"role_name": req.RoleName,
 		})
 
 	if updateResult.Error != nil {

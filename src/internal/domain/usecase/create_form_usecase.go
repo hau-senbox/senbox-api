@@ -14,14 +14,14 @@ type CreateFormUseCase struct {
 }
 
 func (receiver *CreateFormUseCase) CreateForm(req request.CreateFormRequest) (*entity.SForm, error) {
-	form, err := receiver.FormRepository.Create(&entity.SForm{
+	form, err := receiver.Create(&entity.SForm{
 		Note: req.FormName,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	formQuestions, err := receiver.FormQuestionRepository.CreateFormQuestions(form.ID, req.Questions)
+	formQuestions, err := receiver.CreateFormQuestions(form.ID, req.Questions)
 	if err != nil {
 		return nil, err
 	}

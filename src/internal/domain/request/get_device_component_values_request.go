@@ -1,6 +1,6 @@
 package request
 
-type GetDeviceComponentValuesByCompanyRequest struct {
+type GetDeviceComponentValuesByOrganizationRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 

@@ -31,7 +31,7 @@ type SubmissionData struct {
 }
 type CreateSubmissionParams struct {
 	FormId         uint64
-	DeviceId       string
+	UserId         string
 	SubmissionData SubmissionData
 	OpenedAt       time.Time
 }
@@ -67,7 +67,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 
 	submission := entity.SSubmission{
 		FormId:         params.FormId,
-		DeviceId:       params.DeviceId,
+		UserId:         params.UserId,
 		SubmissionData: dataInJSON,
 		OpenedAt:       params.OpenedAt,
 	}
@@ -75,9 +75,9 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 	return receiver.DBConn.Create(&submission).Error
 }
 
-func (receiver *SubmissionRepository) FindRecentByFormId(formId uint64) (entity.SSubmission, error) {
+func (receiver *SubmissionRepository) FindRecentByFormId(formId uint64, userId string) (entity.SSubmission, error) {
 	var submission entity.SSubmission
-	err := receiver.DBConn.Where("form_id = ?", formId).Order("created_at DESC").First(&submission).Error
+	err := receiver.DBConn.Where("form_id = ? AND user_id = ?", formId, userId).Order("created_at DESC").First(&submission).Error
 	if err != nil {
 		return entity.SSubmission{}, err
 	}
@@ -116,7 +116,7 @@ func (receiver *SubmissionRepository) DublicateSubmissions(params CreateSubmissi
 
 	submission := entity.SSubmission{
 		FormId:         params.FormId,
-		DeviceId:       params.DeviceId,
+		UserId:         params.UserId,
 		SubmissionData: dataInJSON,
 		OpenedAt:       params.OpenedAt,
 	}

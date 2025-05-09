@@ -28,31 +28,28 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 	// Migrate the schema
 	err := db.AutoMigrate(
 		&entity.SAppKey{},
-		&entity.SUser{},
 		&entity.SQuestion{},
 		&entity.SForm{},
 		&entity.SRedirectUrl{},
 		&entity.SSetting{},
 		&entity.SToDo{},
-		&entity.SDeviceFormDataset{},
 		&entity.SSubmission{},
 		&entity.SFormQuestion{},
 		&entity.SMobileDevice{},
 		&entity.SCodeCounting{},
 		&entity.SDevice{},
-		&entity.SCompany{},
+		&entity.SOrganization{},
 		&entity.SDeviceComponentValues{},
 		&entity.SRole{},
 		&entity.SUserEntity{},
-		&entity.SRolePolicy{},
 		&entity.SUserGuardians{},
 		&entity.SUserRoles{},
-		&entity.SRoleClaim{},
-		&entity.SRolePolicyRoles{},
-		&entity.SRolePolicyClaims{},
-		&entity.SUserPolicies{},
+		&entity.SFunctionClaim{},
+		&entity.SFunctionClaimPermission{},
 		&entity.SUserDevices{},
-		&entity.SUserConfig{},
+		&entity.SImage{},
+		&entity.SUserFunctionAuthorize{},
+		&entity.SUserOrg{},
 	)
 
 	// Seed
@@ -79,48 +76,31 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		}
 	}
 
-	var bot = &entity.SUser{
-		UserId:      "F9046EC9-5703-42F0-97D8-750138D52E4C",
-		Username:    "techbot",
-		Fullname:    "Bot",
-		Birthday:    time.Time{},
-		Phone:       "",
-		Email:       "techbot@senbox.vn",
-		Address:     "",
-		Job:         "",
-		CountryCode: "",
-		Password:    "techbot",
-		Role:        28,
-	}
-
-	var admin = &entity.SUser{
-		UserId:      "663688d9-639c-4691-bc3b-612fcb3b6b48",
-		Username:    "admin",
-		Fullname:    "SEN Admin",
-		Birthday:    time.Time{},
-		Phone:       "",
-		Email:       "admin@senbox.vn",
-		Address:     "",
-		Job:         "",
-		CountryCode: "",
-		Password:    "SEN@box",
-		Role:        28,
-	}
+	// var superAdmin = &entity.SUserEntity{
+	// 	RoleId:             uuid.New(),
+	// 	Username:       "root",
+	// 	Fullname:       "Senbox Super Administrator",
+	// 	Birthday:       time.Time{},
+	// 	Phone:          "",
+	// 	Email:          "admin@senbox.vn",
+	// 	Password:       "SEN@box",
+	// 	OrganizationId: 1,
+	// }
 
 	var appKey = &entity.SAppKey{
 		ID:     1,
 		AppKey: "8c30f8d5-f430-4079-bc7f-cfea3d61704d",
 	}
 
-	var users = []*entity.SUser{bot, admin}
-	err = db.Clauses(
-		clause.OnConflict{
-			Columns:   []clause.Column{{Name: "user_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"username"}),
-		}).Create(&users).Error
-	if err != nil {
-		log.Error(err)
-	}
+	// var users = []*entity.SUserEntity{superAdmin}
+	// err = db.Clauses(
+	// 	clause.OnConflict{
+	// 		Columns:   []clause.Column{{Name: "id"}},
+	// 		DoUpdates: clause.AssignmentColumns([]string{"username"}),
+	// 	}).Create(&users).Error
+	// if err != nil {
+	// 	log.Error(err)
+	// }
 
 	err = db.Clauses(
 		clause.OnConflict{

@@ -11,12 +11,12 @@ type RefreshAccessTokenUseCase struct {
 }
 
 func (c *RefreshAccessTokenUseCase) Execute(refreshToken string) (string, string, error) {
-	deviceID, err := c.SessionRepository.GetDeviceIDFromRefreshToken(refreshToken)
+	deviceID, err := c.GetDeviceIDFromRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", err
 	}
 
-	device, err := c.DeviceRepository.FindDeviceById(deviceID)
+	device, err := c.FindDeviceById(deviceID)
 	if err != nil || device == nil {
 		return "", "", err
 	}
@@ -25,7 +25,7 @@ func (c *RefreshAccessTokenUseCase) Execute(refreshToken string) (string, string
 		return "", "", err
 	}
 
-	accessToken, refreshToken, err := c.SessionRepository.GenerateTokenByDevice(*device)
+	accessToken, refreshToken, err := c.GenerateTokenByDevice(*device)
 	if err != nil {
 		return "", "", err
 	}

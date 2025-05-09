@@ -7,6 +7,7 @@ WORKDIR /app
 # Copy the Go modules files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
+RUN go mod tidy
 
 # Copy the entire source code into the container
 COPY . .
@@ -25,6 +26,9 @@ RUN apk add --no-cache libc6-compat bash
 
 # Copy the built Go binary from the builder image
 COPY --from=builder /app/global-api .
+
+# Copy the keys file to the container (make sure the path is correct)
+COPY keys/ /root/keys/
 
 # Copy the config file to the container (make sure the path is correct)
 COPY config/ /root/config/

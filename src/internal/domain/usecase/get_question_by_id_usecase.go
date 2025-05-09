@@ -10,5 +10,5 @@ type GetQuestionByIdUseCase struct {
 }
 
 func (receiver *GetQuestionByIdUseCase) GetQuestionById(id string) (*entity.SQuestion, error) {
-	return receiver.QuestionRepository.FindById(id)
+	return receiver.FindById(id)
 }

@@ -9,6 +9,7 @@ import (
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -93,7 +94,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 		return err
 	}
 	for rowNo, row := range values {
-		if len(row) >= 5 && cap(row) >= 5 {
+		if len(row) >= 5 && cap(row) >= 5 && row[2].(string) != "" && strings.ToLower(row[4].(string)) == "upload" {
 			hint := ""
 			if len(row) > 8 {
 				hint = row[8].(string)
@@ -120,11 +121,11 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 		}
 	}
 
-	if !req.AutoImport {
-		receiver.TimeMachine.ScheduleSyncUrls(0)
-	} else {
-		receiver.TimeMachine.ScheduleSyncUrls(req.Interval)
-	}
+	// if !req.AutoImport {
+	// 	receiver.TimeMachine.ScheduleSyncUrls(0)
+	// } else {
+	// 	receiver.TimeMachine.ScheduleSyncUrls(req.Interval)
+	// }
 
 	return nil
 }

@@ -173,14 +173,6 @@ func (receiver *DeviceRepository) SaveDevices(devices []entity.SDevice) error {
 	})
 }
 
-func (receiver *DeviceRepository) UpdateDeviceInfo(device entity.SDevice, version *string) error {
-	if version != nil {
-		device.AppVersion = *version
-	}
-
-	return receiver.DBConn.Save(&device).Error
-}
-
 func (receiver *DeviceRepository) SaveOrUpdateDevices(devices []entity.SDevice) error {
 	if len(devices) == 0 {
 		return nil
@@ -289,10 +281,10 @@ func (receiver *DeviceRepository) CheckUserDeviceExist(req request.RegisteringDe
 	err := queryCheck.First(&userDevice).Error
 
 	if err != nil {
-		log.Error("UserEntityRepository.CheckUserDeviceExist: " + err.Error())
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
+			return err
 		}
+		log.Error("UserEntityRepository.CheckUserDeviceExist: " + err.Error())
 		return errors.New("failed to get user device")
 	}
 

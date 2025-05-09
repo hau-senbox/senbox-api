@@ -2,14 +2,12 @@ package usecase
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
-	"regexp"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -18,20 +16,17 @@ import (
 
 type GetQuestionsByFormUseCase struct {
 	*repository.QuestionRepository
-	*repository.DeviceFormDatasetRepository
 	*repository.CodeCountingRepository
 	*gorm.DB
 }
 
-func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, device entity.SDevice) (*response.QuestionListResponse, *response.FailedResponse) {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
+func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) (*response.QuestionListResponse, *response.FailedResponse) {
+	questions, err := receiver.GetQuestionsByFormId(form.ID)
 
 	if err != nil {
 		return nil, &response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "Failed to get questions",
-			},
+			Code:  http.StatusBadRequest,
+			Error: fmt.Sprintf("Failed to get questions: %s", err.Error()),
 		}
 	}
 	var result = make([]response.QuestionListData, 0)
@@ -67,52 +62,35 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, 
 		if err != nil {
 			continue
 		}
-		if value.IsGeneralQuestionType(qType) {
-			// Check code counting & code generation
-			if qType == value.QuestionCodeCounting {
-				q, err := receiver.BuildCodeCountingQuestion(rawQuestion)
-				if err != nil {
-					return nil, &response.FailedResponse{
-						Error: response.Cause{
-							Code:    555,
-							Message: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
-						},
-					}
-				}
-				result = append(result, q)
-			} else if qType == value.QuestionRandomizer {
-				q, err := receiver.BuildRandomizerQuestion(rawQuestion)
-				if err != nil {
-					return nil, &response.FailedResponse{
-						Error: response.Cause{
-							Code:    555,
-							Message: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
-						},
-					}
-				}
-				result = append(result, q)
-			} else {
-				result = append(result, rawQuestion)
+		if !value.IsGeneralQuestionType(qType) {
+			return nil, &response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: fmt.Sprintf("Failed to get questions, invalid question type: %v", qType),
 			}
-		} else {
-			q, err := receiver.BuildQuestion(rawQuestion, qType, device.ID)
+		}
+
+		// Check code counting & code generation
+		switch qType {
+		case value.QuestionCodeCounting:
+			q, err := receiver.BuildCodeCountingQuestion(rawQuestion)
 			if err != nil {
 				return nil, &response.FailedResponse{
-					Error: response.Cause{
-						Code:    555,
-						Message: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
-					},
+					Code:  555,
+					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
 				}
 			}
-			if q == nil {
+			result = append(result, q)
+		case value.QuestionRandomizer:
+			q, err := receiver.BuildRandomizerQuestion(rawQuestion)
+			if err != nil {
 				return nil, &response.FailedResponse{
-					Error: response.Cause{
-						Code:    555,
-						Message: "Could not parsed user form data fo question: " + rawQuestion.QuestionId,
-					},
+					Code:  555,
+					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
 				}
 			}
-			result = append(result, *q)
+			result = append(result, q)
+		default:
+			result = append(result, rawQuestion)
 		}
 	}
 
@@ -125,126 +103,8 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm, 
 	}, nil
 }
 
-func (receiver *GetQuestionsByFormUseCase) BuildQuestion(question response.QuestionListData, qType value.QuestionType, deviceId string) (*response.QuestionListData, error) {
-	dataset, err := receiver.DeviceFormDatasetRepository.GetDatasetByDeviceIdAndSet(deviceId, question.Attributes.Value)
-	if err != nil {
-		return nil, err
-	}
-	var att response.QuestionAttributes
-	attInJSONString := "{}"
-	switch qType {
-	case value.QuestionDateUser,
-		value.QuestionTimeUser,
-		value.QuestionDateTimeUser,
-		value.QuestionDurationForwardUser,
-		value.QuestionQRCodeUser,
-		value.QuestionTextUser,
-		value.QuestionCountUser,
-		value.QuestionNumberUser,
-		value.QuestionPhotoUser,
-		value.QuestionQRCodeFrontUser:
-		attInJSONString = "{}"
-	case value.QuestionDurationBackwardUser:
-		attInJSONString = `{"value": "` + dataset.QuestionDurationBackward + `"}`
-	case value.QuestionScaleUser:
-		rawValues := strings.Split(dataset.QuestionScale, ";")
-		if len(rawValues) < 2 {
-			return nil, errors.New("scale question data is invalid " + dataset.QuestionScale)
-		}
-		totalValuesInString := strings.Split(rawValues[0], ":")
-		if len(totalValuesInString) < 2 {
-			return nil, errors.New("scale question data is invalid " + dataset.QuestionScale)
-		}
-		stepValueInString := strings.Split(rawValues[1], ":")
-		if len(stepValueInString) < 2 {
-			return nil, errors.New("scale question data is invalid " + dataset.QuestionScale)
-		}
-		totalValues, err := strconv.Atoi(totalValuesInString[1])
-		if err != nil {
-			return nil, errors.New("scale question data is invalid " + err.Error())
-		}
-		stepValue, err := strconv.Atoi(stepValueInString[1])
-		if err != nil {
-			return nil, errors.New("scale question data is invalid " + err.Error())
-		}
-
-		attInJSONString = "{\"number\" : " + strconv.Itoa(totalValues) + ", \"steps\": " + strconv.Itoa(stepValue) + "}"
-	case value.QuestionSelectionUser,
-		value.QuestionMultipleChoiceUser,
-		value.QuestionSingleChoiceUser,
-		value.QuestionChoiceToggleUser:
-		rawOptions := strings.Split(dataset.QuestionSelection, ";")
-		//`{"options": [{"name": "red"}, { "name": "green"}, {"name" : "blue"}]}`,
-		type Option struct {
-			Name string `json:"name"`
-		}
-		type Options struct {
-			Options []Option `json:"options"`
-		}
-		var optionsList = make([]Option, 0)
-		for _, op := range rawOptions {
-			if op == "" {
-				return nil, errors.New("invalid options")
-			}
-			optionsList = append(optionsList, Option{Name: op})
-		}
-		options := Options{Options: optionsList}
-		result, err := json.Marshal(options)
-		if err != nil {
-			return nil, err
-		}
-		attInJSONString = string(result)
-	case value.QuestionButtonCountUser:
-		attInJSONString = `{"value": "` + dataset.QuestionButtonCount + `"}`
-	case value.QuestionButtonListUser:
-		re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
-		match := re.FindStringSubmatch(dataset.QuestionButtonList)
-
-		if len(match) < 2 {
-			return nil, errors.New("invalid google sheet url")
-		}
-
-		attInJSONString = `{"spreadsheet_id" : "` + match[1] + `"}`
-	case value.QuestionMessageBoxUser:
-		message := strings.Replace(dataset.QuestionMessageBox, "\n", "\\n", -1)
-		jsonMsg := `{"value": "` + message + `"}`
-		attInJSONString = jsonMsg
-	case value.QuestionShowPicUser:
-		attInJSONString = `{"value": "` + dataset.QuestionShowPic + `"}`
-	case value.QuestionButtonUser:
-		attInJSONString = `{"value": "` + dataset.QuestionButton + `"}`
-	case value.QuestionPlayVideoUser:
-		attInJSONString = `{"value": "` + dataset.QuestionPlayVideo + `"}`
-	case value.QuestionSignature:
-		attInJSONString = `{"value": "` + dataset.QuestionSignature + `"}`
-	case value.QuestionWeb,
-		value.QuestionWebUser:
-		attInJSONString = `{"value": "` + dataset.QuestionWeb + `"}`
-
-	default:
-		return nil, errors.New("invalid question type for user form")
-	}
-
-	err = json.Unmarshal([]byte(attInJSONString), &att)
-	if err != nil {
-		return nil, err
-	}
-
-	q := response.QuestionListData{
-		QuestionId:     question.QuestionId,
-		QuestionType:   strings.ToUpper(question.QuestionType),
-		Question:       question.Question,
-		Attributes:     att,
-		Order:          question.Order,
-		AnswerRequired: question.AnswerRequired,
-		Enabled:        question.Enabled,
-	}
-
-	return &q, nil
-}
-
-func (receiver *GetQuestionsByFormUseCase) GetQuestionsBySignUpForm(form entity.SForm) *response.QuestionListResponse {
-	questions, err := receiver.QuestionRepository.GetQuestionsByFormId(form.ID)
+func (receiver *GetQuestionsByFormUseCase) GetQuestionsByForm(form entity.SForm) *response.QuestionListResponse {
+	questions, err := receiver.GetQuestionsByFormId(form.ID)
 	if err != nil {
 		return nil
 	}
@@ -290,9 +150,9 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionsBySignUpForm(form entity.
 
 func (receiver *GetQuestionsByFormUseCase) BuildCodeCountingQuestion(question response.QuestionListData) (response.QuestionListData, error) {
 	var att response.QuestionAttributes
-	attInJSONString := "{}"
+	var attInJSONString string
 
-	newCodeCountingValue, err := receiver.CodeCountingRepository.CreateForQuestionWithID(question.QuestionId, receiver.DB)
+	newCodeCountingValue, err := receiver.CreateForQuestionWithID(question.QuestionId, receiver.DB)
 	if err != nil {
 		log.Error(err)
 		return response.QuestionListData{}, err
@@ -319,7 +179,7 @@ func (receiver *GetQuestionsByFormUseCase) BuildCodeCountingQuestion(question re
 
 func (receiver *GetQuestionsByFormUseCase) BuildRandomizerQuestion(question response.QuestionListData) (response.QuestionListData, error) {
 	var att response.QuestionAttributes
-	attInJSONString := "{}"
+	var attInJSONString string
 
 	code := att.Value + value.GetRandomString(8)
 	attInJSONString = `{"value": "` + question.Attributes.Value + code + `"}`

@@ -1,5 +1,5 @@
 package request
 
 type GetRedirectUrlByQRCodeRequest struct {
-	QRCode string `form:"qrcode"`
+	QRCode string `form:"qr_code"`
 }

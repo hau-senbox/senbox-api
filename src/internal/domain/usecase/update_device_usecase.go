@@ -16,7 +16,7 @@ type UpdateDeviceUseCase struct {
 }
 
 func (receiver *UpdateDeviceUseCase) UpdateDevice(deviceId string, req request.UpdateDeviceRequest) (*entity.SDevice, error) {
-	device, err := receiver.DeviceRepository.GetDeviceById(deviceId)
+	device, err := receiver.GetDeviceById(deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (receiver *UpdateDeviceUseCase) UpdateDevice(deviceId string, req request.U
 }
 
 func (receiver *UpdateDeviceUseCase) UpdateDeviceV2(deviceId string, req request.UpdateDeviceRequestV2) (*entity.SDevice, error) {
-	device, err := receiver.DeviceRepository.GetDeviceById(deviceId)
+	device, err := receiver.GetDeviceById(deviceId)
 	if err != nil {
 		return nil, err
 	}

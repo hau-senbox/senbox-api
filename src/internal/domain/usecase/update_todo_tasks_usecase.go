@@ -82,6 +82,11 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 	todo.Name = req.Name
 	todo.Tasks = datatypes.JSONType[entity.STasks]{Data: entity.STasks{Tasks: tasks}}
 
+	pwd, err := os.Getwd()
+	if err != nil {
+		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
+		return entity.SToDo{}, err
+	}
 	if todo.SpreadsheetID == "" {
 		var outputSettings OutputSetting
 		if outputSettingsData != nil {
@@ -91,13 +96,13 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 			}
 		}
 		srv, err := drive.NewService(context.Background(),
-			option.WithCredentialsFile("./credentials/google_service_account.json"),
+			option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"),
 		)
 		if err != nil {
 			return entity.SToDo{}, err
 		}
 
-		templateFilePath := "./config/todo_template.xlsx"         // File you want to upload on your PC
+		templateFilePath := pwd + "/config/todo_template.xlsx"    // File you want to upload on your PC
 		baseMimeType := "application/vnd.google-apps.spreadsheet" // mimeType of file you want to upload
 
 		file, err := os.Open(templateFilePath)

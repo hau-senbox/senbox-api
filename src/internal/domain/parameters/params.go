@@ -1,6 +1,8 @@
 package parameters
 
-import "sen-global-api/internal/domain/value"
+import (
+	"sen-global-api/internal/domain/value"
+)
 
 type RawQuestion struct {
 	QuestionId        string                  `json:"question_id"`
@@ -23,5 +25,4 @@ type SaveFormParams struct {
 	Password       string
 	RawQuestions   []RawQuestion
 	SheetName      string
-	SyncStrategy   value.FormSyncStrategy
 }

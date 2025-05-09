@@ -181,7 +181,7 @@ func (receiver *CodeCountingRepository) UpdateCodeCounting(conn *gorm.DB, rq req
 		return err
 	}
 
-	//Delete records in s_code_counting table where token = rq.Prefix except rq.ID
+	//Delete records in s_code_counting table where token = rq.Prefix except rq.RoleId
 	err = conn.Where("token = ?", codeCounting.Token).Not("id = ?", rq.ID).Delete(&entity.SCodeCounting{}).Error
 	if err != nil {
 		log.Error(err)

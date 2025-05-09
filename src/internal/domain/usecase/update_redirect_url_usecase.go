@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	log "github.com/sirupsen/logrus"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type UpdateRedirectUrlUseCase struct {
@@ -12,7 +13,7 @@ type UpdateRedirectUrlUseCase struct {
 }
 
 func (receiver *UpdateRedirectUrlUseCase) Update(id int, req request.UpdateRedirectUrlRequest) (*entity.SRedirectUrl, error) {
-	form, err := receiver.RedirectUrlRepository.GetById(uint64(id))
+	form, err := receiver.GetById(uint64(id))
 	if err != nil {
 		return nil, err
 	}

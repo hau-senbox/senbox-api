@@ -46,14 +46,13 @@ func (receiver *FormRepository) SaveForm(request parameters.SaveFormParams) (*en
 		Password:       request.Password,
 		Status:         value.Active,
 		SheetName:      request.SheetName,
-		SyncStrategy:   request.SyncStrategy,
 	}
 	err := receiver.DBConn.Table("s_form").Clauses(
 		clause.OnConflict{
 			Columns: []clause.Column{{Name: "note"}},
 			DoUpdates: clause.AssignmentColumns([]string{
 				"spreadsheet_url", "spreadsheet_id", "password", "status",
-				"name", "sheet_name", "sync_strategy",
+				"name", "sheet_name",
 			}),
 		}).Create(&form).Error
 	if err != nil {
@@ -159,15 +158,6 @@ func (receiver *FormRepository) DeleteFormByNote(note string) error {
 		return err
 	}
 	return nil
-}
-
-func (receiver *FormRepository) FindSignUpFormByDeviceID(deviceID string) (entity.SForm, error) {
-	var form entity.SForm
-	err := receiver.DBConn.Where("note = ?", "SENBOX.ORG/SIGN-UP[Memory-Form][Device-"+deviceID+"]").First(&form).Error
-	if err != nil {
-		return entity.SForm{}, err
-	}
-	return form, nil
 }
 
 func (receiver *FormRepository) FindByCode(code string) (entity.SForm, error) {

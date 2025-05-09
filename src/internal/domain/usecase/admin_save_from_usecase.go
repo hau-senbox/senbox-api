@@ -246,19 +246,19 @@ func (receiver *SaveFormUseCase) createForm(questions []entity.SQuestion, params
 		var order = 0
 		var answerRequired = false
 		for _, rq := range params.RawQuestions {
-			if rq.QuestionId == question.QuestionId {
+			if rq.QuestionId == question.QuestionId.String() {
 				order = rq.RowNumber
 				answerRequired = strings.ToLower(rq.AnswerRequired) == "true"
 			}
 		}
 
 		formQuestions = append(formQuestions, request.CreateFormQuestionItem{
-			QuestionId:     question.QuestionId,
+			QuestionId:     question.QuestionId.String(),
 			Order:          order,
 			AnswerRequired: answerRequired,
 		})
 	}
-	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.ID, formQuestions)
+	_, err = receiver.CreateFormQuestions(form.ID, formQuestions)
 	if err != nil {
 		return nil, err
 	}

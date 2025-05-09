@@ -37,10 +37,8 @@ func (receiver *FormController) CreateForm(context *gin.Context) {
 	var req request.SaveFormRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -48,10 +46,8 @@ func (receiver *FormController) CreateForm(context *gin.Context) {
 	form, err := receiver.SaveFormUseCase.SaveForm(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -83,20 +79,16 @@ func (receiver *FormController) GetFormList(context *gin.Context) {
 	var req request.GetFormListRequest
 	if err := context.ShouldBindQuery(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	forms, paging, err := receiver.GetFormListUseCase.GetFormList(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -110,7 +102,7 @@ func (receiver *FormController) GetFormList(context *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Form ID"
+// @Param id path int true "Form RoleId"
 // @Success 200 {object} response.SucceedResponse
 // @Failure 400 {object} response.FailedResponse
 // @Failure 401 {object} response.FailedResponse
@@ -122,28 +114,22 @@ func (receiver *FormController) DeleteForm(context *gin.Context) {
 	formId, err := strconv.Atoi(formIdString)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	err = receiver.DeleteFormUseCase.DeleteForm(uint64(formId))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Form deleted",
-		},
+		Code:    http.StatusOK,
+		Message: "Form deleted",
 	})
 }
 
@@ -154,7 +140,7 @@ func (receiver *FormController) DeleteForm(context *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Form ID"
+// @Param id path int true "Form RoleId"
 // @Param request body request.UpdateFormRequest true "Update Form Request"
 // @Success 200 {object} response.UpdateFormResponse
 // @Failure 400 {object} response.FailedResponse
@@ -166,40 +152,32 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "id is required",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "id is required",
 		})
 		return
 	}
 	formId, err := strconv.Atoi(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	var req request.UpdateFormRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	form, err := receiver.UpdateFormUseCase.UpdateForm(formId, req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -233,20 +211,16 @@ func (receiver *FormController) SearchForms(context *gin.Context) {
 	keyword := context.Query("keyword")
 	if keyword == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "keyword is required",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "keyword is required",
 		})
 		return
 	}
 	forms, err := receiver.SearchFormsUseCase.SearchForms(keyword)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -334,28 +308,22 @@ func (receiver *FormController) importForms(context *gin.Context, index usecase.
 	var req request.ImportFormRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	err := receiver.ImportFormsUseCase.ImportForms(req, index)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Form imported",
-		},
+		Code:    http.StatusOK,
+		Message: "Form imported",
 	})
 }
 
@@ -382,10 +350,8 @@ func (receiver *FormController) ImportFormsPartially(context *gin.Context) {
 	var req importPartiallyFormRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -393,19 +359,15 @@ func (receiver *FormController) ImportFormsPartially(context *gin.Context) {
 	err := receiver.ImportFormsUseCase.ImportFormsPartially(req.SpreadsheetURL, req.TabName)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Form imported",
-		},
+		Code:    http.StatusOK,
+		Message: "Form imported",
 	})
 }
 

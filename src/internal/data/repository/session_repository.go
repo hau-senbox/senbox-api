@@ -22,35 +22,19 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
 }
 
-func (receiver *SessionRepository) GenerateToken(user entity.SUser) (*response.LoginResponseData, error) {
-	roles := user.Role
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  user.UserId,
-		"username": user.Username,
-		"roles":    roles,
-	})
-	tokenString, err := token.SignedString([]byte(receiver.AuthorizeEncryptKey))
-
-	if err != nil {
-		return nil, err
-	}
-	return &response.LoginResponseData{
-		UserId:   user.UserId,
-		Username: user.Username,
-		Token:    tokenString,
-		Expired:  time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour),
-	}, nil
-}
-
-func (receiver *SessionRepository) GenerateTokenV2(user entity.SUserEntity) (*response.LoginResponseData, error) {
+func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*response.LoginResponseData, error) {
 	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
 		return role.ID, role.RoleName
 	})
+
+	expirationTime := time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  user.ID.String(),
 		"username": user.Username,
 		"roles":    strings.Join(gofn.MapValues(roles), ", "),
+		"exp":      expirationTime.Unix(),
 	})
+
 	tokenString, err := token.SignedString([]byte(receiver.AuthorizeEncryptKey))
 
 	if err != nil {
@@ -110,32 +94,7 @@ func (receiver *SessionRepository) ExtractUserIdFromToken(tokenString string) (*
 	return nil, err
 }
 
-func (receiver *SessionRepository) GetRoleFromToken(token *jwt.Token) (uint, string, error) {
-	token, err := jwt.Parse(token.Raw, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return []byte(receiver.AuthorizeEncryptKey), nil
-	})
-
-	if err != nil {
-		return 0, "", err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userId := claims["user_id"].(string)
-		roles := claims["roles"].(float64)
-
-		return uint(roles), userId, nil
-	}
-
-	return 0, "", err
-}
-
-func (receiver *SessionRepository) GetRoleFromTokenV2(token *jwt.Token) ([]string, string, error) {
+func (receiver *SessionRepository) GetRoleFromToken(token *jwt.Token) ([]string, string, error) {
 	token, err := jwt.Parse(token.Raw, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

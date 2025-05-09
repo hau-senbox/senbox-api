@@ -20,5 +20,5 @@ func NewResetCodeCountingUseCase(db *gorm.DB) *ResetCodeCountingUseCase {
 }
 
 func (receiver *ResetCodeCountingUseCase) Execute(req request.ResetCodeCountingRequest) error {
-	return receiver.CodeCountingRepository.ResetCodeCounting(req, receiver.DB)
+	return receiver.ResetCodeCounting(req, receiver.DB)
 }

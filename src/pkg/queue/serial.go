@@ -4,7 +4,7 @@ func New() chan func() {
 	var queue = make(chan func())
 
 	go func() {
-		for true {
+		for {
 			nextFunction := <-queue
 			nextFunction()
 		}

@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/http"
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/internal/domain/value"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,24 +30,21 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 		tokenString := strings.Split(authorizationHeader, " ")[1]
 		token, err := receiver.SessionRepository.ValidateToken(tokenString)
 		if err != nil {
-			log.Info(err)
 			context.AbortWithStatus(http.StatusForbidden)
 		} else if token.Valid {
 			userId, err := receiver.SessionRepository.ExtractUserIdFromToken(tokenString)
 			if err != nil {
-				log.Info(err)
 				context.AbortWithStatus(http.StatusForbidden)
 			}
-			context.Set(ContextKeyUserId, *userId)
+			context.Set("user_id", *userId)
 			context.Next()
 		} else {
-			log.Info("Token is not valid")
 			context.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
 }
 
-func (receiver SecuredMiddleware) ValidateAdminRole() gin.HandlerFunc {
+func (receiver SecuredMiddleware) ValidateSuperAdminRole() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authorizationHeader := context.GetHeader("Authorization")
 		if len(authorizationHeader) == 0 {
@@ -58,15 +55,13 @@ func (receiver SecuredMiddleware) ValidateAdminRole() gin.HandlerFunc {
 		tokenString := strings.Split(authorizationHeader, " ")[1]
 		token, err := receiver.SessionRepository.ValidateToken(tokenString)
 		if err != nil {
-			log.Info(err)
 			context.AbortWithStatus(http.StatusForbidden)
 		} else if token.Valid {
 			roles, userId, err := receiver.SessionRepository.GetRoleFromToken(token)
 			if err != nil {
-				log.Info(err)
 				context.AbortWithStatus(http.StatusForbidden)
 			}
-			if roles&value.GetRawValueOfRole(value.Admin) == value.GetRawValueOfRole(value.Admin) {
+			if lo.Contains(roles, "SuperAdmin") {
 				context.Set("user_id", userId)
 				context.Next()
 			} else {

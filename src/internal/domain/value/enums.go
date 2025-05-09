@@ -70,11 +70,15 @@ const (
 	QuestionQRCodeGenerator
 	QuestionSignUpPreSetValue2
 	QuestionWebUser
-	QuestionSignUpPresetDob
-	QuestionSignUpPresetPassword
-	QuestionSignUpPresetRole
-	QuestionSignUpPresetConditionAccept
-	QuestionSignUpPresetRoleSelectWorkingAddress
+
+	QuestionPresetNickname
+	QuestionPresetEmail
+	QuestionPresetDob
+	QuestionPresetPassword
+	QuestionPresetRole
+	QuestionPresetConditionAccept
+	QuestionPresetRoleSelectWorkingAddress
+
 	SignUpButtonConfiguration1
 	SignUpButtonConfiguration2
 	SignUpButtonConfiguration3
@@ -85,6 +89,7 @@ const (
 	SignUpButtonConfiguration8
 	SignUpButtonConfiguration9
 	SignUpButtonConfiguration10
+
 	UserInformationValue1
 	UserInformationValue2
 	UserInformationValue3
@@ -92,6 +97,17 @@ const (
 	UserInformationValue5
 	UserInformationValue6
 	UserInformationValue7
+
+	CameraSquareLens
+	SubmitText
+
+	MessageText1
+	MessageText2
+	ResponseText1
+	ResponseText2
+
+	PdfViewer
+	PdfPicker
 )
 
 type DeviceStatus int
@@ -219,22 +235,29 @@ func GetRawValue(questionType QuestionType) string {
 		return "choice_toggle"
 	case QuestionSection:
 		return "section"
+
 	case QuestionSignUpPreSetValue1:
 		return "preset_value1"
 	case QuestionSignUpPreSetValue3:
 		return "preset_value3"
 	case QuestionSignUpPreSetValue2:
 		return "preset_value2"
-	case QuestionSignUpPresetDob:
+
+	case QuestionPresetNickname:
+		return "preset_nickname"
+	case QuestionPresetEmail:
+		return "preset_email"
+	case QuestionPresetDob:
 		return "preset_dob"
-	case QuestionSignUpPresetPassword:
+	case QuestionPresetPassword:
 		return "preset_password"
-	case QuestionSignUpPresetConditionAccept:
+	case QuestionPresetConditionAccept:
 		return "preset_condition_accept"
-	case QuestionSignUpPresetRole:
+	case QuestionPresetRole:
 		return "preset_role"
-	case QuestionSignUpPresetRoleSelectWorkingAddress:
+	case QuestionPresetRoleSelectWorkingAddress:
 		return "preset_role_select_working_address"
+
 	case SignUpButtonConfiguration1:
 		return "preset_sign_up_button_1"
 	case SignUpButtonConfiguration2:
@@ -255,6 +278,7 @@ func GetRawValue(questionType QuestionType) string {
 		return "preset_sign_up_button_9"
 	case SignUpButtonConfiguration10:
 		return "preset_sign_up_button_10"
+
 	case UserInformationValue1:
 		return "user_information_value_1"
 	case UserInformationValue2:
@@ -269,6 +293,7 @@ func GetRawValue(questionType QuestionType) string {
 		return "user_information_value_6"
 	case UserInformationValue7:
 		return "user_information_value_7"
+
 	case QuestionFormSection:
 		return "form_section"
 	case QuestionFormSendImmediately:
@@ -337,6 +362,25 @@ func GetRawValue(questionType QuestionType) string {
 		return "choice_toggle_user"
 	case QuestionSendNotification:
 		return "send_notification"
+
+	case CameraSquareLens:
+		return "camera_square_lens"
+	case SubmitText:
+		return "submit_text"
+
+	case MessageText1:
+		return "message_text_1"
+	case MessageText2:
+		return "message_text_2"
+	case ResponseText1:
+		return "response_text_1"
+	case ResponseText2:
+		return "response_text_2"
+
+	case PdfViewer:
+		return "pdf_viewer"
+	case PdfPicker:
+		return "pdf_picker"
 	}
 
 	return ""
@@ -400,22 +444,29 @@ func GetStringValue(questionType QuestionType) string {
 		return "web"
 	case QuestionWebUser:
 		return "web_user"
+
 	case QuestionSignUpPreSetValue1:
 		return "preset_value1"
 	case QuestionSignUpPreSetValue3:
 		return "preset_value3"
 	case QuestionSignUpPreSetValue2:
 		return "preset_value2"
-	case QuestionSignUpPresetDob:
+
+	case QuestionPresetNickname:
+		return "preset_nickname"
+	case QuestionPresetEmail:
+		return "preset_email"
+	case QuestionPresetDob:
 		return "preset_dob"
-	case QuestionSignUpPresetPassword:
+	case QuestionPresetPassword:
 		return "preset_password"
-	case QuestionSignUpPresetConditionAccept:
+	case QuestionPresetConditionAccept:
 		return "preset_condition_accept"
-	case QuestionSignUpPresetRole:
+	case QuestionPresetRole:
 		return "preset_role"
-	case QuestionSignUpPresetRoleSelectWorkingAddress:
+	case QuestionPresetRoleSelectWorkingAddress:
 		return "preset_role_select_working_address"
+
 	case SignUpButtonConfiguration1:
 		return "preset_sign_up_button_1"
 	case SignUpButtonConfiguration2:
@@ -436,6 +487,7 @@ func GetStringValue(questionType QuestionType) string {
 		return "preset_sign_up_button_9"
 	case SignUpButtonConfiguration10:
 		return "preset_sign_up_button_10"
+
 	case UserInformationValue1:
 		return "user_information_value_1"
 	case UserInformationValue2:
@@ -450,6 +502,7 @@ func GetStringValue(questionType QuestionType) string {
 		return "user_information_value_6"
 	case UserInformationValue7:
 		return "user_information_value_7"
+
 	case QuestionDraggableList:
 		return "draggable_list"
 	case QuestionSendMessage:
@@ -464,6 +517,25 @@ func GetStringValue(questionType QuestionType) string {
 		return "document"
 	case QuestionQRCodeGenerator:
 		return "qrcode_generator"
+
+	case CameraSquareLens:
+		return "camera_square_lens"
+	case SubmitText:
+		return "submit_text"
+
+	case MessageText1:
+		return "message_text_1"
+	case MessageText2:
+		return "message_text_2"
+	case ResponseText1:
+		return "response_text_1"
+	case ResponseText2:
+		return "response_text_2"
+
+	case PdfViewer:
+		return "pdf_viewer"
+	case PdfPicker:
+		return "pdf_picker"
 
 	default:
 		return ""
@@ -519,22 +591,29 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return QuestionChoiceToggle, nil
 	case "section":
 		return QuestionSection, nil
+
 	case "preset_value1":
 		return QuestionSignUpPreSetValue1, nil
 	case "preset_value3":
 		return QuestionSignUpPreSetValue3, nil
 	case "preset_value2":
 		return QuestionSignUpPreSetValue2, nil
+
+	case "preset_nickname":
+		return QuestionPresetNickname, nil
+	case "preset_email":
+		return QuestionPresetEmail, nil
 	case "preset_dob":
-		return QuestionSignUpPresetDob, nil
+		return QuestionPresetDob, nil
 	case "preset_password":
-		return QuestionSignUpPresetPassword, nil
+		return QuestionPresetPassword, nil
 	case "preset_condition_accept":
-		return QuestionSignUpPresetConditionAccept, nil
+		return QuestionPresetConditionAccept, nil
 	case "preset_role":
-		return QuestionSignUpPresetRole, nil
+		return QuestionPresetRole, nil
 	case "preset_role_select_working_address":
-		return QuestionSignUpPresetRoleSelectWorkingAddress, nil
+		return QuestionPresetRoleSelectWorkingAddress, nil
+
 	case "preset_sign_up_button_1":
 		return SignUpButtonConfiguration1, nil
 	case "preset_sign_up_button_2":
@@ -555,6 +634,7 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return SignUpButtonConfiguration9, nil
 	case "preset_sign_up_button_10":
 		return SignUpButtonConfiguration10, nil
+
 	case "user_information_value_1":
 		return UserInformationValue1, nil
 	case "user_information_value_2":
@@ -569,6 +649,7 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return UserInformationValue6, nil
 	case "user_information_value_7":
 		return UserInformationValue7, nil
+
 	case "form_section":
 		return QuestionFormSection, nil
 	case "send_immediately":
@@ -638,6 +719,25 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 	case "qrcode_generator":
 		return QuestionQRCodeGenerator, nil
 
+	case "camera_square_lens":
+		return CameraSquareLens, nil
+	case "submit_text":
+		return SubmitText, nil
+
+	case "message_text_1":
+		return MessageText1, nil
+	case "message_text_2":
+		return MessageText2, nil
+	case "response_text_1":
+		return ResponseText1, nil
+	case "response_text_2":
+		return ResponseText2, nil
+
+	case "pdf_viewer":
+		return PdfViewer, nil
+	case "pdf_picker":
+		return PdfPicker, nil
+
 	default:
 		return 0, errors.New("invalid raw value")
 	}
@@ -659,6 +759,7 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionPhoto,
 		QuestionMultipleChoice,
 		QuestionButtonCount,
+		QuestionButtonCountUser,
 		QuestionSingleChoice,
 		QuestionButtonList,
 		QuestionMessageBox,
@@ -672,9 +773,11 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionFormSendImmediately,
 		QuestionSignature,
 		QuestionWeb,
+
 		QuestionSignUpPreSetValue1,
 		QuestionSignUpPreSetValue3,
 		QuestionSignUpPreSetValue2,
+
 		QuestionDraggableList,
 		QuestionSendMessage,
 		QuestionSendNotification,
@@ -682,11 +785,15 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionRandomizer,
 		QuestionDocument,
 		QuestionQRCodeGenerator,
-		QuestionSignUpPresetDob,
-		QuestionSignUpPresetPassword,
-		QuestionSignUpPresetConditionAccept,
-		QuestionSignUpPresetRole,
-		QuestionSignUpPresetRoleSelectWorkingAddress,
+
+		QuestionPresetNickname,
+		QuestionPresetEmail,
+		QuestionPresetDob,
+		QuestionPresetPassword,
+		QuestionPresetConditionAccept,
+		QuestionPresetRole,
+		QuestionPresetRoleSelectWorkingAddress,
+
 		SignUpButtonConfiguration1,
 		SignUpButtonConfiguration2,
 		SignUpButtonConfiguration3,
@@ -697,13 +804,25 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		SignUpButtonConfiguration8,
 		SignUpButtonConfiguration9,
 		SignUpButtonConfiguration10,
+
 		UserInformationValue1,
 		UserInformationValue2,
 		UserInformationValue3,
 		UserInformationValue4,
 		UserInformationValue5,
 		UserInformationValue6,
-		UserInformationValue7:
+		UserInformationValue7,
+
+		MessageText1,
+		MessageText2,
+		ResponseText1,
+		ResponseText2,
+
+		PdfViewer,
+		PdfPicker,
+
+		CameraSquareLens,
+		SubmitText:
 		return true
 	default:
 		return false
@@ -742,33 +861,6 @@ func GetUserInfoInputTypeFromString(userInfoInputType string) (UserInfoInputType
 	default:
 		return UserInfoInputTypeBarcode, nil
 	}
-}
-
-type Role uint
-
-const (
-	Guest      Role = iota + 1
-	User       Role = Guest << 1
-	Moderator  Role = Guest << 2
-	Admin      Role = Guest << 3
-	SuperAdmin Role = Guest << 4
-)
-
-func GetRawValueOfRole(role Role) uint {
-	switch role {
-	case Guest:
-		return 1
-	case User:
-		return 2
-	case Moderator:
-		return 4
-	case Admin:
-		return 8
-	case SuperAdmin:
-		return 16
-	}
-
-	return 0
 }
 
 func GetRawStatusValue(status Status) string {
@@ -901,13 +993,6 @@ func GetRawButtonTypeValue(buttonType ButtonType) string {
 	}
 }
 
-type FormSyncStrategy string
-
-const (
-	FormSyncStrategyOnSubmit FormSyncStrategy = "on_submit"
-	FormSyncStrategyOnSync   FormSyncStrategy = "on_sync"
-)
-
 const (
 	WorkingHoursStart = "08:00"
 	WorkingHoursEnd   = "20:00"
@@ -951,17 +1036,6 @@ const (
 	NotificationType_NoteChanged                NotificationType = "note_changed"
 	NotificationType_DeviceStatusChanged        NotificationType = "device_status_changed"
 )
-
-func GetFormSyncStrategyFromString(rawValue string) FormSyncStrategy {
-	switch strings.ToLower(rawValue) {
-	case "realtime":
-		return FormSyncStrategyOnSubmit
-	case "lazysync":
-		return FormSyncStrategyOnSync
-	default:
-		return FormSyncStrategyOnSync
-	}
-}
 
 type FcmTopics string
 

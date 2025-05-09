@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/model"
 	"sen-global-api/internal/domain/value"
@@ -37,12 +38,7 @@ func (receiver *QuestionRepository) Create(params []CreateQuestionParams) ([]ent
 		return nil, err
 	}
 
-	err = receiver.DBConn.
-		Clauses(clause.OnConflict{
-			Columns: []clause.Column{{Name: "question_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"question_name", "question_type", "question", "attributes", "status", "updated_at", "set", "enable_on_mobile",
-				"question_unique_id"}),
-		}).Create(&rawQuestions).Error
+	err = receiver.DBConn.Create(&rawQuestions).Error
 
 	if err != nil {
 		return nil, err
@@ -168,7 +164,7 @@ func (receiver *QuestionRepository) unmarshalDateQuestion(param CreateQuestionPa
 	log.Debug(attr)
 	//TODO: validate date format of attr.Value
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -198,7 +194,7 @@ func (receiver *QuestionRepository) unmarshalTimeQuestion(param CreateQuestionPa
 	}
 	//TODO: validate time format of attr.Value
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -228,7 +224,7 @@ func (receiver *QuestionRepository) unmarshalDateTimeQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -247,7 +243,7 @@ func (receiver *QuestionRepository) unmarshalDurationForwardQuestion(param Creat
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -277,7 +273,7 @@ func (receiver *QuestionRepository) unmarshalDurationBackwardQuestion(param Crea
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -308,7 +304,7 @@ func (receiver *QuestionRepository) unmarshalScaleQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -327,7 +323,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -360,7 +356,7 @@ func (receiver *QuestionRepository) unmarshalSelectionQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -392,7 +388,7 @@ func (receiver *QuestionRepository) unmarshalTextQuestion(param CreateQuestionPa
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -411,7 +407,7 @@ func (receiver *QuestionRepository) unmarshalCountQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -430,7 +426,7 @@ func (receiver *QuestionRepository) unmarshalNumberQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -449,7 +445,7 @@ func (receiver *QuestionRepository) unmarshalPhotoQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -500,7 +496,7 @@ func (receiver *QuestionRepository) unmarshalMultipleChoiceQuestion(param Create
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -519,7 +515,7 @@ func (receiver *QuestionRepository) unmarshalButtonsQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -538,7 +534,7 @@ func (receiver *QuestionRepository) unmarshalButtonQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -557,7 +553,7 @@ func (receiver *QuestionRepository) unmarshalMessageBoxQuestion(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -576,7 +572,7 @@ func (receiver *QuestionRepository) unmarshalShowPicsQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -595,7 +591,7 @@ func (receiver *QuestionRepository) unmarshalButtonCountQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -662,7 +658,7 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -685,7 +681,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -704,7 +700,7 @@ func (receiver *QuestionRepository) unmarshalPlayVideoQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -737,7 +733,7 @@ func (receiver *QuestionRepository) unmarshalChoiceToggleQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -756,7 +752,7 @@ func (receiver *QuestionRepository) unmarshalSectionQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -775,7 +771,7 @@ func (receiver *QuestionRepository) unmarshalUserQuestion(param CreateQuestionPa
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -795,7 +791,7 @@ func (receiver *QuestionRepository) unmarshalFormSectionQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -815,7 +811,7 @@ func (receiver *QuestionRepository) unmarshalFormSendImmediately(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -840,7 +836,7 @@ func (receiver *QuestionRepository) unmarshalSignatureQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,
@@ -858,7 +854,7 @@ func (receiver *QuestionRepository) unmarshalWebUserQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -877,7 +873,7 @@ func (receiver *QuestionRepository) unmarshalWebQuestion(param CreateQuestionPar
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -896,7 +892,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue1(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -915,7 +911,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue2(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -934,7 +930,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue3(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -967,7 +963,7 @@ func (receiver *QuestionRepository) unmarshalDraggableListQuestion(param CreateQ
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,
@@ -999,7 +995,7 @@ func (receiver *QuestionRepository) unmarshalSendNotification(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -1034,7 +1030,7 @@ func (receiver *QuestionRepository) unmarshalSendMessageQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       param.QuestionId,
+		QuestionId:       uuid.MustParse(param.QuestionId),
 		QuestionName:     param.QuestionName,
 		QuestionType:     param.QuestionType,
 		Question:         param.Question,
@@ -1053,7 +1049,7 @@ func (receiver *QuestionRepository) unmarshalCodeCountingQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,
@@ -1071,7 +1067,7 @@ func (receiver *QuestionRepository) unmarshalRandomizerQuestion(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,
@@ -1089,7 +1085,7 @@ func (receiver *QuestionRepository) unmarshalDocumentQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,
@@ -1107,7 +1103,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeGeneratorQuestion(param Creat
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     param.QuestionId,
+		QuestionId:     uuid.MustParse(param.QuestionId),
 		QuestionName:   param.QuestionName,
 		QuestionType:   param.QuestionType,
 		Question:       param.Question,

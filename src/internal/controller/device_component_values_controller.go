@@ -16,40 +16,34 @@ type DeviceComponentValuesController struct {
 	*usecase.SaveDeviceComponentValuesUseCase
 }
 
-func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByCompany(context *gin.Context) {
-	companyId := context.Param("company_id")
-	if companyId == "" {
+func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrganization(context *gin.Context) {
+	organizationId := context.Param("organization_id")
+	if organizationId == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Company Id is required",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Organization Id is required",
 			},
 		)
 		return
 	}
 
-	id, err := strconv.ParseUint(companyId, 10, 32)
+	id, err := strconv.ParseUint(organizationId, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Company Id is invalid",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Organization Id is invalid",
 			},
 		)
 		return
 	}
 
-	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByCompany(request.GetDeviceComponentValuesByCompanyRequest{ID: uint(id)})
+	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByOrganization(request.GetDeviceComponentValuesByOrganizationRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -58,10 +52,8 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByCompa
 	var settingString response.SettingResponse
 	if err := json.Unmarshal(setting.Setting, &settingString); err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -69,35 +61,31 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByCompa
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.DeviceComponentValuesResponse{
-			ID:      int(setting.ID),
-			Setting: settingString,
-			Company: uint(*setting.CompanyId),
+			ID:           int(setting.ID),
+			Setting:      settingString,
+			Organization: uint(*setting.OrganizationId),
 		},
 	})
 }
 
 func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevice(context *gin.Context) {
-	companyId := context.Param("company_id")
-	if companyId == "" {
+	organizationId := context.Param("organization_id")
+	if organizationId == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Company Id is required",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Organization Id is required",
 			},
 		)
 		return
 	}
 
-	id, err := strconv.ParseUint(companyId, 10, 32)
+	id, err := strconv.ParseUint(organizationId, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Company Id is invalid",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Organization Id is invalid",
 			},
 		)
 		return
@@ -106,10 +94,8 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByDevice(request.GetDeviceComponentValuesByDeviceRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -118,10 +104,8 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 	var settingString response.SettingResponse
 	if err := json.Unmarshal(setting.Setting, &settingString); err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -135,33 +119,27 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 	})
 }
 
-func (receiver *DeviceComponentValuesController) SaveDeviceComponentValuesByCompany(context *gin.Context) {
-	var req request.SaveDeviceComponentValuesByCompanyRequest
+func (receiver *DeviceComponentValuesController) SaveDeviceComponentValuesByOrganization(context *gin.Context) {
+	var req request.SaveDeviceComponentValuesByOrganizationRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
-	err := receiver.SaveDeviceComponentValuesUseCase.SaveByCompany(req)
+	err := receiver.SaveDeviceComponentValuesUseCase.SaveByOrganization(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Setting was saved successfully",
 	})
 }
 
@@ -169,27 +147,21 @@ func (receiver *DeviceComponentValuesController) SaveDeviceComponentValuesByDevi
 	var req request.SaveDeviceComponentValuesByDeviceRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	err := receiver.SaveDeviceComponentValuesUseCase.SaveByDevice(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Setting was saved successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Setting was saved successfully",
 	})
 }

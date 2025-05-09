@@ -13,7 +13,7 @@ type DiscoveredDeviceData struct {
 }
 
 func (receiver *DiscoverUseCase) Execute(deviceId string) (DiscoveredDeviceData, error) {
-	device, err := receiver.DeviceRepository.GetDeviceById(deviceId)
+	device, err := receiver.GetDeviceById(deviceId)
 	if err != nil {
 		return DiscoveredDeviceData{}, err
 	}

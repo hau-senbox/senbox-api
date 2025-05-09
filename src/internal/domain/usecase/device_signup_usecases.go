@@ -106,15 +106,6 @@ func (c *DeviceSignUpUseCases) GetSignUpSetting() (DeviceSignUpSetting, error) {
 	}, nil
 }
 
-func (c *DeviceSignUpUseCases) GetSignUpFormQuestions() *response.QuestionListResponse {
-	f, err := c.findSignUpForm()
-	if err != nil {
-		return nil
-	}
-
-	return c.GetQuestionsByFormUseCase.GetQuestionsBySignUpForm(f)
-}
-
 func (c *DeviceSignUpUseCases) GetSignUpPreset2Setting() *string {
 	s, err := c.SettingRepository.GetRegistrationPreset2Setting()
 
@@ -160,6 +151,15 @@ func (c *DeviceSignUpUseCases) GetSignUpPreset1Setting() *string {
 	return &registrationPresetSettings.SpreadsheetId
 }
 
+func (c *DeviceSignUpUseCases) GetSignUpFormQuestions() *response.QuestionListResponse {
+	f, err := c.findSignUpForm()
+	if err != nil {
+		return nil
+	}
+
+	return c.GetQuestionsByFormUseCase.GetQuestionsByForm(f)
+}
+
 func (c *DeviceSignUpUseCases) findSignUpForm() (entity.SForm, error) {
 	s, err := c.SettingRepository.GetRegistrationFormSetting()
 	if err != nil {
@@ -186,38 +186,4 @@ func (c *DeviceSignUpUseCases) findSignUpForm() (entity.SForm, error) {
 	}
 
 	return *f, nil
-}
-
-func (c *DeviceSignUpUseCases) FindSignUpForm() (entity.SForm, error) {
-	return c.findSignUpForm()
-}
-
-func (c *DeviceSignUpUseCases) GetSignUpFormQuestionsByDevice(deviceID string) *response.QuestionListResponse {
-	f, err := c.FormRepository.FindSignUpFormByDeviceID(deviceID)
-
-	if err != nil {
-		return nil
-	}
-
-	return c.GetQuestionsByFormUseCase.GetQuestionsBySignUpForm(f)
-}
-
-func (c *DeviceSignUpUseCases) GetSignUpFormQuestionsByFormNote(code string) *response.QuestionListResponse {
-	f, err := c.findSignUpFormByNote(code)
-
-	if err != nil {
-		return nil
-	}
-
-	return c.GetQuestionsByFormUseCase.GetQuestionsBySignUpForm(f)
-}
-
-func (c *DeviceSignUpUseCases) findSignUpFormByNote(code string) (entity.SForm, error) {
-	f, err := c.FormRepository.FindByCode(code)
-
-	if err != nil {
-		return entity.SForm{}, err
-	}
-
-	return f, nil
 }

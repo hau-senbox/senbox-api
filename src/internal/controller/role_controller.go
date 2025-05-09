@@ -21,10 +21,8 @@ func (receiver *RoleController) GetAllRole(context *gin.Context) {
 	roles, err := receiver.GetRoleUseCase.GetAllRole()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -38,7 +36,8 @@ func (receiver *RoleController) GetAllRole(context *gin.Context) {
 		})
 	}
 
-	context.JSON(http.StatusOK, response.RoleListResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: roleListResponse,
 	})
 }
@@ -48,10 +47,8 @@ func (receiver *RoleController) GetRoleById(context *gin.Context) {
 	if roleId == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Role Id is required",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Role Id is required",
 			},
 		)
 		return
@@ -61,10 +58,8 @@ func (receiver *RoleController) GetRoleById(context *gin.Context) {
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Role Id is invalid",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Role Id is invalid",
 			},
 		)
 		return
@@ -73,10 +68,8 @@ func (receiver *RoleController) GetRoleById(context *gin.Context) {
 	userRole, err := receiver.GetRoleUseCase.GetRoleById(request.GetRoleByIdRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -84,9 +77,8 @@ func (receiver *RoleController) GetRoleById(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.RoleResponse{
-			ID:          userRole.ID,
-			RoleName:    userRole.RoleName,
-			Description: userRole.Description,
+			ID:       userRole.ID,
+			RoleName: userRole.RoleName,
 		},
 	})
 }
@@ -96,10 +88,8 @@ func (receiver *RoleController) GetRoleByName(context *gin.Context) {
 	if roleName == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "role name is required",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "role name is required",
 			},
 		)
 		return
@@ -108,10 +98,8 @@ func (receiver *RoleController) GetRoleByName(context *gin.Context) {
 	userRole, err := receiver.GetRoleUseCase.GetRoleByName(request.GetRoleByNameRequest{RoleName: roleName})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 
 		return
@@ -119,9 +107,8 @@ func (receiver *RoleController) GetRoleByName(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.RoleResponse{
-			ID:          userRole.ID,
-			RoleName:    userRole.RoleName,
-			Description: userRole.Description,
+			ID:       userRole.ID,
+			RoleName: userRole.RoleName,
 		},
 	})
 }
@@ -130,29 +117,23 @@ func (receiver *RoleController) CreateRole(context *gin.Context) {
 	var req request.CreateRoleRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
-	err := receiver.CreateRoleUseCase.Create(req)
+	err := receiver.Create(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "user role was create successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "user role was create successfully",
 	})
 }
 
@@ -160,10 +141,8 @@ func (receiver *RoleController) UpdateRole(context *gin.Context) {
 	var req request.UpdateRoleRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -171,19 +150,15 @@ func (receiver *RoleController) UpdateRole(context *gin.Context) {
 	err := receiver.UpdateRoleUseCase.UpdateRole(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "role was update successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "role was update successfully",
 	})
 }
 
@@ -192,10 +167,8 @@ func (receiver *RoleController) DeleteRole(context *gin.Context) {
 	if roleId == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Role Id is required",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Role Id is required",
 			},
 		)
 		return
@@ -205,10 +178,8 @@ func (receiver *RoleController) DeleteRole(context *gin.Context) {
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: "Role Id is invalid",
-				},
+				Code:  http.StatusBadRequest,
+				Error: "Role Id is invalid",
 			},
 		)
 		return
@@ -217,18 +188,14 @@ func (receiver *RoleController) DeleteRole(context *gin.Context) {
 	err = receiver.DeleteRoleUseCase.DeleteRole(request.DeleteRoleRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "role was delete successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "role was delete successfully",
 	})
 }

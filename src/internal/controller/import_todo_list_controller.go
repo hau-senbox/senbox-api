@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"sen-global-api/config"
 	"sen-global-api/internal/domain/request"
@@ -10,6 +8,9 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/job"
 	"sen-global-api/pkg/sheet"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type ImportToDoController struct {
@@ -36,21 +37,17 @@ func (c *ImportToDoController) ImportTodos(context *gin.Context) {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	err := c.ImportToDoListUseCase.ImportToDoList(request)
+	err := c.ImportToDoList(request)
 	if err != nil {
 		context.JSON(500, response.SucceedResponse{
-			Data: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: "Import ToDos failed",
-			},
+			Code:    http.StatusInternalServerError,
+			Message: "Import ToDos failed",
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Import ToDos successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "Import ToDos successfully",
 	})
 }
 
@@ -72,30 +69,24 @@ func (c *ImportToDoController) ImportPartiallyTodos(context *gin.Context) {
 	var req request.ImportPartiallyTodoRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
-	err := c.ImportToDoListUseCase.ImportPartiallyToDos(req.SpreadsheetURL, req.TabName)
+	err := c.ImportPartiallyToDos(req.SpreadsheetURL, req.TabName)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "TODO imported successfully",
-		},
+		Code:    http.StatusOK,
+		Message: "TODO imported successfully",
 	})
 }
 

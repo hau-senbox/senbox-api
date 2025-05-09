@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+
+	"github.com/gin-gonic/gin"
 )
 
 type SMTPController struct {
@@ -29,34 +30,28 @@ func (receiver *SMTPController) SendEmailFromDevice(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusBadRequest,
-					Message: err.Error(),
-				},
+				Code:  http.StatusBadRequest,
+				Error: err.Error(),
 			},
 		)
 		return
 	}
-	device, err := receiver.FindDeviceFromRequestCase.FindDevice(c)
+	device, err := receiver.FindDevice(c)
 	if err != nil || device == nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusInternalServerError,
-					Message: err.Error(),
-				},
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
 			},
 		)
 		return
 	}
-	err = receiver.SendEmailUseCase.SendEmail(req.To, req.Subject, req.Body, *device)
+	err = receiver.SendEmail(req.To, req.Subject, req.Body, *device)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
-				Error: response.Cause{
-					Code:    http.StatusInternalServerError,
-					Message: err.Error(),
-				},
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
 			},
 		)
 		return
@@ -64,9 +59,7 @@ func (receiver *SMTPController) SendEmailFromDevice(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK, response.SucceedResponse{
-			Data: response.Cause{
-				Code:    http.StatusOK,
-				Message: "Email sent successfully",
-			},
+			Code:    http.StatusOK,
+			Message: "Email sent successfully",
 		})
 }

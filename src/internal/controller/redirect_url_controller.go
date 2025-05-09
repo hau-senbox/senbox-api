@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RedirectUrlController struct {
@@ -33,27 +34,23 @@ func (receiver *RedirectUrlController) CreateRedirectUrl(context *gin.Context) {
 	var req request.SaveRedirectUrlRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 
-	form, err := receiver.SaveRedirectUrlUseCase.Save(req)
+	form, err := receiver.Save(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SaveRedirectUrlResponse{Data: response.SaveRedirectUrlResponseData{
-		Id:        form.RedirectUrlId,
+		Id:        form.ID,
 		QRCode:    form.QRCode,
 		TargetUrl: form.TargetUrl,
 		Password:  form.Password,
@@ -80,20 +77,16 @@ func (receiver *RedirectUrlController) GetRedirectUrlList(context *gin.Context) 
 	var req request.GetRedirectUrlListRequest
 	if err := context.ShouldBindQuery(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	forms, paging, err := receiver.GetRedirectUrlListUseCase.GetList(req)
+	forms, paging, err := receiver.GetList(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
@@ -107,7 +100,7 @@ func (receiver *RedirectUrlController) GetRedirectUrlList(context *gin.Context) 
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Redirect Url ID"
+// @Param id path int true "Redirect Url RoleId"
 // @Success 200 {object} response.SucceedResponse
 // @Failure 400 {object} response.FailedResponse
 // @Failure 401 {object} response.FailedResponse
@@ -119,28 +112,22 @@ func (receiver *RedirectUrlController) DeleteRedirectUrl(context *gin.Context) {
 	formId, err := strconv.Atoi(formIdString)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	err = receiver.DeleteRedirectUrlUseCase.Delete(uint64(formId))
+	err = receiver.Delete(uint64(formId))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Redirect Url deleted",
-		},
+		Code:    http.StatusOK,
+		Message: "Redirect Url deleted",
 	})
 }
 
@@ -151,7 +138,7 @@ func (receiver *RedirectUrlController) DeleteRedirectUrl(context *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Redirect Url ID"
+// @Param id path int true "Redirect Url RoleId"
 // @Param request body request.UpdateRedirectUrlRequest true "Update Redirect Url Request"
 // @Success 200 {object} response.UpdateRedirectUrlResponse
 // @Failure 400 {object} response.FailedResponse
@@ -163,46 +150,38 @@ func (receiver *RedirectUrlController) UpdateRedirectUrl(context *gin.Context) {
 	id := context.Param("id")
 	if id == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: "id is required",
-			},
+			Code:  http.StatusBadRequest,
+			Error: "id is required",
 		})
 		return
 	}
 	formId, err := strconv.Atoi(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
 	var req request.UpdateRedirectUrlRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	form, err := receiver.UpdateRedirectUrlUseCase.Update(formId, req)
+	form, err := receiver.Update(formId, req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.UpdateRedirectUrlResponse{
 		Data: response.GetRedirectUrlListResponseData{
-			Id:           form.RedirectUrlId,
+			Id:           form.ID,
 			QRCode:       form.QRCode,
 			TargetUrl:    form.TargetUrl,
 			Password:     form.Password,
@@ -232,26 +211,22 @@ func (receiver *RedirectUrlController) GetRedirectUrlByQRCode(context *gin.Conte
 	var req request.GetRedirectUrlByQRCodeRequest
 	if err := context.ShouldBindQuery(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	form, err := receiver.GetRedirectUrlByQRCodeUseCase.GetByQRCode(req.QRCode)
+	form, err := receiver.GetByQRCode(req.QRCode)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.GetRedirectUrlResponse{
 		Data: response.GetRedirectUrlListResponseData{
-			Id:           form.RedirectUrlId,
+			Id:           form.ID,
 			QRCode:       form.QRCode,
 			TargetUrl:    form.TargetUrl,
 			Password:     form.Password,
@@ -281,28 +256,22 @@ func (receiver *RedirectUrlController) ImportRedirectUrls(context *gin.Context) 
 	var req request.ImportRedirectUrlsRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	err := receiver.ImportRedirectUrlsUseCase.Import(req)
+	err := receiver.Import(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Redirect Urls imported",
-		},
+		Code:    http.StatusOK,
+		Message: "Redirect Urls imported",
 	})
 }
 
@@ -329,28 +298,22 @@ func (receiver *RedirectUrlController) ImportPartiallyRedirectUrls(context *gin.
 	var req importPartiallyURLsRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
-	err := receiver.ImportRedirectUrlsUseCase.ImportPartially(req.SpreadsheetURL, req.TabName)
+	err := receiver.ImportPartially(req.SpreadsheetURL, req.TabName)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: response.Cause{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
-		Data: response.Cause{
-			Code:    http.StatusOK,
-			Message: "Redirect Urls imported",
-		},
+		Code:    http.StatusOK,
+		Message: "Redirect Urls imported",
 	})
 }

@@ -24,11 +24,11 @@ func connect(appConfig config.AppConfig) (*gorm.DB, error) {
 	fmt.Println("Connect to database.....")
 	var err error
 	var (
-		devHostName = appConfig.Config.Database.Host
+		devHostName = appConfig.Config.Host
 		devDbName   = appConfig.Config.Database.Database
-		devUser     = appConfig.Config.Database.User
+		devUser     = appConfig.Config.User
 		devDbPort   = appConfig.Config.Database.Port
-		devPassword = appConfig.Config.Database.Password
+		devPassword = appConfig.Config.Password
 	)
 
 	dsn := devUser + ":" + devPassword + "@tcp(" + devHostName + ":" + devDbPort + ")/" + devDbName + "?charset=utf8mb4&parseTime=True&loc=Local"

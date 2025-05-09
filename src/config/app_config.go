@@ -4,6 +4,20 @@ import (
 	"sen-global-api/pkg/common"
 )
 
+type SenboxFormSubmitBucket struct {
+	Domain               string `env-required:"true" yaml:"domain"`
+	Region               string `env-required:"true" yaml:"region"`
+	BucketName           string `env-required:"true" yaml:"bucket_name"`
+	AccessKey            string `env-required:"true" yaml:"access_key"`
+	SecretKey            string `env-required:"true" yaml:"secret_key"`
+	CloudfrontKeyGroupID string `env-required:"true" yaml:"cloudfront_key_group_id"`
+	CloudfrontKeyPath    string `env-required:"true" yaml:"cloudfront_key_path"`
+}
+
+type S3 struct {
+	SenboxFormSubmitBucket SenboxFormSubmitBucket `env-required:"true" yaml:"senbox-form-submit-bucket"`
+}
+
 type GoogleConfig struct {
 	UserCredentialsFilePath     string   `env-required:"true" yaml:"user_credentials_file_path" env:"GOOGLE_CREDENTIALS_USER_FILE_PATH"`
 	UploaderCredentialsFilePath string   `env-required:"true" yaml:"uploader_credentials_file_path" env:"GOOGLE_CREDENTIALS_UPLOADER_FILE_PATH"`
@@ -25,6 +39,7 @@ type Messaging struct {
 }
 
 type AppConfig struct {
+	S3                              S3             `yaml:"s3"`
 	Config                          *common.Config `yaml:"config"`
 	Google                          *GoogleConfig  `yaml:"google_config"`
 	AuthorizeEncryptKey             string         `env-required:"true" yaml:"authorize_encrypt_key" env:"AUTHORIZE_ENCRYPT_KEY"`

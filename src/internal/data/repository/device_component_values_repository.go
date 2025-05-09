@@ -17,9 +17,9 @@ func NewDeviceComponentValuesRepository(dbConn *gorm.DB) *DeviceComponentValuesR
 	return &DeviceComponentValuesRepository{DBConn: dbConn}
 }
 
-func (receiver *DeviceComponentValuesRepository) GetByCompany(req request.GetDeviceComponentValuesByCompanyRequest) (*entity.SDeviceComponentValues, error) {
+func (receiver *DeviceComponentValuesRepository) GetByOrganization(req request.GetDeviceComponentValuesByOrganizationRequest) (*entity.SDeviceComponentValues, error) {
 	var deviceComponentValues entity.SDeviceComponentValues
-	err := receiver.DBConn.Where("company_id = ?", req.ID).First(&deviceComponentValues).Error
+	err := receiver.DBConn.Where("organization_id = ?", req.ID).First(&deviceComponentValues).Error
 	if err != nil {
 		return nil, err
 	}
@@ -28,15 +28,15 @@ func (receiver *DeviceComponentValuesRepository) GetByCompany(req request.GetDev
 
 func (receiver *DeviceComponentValuesRepository) GetByDevice(req request.GetDeviceComponentValuesByDeviceRequest) (*entity.SDeviceComponentValues, error) {
 	var deviceComponentValues entity.SDeviceComponentValues
-	err := receiver.DBConn.Where("id = ? AND company_id = ?", req.ID, nil).First(&deviceComponentValues).Error
+	err := receiver.DBConn.Where("id = ? AND organization_id = ?", req.ID, nil).First(&deviceComponentValues).Error
 	if err != nil {
 		return nil, err
 	}
 	return &deviceComponentValues, nil
 }
 
-func (receiver *DeviceComponentValuesRepository) SaveByCompany(req request.SaveDeviceComponentValuesByCompanyRequest) error {
-	setting, _ := receiver.GetByCompany(request.GetDeviceComponentValuesByCompanyRequest{ID: req.Company})
+func (receiver *DeviceComponentValuesRepository) SaveByOrganization(req request.SaveDeviceComponentValuesByOrganizationRequest) error {
+	setting, _ := receiver.GetByOrganization(request.GetDeviceComponentValuesByOrganizationRequest{ID: req.Organization})
 
 	jsonSetting, err := json.Marshal(req.Settings)
 	if err != nil {
@@ -44,10 +44,10 @@ func (receiver *DeviceComponentValuesRepository) SaveByCompany(req request.SaveD
 	}
 
 	if setting == nil {
-		companyID := int64(req.Company)
+		organizationID := int64(req.Organization)
 		result := receiver.DBConn.Create(&entity.SDeviceComponentValues{
 			Setting:   datatypes.JSON(string(jsonSetting)),
-			CompanyId: &companyID,
+			OrganizationId: &organizationID,
 		})
 
 		return result.Error

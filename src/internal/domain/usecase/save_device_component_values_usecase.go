@@ -9,8 +9,8 @@ type SaveDeviceComponentValuesUseCase struct {
 	*repository.DeviceComponentValuesRepository
 }
 
-func (receiver *SaveDeviceComponentValuesUseCase) SaveDeviceComponentValuesByCompany(req request.SaveDeviceComponentValuesByCompanyRequest) error {
-	return receiver.SaveByCompany(req)
+func (receiver *SaveDeviceComponentValuesUseCase) SaveDeviceComponentValuesByOrganization(req request.SaveDeviceComponentValuesByOrganizationRequest) error {
+	return receiver.SaveByOrganization(req)
 }
 
 func (receiver *SaveDeviceComponentValuesUseCase) SaveDeviceComponentValuesByDevice(req request.SaveDeviceComponentValuesByDeviceRequest) error {

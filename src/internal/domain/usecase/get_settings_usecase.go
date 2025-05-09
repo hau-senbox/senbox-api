@@ -68,126 +68,126 @@ type AppSettings struct {
 }
 
 func (receiver *GetSettingsUseCase) GetSettings() (*AppSettings, error) {
-	formSettingsData, err := receiver.SettingRepository.GetFormSettings()
+	formSettingsData, err := receiver.GetFormSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	formSettingsData2, err := receiver.SettingRepository.GetFormSettings2()
+	formSettingsData2, err := receiver.GetFormSettings2()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	formSettingsData3, err := receiver.SettingRepository.GetFormSettings3()
+	formSettingsData3, err := receiver.GetFormSettings3()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	formSettingsData4, err := receiver.SettingRepository.GetFormSettings4()
+	formSettingsData4, err := receiver.GetFormSettings4()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	urlSettingsData, err := receiver.SettingRepository.GetUrlSettings()
+	urlSettingsData, err := receiver.GetUrlSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
-	outputSettingsData, err := receiver.SettingRepository.GetOutputSettings()
-	if err != nil {
-		log.Info(err.Error())
-	}
-
-	summarySettingsData, err := receiver.SettingRepository.GetSummarySettings()
+	outputSettingsData, err := receiver.GetOutputSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	syncDevicesSettingsData, err := receiver.SettingRepository.GetSyncDevicesSettings()
+	summarySettingsData, err := receiver.GetSummarySettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	syncToDosSettingsData, err := receiver.SettingRepository.GetSyncToDosSettings()
+	syncDevicesSettingsData, err := receiver.GetSyncDevicesSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	emailSettingsData, err := receiver.SettingRepository.GetEmailSettings()
+	syncToDosSettingsData, err := receiver.GetSyncToDosSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	outputTemplateSettingData, err := receiver.SettingRepository.GetOutputTemplateSettings()
+	emailSettingsData, err := receiver.GetEmailSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	outputTemplateForTeacherSettingData, err := receiver.SettingRepository.GetOutputTemplateSettingsForTeacher()
+	outputTemplateSettingData, err := receiver.GetOutputTemplateSettings()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButton1SettingData, err := receiver.SettingRepository.GetSignUpButton1Setting()
+	outputTemplateForTeacherSettingData, err := receiver.GetOutputTemplateSettingsForTeacher()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButton2SettingData, err := receiver.SettingRepository.GetSignUpButton2Setting()
+	signUpButton1SettingData, err := receiver.GetSignUpButton1Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButton3SettingData, err := receiver.SettingRepository.GetSignUpButton3Setting()
+	signUpButton2SettingData, err := receiver.GetSignUpButton2Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButton4SettingData, err := receiver.SettingRepository.GetSignUpButton4Setting()
+	signUpButton3SettingData, err := receiver.GetSignUpButton3Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButton5SettingData, err := receiver.SettingRepository.GetSignUpButton5Setting()
+	signUpButton4SettingData, err := receiver.GetSignUpButton4Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpButtonConfigurationSettingData, err := receiver.SettingRepository.GetSignUpButtonConfigurationSetting()
+	signUpButton5SettingData, err := receiver.GetSignUpButton5Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	registrationFormSettingData, err := receiver.SettingRepository.GetRegistrationFormSetting()
+	signUpButtonConfigurationSettingData, err := receiver.GetSignUpButtonConfigurationSetting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	registrationSubmissionSettingData, err := receiver.SettingRepository.GetRegistrationSubmissionSetting()
+	registrationFormSettingData, err := receiver.GetRegistrationFormSetting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	registrationPreset2SettingData, err := receiver.SettingRepository.GetRegistrationPreset2Setting()
+	registrationSubmissionSettingData, err := receiver.GetRegistrationSubmissionSetting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	apiDistributerSettingData, err := receiver.SettingRepository.GetAPIDistributerSetting()
+	registrationPreset2SettingData, err := receiver.GetRegistrationPreset2Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	codeCountingData, err := receiver.SettingRepository.GetCodeCountingDataSetting()
+	apiDistributerSettingData, err := receiver.GetAPIDistributerSetting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	signUpFormSettingData, err := receiver.SettingRepository.GetImportSignUpFormsSetting()
+	codeCountingData, err := receiver.GetCodeCountingDataSetting()
 	if err != nil {
 		log.Info(err.Error())
 	}
 
-	registrationPreset1SettingData, err := receiver.SettingRepository.GetRegistrationPreset1Setting()
+	signUpFormSettingData, err := receiver.GetImportSignUpFormsSetting()
+	if err != nil {
+		log.Info(err.Error())
+	}
+
+	registrationPreset1SettingData, err := receiver.GetRegistrationPreset1Setting()
 	if err != nil {
 		log.Info(err.Error())
 	}

@@ -1,10 +1,7 @@
 package response
 
 type FailedResponse struct {
-	Error Cause `json:"error"`
-}
-
-type Cause struct {
-	Code    int    `json:"code"`
+	Code    int    `json:"status_code"`
 	Message string `json:"message"`
+	Error   string `json:"error"`
 }

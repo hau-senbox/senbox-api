@@ -1,8 +1,10 @@
 package entity
 
+import "github.com/google/uuid"
+
 type SFormQuestion struct {
 	FormId         uint64    `gorm:"not null;primary_key"`
-	QuestionId     string    `gorm:"type:varchar(255);not null;primary_key"`
+	QuestionId     uuid.UUID `gorm:"type:char(36);"`
 	CreatedAt      string    `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt      string    `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	Order          int       `gorm:"type:int;not null;default:0"`

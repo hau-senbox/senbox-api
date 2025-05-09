@@ -1,9 +1,9 @@
 package request
 
-type SaveDeviceComponentValuesByCompanyRequest struct {
+type SaveDeviceComponentValuesByOrganizationRequest struct {
 	ID       *uint              `json:"id"`
 	Settings SaveSettingRequest `json:"setting" binding:"required"`
-	Company  uint               `json:"company_id" binding:"required"`
+	Organization  uint               `json:"organization_id" binding:"required"`
 }
 
 type SaveDeviceComponentValuesByDeviceRequest struct {

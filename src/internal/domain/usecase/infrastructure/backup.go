@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -50,10 +51,8 @@ func BackupDatabase() gin.HandlerFunc {
 		}()
 
 		c.JSON(200, response.SucceedResponse{
-			Data: response.Cause{
-				Code:    200,
-				Message: "Scheduled for backup",
-			},
+			Code:    200,
+			Message: "Scheduled for backup",
 		})
 	}
 }
@@ -63,9 +62,23 @@ func Backup() {
 	cmd := exec.Command("rm", "sen_master_db.sql")
 	err := cmd.Run()
 
+	if err != nil {
+		monitor.SendMessageViaTelegram(
+			"[URGENT] Error when backup database: " + err.Error(),
+		)
+		return
+	}
+
 	// Remove old backup (tar)
 	cmd = exec.Command("rm", "sen_master_db.tar.gz")
 	err = cmd.Run()
+
+	if err != nil {
+		monitor.SendMessageViaTelegram(
+			"[URGENT] Error when backup database: " + err.Error(),
+		)
+		return
+	}
 
 	// Backup database
 	cmd = exec.Command("bash", "-c", "mysqldump -u sen_master sen_master_db > sen_master_db.sql")
@@ -91,7 +104,12 @@ func Backup() {
 		return
 	}
 
-	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile("./credentials/google_service_account.json"))
+	pwd, err := os.Getwd()
+	if err != nil {
+		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
+		return
+	}
+	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
 
 	if err != nil {
 		monitor.SendMessageViaTelegram(

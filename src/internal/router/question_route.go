@@ -3,7 +3,7 @@ package router
 import (
 	"context"
 	"sen-global-api/config"
-	controller "sen-global-api/internal/controller"
+	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
@@ -15,7 +15,6 @@ import (
 )
 
 func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppConfig) {
-
 	sessionRepository := repository.SessionRepository{
 		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
 
@@ -23,15 +22,13 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 	}
 	userEntityRepository := repository.UserEntityRepository{DBConn: conn}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
-	userRepository := repository.UserRepository{DBConn: conn}
 	questionRepository := repository.QuestionRepository{DBConn: conn}
 	formRepo := &repository.FormRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize}
 	ctx := context.Background()
 	spreadSheet, _ := sheet.NewUserSpreadsheet(config, ctx)
-	controller := controller.QuestionController{
+	questionController := controller.QuestionController{
 		DBConn: conn,
 		GetUserQuestionsUseCase: usecase.GetUserQuestionsUseCase{
-			UserRepository: userRepository,
 			DeviceQuestionRepository: repository.DeviceQuestionRepository{
 				DBConn: conn,
 			},
@@ -48,10 +45,9 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			DeviceRepository:  &repository.DeviceRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl},
 		},
 		GetQuestionByFormUseCase: usecase.GetQuestionsByFormUseCase{
-			QuestionRepository:          &questionRepository,
-			DeviceFormDatasetRepository: &repository.DeviceFormDatasetRepository{DBConn: conn},
-			CodeCountingRepository:      repository.NewCodeCountingRepository(),
-			DB:                          conn,
+			QuestionRepository:     &questionRepository,
+			CodeCountingRepository: repository.NewCodeCountingRepository(),
+			DB:                     conn,
 		},
 		GetFormByIdUseCase: usecase.GetFormByIdUseCase{
 			FormRepository: formRepo,
@@ -66,13 +62,6 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 		GetRawQuestionFromSpreadsheetUseCase: usecase.GetRawQuestionFromSpreadsheetUseCase{
 			SpreadsheetId:     config.Google.SpreadsheetId,
 			SpreadsheetReader: spreadSheet.Reader,
-		},
-		SyncQuestionsUseCase: usecase.SyncQuestionsUseCase{
-			QuestionRepository: &questionRepository,
-		},
-		GetButtonsQuestionDetailUseCase: usecase.GetButtonsQuestionDetailUseCase{
-			QuestionRepository: &questionRepository,
-			Reader:             spreadSheet.Reader,
 		},
 		GetShowPicsQuestionDetailUseCase: usecase.GetShowPicsQuestionDetailUseCase{
 			QuestionRepository: &questionRepository,
@@ -89,15 +78,13 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 		},
 	}
 
-	form := engine.Group("v1/form", secureMiddleware.Secured())
+	form := engine.Group("v1/form")
 	{
-		form.POST("", controller.GetFormQRCode)
+		form.POST("", questionController.GetFormQRCode)
 	}
 
 	question := engine.Group("v1/question", secureMiddleware.Secured())
 	{
-		question.GET("/buttons", controller.GetButtonsQuestion)
-
-		question.GET("/show-pics", controller.GetShowPicsQuestion)
+		question.GET("/show-pics", questionController.GetShowPicsQuestion)
 	}
 }
