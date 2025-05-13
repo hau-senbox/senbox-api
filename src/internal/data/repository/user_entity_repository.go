@@ -74,28 +74,44 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 
 	// check if function claim permission exist
 	var functionClaimPermission entity.SFunctionClaimPermission
-	err = receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where("id = ?", req.FunctionClaimPermissionId).First(&functionClaimPermission).Error
+	err = receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where(
+		"id = ? AND function_claim_id = ?",
+		req.FunctionClaimPermissionId,
+		req.FunctionClaimId,
+	).First(&functionClaimPermission).Error
 	if err != nil {
 		return err
 	}
 
-	// check if user already have function claim
-	var userFunctionAuthorize entity.SUserFunctionAuthorize
-	err = receiver.DBConn.Model(entity.SUserFunctionAuthorize{}).Where("user_id = ? AND function_claim_id = ?", req.UserId, req.FunctionClaimId).First(&userFunctionAuthorize).Error
-	if err == nil {
-		return errors.New("user already have authorize")
-	}
+	err = receiver.DBConn.Transaction(func(tx *gorm.DB) error {
+		var userFunctionAuthorize entity.SUserFunctionAuthorize
 
-	// create a new one if user not have function claim
-	userFunctionAuthorize = entity.SUserFunctionAuthorize{
-		UserId:                    user.ID,
-		FunctionClaimId:           functionClaim.ID,
-		FunctionClaimPermissionId: functionClaimPermission.ID,
-	}
-	err = receiver.DBConn.Create(&userFunctionAuthorize).Error
+		// check if user already have function claim
+		err = tx.Model(entity.SUserFunctionAuthorize{}).Where(
+			"user_id = ? AND function_claim_id = ?",
+			req.UserId,
+			req.FunctionClaimId,
+		).Delete(&userFunctionAuthorize).Error
+		if err != nil {
+			return errors.New("can't update user authorize")
+		}
+
+		// create a new one if user not have function claim
+		userFunctionAuthorize = entity.SUserFunctionAuthorize{
+			UserId:                    user.ID,
+			FunctionClaimId:           functionClaim.ID,
+			FunctionClaimPermissionId: functionClaimPermission.ID,
+		}
+		err = tx.Create(&userFunctionAuthorize).Error
+		if err != nil {
+			log.Error("UserEntityRepository.UpdateUserAuthorize: " + err.Error())
+			return errors.New("failed to create user authorize")
+		}
+
+		return nil
+	})
 	if err != nil {
-		log.Error("UserEntityRepository.UpdateUserAuthorize: " + err.Error())
-		return errors.New("failed to create user authorize")
+		return err
 	}
 
 	return nil
