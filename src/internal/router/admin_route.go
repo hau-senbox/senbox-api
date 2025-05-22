@@ -26,7 +26,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	usecase.AdminSpreadsheetClient = userSpreadsheet
 	usecase.TheTimeMachine = job.New()
 	sessionRepository := repository.SessionRepository{
-		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
+		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		AuthorizeEncryptKey:    config.AuthorizeEncryptKey,
 
 		TokenExpireTimeInHour: time.Duration(config.TokenExpireDurationInHour),
 	}

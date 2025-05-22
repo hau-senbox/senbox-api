@@ -6,9 +6,9 @@ import (
 )
 
 type UpdateUserOrgInfoUseCase struct {
-	*repository.UserEntityRepository
+	*repository.OrganizationRepository
 }
 
 func (receiver *UpdateUserOrgInfoUseCase) UpdateUserOrgInfo(req request.UpdateUserOrgInfoRequest) error {
-	return receiver.UserEntityRepository.UpdateUserOrgInfo(req)
+	return receiver.OrganizationRepository.UpdateUserOrgInfo(req)
 }

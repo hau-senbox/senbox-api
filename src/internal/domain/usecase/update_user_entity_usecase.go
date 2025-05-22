@@ -12,3 +12,7 @@ type UpdateUserEntityUseCase struct {
 func (receiver *UpdateUserEntityUseCase) UpdateUserEntity(req request.UpdateUserEntityRequest) error {
 	return receiver.UpdateUser(req)
 }
+
+func (receiver *UpdateUserEntityUseCase) BlockUser(userID string) error {
+	return receiver.UserEntityRepository.BlockUser(userID)
+}

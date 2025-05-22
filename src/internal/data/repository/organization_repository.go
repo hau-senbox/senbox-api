@@ -2,8 +2,12 @@ package repository
 
 import (
 	"errors"
+	"github.com/google/uuid"
+	"github.com/tiendc/gofn"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/value"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -17,17 +21,40 @@ func NewOrganizationRepository(dbConn *gorm.DB) *OrganizationRepository {
 	return &OrganizationRepository{DBConn: dbConn}
 }
 
-func (receiver *OrganizationRepository) GetAll() ([]*entity.SOrganization, error) {
+func (receiver *OrganizationRepository) GetAll(user *entity.SUserEntity) ([]*entity.SOrganization, error) {
 	var organizations []*entity.SOrganization
-	err := receiver.DBConn.Find(&organizations).Error
-	if err != nil {
-		log.Error("OrganizationRepository.GetAll: " + err.Error())
-		return nil, errors.New("failed to get organization")
+	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
+		return role.ID, role.RoleName
+	})
+
+	if gofn.Contain(gofn.MapValues(roles), "SuperAdmin") {
+		err := receiver.DBConn.Preload("UserOrgs").Find(&organizations).Error
+		if err != nil {
+			log.Error("OrganizationRepository.GetAll: " + err.Error())
+			return nil, errors.New("failed to get organization")
+		}
+	} else {
+		var userOrgs []*entity.SUserOrg
+		err := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ?", user.ID).Find(&userOrgs).Error
+		if err != nil {
+			log.Error("OrganizationRepository.GetAll: " + err.Error())
+			return nil, errors.New("failed to get user org")
+		}
+		orgs := gofn.MapSliceToMap(userOrgs, func(org *entity.SUserOrg) (int64, string) {
+			return org.OrganizationId, org.Organization.OrganizationName
+		})
+
+		err = receiver.DBConn.Preload("UserOrgs").Where("id in (?)", gofn.MapKeys(orgs)).Find(&organizations).Error
+		if err != nil {
+			log.Error("OrganizationRepository.GetAll: " + err.Error())
+			return nil, errors.New("failed to get organization")
+		}
 	}
+
 	return organizations, nil
 }
 
-func (receiver *OrganizationRepository) GetByID(id uint) (*entity.SOrganization, error) {
+func (receiver *OrganizationRepository) GetByID(id int64) (*entity.SOrganization, error) {
 	var organization entity.SOrganization
 	err := receiver.DBConn.Where("id = ?", id).First(&organization).Error
 	if err != nil {
@@ -116,30 +143,215 @@ func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoi
 		return errors.New("failed to assign user for organization")
 	}
 
-	// update user organization
-	err = receiver.DBConn.Model(&entity.SUserEntity{}).
-		Where("id = ?", req.UserId).
-		Updates(map[string]interface{}{
-			"organization_id": req.OrganizationId,
-		}).Error
+	return nil
+}
+
+func (receiver *OrganizationRepository) GetUserOrgInfo(userId string, organizationId int64) (*entity.SUserOrg, error) {
+	var userOrg entity.SUserOrg
+	err := receiver.DBConn.Model(&entity.SUserOrg{}).
+		Where("user_id = ? AND organization_id = ?", userId, organizationId).
+		Find(&userOrg).Error
 
 	if err != nil {
-		log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())
-		return errors.New("failed to update user organization")
+		log.Error("OrganizationRepository.GetUserOrgInfo: " + err.Error())
+		return nil, errors.New("failed to get user org info")
+	}
+
+	return &userOrg, nil
+}
+
+func (receiver *OrganizationRepository) GetAllOrgManagerInfo(organizationId string) (*[]entity.SUserOrg, error) {
+	var userOrg []entity.SUserOrg
+	err := receiver.DBConn.Model(&entity.SUserOrg{}).
+		Where("organization_id = ? AND is_manager = 1", organizationId).
+		Find(&userOrg).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.GetAllOrgManagerInfo: " + err.Error())
+		return nil, errors.New("failed to get all user org info")
+	}
+
+	return &userOrg, nil
+}
+
+func (receiver *OrganizationRepository) UpdateUserOrgInfo(req request.UpdateUserOrgInfoRequest) error {
+	updateResult := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ? AND organization_id = ?", req.UserId, req.OrganizationId).
+		Updates(map[string]interface{}{
+			"user_nick_name": req.UserNickName,
+			"is_manager":     req.IsManager,
+		})
+
+	if updateResult.Error != nil {
+		log.Error("OrganizationRepository.UpdateUserOrgInfo: " + updateResult.Error.Error())
+		return errors.New("failed to update user org info")
 	}
 
 	return nil
 }
 
-func (receiver *OrganizationRepository) GetAllUserByOrganization(organizationID uint) ([]*entity.SUserEntity, error) {
-	var users []*entity.SUserEntity
-	err := receiver.DBConn.Raw("SELECT * FROM s_user_entity sue WHERE sue.id IN (SELECT suo.user_id FROM s_user_organizations suo WHERE organization_id = ?)", organizationID).
-		Scan(&users).Error
+func (receiver *OrganizationRepository) GetAllUserByOrganization(organizationID uint) ([]*entity.SUserOrg, error) {
+	var userOrg []*entity.SUserOrg
+	err := receiver.DBConn.Model(&entity.SUserOrg{}).
+		Where("organization_id = ?", organizationID).
+		Find(&userOrg).Error
 
 	if err != nil {
 		log.Error("OrganizationRepository.GetAllUserByOrganization: " + err.Error())
 		return nil, errors.New("failed to get all users in this organization")
 	}
 
-	return users, nil
+	return userOrg, nil
+}
+
+func (receiver *OrganizationRepository) GetAllOrgFormApplication() ([]*entity.SOrgFormApplication, error) {
+	var forms []*entity.SOrgFormApplication
+	err := receiver.DBConn.Model(&entity.SOrgFormApplication{}).Find(&forms).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.GetAllOrgFormApplication: " + err.Error())
+		return nil, errors.New("failed to get all application forms")
+	}
+
+	return forms, nil
+}
+
+func (receiver *OrganizationRepository) GetOrgFormApplicationByID(applicationID int64) (*entity.SOrgFormApplication, error) {
+	var form entity.SOrgFormApplication
+	err := receiver.DBConn.Model(&entity.SOrgFormApplication{}).
+		Where("id = ?", applicationID).
+		Preload("User").
+		First(&form).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.GetAllOrgFormApplication: " + err.Error())
+		return nil, errors.New("failed to get all application forms")
+	}
+
+	return &form, nil
+}
+
+func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID int64) error {
+	form, err := receiver.GetOrgFormApplicationByID(applicationID)
+	if err != nil {
+		log.Error("OrganizationRepository.ApproveOrgFormApplication: " + err.Error())
+		return err
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("organization has already been approved")
+	}
+
+	tx := receiver.DBConn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Update application status
+	err = tx.Model(&entity.SOrgFormApplication{}).
+		Where("id = ?", applicationID).
+		Updates(map[string]interface{}{
+			"status":      value.Approved,
+			"approved_at": time.Now(),
+		}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Update application status failed: " + err.Error())
+		return errors.New("failed to approve organization")
+	}
+
+	// Create organization
+	organization := entity.SOrganization{
+		OrganizationName: form.OrganizationName,
+	}
+	err = tx.Create(&organization).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Create organization failed: " + err.Error())
+		return errors.New("failed to create organization")
+	}
+
+	// Create user organization mapping (Manager)
+	userOrg := entity.SUserOrg{
+		UserId:         form.UserId,
+		OrganizationId: organization.ID,
+		UserNickName:   "Manager",
+		IsManager:      true,
+	}
+	err = tx.Create(&userOrg).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Create user organization mapping failed: " + err.Error())
+		return errors.New("failed to create user-organization relationship")
+	}
+
+	// Add user to organization (if needed)
+	err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+		"user_id":         form.UserId.String(),
+		"organization_id": organization.ID,
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("insert into s_user_organizations failed: " + err.Error())
+		return errors.New("failed to join organization")
+	}
+
+	// Assign admin role to user
+	userRole := entity.SUserRoles{
+		UserId: form.UserId,
+		RoleId: 5, // admin
+	}
+	err = tx.Create(&userRole).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Assign admin role failed: " + err.Error())
+		return errors.New("failed to assign admin role to user")
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		log.Error("Transaction commit failed: " + err.Error())
+		return errors.New("failed to commit transaction")
+	}
+
+	return nil
+}
+
+func (receiver *OrganizationRepository) BlockOrgFormApplication(applicationID int64) error {
+	form, err := receiver.GetOrgFormApplicationByID(applicationID)
+
+	if err != nil {
+		log.Error("OrganizationRepository.ApproveOrgFromApplication: " + err.Error())
+		return errors.New("failed to get all application forms")
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("organization has not been approved")
+	}
+
+	err = receiver.DBConn.Model(&entity.SOrgFormApplication{}).Where("id = ?", applicationID).
+		Updates(map[string]interface{}{"status": value.Blocked}).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.BlockOrgFromApplication: " + err.Error())
+		return errors.New("failed to block organization")
+	}
+
+	return nil
+}
+
+func (receiver *OrganizationRepository) CreateOrgFormApplication(req request.CreateOrgFormApplicationRequest) error {
+	result := receiver.DBConn.Create(&entity.SOrgFormApplication{
+		OrganizationName:   req.OrganizationName,
+		ApplicationContent: req.ApplicationContent,
+		UserId:             uuid.MustParse(req.UserID),
+	})
+
+	if result.Error != nil {
+		log.Error("OrganizationRepository.CreateOrgFormApplication: " + result.Error.Error())
+		return errors.New("failed to create organization form application")
+	}
+
+	return nil
 }

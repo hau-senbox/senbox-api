@@ -17,36 +17,40 @@ type AuthorizeUseCase struct {
 	repository.SessionRepository
 }
 
-func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (response.LoginResponseData, error) {
+func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*response.LoginResponseData, error) {
 	user, _ := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 	if user == nil {
 		log.Info("No user has username matches", req.Username)
-		return response.LoginResponseData{}, errors.New("user not found")
+		return nil, errors.New("user not found")
 	}
 
 	err := receiver.VerifyPassword(req.Password, user.Password)
 
 	if err != nil {
-		return response.LoginResponseData{}, errors.New("invalid username or password")
+		return nil, errors.New("invalid username or password")
+	}
+
+	if !receiver.VerifyRoleAccesses(user, "SuperAdmin", "Admin", "Staff") {
+		return nil, errors.New("you don't have access to login")
 	}
 
 	token, err := receiver.GenerateToken(*user)
 	if err != nil {
-		return response.LoginResponseData{}, errors.New("cannot generate token")
+		return nil, errors.New("cannot generate token")
 	}
 
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserId)
-	return *token, nil
+	return token, nil
 }
 
-func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDeviceReqest) (response.LoginResponseData, error) {
+func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDeviceReqest) (*response.LoginResponseData, error) {
 	user, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return response.LoginResponseData{}, errors.New("user not found")
+			return nil, errors.New("user not found")
 		}
-		return response.LoginResponseData{}, err
+		return nil, err
 	}
 
 	reqRegisterDevice := request.RegisterDeviceRequest{
@@ -61,21 +65,21 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	}); err == nil {
 		_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
 		if err != nil {
-			return response.LoginResponseData{}, err
+			return nil, err
 		}
 	}
 
 	err = receiver.VerifyPassword(req.Password, user.Password)
 	if err != nil {
-		return response.LoginResponseData{}, errors.New("invalid username or password")
+		return nil, errors.New("invalid username or password")
 	}
 
 	token, err := receiver.GenerateToken(*user)
 	if err != nil {
-		return response.LoginResponseData{}, errors.New("cannot generate token")
+		return nil, errors.New("cannot generate token")
 	}
 
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserId)
-	return *token, nil
+	return token, nil
 }

@@ -57,12 +57,12 @@ func (receiver SecuredMiddleware) ValidateSuperAdminRole() gin.HandlerFunc {
 		if err != nil {
 			context.AbortWithStatus(http.StatusForbidden)
 		} else if token.Valid {
-			roles, userId, err := receiver.SessionRepository.GetRoleFromToken(token)
+			tokenData, err := receiver.SessionRepository.GetDataFromToken(token)
 			if err != nil {
 				context.AbortWithStatus(http.StatusForbidden)
 			}
-			if lo.Contains(roles, "SuperAdmin") {
-				context.Set("user_id", userId)
+			if lo.Contains(tokenData.Roles, "SuperAdmin") {
+				context.Set("user_id", tokenData.UserId)
 				context.Next()
 			} else {
 				context.AbortWithStatus(http.StatusForbidden)

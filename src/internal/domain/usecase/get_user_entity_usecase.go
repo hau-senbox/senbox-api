@@ -9,10 +9,11 @@ import (
 
 type GetUserEntityUseCase struct {
 	*repository.UserEntityRepository
+	*repository.OrganizationRepository
 }
 
 func (receiver *GetUserEntityUseCase) GetUserById(req request.GetUserEntityByIdRequest) (*entity.SUserEntity, error) {
-	return receiver.GetByID(req)
+	return receiver.UserEntityRepository.GetByID(req)
 }
 
 func (receiver *GetUserEntityUseCase) GetChildrenOfGuardian(userId string) (*[]response.UserEntityResponseData, error) {
@@ -20,19 +21,19 @@ func (receiver *GetUserEntityUseCase) GetChildrenOfGuardian(userId string) (*[]r
 }
 
 func (receiver *GetUserEntityUseCase) GetUserByUsername(req request.GetUserEntityByUsernameRequest) (*entity.SUserEntity, error) {
-	return receiver.GetByUsername(req)
+	return receiver.UserEntityRepository.GetByUsername(req)
 }
 
 func (receiver *GetUserEntityUseCase) GetAllUsers() ([]entity.SUserEntity, error) {
-	return receiver.GetAll()
+	return receiver.UserEntityRepository.GetAll()
 }
 
-func (receiver *GetUserEntityUseCase) GetUserOrgInfo(userId, organization string) (*entity.SUserOrg, error) {
-	return receiver.UserEntityRepository.GetUserOrgInfo(userId, organization)
+func (receiver *GetUserEntityUseCase) GetUserOrgInfo(userId string, organization int64) (*entity.SUserOrg, error) {
+	return receiver.OrganizationRepository.GetUserOrgInfo(userId, organization)
 }
 
 func (receiver *GetUserEntityUseCase) GetAllOrgManagerInfo(organization string) (*[]entity.SUserOrg, error) {
-	return receiver.UserEntityRepository.GetAllOrgManagerInfo(organization)
+	return receiver.OrganizationRepository.GetAllOrgManagerInfo(organization)
 }
 
 func (receiver *GetUserEntityUseCase) GetAllUserAuthorize(userId string) ([]entity.SUserFunctionAuthorize, error) {

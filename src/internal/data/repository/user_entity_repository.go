@@ -141,6 +141,32 @@ func (receiver *UserEntityRepository) DeleteUserAuthorize(req request.DeleteUser
 	return nil
 }
 
+func (receiver *UserEntityRepository) BlockUser(userID string) error {
+	// check if user exist
+	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: userID})
+	if err != nil {
+		return err
+	}
+
+	blocked := !user.IsBlocked
+	user.IsBlocked = blocked
+
+	if blocked {
+		user.BlockedAt = time.Now()
+	} else {
+		user.BlockedAt = time.Time{}
+	}
+
+	// update user block
+	err = receiver.DBConn.Where("id = ?", userID).Save(&user).Error
+	if err != nil {
+		log.Error("UserEntityRepository.BlockUser: " + err.Error())
+		return errors.New("failed to block user")
+	}
+
+	return nil
+}
+
 func (receiver *UserEntityRepository) GetByID(req request.GetUserEntityByIdRequest) (*entity.SUserEntity, error) {
 	var user entity.SUserEntity
 	err := receiver.DBConn.
@@ -189,49 +215,6 @@ func (receiver *UserEntityRepository) GetUserDeviceById(deviceId string) (*[]ent
 	}
 
 	return &userDevices, nil
-}
-
-func (receiver *UserEntityRepository) GetUserOrgInfo(userId, organizationId string) (*entity.SUserOrg, error) {
-	var userOrg entity.SUserOrg
-	err := receiver.DBConn.Model(&entity.SUserOrg{}).
-		Where("user_id = ? AND organization_id = ?", userId, organizationId).
-		Find(&userOrg).Error
-
-	if err != nil {
-		log.Error("UserEntityRepository.GetUserOrgInfo: " + err.Error())
-		return nil, errors.New("failed to get user org info")
-	}
-
-	return &userOrg, nil
-}
-
-func (receiver *UserEntityRepository) GetAllOrgManagerInfo(organizationId string) (*[]entity.SUserOrg, error) {
-	var userOrg []entity.SUserOrg
-	err := receiver.DBConn.Model(&entity.SUserOrg{}).
-		Where("organization_id = ? AND is_manager = 1", organizationId).
-		Find(&userOrg).Error
-
-	if err != nil {
-		log.Error("UserEntityRepository.GetAllOrgManagerInfo: " + err.Error())
-		return nil, errors.New("failed to get all user org info")
-	}
-
-	return &userOrg, nil
-}
-
-func (receiver *UserEntityRepository) UpdateUserOrgInfo(req request.UpdateUserOrgInfoRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ? AND organization_id = ?", req.UserId, req.OrganizationId).
-		Updates(map[string]interface{}{
-			"user_nick_name": req.UserNickName,
-			"is_manager":     req.IsManager,
-		})
-
-	if updateResult.Error != nil {
-		log.Error("UserEntityRepository.UpdateUserOrgInfo: " + updateResult.Error.Error())
-		return errors.New("failed to update user org info")
-	}
-
-	return nil
 }
 
 func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]response.UserEntityResponseData, error) {
@@ -292,7 +275,7 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 	}
 
 	var signupSetting SignUpFormSetting
-	err = json.Unmarshal([]byte(setting.Settings), &signupSetting)
+	err = json.Unmarshal(setting.Settings, &signupSetting)
 
 	if err != nil {
 		log.Error("UserRepository.CreateUser: " + err.Error())
@@ -570,28 +553,61 @@ func (receiver *UserEntityRepository) UpdateUserRoleClaimPermission(req request.
 		return errors.New("failed to remove user policy")
 	}
 
-	// for _, policyId := range req.Policies {
-	// 	var policy entity.SRolePolicy
-	// 	err = receiver.DBConn.Where("id = ?", policyId).First(&policy).Error
-
-	// 	if err != nil {
-	// 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + err.Error())
-	// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-	// 			return errors.New("policy doesn't exist")
-	// 		}
-	// 		return errors.New("failed to get policy")
-	// 	}
-
-	// 	result := receiver.DBConn.Create(&entity.SUserPolicies{
-	// 		UserId:   user.RoleId,
-	// 		PolicyId: policy.RoleId,
-	// 	})
-
-	// 	if result.Error != nil {
-	// 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + result.Error.Error())
-	// 		return errors.New("failed to assign user policy")
-	// 	}
-	// }
-
 	return nil
+}
+
+func (receiver *UserEntityRepository) GetAllPreRegisterUser() ([]*entity.SPreRegister, error) {
+	var registers []*entity.SPreRegister
+	err := receiver.DBConn.Model(&entity.SPreRegister{}).Find(&registers).Error
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllPreRegisterUser: " + err.Error())
+		return nil, errors.New("failed to fetch user pre registers")
+	}
+
+	return registers, nil
+}
+
+func (receiver *UserEntityRepository) GetPreRegisterUserByEmail(email string) (*entity.SPreRegister, error) {
+	var register *entity.SPreRegister
+	err := receiver.DBConn.Model(&entity.SPreRegister{}).
+		Where("email = ?", email).
+		First(&register).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("registered email not found")
+		}
+
+		log.Error("UserEntityRepository.GetPreRegisterUserByEmail: " + err.Error())
+		return nil, errors.New("failed to fetch user pre register")
+	}
+
+	return register, nil
+}
+
+func (receiver *UserEntityRepository) CreatePreRegisterUser(email string) error {
+	// check if email already registered
+	var count int64
+	err := receiver.DBConn.Model(&entity.SPreRegister{}).
+		Where("email = ?", email).
+		Count(&count).Error
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error("UserEntityRepository.CreatePreRegisterUser: " + err.Error())
+			return errors.New("failed to fetch user pre register")
+		}
+	}
+	if count > 0 {
+		return errors.New("email already registered")
+	}
+
+	// create register
+	err = receiver.DBConn.Create(&entity.SPreRegister{
+		Email: email,
+	}).Error
+	if err != nil {
+		log.Error("UserEntityRepository.CreatePreRegisterUser: " + err.Error())
+		return errors.New("failed to create user pre register")
+	}
+
+	return err
 }

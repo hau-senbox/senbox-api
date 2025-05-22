@@ -8,6 +8,8 @@ type UserEntityResponse struct {
 	Phone        string   `json:"phone"`
 	Email        string   `json:"email"`
 	Dob          string   `json:"dob"`
+	IsBlocked    bool     `json:"is_blocked"`
+	BlockedAt    string   `json:"blocked_at"`
 	Organization []string `json:"organizations"`
 	CreatedAt    string   `json:"created_at"`
 

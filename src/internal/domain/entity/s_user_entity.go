@@ -19,6 +19,8 @@ type SUserEntity struct {
 	Email     string    `gorm:"type:varchar(255);not null;default:''"`
 	Birthday  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	Password  string    `gorm:"type:varchar(255);not null;default:''"`
+	IsBlocked bool      `gorm:"type:tinyint;not null;default:0"`
+	BlockedAt time.Time `gorm:"type:datetime"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 
@@ -45,6 +47,7 @@ func (user *SUserEntity) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 
 	user.Username = strings.ToLower(html.EscapeString(strings.TrimSpace(user.Username)))
+	user.BlockedAt = time.Time{}
 
 	return err
 }

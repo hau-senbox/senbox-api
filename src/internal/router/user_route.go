@@ -20,7 +20,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
-			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		CreateUserEntityUseCase: &usecase.CreateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
@@ -37,13 +38,23 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			SessionRepository:    sessionRepository,
 		},
 		UpdateUserOrgInfoUseCase: &usecase.UpdateUserOrgInfoUseCase{
-			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		UpdateUserAuthorizeUseCase: &usecase.UpdateUserAuthorizeUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
 		DeleteUserAuthorizeUseCase: &usecase.DeleteUserAuthorizeUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		GetPreRegisterUseCase: &usecase.GetPreRegisterUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		CreatePreRegisterUseCase: &usecase.CreatePreRegisterUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
+			SessionRepository:    sessionRepository,
 		},
 	}
 
@@ -106,6 +117,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	user := engine.Group("v1/user")
 	{
+		user.GET("/current-user", userEntityController.GetCurrentUser)
 		user.GET("/all", userEntityController.GetAllUserEntity)
 		user.GET("/:id", userEntityController.GetUserEntityById)
 		user.GET("/name/:username", userEntityController.GetUserEntityByName)
@@ -113,6 +125,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/update", userEntityController.UpdateUserEntity)
+		user.POST("/block/:id", userEntityController.BlockUser)
 		user.POST("/role/update", userEntityController.UpdateUserRole)
 
 		user.GET("/org/:organization_id/:user_id", userEntityController.GetUserOrgInfo)
@@ -122,6 +135,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.GET("/:id/func", userEntityController.GetAllUserAuthorize)
 		user.POST("/func", userEntityController.UpdateUserAuthorize)
 		user.DELETE("/func", userEntityController.DeleteUserAuthorize)
+
+		user.GET("/pre-register/", userEntityController.GetAllPreRegisterUser)
+		user.POST("/pre-register/", userEntityController.CreatePreRegister)
 	}
 
 	userRole := engine.Group("v1/user-role")

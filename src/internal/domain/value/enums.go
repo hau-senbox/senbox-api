@@ -108,6 +108,9 @@ const (
 
 	PdfViewer
 	PdfPicker
+
+	OrganizationName
+	ApplicationContent
 )
 
 type DeviceStatus int
@@ -381,6 +384,11 @@ func GetRawValue(questionType QuestionType) string {
 		return "pdf_viewer"
 	case PdfPicker:
 		return "pdf_picker"
+
+	case OrganizationName:
+		return "organization_name"
+	case ApplicationContent:
+		return "application_content"
 	}
 
 	return ""
@@ -536,6 +544,11 @@ func GetStringValue(questionType QuestionType) string {
 		return "pdf_viewer"
 	case PdfPicker:
 		return "pdf_picker"
+
+	case OrganizationName:
+		return "organization_name"
+	case ApplicationContent:
+		return "application_content"
 
 	default:
 		return ""
@@ -738,6 +751,11 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 	case "pdf_picker":
 		return PdfPicker, nil
 
+	case "organization_name":
+		return OrganizationName, nil
+	case "application_content":
+		return ApplicationContent, nil
+
 	default:
 		return 0, errors.New("invalid raw value")
 	}
@@ -822,7 +840,10 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		PdfPicker,
 
 		CameraSquareLens,
-		SubmitText:
+		SubmitText,
+
+		OrganizationName,
+		ApplicationContent:
 		return true
 	default:
 		return false
@@ -887,6 +908,18 @@ func GetStatusFromString(status string) (Status, error) {
 	default:
 		return 0, errors.New("invalid status")
 	}
+}
+
+type OrgFromApplicationStatus string
+
+const (
+	Approved OrgFromApplicationStatus = "approved"
+	Blocked  OrgFromApplicationStatus = "blocked"
+	Pending  OrgFromApplicationStatus = "pending"
+)
+
+func (s OrgFromApplicationStatus) String() string {
+	return string(s)
 }
 
 type ImportSpreadsheetStatus int

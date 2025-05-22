@@ -80,7 +80,8 @@ func (receiver LoginController) UserLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.LoginResponse{
-		Data: data,
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: *data,
 	})
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 
@@ -49,9 +50,15 @@ func (receiver *FunctionClaimPermissionRepository) GetByName(req request.GetFunc
 }
 
 func (receiver *FunctionClaimPermissionRepository) CreateFunctionClaimPermission(req request.CreateFunctionClaimPermissionRequest) error {
-	permission, _ := receiver.GetByName(request.GetFunctionClaimPermissionByNameRequest{PermissionName: req.PermissionName})
+	var permission entity.SFunctionClaimPermission
+	err := receiver.DBConn.Model(&entity.SFunctionClaimPermission{}).
+		Where("permission_name = ? AND function_claim_id = ?", req.PermissionName, req.FunctionClaimId).
+		First(&permission).Error
+	if err != nil {
+		return fmt.Errorf("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: %w", err)
+	}
 
-	if permission != nil {
+	if permission.PermissionName != "" {
 		log.Error("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: " + permission.PermissionName)
 		return errors.New("permission already existed")
 	}

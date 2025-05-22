@@ -36,6 +36,19 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 			UserEntityRepository: userEntityRepository,
 			SessionRepository:    sessionRepository,
 		},
+		GetOrgFormApplicationUseCase: &usecase.GetOrgFormApplicationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		ApproveOrgFormApplicationUseCase: &usecase.ApproveOrgFormApplicationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		BlockOrgFormApplicationUseCase: &usecase.BlockOrgFormApplicationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		CreateOrgFormApplicationUseCase: &usecase.CreateOrgFormApplicationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+		},
 	}
 
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
@@ -47,5 +60,15 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 		user.GET("/:id/users", secureMiddleware.Secured(), organizationController.GetAllUserByOrganization)
 		user.POST("/", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.CreateOrganization)
 		user.POST("/join", secureMiddleware.Secured(), organizationController.UserJoinOrganization)
+	}
+
+	application := engine.Group("/v1/organization/application")
+	{
+		application.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrgFromApplication)
+		application.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrgFromApplicationByID)
+
+		application.POST("/", secureMiddleware.Secured(), organizationController.CreateOrgFormApplication)
+		application.POST("/:id/approve", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.ApproveOrgFromApplication)
+		application.POST("/:id/block", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.BlockOrgFormApplication)
 	}
 }

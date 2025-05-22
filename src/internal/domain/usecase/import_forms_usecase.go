@@ -675,7 +675,9 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.ResponseText1,
 		value.ResponseText2,
 
-		value.CameraSquareLens:
+		value.CameraSquareLens,
+		value.OrganizationName,
+		value.ApplicationContent:
 		return "{}", nil
 	case value.QuestionDurationBackward,
 		value.QuestionShowPic,

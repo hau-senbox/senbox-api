@@ -14,6 +14,7 @@ import (
 )
 
 type SessionRepository struct {
+	*OrganizationRepository
 	AuthorizeEncryptKey   string
 	TokenExpireTimeInHour time.Duration
 }
@@ -22,29 +23,59 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
 }
 
+func (receiver *SessionRepository) VerifyRoleAccesses(user *entity.SUserEntity, roles ...string) bool {
+	for _, role := range roles {
+		for _, userRole := range user.Roles {
+			if strings.ToLower(userRole.RoleName) == strings.ToLower(role) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*response.LoginResponseData, error) {
 	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
 		return role.ID, role.RoleName
 	})
+	organizations := gofn.MapSliceToMap(user.Organizations, func(organization entity.SOrganization) (int64, string) {
+		return organization.ID, organization.OrganizationName
+	})
 
 	expirationTime := time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  user.ID.String(),
-		"username": user.Username,
-		"roles":    strings.Join(gofn.MapValues(roles), ", "),
-		"exp":      expirationTime.Unix(),
+		"user_id":       user.ID.String(),
+		"username":      user.Username,
+		"roles":         strings.Join(gofn.MapValues(roles), ", "),
+		"organizations": strings.Join(gofn.MapValues(organizations), ", "),
+		"exp":           expirationTime.Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(receiver.AuthorizeEncryptKey))
-
 	if err != nil {
 		return nil, err
 	}
+
+	userOrgs := make([]string, 0)
+	for _, organization := range user.Organizations {
+		userOrg, err := receiver.GetUserOrgInfo(user.ID.String(), organization.ID)
+		if err != nil {
+			return nil, err
+		}
+		if userOrg.IsManager {
+			userOrgs = append(userOrgs, organization.OrganizationName)
+		}
+	}
+
+	isSuperAdmin := gofn.Contain(gofn.MapValues(roles), "SuperAdmin")
 	return &response.LoginResponseData{
-		UserId:   user.ID.String(),
-		Username: user.Username,
-		Token:    tokenString,
-		Expired:  time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour),
+		UserId:        user.ID.String(),
+		Username:      user.Username,
+		IsSuperAdmin:  isSuperAdmin,
+		Organizations: userOrgs,
+		Token:         tokenString,
+		Expired:       time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour),
 	}, nil
 }
 
@@ -94,7 +125,13 @@ func (receiver *SessionRepository) ExtractUserIdFromToken(tokenString string) (*
 	return nil, err
 }
 
-func (receiver *SessionRepository) GetRoleFromToken(token *jwt.Token) ([]string, string, error) {
+type TokenData struct {
+	UserId        string
+	Roles         []string
+	Organizations []string
+}
+
+func (receiver *SessionRepository) GetDataFromToken(token *jwt.Token) (*TokenData, error) {
 	token, err := jwt.Parse(token.Raw, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -106,17 +143,22 @@ func (receiver *SessionRepository) GetRoleFromToken(token *jwt.Token) ([]string,
 	})
 
 	if err != nil {
-		return make([]string, 0), "", err
+		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		userId := claims["user_id"].(string)
 		roles := claims["roles"].(string)
+		organizations := claims["organizations"].(string)
 
-		return strings.Split(roles, ", "), userId, nil
+		return &TokenData{
+			UserId:        userId,
+			Roles:         strings.Split(roles, ", "),
+			Organizations: strings.Split(organizations, ", "),
+		}, nil
 	}
 
-	return make([]string, 0), "", err
+	return nil, err
 }
 
 func (receiver *SessionRepository) GenerateTokenByDevice(device entity.SDevice) (string, string, error) {

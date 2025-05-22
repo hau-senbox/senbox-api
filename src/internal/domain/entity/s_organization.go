@@ -15,6 +15,8 @@ type SOrganization struct {
 	Description      string    `gorm:"type:varchar(255);not null;default:''"`
 	CreatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+
+	UserOrgs []SUserOrg `gorm:"foreignKey:organization_id;references:id;constraint:OnDelete:CASCADE"`
 }
 
 func (organization *SOrganization) BeforeCreate(tx *gorm.DB) (err error) {

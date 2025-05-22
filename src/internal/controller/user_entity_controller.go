@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"strconv"
 	"strings"
 
 	"github.com/samber/lo"
@@ -23,6 +24,77 @@ type UserEntityController struct {
 	*usecase.UpdateUserOrgInfoUseCase
 	*usecase.UpdateUserAuthorizeUseCase
 	*usecase.DeleteUserAuthorizeUseCase
+	*usecase.GetPreRegisterUseCase
+	*usecase.CreatePreRegisterUseCase
+	*usecase.GetUserFromTokenUseCase
+}
+
+func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
+	userEntity, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	var roleListResponse []response.RoleListResponseData
+	if len(userEntity.Roles) > 0 {
+		roleListResponse = make([]response.RoleListResponseData, 0)
+		for _, role := range userEntity.Roles {
+			roleListResponse = append(roleListResponse, response.RoleListResponseData{
+				ID:       role.ID,
+				RoleName: role.RoleName,
+			})
+		}
+	}
+
+	var guardianListResponse []response.UserEntityResponseData
+	if len(userEntity.Guardians) > 0 {
+		guardianListResponse = make([]response.UserEntityResponseData, 0)
+		for _, guardian := range userEntity.Guardians {
+			guardianListResponse = append(guardianListResponse, response.UserEntityResponseData{
+				ID:       guardian.ID.String(),
+				Username: guardian.Username,
+			})
+		}
+	}
+
+	var deviceListResponse []string
+	if len(userEntity.Devices) > 0 {
+		deviceListResponse = make([]string, 0)
+		for _, device := range userEntity.Devices {
+			deviceListResponse = append(deviceListResponse, device.ID)
+		}
+	}
+
+	var organizations []string
+	if len(userEntity.Organizations) > 0 {
+		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) string {
+			return item.OrganizationName
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: response.UserEntityResponse{
+			ID:           userEntity.ID.String(),
+			Username:     userEntity.Username,
+			Fullname:     userEntity.Fullname,
+			Nickname:     userEntity.Nickname,
+			Phone:        userEntity.Phone,
+			Email:        userEntity.Email,
+			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			IsBlocked:    userEntity.IsBlocked,
+			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
+			Organization: organizations,
+			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
+			Roles:        &roleListResponse,
+			Guardians:    &guardianListResponse,
+			Devices:      &deviceListResponse,
+		},
+	})
 }
 
 func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
@@ -105,6 +177,34 @@ func (receiver *UserEntityController) GetChildrenOfGuardian(context *gin.Context
 		Data: *users,
 	})
 }
+func (receiver *UserEntityController) BlockUser(context *gin.Context) {
+	println("ENTERRRR")
+	userId := context.Param("id")
+	if userId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "user id is required",
+			},
+		)
+		return
+	}
+
+	err := receiver.UpdateUserEntityUseCase.BlockUser(userId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "user was blocked successfully",
+	})
+}
 
 func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 	userId := context.Param("id")
@@ -175,6 +275,8 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 			Phone:        userEntity.Phone,
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			IsBlocked:    userEntity.IsBlocked,
+			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
 			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
@@ -252,17 +354,16 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 			Nickname:     userEntity.Nickname,
 			Phone:        userEntity.Phone,
 			Email:        userEntity.Email,
+			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			IsBlocked:    userEntity.IsBlocked,
+			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
+			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
 			Guardians:    &guardianListResponse,
 			Devices:      &deviceListResponse,
 		},
 	})
-}
-
-type getUserOrgInfoResponse struct {
-	UserNickName string `json:"user_nick_name"`
-	IsManager    bool   `json:"is_manager"`
 }
 
 func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
@@ -288,7 +389,16 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 		return
 	}
 
-	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userId, organizationId)
+	orgID, err := strconv.Atoi(organizationId)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid organization id",
+		})
+		return
+	}
+
+	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userId, int64(orgID))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -300,17 +410,11 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: &getUserOrgInfoResponse{
+		Data: &response.GetUserOrgInfoResponse{
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
 		},
 	})
-}
-
-type getOrgManagerInfoResponse struct {
-	UserId       string `json:"user_id"`
-	UserNickName string `json:"user_nick_name"`
-	IsManager    bool   `json:"is_manager"`
 }
 
 func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context) {
@@ -335,9 +439,9 @@ func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context)
 		return
 	}
 
-	var res []getOrgManagerInfoResponse
+	var res []response.GetOrgManagerInfoResponse
 	for _, user := range *users {
-		res = append(res, getOrgManagerInfoResponse{
+		res = append(res, response.GetOrgManagerInfoResponse{
 			UserId:       user.UserId.String(),
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
@@ -518,7 +622,7 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.LoginResponse{
-		Data: data,
+		Data: *data,
 	})
 }
 
@@ -617,5 +721,61 @@ func (receiver *UserEntityController) UpdateUserOrgInfo(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "user org info was updated successfully",
+	})
+}
+
+type registerResponse struct {
+	Email string `json:"email"`
+}
+
+func (receiver *UserEntityController) GetAllPreRegisterUser(context *gin.Context) {
+	registers, err := receiver.GetPreRegisterUseCase.GetAllPreRegisterUser()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	var res []registerResponse
+	for _, register := range registers {
+		res = append(res, registerResponse{
+			Email: register.Email,
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+type createPreRegisterResponse struct {
+	Email string `json:"email"`
+}
+
+func (receiver *UserEntityController) CreatePreRegister(context *gin.Context) {
+	var req createPreRegisterResponse
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.CreatePreRegisterUseCase.CreatePreRegister(req.Email)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "register was created successfully",
 	})
 }
