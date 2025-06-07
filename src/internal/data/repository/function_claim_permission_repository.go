@@ -50,25 +50,17 @@ func (receiver *FunctionClaimPermissionRepository) GetByName(req request.GetFunc
 }
 
 func (receiver *FunctionClaimPermissionRepository) CreateFunctionClaimPermission(req request.CreateFunctionClaimPermissionRequest) error {
-	var permission entity.SFunctionClaimPermission
+	var permissionCount int64
 	err := receiver.DBConn.Model(&entity.SFunctionClaimPermission{}).
 		Where("permission_name = ? AND function_claim_id = ?", req.PermissionName, req.FunctionClaimId).
-		First(&permission).Error
+		Count(&permissionCount).Error
 	if err != nil {
 		return fmt.Errorf("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: %w", err)
 	}
 
-	if permission.PermissionName != "" {
-		log.Error("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: " + permission.PermissionName)
+	if permissionCount > 0 {
+		log.Error("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: " + req.PermissionName)
 		return errors.New("permission already existed")
-	}
-
-	var functionClaimCount int64
-	receiver.DBConn.Model(&entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).Count(&functionClaimCount)
-
-	if functionClaimCount == 0 {
-		log.Error("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: " + "function claim not found")
-		return errors.New("function claim not found")
 	}
 
 	permissionReq := entity.SFunctionClaimPermission{

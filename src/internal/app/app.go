@@ -13,7 +13,6 @@ import (
 	"sen-global-api/internal/middleware"
 	"sen-global-api/internal/router"
 	"sen-global-api/pkg/common"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/mysql"
 	"sen-global-api/pkg/sheet"
 	"strconv"
@@ -41,7 +40,6 @@ const (
 var serviceId = fmt.Sprintf("%s-%d", serviceName, rand.Intn(100))
 
 func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
-	monitor.SendMessageViaTelegram("Server is starting...")
 	if appConfig.Config.Env == "development" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -93,8 +91,6 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
-	monitor.SendMessageViaTelegram("Server is up and running...")
-
 	consulHost := appConfig.Config.Consul.Host
 	if consulHost == "" {
 		// Fallback to localhost if the host is not set in the config
@@ -120,11 +116,9 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 
 	select {
 	case s := <-interrupt:
-		monitor.SendMessageViaTelegram("Server is interrupting...", s.String())
 		log.Info("app - Run - signal: " + s.String())
 		deregisterConsul(client)
 	case err := <-httpServer.Notify():
-		monitor.SendMessageViaTelegram("Server is shutting down...", err.Error())
 		log.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
 		deregisterConsul(client)
 	}
@@ -133,7 +127,6 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	err = httpServer.Shutdown()
 	if err != nil {
 		log.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
-		monitor.SendMessageViaTelegram("Server is shutting down...", err.Error())
 		deregisterConsul(client)
 	}
 

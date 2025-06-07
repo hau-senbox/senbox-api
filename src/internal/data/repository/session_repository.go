@@ -26,7 +26,7 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 func (receiver *SessionRepository) VerifyRoleAccesses(user *entity.SUserEntity, roles ...string) bool {
 	for _, role := range roles {
 		for _, userRole := range user.Roles {
-			if strings.ToLower(userRole.RoleName) == strings.ToLower(role) {
+			if strings.ToLower(userRole.Role.String()) == strings.ToLower(role) {
 				return true
 			}
 		}
@@ -37,7 +37,7 @@ func (receiver *SessionRepository) VerifyRoleAccesses(user *entity.SUserEntity, 
 
 func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*response.LoginResponseData, error) {
 	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
-		return role.ID, role.RoleName
+		return role.ID, role.Role.String()
 	})
 	organizations := gofn.MapSliceToMap(user.Organizations, func(organization entity.SOrganization) (int64, string) {
 		return organization.ID, organization.OrganizationName

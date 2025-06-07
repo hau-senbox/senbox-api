@@ -44,7 +44,6 @@ func NewImportToDoListUseCase(cfg config.AppConfig, dbConn *gorm.DB, reader *she
 }
 
 func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequest) error {
-	monitor.SendMessageViaTelegram(fmt.Sprintf("[INFO][SYNC] Start sync ToDos with interval %d", req.Interval))
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(req.SpreadsheetUrl)
 
@@ -278,7 +277,6 @@ func (receiver *ImportToDoListUseCase) importToDoTypeCompose(qrCode, tabName, sp
 }
 
 func (receiver *ImportToDoListUseCase) ImportPartiallyToDos(spreadsheetURL string, sheetName string) error {
-	monitor.SendMessageViaTelegram("[INFO][SYNC] Start import partially Todos")
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(spreadsheetURL)
 

@@ -24,7 +24,7 @@ func NewOrganizationRepository(dbConn *gorm.DB) *OrganizationRepository {
 func (receiver *OrganizationRepository) GetAll(user *entity.SUserEntity) ([]*entity.SOrganization, error) {
 	var organizations []*entity.SOrganization
 	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
-		return role.ID, role.RoleName
+		return role.ID, role.Role.String()
 	})
 
 	if gofn.Contain(gofn.MapValues(roles), "SuperAdmin") {
@@ -56,11 +56,23 @@ func (receiver *OrganizationRepository) GetAll(user *entity.SUserEntity) ([]*ent
 
 func (receiver *OrganizationRepository) GetByID(id int64) (*entity.SOrganization, error) {
 	var organization entity.SOrganization
-	err := receiver.DBConn.Where("id = ?", id).First(&organization).Error
+	err := receiver.DBConn.Preload("UserOrgs").Where("id = ?", id).First(&organization).Error
 	if err != nil {
 		log.Error("OrganizationRepository.GetByID: " + err.Error())
 		return nil, errors.New("failed to get organization")
 	}
+
+	return &organization, nil
+}
+
+func (receiver *OrganizationRepository) GetByName(name string) (*entity.SOrganization, error) {
+	var organization entity.SOrganization
+	err := receiver.DBConn.Preload("UserOrgs").Where("organization_name = ?", name).First(&organization).Error
+	if err != nil {
+		log.Error("OrganizationRepository.GetByID: " + err.Error())
+		return nil, errors.New("failed to get organization")
+	}
+
 	return &organization, nil
 }
 
@@ -209,7 +221,7 @@ func (receiver *OrganizationRepository) GetAllOrgFormApplication() ([]*entity.SO
 
 	if err != nil {
 		log.Error("OrganizationRepository.GetAllOrgFormApplication: " + err.Error())
-		return nil, errors.New("failed to get all application forms")
+		return nil, errors.New("failed to get all application form")
 	}
 
 	return forms, nil
@@ -224,7 +236,7 @@ func (receiver *OrganizationRepository) GetOrgFormApplicationByID(applicationID 
 
 	if err != nil {
 		log.Error("OrganizationRepository.GetAllOrgFormApplication: " + err.Error())
-		return nil, errors.New("failed to get all application forms")
+		return nil, errors.New("failed to get application form")
 	}
 
 	return &form, nil

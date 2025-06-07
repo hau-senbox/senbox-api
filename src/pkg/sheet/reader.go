@@ -24,12 +24,11 @@ type ReadSpecificRangeParams struct {
 // / params is the params for reading a specific range of a spreadsheet
 // / returns the rows of the spreadsheet
 func (receiver Reader) Get(params ReadSpecificRangeParams) ([][]interface{}, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Reading sheet " + params.SpreadsheetId + " " + params.ReadRange)
 	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetId, params.ReadRange).
 		ValueRenderOption("FORMATTED_VALUE").
 		Do()
 	if err != nil {
-		log.Error("Unable to retrieve data from sheet:", err)
+		log.Error("Unable to retrieve data from sheet: ", err)
 		return nil, err
 	}
 
@@ -45,7 +44,6 @@ func (receiver Reader) Get(params ReadSpecificRangeParams) ([][]interface{}, err
 // / params is the params for reading a specific range of a spreadsheet
 // / returns the rows of the spreadsheet
 func (receiver Reader) GetFirstRow(params ReadSpecificRangeParams) ([][]interface{}, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]GetFirstRow " + params.SpreadsheetId + " " + params.ReadRange)
 	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetId, params.ReadRange).
 		MajorDimension("COLUMNS").
 		ValueRenderOption("FORMATTED_VALUE").
@@ -64,8 +62,7 @@ func (receiver Reader) GetFirstRow(params ReadSpecificRangeParams) ([][]interfac
 }
 
 func (receiver Reader) FindFirstRow(params ReadSpecificRangeParams, deviceID string) (int, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]FindFirstRow " + params.SpreadsheetId + " " + params.ReadRange)
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Update(params.SpreadsheetId, params.ReadRange, &sheets.ValueRange{
+	_, err := receiver.sheetsService.Spreadsheets.Values.Update(params.SpreadsheetId, params.ReadRange, &sheets.ValueRange{
 		MajorDimension: "ROWS",
 		Values:         [][]interface{}{{"=MATCH(\"" + deviceID + "\", Devices!L:L, 0)"}},
 	}).ValueInputOption("USER_ENTERED").
@@ -93,12 +90,10 @@ func (receiver Reader) FindFirstRow(params ReadSpecificRangeParams, deviceID str
 		return 0, errors.New("Unable to find row number for device " + deviceID)
 	}
 
-	log.Debug("Wrote: ", resp)
 	return rowNo, err
 }
 
 func (receiver Reader) GetSheets(spreadsheetId string) ([]string, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]GetSheets " + spreadsheetId)
 	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetId).Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet:", err)
@@ -119,7 +114,6 @@ type SingleSheet struct {
 }
 
 func (receiver Reader) GetAllSheets(spreadsheetId string) ([]SingleSheet, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]GetSheets " + spreadsheetId)
 	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetId).Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet:", err)

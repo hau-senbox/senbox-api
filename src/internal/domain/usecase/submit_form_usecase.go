@@ -10,7 +10,6 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/messaging"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 
 	firebase "firebase.google.com/go/v4"
@@ -145,6 +144,5 @@ func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
 	err = messaging.SendNotification(receiver.FirebaseApp, noti)
 	if err != nil {
 		log.Error("Failed to send notification ", err)
-		monitor.SendMessageViaTelegram("Failed to send notification for a form submission: ", err.Error())
 	}
 }

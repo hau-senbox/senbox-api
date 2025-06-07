@@ -29,7 +29,6 @@ type AppendParams struct {
 }
 
 func (receiver Writer) WriteRanges(params WriteRangeParams, spreadsheetId string) (*sheets.AppendValuesResponse, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Writing sheet " + spreadsheetId + " - Append at range " + params.Range)
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
@@ -41,13 +40,10 @@ func (receiver Writer) WriteRanges(params WriteRangeParams, spreadsheetId string
 		return nil, err
 	}
 
-	log.Debug("Wrote: ", resp)
-
 	return resp, nil
 }
 
 func (receiver Writer) WriteRangesAsUserEntered(params WriteRangeParams, spreadsheetId string) (*sheets.AppendValuesResponse, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Writing sheet " + spreadsheetId + " - Append at range " + params.Range)
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
@@ -59,13 +55,10 @@ func (receiver Writer) WriteRangesAsUserEntered(params WriteRangeParams, spreads
 		return nil, err
 	}
 
-	log.Debug("Wrote: ", resp)
-
 	return resp, nil
 }
 
 func (receiver Writer) UpdateRange(params WriteRangeParams, spreadsheetId string) (*sheets.UpdateValuesResponse, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Writing sheet " + spreadsheetId + " - Update at range " + params.Range)
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
@@ -77,13 +70,10 @@ func (receiver Writer) UpdateRange(params WriteRangeParams, spreadsheetId string
 		return nil, err
 	}
 
-	log.Debug("Wrote: ", resp)
-
 	return resp, nil
 }
 
 func (receiver Writer) UpdateRanges(spreadsheetId string, params []WriteRangeParams) error {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Writing sheet " + spreadsheetId + " - Update at ranges ")
 	rbb := &sheets.BatchUpdateSpreadsheetRequest{}
 	//for _, p := range params {
 	//	rbb.Requests = append(rbb.Requests, &sheets.Request{
@@ -108,18 +98,15 @@ func (receiver Writer) UpdateRanges(spreadsheetId string, params []WriteRangePar
 	//	})
 	//}
 
-	resp, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
+	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
 	if err != nil {
 		return err
 	}
-
-	log.Debug("UpdateRanges: ", resp)
 
 	return err
 }
 
 func (receiver Writer) CreateSheet(sheetName string, spreadsheetId string) error {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Creating sheet " + spreadsheetId + " - sheet name " + sheetName)
 	req := sheets.Request{
 		AddSheet: &sheets.AddSheetRequest{
 			Properties: &sheets.SheetProperties{
@@ -132,20 +119,15 @@ func (receiver Writer) CreateSheet(sheetName string, spreadsheetId string) error
 		Requests: []*sheets.Request{&req},
 	}
 
-	resp, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
+	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
 	if err != nil {
 		return err
 	}
-
-	log.Debug("Create new Sheet", resp)
 
 	return nil
 }
 
 func (receiver Writer) AppendSheet(params AppendParams, spreadsheetId string) (*sheets.UpdateValuesResponse, error) {
-	//monitor.SendMessageViaTelegram("[GOOGLE API]Writing sheet " + spreadsheetId + " - Append at sheet " + params.SheetName)
-	log.Debug("AppendSheet: ", params)
-	log.Debug("AppendSheet: ", spreadsheetId)
 	data := &sheets.ValueRange{
 		Range:          params.SheetName,
 		MajorDimension: params.Dimension,
@@ -157,13 +139,10 @@ func (receiver Writer) AppendSheet(params AppendParams, spreadsheetId string) (*
 		return nil, err
 	}
 
-	log.Debug("Append Sheet", resp)
-
 	return resp.Updates, nil
 }
 
 func (receiver Writer) ClearRange(params ClearRangeParams) (*sheets.ClearValuesResponse, error) {
-	log.Debug("ClearRange: ", params)
 	resp, err := receiver.sheetsService.Spreadsheets.Values.
 		Clear(params.SpreadsheetId, params.Range, &sheets.ClearValuesRequest{}).
 		Do()
@@ -171,8 +150,6 @@ func (receiver Writer) ClearRange(params ClearRangeParams) (*sheets.ClearValuesR
 	if err != nil {
 		return nil, err
 	}
-
-	log.Debug("Clear Ranges: ", resp)
 
 	return resp, nil
 }

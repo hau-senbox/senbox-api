@@ -2,10 +2,10 @@ package messaging
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sen-global-api/config"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
@@ -39,8 +39,7 @@ func SendNotification(app *firebase.App, params NotificationParams) error {
 	ctx := context.Background()
 	msgApp, err := app.Messaging(ctx)
 	if err != nil {
-		monitor.SendMessageViaTelegram("Cannot initialize Messaging App ", err.Error())
-		return err
+		return fmt.Errorf("cannot initialize Messaging App %s", err.Error())
 	}
 
 	msg := &messaging.Message{
@@ -79,12 +78,10 @@ func SendNotification(app *firebase.App, params NotificationParams) error {
 		},
 	}
 
-	res, err := msgApp.Send(ctx, msg)
+	_, err = msgApp.Send(ctx, msg)
 	if err != nil {
-		monitor.SendMessageViaTelegram("FCM failed to send message to device token ", params.DeviceToken, " error ", err.Error())
+		log.Errorf("FCM failed to send message to device token %s error %s", params.DeviceToken, err.Error())
 	}
-
-	log.Debug("FCM Sending Message Response ", res)
 
 	return err
 }

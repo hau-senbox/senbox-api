@@ -10,7 +10,6 @@ import (
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
-	"sen-global-api/pkg/monitor"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
@@ -26,8 +25,7 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 	//Download spreadsheet file
 	pwd, err := os.Getwd()
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
-		return err
+		return fmt.Errorf("failed to get current working directory: %w", err)
 	}
 	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
 	if err != nil {
@@ -47,24 +45,21 @@ func (receiver *UpdateOutputTemplateSettingForTeacherUseCase) Execute(req reques
 	// Export the Google Spreadsheet as a CSV file
 	resp, err := srv.Files.Export(spreadsheetID, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").Download()
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error downloading spreadsheet: %s", err))
-		return err
+		return fmt.Errorf("error downloading spreadsheet: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Create the output file
 	file, err := os.Create(pwd + "/config/output_template_teacher.xlsx")
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error creating output file: %s", err))
-		return err
+		return fmt.Errorf("error creating output file: %w", err)
 	}
 	defer file.Close()
 
 	// Copy the response body to the output file
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error copying spreadsheet to output file: %s", err))
-		return err
+		return fmt.Errorf("error copying response body to output file: %s", err)
 	}
 
 	//Update setting

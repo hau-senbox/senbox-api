@@ -50,6 +50,7 @@ func (receiver *ImageRepository) GetByID(id uint64) (*entity.SImage, error) {
 		log.Error("ImageRepository.GetByID: " + err.Error())
 		return nil, errors.New("failed to get image")
 	}
+
 	return &images, nil
 }
 
@@ -60,19 +61,34 @@ func (receiver *ImageRepository) GetByKey(key string) (*entity.SImage, error) {
 		log.Error("ImageRepository.GetByKey: " + err.Error())
 		return nil, errors.New("failed to get image")
 	}
+
 	return &images, nil
 }
 
-func (receiver *ImageRepository) CreateImages(images []entity.SImage) error {
-	db := receiver.DBConn.Begin()
-	if err := db.Table(entity.SImage{}.TableName()).Create(&images).Error; err != nil {
-		db.Rollback()
-		log.Error("ImageRepository.CreateImages: " + err.Error())
-		return errors.New("failed to create images")
+func (receiver *ImageRepository) GetIcons() ([]entity.PublicImage, error) {
+	var icons []entity.PublicImage
+	err := receiver.DBConn.Model(&entity.PublicImage{}).Where("folder = ?", "icon").Find(&icons).Error
+	if err != nil {
+		log.Error("ImageRepository.GetIconImages: " + err.Error())
+		return nil, errors.New("failed to get icons")
 	}
 
-	if err := db.Commit().Error; err != nil {
-		db.Rollback()
+	return icons, nil
+}
+
+func (receiver *ImageRepository) GetIconByKey(key string) (*entity.PublicImage, error) {
+	var icon entity.PublicImage
+	err := receiver.DBConn.Model(&entity.PublicImage{}).Where("`key` = ? AND folder = ?", key, "icon").First(&icon).Error
+	if err != nil {
+		log.Error("ImageRepository.GetByKey: " + err.Error())
+		return nil, errors.New("failed to get icon")
+	}
+
+	return &icon, nil
+}
+
+func (receiver *ImageRepository) CreateImages(images []entity.SImage) error {
+	if err := receiver.DBConn.Model(entity.SImage{}).Create(&images).Error; err != nil {
 		log.Error("ImageRepository.CreateImages: " + err.Error())
 		return errors.New("failed to create images")
 	}
@@ -81,15 +97,16 @@ func (receiver *ImageRepository) CreateImages(images []entity.SImage) error {
 }
 
 func (receiver *ImageRepository) CreateImage(image entity.SImage) error {
-	db := receiver.DBConn.Begin()
-	if err := db.Table(entity.SImage{}.TableName()).Create(&image).Error; err != nil {
-		db.Rollback()
+	if err := receiver.DBConn.Model(entity.SImage{}).Create(&image).Error; err != nil {
 		log.Error("ImageRepository.CreateImages: " + err.Error())
 		return errors.New("failed to create images")
 	}
 
-	if err := db.Commit().Error; err != nil {
-		db.Rollback()
+	return nil
+}
+
+func (receiver *ImageRepository) CreatePublicImage(image entity.PublicImage) error {
+	if err := receiver.DBConn.Model(&entity.PublicImage{}).Create(&image).Error; err != nil {
 		log.Error("ImageRepository.CreateImages: " + err.Error())
 		return errors.New("failed to create images")
 	}
@@ -98,16 +115,7 @@ func (receiver *ImageRepository) CreateImage(image entity.SImage) error {
 }
 
 func (receiver *ImageRepository) DeleteImage(id uint64) error {
-	db := receiver.DBConn.Begin()
-
-	if err := db.Table(entity.SImage{}.TableName()).Where("id = ?", id).Delete(&entity.SImage{}).Error; err != nil {
-		db.Rollback()
-		log.Error("ImageRepository.DeleteImage: " + err.Error())
-		return errors.New("failed to delete image")
-	}
-
-	if err := db.Commit().Error; err != nil {
-		db.Rollback()
+	if err := receiver.DBConn.Model(entity.SImage{}).Where("id = ?", id).Delete(&entity.SImage{}).Error; err != nil {
 		log.Error("ImageRepository.DeleteImage: " + err.Error())
 		return errors.New("failed to delete image")
 	}

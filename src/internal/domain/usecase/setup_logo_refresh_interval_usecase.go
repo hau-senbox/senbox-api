@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"context"
-	"firebase.google.com/go/v4/messaging"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 	"strconv"
+
+	"firebase.google.com/go/v4/messaging"
+	"github.com/sirupsen/logrus"
 )
 
 func SetupLogoRefreshIntervalUseCase(req request.SetupLogoRefreshIntervalRequest) error {
@@ -35,11 +36,9 @@ func SetupLogoRefreshIntervalUseCase(req request.SetupLogoRefreshIntervalRequest
 }
 
 func announceLogoFreshUpdatedInterval(interval uint64) {
-	monitor.SendMessageViaTelegram("Logo refresh interval updated to ", strconv.FormatUint(interval, 10))
 	ctx := context.Background()
 	msgApp, err := FirebaseApp.Messaging(ctx)
 	if err != nil {
-		monitor.SendMessageViaTelegram("[ERROR][INFORM LOGO REFRESH INTERVAL] Cannot initialize Messaging App ", err.Error())
 		return
 	}
 
@@ -73,7 +72,7 @@ func announceLogoFreshUpdatedInterval(interval uint64) {
 
 	_, err = msgApp.Send(ctx, msg)
 	if err != nil {
-		monitor.SendMessageViaTelegram("[ERROR][INFORM LOGO REFRESH INTERVAL] Cannot send notification", " error ", err.Error())
+		logrus.Errorf("[ERROR][INFORM LOGO REFRESH INTERVAL] Cannot send notification: %s", err.Error())
 	}
 }
 

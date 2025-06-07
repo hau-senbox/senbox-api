@@ -87,11 +87,6 @@ func (receiver *RegisterDeviceUseCase) Reserve(deviceId string, appVersion strin
 
 	// if err != nil {
 	// 	log.Error("failed to find first row of sync devices sheet")
-	// 	monitor.SendMessageViaTelegram(
-	// 		"[ERROR][RESERVING] Cannot determine the row No of the device in sync devices sheet for reserve",
-	// 		fmt.Sprintf("Device RoleId: %s is existing in the database", deviceId),
-	// 		fmt.Sprintf("[Google sheet API error] %s", err.Error()),
-	// 	)
 	// 	return err
 	// }
 

@@ -102,12 +102,66 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 		return
 	}
 
+	managers := make([]response.GetOrgManagerInfoResponse, 0)
+	for _, userOrg := range organization.UserOrgs {
+		managers = append(managers, response.GetOrgManagerInfoResponse{
+			UserId:       userOrg.UserId.String(),
+			UserNickName: userOrg.UserNickName,
+			IsManager:    userOrg.IsManager,
+		})
+	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: response.OrganizationResponse{
 			ID:               organization.ID,
 			OrganizationName: organization.OrganizationName,
 			Address:          organization.Address,
 			Description:      organization.Description,
+			Managers:         managers,
+		},
+	})
+}
+
+func (receiver OrganizationController) GetOrganizationByName(context *gin.Context) {
+	organizationName := context.Query("organization_name")
+	if organizationName == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "organization name is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	organization, err := receiver.GetOrganizationUseCase.GetByName(organizationName)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	managers := make([]response.GetOrgManagerInfoResponse, 0)
+	for _, userOrg := range organization.UserOrgs {
+		managers = append(managers, response.GetOrgManagerInfoResponse{
+			UserId:       userOrg.UserId.String(),
+			UserNickName: userOrg.UserNickName,
+			IsManager:    userOrg.IsManager,
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: response.OrganizationResponse{
+			ID:               organization.ID,
+			OrganizationName: organization.OrganizationName,
+			Address:          organization.Address,
+			Description:      organization.Description,
+			Managers:         managers,
 		},
 	})
 }
@@ -217,7 +271,7 @@ func (receiver OrganizationController) GetAllUserByOrganization(context *gin.Con
 
 var defaultTime = time.Time{}
 
-func (receiver OrganizationController) GetAllOrgFromApplication(context *gin.Context) {
+func (receiver OrganizationController) GetAllOrgFormApplication(context *gin.Context) {
 	applications, err := receiver.GetOrgFormApplicationUseCase.GetAllOrgFormApplication()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -254,7 +308,7 @@ func (receiver OrganizationController) GetAllOrgFromApplication(context *gin.Con
 	})
 }
 
-func (receiver OrganizationController) GetOrgFromApplicationByID(context *gin.Context) {
+func (receiver OrganizationController) GetOrgFormApplicationByID(context *gin.Context) {
 	applicationID := context.Param("id")
 	if applicationID == "" {
 		context.JSON(
@@ -275,7 +329,7 @@ func (receiver OrganizationController) GetOrgFromApplicationByID(context *gin.Co
 		return
 	}
 
-	application, err := receiver.GetOrgFormApplicationUseCase.GetOrgFromApplicationByID(int64(id))
+	application, err := receiver.GetOrgFormApplicationUseCase.GetOrgFormApplicationByID(int64(id))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: err.Error(),
@@ -304,7 +358,7 @@ func (receiver OrganizationController) GetOrgFromApplicationByID(context *gin.Co
 	})
 }
 
-func (receiver OrganizationController) ApproveOrgFromApplication(context *gin.Context) {
+func (receiver OrganizationController) ApproveOrgFormApplication(context *gin.Context) {
 	applicationID := context.Param("id")
 	if applicationID == "" {
 		context.JSON(
@@ -325,7 +379,7 @@ func (receiver OrganizationController) ApproveOrgFromApplication(context *gin.Co
 		return
 	}
 
-	err = receiver.ApproveOrgFormApplicationUseCase.ApproveOrgFromApplication(int64(id))
+	err = receiver.ApproveOrgFormApplicationUseCase.ApproveOrgFormApplication(int64(id))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: err.Error(),

@@ -54,8 +54,13 @@ func (receiver *RoleRepository) CreateRole(req request.CreateRoleRequest) error 
 		return errors.New("role already existed")
 	}
 
+	role, err := entity.RoleFromString(req.RoleName)
+	if err != nil {
+		log.Error("RoleRepository.CreateRole: " + err.Error())
+		return errors.New("failed to create role")
+	}
 	result := receiver.DBConn.Create(&entity.SRole{
-		RoleName: req.RoleName,
+		Role: role,
 	})
 
 	if result.Error != nil {

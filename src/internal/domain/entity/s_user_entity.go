@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"html"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ type SUserEntity struct {
 	Phone     string    `gorm:"type:varchar(255);not null;default:''"`
 	Email     string    `gorm:"type:varchar(255);not null;default:''"`
 	Birthday  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	QRLogin   string    `gorm:"type:varchar(255);not null;default:''"`
 	Password  string    `gorm:"type:varchar(255);not null;default:''"`
 	IsBlocked bool      `gorm:"type:tinyint;not null;default:0"`
 	BlockedAt time.Time `gorm:"type:datetime"`
@@ -48,6 +50,8 @@ func (user *SUserEntity) BeforeCreate(tx *gorm.DB) (err error) {
 
 	user.Username = strings.ToLower(html.EscapeString(strings.TrimSpace(user.Username)))
 	user.BlockedAt = time.Time{}
+
+	user.QRLogin = fmt.Sprintf("SENBOX.ORG/[USERNAME-PASSWORD]:%s:%s", user.Username, user.Password)
 
 	return err
 }

@@ -32,7 +32,7 @@ func (receiver *RoleController) GetAllRole(context *gin.Context) {
 	for _, role := range roles {
 		roleListResponse = append(roleListResponse, response.RoleListResponseData{
 			ID:       role.ID,
-			RoleName: role.RoleName,
+			RoleName: role.Role.String(),
 		})
 	}
 
@@ -78,7 +78,7 @@ func (receiver *RoleController) GetRoleById(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.RoleResponse{
 			ID:       userRole.ID,
-			RoleName: userRole.RoleName,
+			RoleName: userRole.Role.String(),
 		},
 	})
 }
@@ -108,7 +108,7 @@ func (receiver *RoleController) GetRoleByName(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: response.RoleResponse{
 			ID:       userRole.ID,
-			RoleName: userRole.RoleName,
+			RoleName: userRole.Role.String(),
 		},
 	})
 }
@@ -131,6 +131,7 @@ func (receiver *RoleController) CreateRole(context *gin.Context) {
 		})
 		return
 	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "user role was create successfully",

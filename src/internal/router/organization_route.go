@@ -57,6 +57,7 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 	{
 		user.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrganization)
 		user.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrganizationById)
+		user.GET("/name", secureMiddleware.Secured(), organizationController.GetOrganizationByName)
 		user.GET("/:id/users", secureMiddleware.Secured(), organizationController.GetAllUserByOrganization)
 		user.POST("/", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.CreateOrganization)
 		user.POST("/join", secureMiddleware.Secured(), organizationController.UserJoinOrganization)
@@ -64,11 +65,11 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 
 	application := engine.Group("/v1/organization/application")
 	{
-		application.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrgFromApplication)
-		application.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrgFromApplicationByID)
+		application.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrgFormApplication)
+		application.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrgFormApplicationByID)
 
 		application.POST("/", secureMiddleware.Secured(), organizationController.CreateOrgFormApplication)
-		application.POST("/:id/approve", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.ApproveOrgFromApplication)
+		application.POST("/:id/approve", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.ApproveOrgFormApplication)
 		application.POST("/:id/block", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.BlockOrgFormApplication)
 	}
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/samber/lo"
 	"net/http"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -8,8 +9,6 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"strconv"
 	"strings"
-
-	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -27,6 +26,11 @@ type UserEntityController struct {
 	*usecase.GetPreRegisterUseCase
 	*usecase.CreatePreRegisterUseCase
 	*usecase.GetUserFromTokenUseCase
+
+	*usecase.GetUserFormApplicationUseCase
+	*usecase.CreateUserFormApplicationUseCase
+	*usecase.ApproveUserFormApplicationUseCase
+	*usecase.BlockUserFormApplicationUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -39,18 +43,18 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		return
 	}
 
-	var roleListResponse []response.RoleListResponseData
+	roleListResponse := make([]response.RoleListResponseData, 0)
 	if len(userEntity.Roles) > 0 {
 		roleListResponse = make([]response.RoleListResponseData, 0)
 		for _, role := range userEntity.Roles {
 			roleListResponse = append(roleListResponse, response.RoleListResponseData{
 				ID:       role.ID,
-				RoleName: role.RoleName,
+				RoleName: role.Role.String(),
 			})
 		}
 	}
 
-	var guardianListResponse []response.UserEntityResponseData
+	guardianListResponse := make([]response.UserEntityResponseData, 0)
 	if len(userEntity.Guardians) > 0 {
 		guardianListResponse = make([]response.UserEntityResponseData, 0)
 		for _, guardian := range userEntity.Guardians {
@@ -61,7 +65,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		}
 	}
 
-	var deviceListResponse []string
+	deviceListResponse := make([]string, 0)
 	if len(userEntity.Devices) > 0 {
 		deviceListResponse = make([]string, 0)
 		for _, device := range userEntity.Devices {
@@ -69,16 +73,16 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		}
 	}
 
-	var organizations []string
+	organizations := make([]int64, 0)
 	if len(userEntity.Organizations) > 0 {
-		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) string {
-			return item.OrganizationName
+		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) int64 {
+			return item.ID
 		})
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: response.UserEntityResponse{
+		Data: response.UserEntityResponseV2{
 			ID:           userEntity.ID.String(),
 			Username:     userEntity.Username,
 			Fullname:     userEntity.Fullname,
@@ -86,6 +90,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Phone:        userEntity.Phone,
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			QRLogin:      userEntity.QRLogin,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
@@ -119,29 +124,27 @@ func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
 		return
 	}
 
-	var userResponse []response.UserEntityResponseData
+	userResponse := make([]response.UserEntityResponseData, 0)
 	for _, user := range users {
-		var roles []string
+		roles := make([]string, 0)
 		for _, r := range user.Roles {
 			if strings.ToLower(role) != "all" {
-				if !strings.EqualFold(r.RoleName, role) {
+				if !strings.EqualFold(r.Role.String(), role) {
 					continue
 				}
 
-				roles = append(roles, r.RoleName)
+				roles = append(roles, r.Role.String())
 				break
 			}
-			roles = append(roles, r.RoleName)
+			roles = append(roles, r.Role.String())
 		}
 
-		if len(roles) > 0 {
-			userResponse = append(userResponse, response.UserEntityResponseData{
-				ID:       user.ID.String(),
-				Username: user.Username,
-				Nickname: user.Nickname,
-				Roles:    roles,
-			})
-		}
+		userResponse = append(userResponse, response.UserEntityResponseData{
+			ID:       user.ID.String(),
+			Username: user.Username,
+			Nickname: user.Nickname,
+			Roles:    roles,
+		})
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
@@ -178,7 +181,6 @@ func (receiver *UserEntityController) GetChildrenOfGuardian(context *gin.Context
 	})
 }
 func (receiver *UserEntityController) BlockUser(context *gin.Context) {
-	println("ENTERRRR")
 	userId := context.Param("id")
 	if userId == "" {
 		context.JSON(
@@ -228,18 +230,18 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 		return
 	}
 
-	var roleListResponse []response.RoleListResponseData
+	roleListResponse := make([]response.RoleListResponseData, 0)
 	if len(userEntity.Roles) > 0 {
 		roleListResponse = make([]response.RoleListResponseData, 0)
 		for _, role := range userEntity.Roles {
 			roleListResponse = append(roleListResponse, response.RoleListResponseData{
 				ID:       role.ID,
-				RoleName: role.RoleName,
+				RoleName: role.Role.String(),
 			})
 		}
 	}
 
-	var guardianListResponse []response.UserEntityResponseData
+	guardianListResponse := make([]response.UserEntityResponseData, 0)
 	if len(userEntity.Guardians) > 0 {
 		guardianListResponse = make([]response.UserEntityResponseData, 0)
 		for _, guardian := range userEntity.Guardians {
@@ -250,7 +252,7 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 		}
 	}
 
-	var deviceListResponse []string
+	deviceListResponse := make([]string, 0)
 	if len(userEntity.Devices) > 0 {
 		deviceListResponse = make([]string, 0)
 		for _, device := range userEntity.Devices {
@@ -258,7 +260,7 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 		}
 	}
 
-	var organizations []string
+	organizations := make([]string, 0)
 	if len(userEntity.Organizations) > 0 {
 		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) string {
 			return item.OrganizationName
@@ -275,6 +277,7 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 			Phone:        userEntity.Phone,
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			QRLogin:      userEntity.QRLogin,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
@@ -308,18 +311,18 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 		return
 	}
 
-	var roleListResponse []response.RoleListResponseData
+	roleListResponse := make([]response.RoleListResponseData, 0)
 	if len(userEntity.Roles) > 0 {
 		roleListResponse = make([]response.RoleListResponseData, 0)
 		for _, role := range userEntity.Roles {
 			roleListResponse = append(roleListResponse, response.RoleListResponseData{
 				ID:       role.ID,
-				RoleName: role.RoleName,
+				RoleName: role.Role.String(),
 			})
 		}
 	}
 
-	var guardianListResponse []response.UserEntityResponseData
+	guardianListResponse := make([]response.UserEntityResponseData, 0)
 	if len(userEntity.Guardians) > 0 {
 		guardianListResponse = make([]response.UserEntityResponseData, 0)
 		for _, guardian := range userEntity.Guardians {
@@ -330,7 +333,7 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 		}
 	}
 
-	var deviceListResponse []string
+	deviceListResponse := make([]string, 0)
 	if len(userEntity.Devices) > 0 {
 		deviceListResponse = make([]string, 0)
 		for _, device := range userEntity.Devices {
@@ -338,7 +341,7 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 		}
 	}
 
-	var organizations []string
+	organizations := make([]string, 0)
 	if len(userEntity.Organizations) > 0 {
 		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) string {
 			return item.OrganizationName
@@ -355,6 +358,7 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 			Phone:        userEntity.Phone,
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
+			QRLogin:      userEntity.QRLogin,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
@@ -596,6 +600,8 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 		return
 	}
 
+	req.Username = strings.ToLower(req.Username)
+
 	err := receiver.CreateUserEntityUseCase.CreateUserEntity(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -777,5 +783,590 @@ func (receiver *UserEntityController) CreatePreRegister(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "register was created successfully",
+	})
+}
+
+// Teacher
+
+func (receiver *UserEntityController) GetAllTeacherFormApplication(context *gin.Context) {
+	applications, err := receiver.GetUserFormApplicationUseCase.GetAllTeacherFormApplication()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	var applicationResponse []response.TeacherFormApplicationResponse
+	if len(applications) > 0 {
+		applicationResponse = make([]response.TeacherFormApplicationResponse, 0)
+		for _, application := range applications {
+			res := response.TeacherFormApplicationResponse{
+				ID:         application.ID,
+				Status:     application.Status.String(),
+				ApprovedAt: "",
+				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+				UserID:     application.UserID.String(),
+			}
+			if application.ApprovedAt != defaultTime {
+				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+			}
+			applicationResponse = append(applicationResponse, res)
+		}
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: applicationResponse,
+	})
+}
+
+func (receiver *UserEntityController) GetTeacherFormApplicationByID(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	application, err := receiver.GetUserFormApplicationUseCase.GetTeacherFormApplicationByID(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	res := response.TeacherFormApplicationResponse{
+		ID:         application.ID,
+		Status:     application.Status.String(),
+		ApprovedAt: "",
+		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:     application.UserID.String(),
+	}
+	if application.ApprovedAt != defaultTime {
+		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *UserEntityController) ApproveTeacherFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.ApproveUserFormApplicationUseCase.ApproveTeacherFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application approved successfully",
+	})
+}
+
+func (receiver *UserEntityController) BlockTeacherFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.BlockUserFormApplicationUseCase.BlockTeacherFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application blocked successfully",
+	})
+}
+
+func (receiver *UserEntityController) CreateTeacherFormApplication(context *gin.Context) {
+	var req request.CreateTeacherFormApplicationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.UserID = user.ID.String()
+
+	err = receiver.CreateUserFormApplicationUseCase.CreateTeacherFormApplication(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application created successfully",
+	})
+}
+
+// Staff
+
+func (receiver *UserEntityController) GetAllStaffFormApplication(context *gin.Context) {
+	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStaffFormApplication()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	var applicationResponse []response.StaffFormApplicationResponse
+	if len(applications) > 0 {
+		applicationResponse = make([]response.StaffFormApplicationResponse, 0)
+		for _, application := range applications {
+			res := response.StaffFormApplicationResponse{
+				ID:         application.ID,
+				Status:     application.Status.String(),
+				ApprovedAt: "",
+				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+				UserID:     application.UserID.String(),
+			}
+			if application.ApprovedAt != defaultTime {
+				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+			}
+			applicationResponse = append(applicationResponse, res)
+		}
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: applicationResponse,
+	})
+}
+
+func (receiver *UserEntityController) GetStaffFormApplicationByID(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	application, err := receiver.GetUserFormApplicationUseCase.GetStaffFormApplicationByID(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	res := response.StaffFormApplicationResponse{
+		ID:         application.ID,
+		Status:     application.Status.String(),
+		ApprovedAt: "",
+		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:     application.UserID.String(),
+	}
+	if application.ApprovedAt != defaultTime {
+		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *UserEntityController) ApproveStaffFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.ApproveUserFormApplicationUseCase.ApproveStaffFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application approved successfully",
+	})
+}
+
+func (receiver *UserEntityController) BlockStaffFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.BlockUserFormApplicationUseCase.BlockStaffFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application blocked successfully",
+	})
+}
+
+func (receiver *UserEntityController) CreateStaffFormApplication(context *gin.Context) {
+	var req request.CreateStaffFormApplicationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.UserID = user.ID.String()
+
+	err = receiver.CreateUserFormApplicationUseCase.CreateStaffFormApplication(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application created successfully",
+	})
+}
+
+// Student
+
+func (receiver *UserEntityController) GetAllStudentFormApplication(context *gin.Context) {
+	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStudentFormApplication()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	var applicationResponse []response.StudentFormApplicationResponse
+	if len(applications) > 0 {
+		applicationResponse = make([]response.StudentFormApplicationResponse, 0)
+		for _, application := range applications {
+			res := response.StudentFormApplicationResponse{
+				ID:         application.ID,
+				Status:     application.Status.String(),
+				ApprovedAt: "",
+				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+				UserID:     application.UserID.String(),
+			}
+			if application.ApprovedAt != defaultTime {
+				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+			}
+			applicationResponse = append(applicationResponse, res)
+		}
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: applicationResponse,
+	})
+}
+
+func (receiver *UserEntityController) GetStudentFormApplicationByID(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	application, err := receiver.GetUserFormApplicationUseCase.GetStudentFormApplicationByID(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	res := response.StudentFormApplicationResponse{
+		ID:         application.ID,
+		Status:     application.Status.String(),
+		ApprovedAt: "",
+		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:     application.UserID.String(),
+	}
+	if application.ApprovedAt != defaultTime {
+		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *UserEntityController) ApproveStudentFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.ApproveUserFormApplicationUseCase.ApproveStudentFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application approved successfully",
+	})
+}
+
+func (receiver *UserEntityController) BlockStudentFormApplication(context *gin.Context) {
+	applicationID := context.Param("id")
+	if applicationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	id, err := strconv.Atoi(applicationID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Error: "invalid id",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	err = receiver.BlockUserFormApplicationUseCase.BlockStudentFormApplication(int64(id))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application blocked successfully",
+	})
+}
+
+func (receiver *UserEntityController) CreateStudentFormApplication(context *gin.Context) {
+	var req request.CreateStudentFormApplicationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.UserID = user.ID.String()
+
+	err = receiver.CreateUserFormApplicationUseCase.CreateStudentFormApplication(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Application created successfully",
 	})
 }

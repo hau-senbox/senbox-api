@@ -910,15 +910,15 @@ func GetStatusFromString(status string) (Status, error) {
 	}
 }
 
-type OrgFromApplicationStatus string
+type FromApplicationStatus string
 
 const (
-	Approved OrgFromApplicationStatus = "approved"
-	Blocked  OrgFromApplicationStatus = "blocked"
-	Pending  OrgFromApplicationStatus = "pending"
+	Approved FromApplicationStatus = "approved"
+	Blocked  FromApplicationStatus = "blocked"
+	Pending  FromApplicationStatus = "pending"
 )
 
-func (s OrgFromApplicationStatus) String() string {
+func (s FromApplicationStatus) String() string {
 	return string(s)
 }
 

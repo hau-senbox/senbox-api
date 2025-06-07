@@ -83,7 +83,7 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 	uploadPath := fmt.Sprintf("%s/%s", folder, finalFileName)
 	url, err := receiver.UploadProvider.SaveFileUploaded(context.Background(), data, uploadPath, mode)
 	if err != nil {
-		log.Println("Error uploading file to S3:", err)
+		log.Errorf("error uploading file to S3: %v", err)
 		return nil, nil, err
 	}
 
@@ -100,6 +100,21 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 	err = receiver.ImageRepository.CreateImage(img)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if mode == uploader.UploadPublic {
+		err = receiver.ImageRepository.CreatePublicImage(entity.PublicImage{
+			ImageName: imageName,
+			Folder:    folder,
+			Key:       uploadPath,
+			URL:       *url,
+			Width:     width,
+			Height:    height,
+			Extension: fileExt,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	return url, &img, nil

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"regexp"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
@@ -19,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -46,7 +47,6 @@ type ImportFormsUseCase struct {
 }
 
 func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) error {
-	monitor.SendMessageViaTelegram(fmt.Sprintf("[INFO][SYNC] Start sync Forms %s with interval %d", req.SpreadsheetUrl, req.Interval))
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(req.SpreadsheetUrl)
 
@@ -392,12 +392,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 		_, err = receiver.importSignUpForm(url, code, sheetName)
 		if err != nil {
-			monitor.SendMessageViaTelegram(
-				"[ERROR]: Error importing sign up forms: "+err.Error(),
-				"Detail: form code: "+code,
-				"Sheet Name: "+sheetName,
-				"Spreadsheet Url: "+url,
-			)
+			return fmt.Errorf("Error importing sign up forms: %s", err.Error())
 		}
 	}
 
@@ -572,7 +567,6 @@ func (receiver *ImportFormsUseCase) saveForm(params parameters.SaveFormParams) (
 	if err != nil {
 		return nil, "" + err.Error() + " " + reason, err
 	}
-	log.Debug(questions)
 
 	form, err := receiver.createForm(questions, params)
 
@@ -618,9 +612,8 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 
 		param := repository.CreateQuestionParams{
 			QuestionId:       rawQuestion.QuestionId,
-			QuestionName:     rawQuestion.Question,
-			QuestionType:     strings.ToLower(rawQuestion.Type),
 			Question:         rawQuestion.Question,
+			QuestionType:     strings.ToLower(rawQuestion.Type),
 			Attributes:       attString,
 			Status:           value.GetRawStatusValue(status),
 			Set:              rawQuestion.Attributes,
@@ -631,7 +624,8 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 	}
 
 	if len(params) == 0 {
-		return nil, make([]InvalidQuestionRow, 0), errors.New("this form does not have any valid format questions")
+		//return nil, make([]InvalidQuestionRow, 0), errors.New("this form does not have any valid format questions")
+		return make([]entity.SQuestion, 0), make([]InvalidQuestionRow, 0), nil
 	}
 
 	questions, err := receiver.QuestionRepository.Create(params)
@@ -855,10 +849,14 @@ func (receiver *ImportFormsUseCase) createForm(questions []entity.SQuestion, par
 			AnswerRequired: answerRequired,
 		})
 	}
-	_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.ID, formQuestions)
-	if err != nil {
-		return nil, err
+
+	if len(formQuestions) > 0 {
+		_, err = receiver.FormQuestionRepository.CreateFormQuestions(form.ID, formQuestions)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	return form, nil
 }
 

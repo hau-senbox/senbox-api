@@ -1,8 +1,6 @@
 package job
 
 import (
-	"fmt"
-	"sen-global-api/pkg/monitor"
 	"sync"
 	"time"
 
@@ -77,15 +75,6 @@ func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, todo
 	receiver.ScheduleSyncUrls(urlInterval)
 	receiver.ScheduleSyncToDos(todoInterval)
 	receiver.ScheduleGoogleAPIRequestMonitor()
-
-	monitor.SendMessageViaTelegram("Time machine started with ",
-		fmt.Sprint("formInterval: ", formInterval),
-		fmt.Sprint("formInterval2: ", formInterval2),
-		fmt.Sprint("formInterval3: ", formInterval3),
-		fmt.Sprint("formInterval4: ", formInterval4),
-		fmt.Sprint("urlInterval: ", urlInterval),
-		fmt.Sprint("todoInterval: ", todoInterval),
-	)
 }
 
 func (receiver *TimeMachine) Stop() {
@@ -98,48 +87,38 @@ func (receiver *TimeMachine) Stop() {
 	receiver.todoCron.Clear()
 	receiver.googleQPIRequestMonitorCron.Clear()
 	receiver.submissionSyncCron.Clear()
-
-	monitor.SendMessageViaTelegram("Time machine has been stopped")
 }
 
 func (receiver *TimeMachine) SubscribeFormsExec(exec IntervalTaskExecutor) {
 	receiver.formExecutors = append(receiver.formExecutors, exec)
-	log.Debug("Subscribe form executor", receiver.formExecutors)
 }
 
 func (receiver *TimeMachine) SubscribeForms2Exec(exec IntervalTaskExecutor) {
 	receiver.form2Executors = append(receiver.form2Executors, exec)
-	log.Debug("Subscribe form2 executor", receiver.form2Executors)
 }
 
 func (receiver *TimeMachine) SubscribeForms3Exec(exec IntervalTaskExecutor) {
 	receiver.form3Executors = append(receiver.form3Executors, exec)
-	log.Debug("Subscribe form3 executor", receiver.form3Executors)
 }
 
 func (receiver *TimeMachine) SubscribeForms4Exec(exec IntervalTaskExecutor) {
 	receiver.form4Executors = append(receiver.form4Executors, exec)
-	log.Debug("Subscribe form4 executor", receiver.form4Executors)
 }
 
 func (receiver *TimeMachine) SubscribeUrlsExec(exec IntervalTaskExecutor) {
 	receiver.urlExecutors = append(receiver.urlExecutors, exec)
-	log.Debug("Subscribe url executor", receiver.urlExecutors)
 }
 
 func (receiver *TimeMachine) SubscribeSyncDevicesExec(exec IntervalTaskExecutor) {
 	receiver.deviceSyncExecutors = append(receiver.deviceSyncExecutors, exec)
-	log.Debug("Subscribe device sync exec", receiver.deviceSyncExecutors)
 }
 
 func (receiver *TimeMachine) SubscribeSyncToDosExec(exec IntervalTaskExecutor) {
 	receiver.todoExecutors = append(receiver.todoExecutors, exec)
-	log.Debug("Subscribe todo sync exec", receiver.todoExecutors)
 }
 
 func (receiver *TimeMachine) SubscribeGoogleAPIRequestMonitorExec(exec IntervalTaskExecutor) {
 	receiver.googleQPIRequestMonitor = append(receiver.googleQPIRequestMonitor, exec)
-	log.Debug("Subscribe google api request monitor exec", receiver.googleQPIRequestMonitor)
 }
 
 func (receiver *TimeMachine) ScheduleSyncForms(interval uint64) {
@@ -151,7 +130,6 @@ func (receiver *TimeMachine) ScheduleSyncForms(interval uint64) {
 	now := time.Now()
 	startAt := now.Add(time.Duration(interval) * time.Minute)
 	task, err := receiver.formCron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync forms")
 		for _, executor := range receiver.formExecutors {
 			executor.ExecuteSyncForms()
 		}
@@ -177,7 +155,6 @@ func (receiver *TimeMachine) ScheduleSyncForms2(interval uint64) {
 	now := time.Now()
 	startAt := now.Add(time.Duration(interval) * time.Minute)
 	task, err := receiver.form2Cron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync forms")
 		for _, executor := range receiver.form2Executors {
 			executor.ExecuteSyncForms2()
 		}
@@ -203,7 +180,6 @@ func (receiver *TimeMachine) ScheduleSyncForms3(interval uint64) {
 	now := time.Now()
 	startAt := now.Add(time.Duration(interval) * time.Minute)
 	task, err := receiver.form3Cron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync forms")
 		for _, executor := range receiver.form3Executors {
 			executor.ExecuteSyncForms3()
 		}
@@ -229,7 +205,6 @@ func (receiver *TimeMachine) ScheduleSyncForms4(interval uint64) {
 	now := time.Now()
 	startAt := now.Add(time.Duration(interval) * time.Minute)
 	task, err := receiver.form4Cron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync forms")
 		for _, executor := range receiver.form4Executors {
 			executor.ExecuteSyncForms4()
 		}
@@ -255,7 +230,6 @@ func (receiver *TimeMachine) ScheduleSyncUrls(interval uint64) {
 	now := time.Now()
 	startAt := now.Add(time.Duration(interval) * time.Minute)
 	task, err := receiver.urlCron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		log.Debug("Sync urls")
 		for _, executor := range receiver.urlExecutors {
 			executor.ExecuteSyncUrls()
 		}

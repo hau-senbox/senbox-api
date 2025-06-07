@@ -103,9 +103,8 @@ func (receiver *UpdateFormUseCase) syncQuestions(rawQuestions []parameters.RawQu
 
 		param := repository.CreateQuestionParams{
 			QuestionId:   rawQuestion.QuestionId,
-			QuestionName: rawQuestion.Question,
-			QuestionType: strings.ToLower(rawQuestion.Type),
 			Question:     rawQuestion.Question,
+			QuestionType: strings.ToLower(rawQuestion.Type),
 			Attributes:   attString,
 			Status:       value.GetRawStatusValue(status),
 		}

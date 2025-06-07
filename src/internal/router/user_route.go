@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/middleware"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +14,12 @@ import (
 
 func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig) {
 	sessionRepository := repository.SessionRepository{
-		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
+		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		AuthorizeEncryptKey:    config.AuthorizeEncryptKey,
 
 		TokenExpireTimeInHour: time.Duration(config.TokenExpireDurationInHour),
 	}
+	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
@@ -55,6 +58,19 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
 			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
 			SessionRepository:    sessionRepository,
+		},
+
+		CreateUserFormApplicationUseCase: &usecase.CreateUserFormApplicationUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		ApproveUserFormApplicationUseCase: &usecase.ApproveUserFormApplicationUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		BlockUserFormApplicationUseCase: &usecase.BlockUserFormApplicationUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		GetUserFormApplicationUseCase: &usecase.GetUserFormApplicationUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
 	}
 
@@ -103,6 +119,36 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 	}
 
+	menuController := &controller.MenuController{
+		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
+			SessionRepository:    sessionRepository,
+		},
+		GetMenuUseCase: &usecase.GetMenuUseCase{
+			MenuRepository:         &repository.MenuRepository{DBConn: dbConn},
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
+			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
+		},
+		UploadOrgMenuUseCase: &usecase.UploadOrgMenuUseCase{
+			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
+		},
+		UploadUserMenuUseCase: &usecase.UploadUserMenuUseCase{
+			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+
+	componentController := &controller.ComponentController{
+		GetComponentUseCase: &usecase.GetComponentUseCase{
+			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+
 	userAccess := engine.Group("v1/")
 	{
 		loginController := &controller.LoginController{DBConn: dbConn,
@@ -117,30 +163,60 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	user := engine.Group("v1/user")
 	{
-		user.GET("/current-user", userEntityController.GetCurrentUser)
-		user.GET("/all", userEntityController.GetAllUserEntity)
-		user.GET("/:id", userEntityController.GetUserEntityById)
-		user.GET("/name/:username", userEntityController.GetUserEntityByName)
-		user.GET("/:id/children", userEntityController.GetChildrenOfGuardian)
+		user.GET("/current-user", secureMiddleware.Secured(), userEntityController.GetCurrentUser)
+		user.GET("/all", secureMiddleware.Secured(), userEntityController.GetAllUserEntity)
+		user.GET("/:id", secureMiddleware.Secured(), userEntityController.GetUserEntityById)
+		user.GET("/name/:username", secureMiddleware.Secured(), userEntityController.GetUserEntityByName)
+		user.GET("/:id/children", secureMiddleware.Secured(), userEntityController.GetChildrenOfGuardian)
 
 		user.POST("/init", userEntityController.CreateUserEntity)
-		user.POST("/update", userEntityController.UpdateUserEntity)
-		user.POST("/block/:id", userEntityController.BlockUser)
-		user.POST("/role/update", userEntityController.UpdateUserRole)
+		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
+		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
+		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)
 
-		user.GET("/org/:organization_id/:user_id", userEntityController.GetUserOrgInfo)
-		user.GET("/org/:organization_id/manager", userEntityController.GetAllOrgManagerInfo)
-		user.POST("/org/update", userEntityController.UpdateUserOrgInfo)
+		user.GET("/org/:organization_id/:user_id", secureMiddleware.Secured(), userEntityController.GetUserOrgInfo)
+		user.GET("/org/:organization_id/manager", secureMiddleware.Secured(), userEntityController.GetAllOrgManagerInfo)
+		user.POST("/org/update", secureMiddleware.Secured(), userEntityController.UpdateUserOrgInfo)
 
-		user.GET("/:id/func", userEntityController.GetAllUserAuthorize)
-		user.POST("/func", userEntityController.UpdateUserAuthorize)
-		user.DELETE("/func", userEntityController.DeleteUserAuthorize)
+		user.GET("/:id/func", secureMiddleware.Secured(), userEntityController.GetAllUserAuthorize)
+		user.POST("/func", secureMiddleware.Secured(), userEntityController.UpdateUserAuthorize)
+		user.DELETE("/func", secureMiddleware.Secured(), userEntityController.DeleteUserAuthorize)
 
-		user.GET("/pre-register/", userEntityController.GetAllPreRegisterUser)
-		user.POST("/pre-register/", userEntityController.CreatePreRegister)
+		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
+		user.POST("/pre-register/", secureMiddleware.Secured(), userEntityController.CreatePreRegister)
 	}
 
-	userRole := engine.Group("v1/user-role")
+	teacherApplication := engine.Group("/v1/user/teacher/application")
+	{
+		teacherApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllTeacherFormApplication)
+		teacherApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetTeacherFormApplicationByID)
+
+		teacherApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateTeacherFormApplication)
+		teacherApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveTeacherFormApplication)
+		teacherApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockTeacherFormApplication)
+	}
+
+	staffApplication := engine.Group("/v1/user/staff/application")
+	{
+		staffApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllStaffFormApplication)
+		staffApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStaffFormApplicationByID)
+
+		staffApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateStaffFormApplication)
+		staffApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveStaffFormApplication)
+		staffApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockStaffFormApplication)
+	}
+
+	studentApplication := engine.Group("/v1/user/student/application")
+	{
+		studentApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllStudentFormApplication)
+		studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudentFormApplicationByID)
+
+		studentApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateStudentFormApplication)
+		studentApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveStudentFormApplication)
+		studentApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockStudentFormApplication)
+	}
+
+	userRole := engine.Group("v1/user-role", secureMiddleware.Secured())
 	{
 		userRole.GET("/all", userRoleController.GetAllRole)
 		userRole.GET("/:id", userRoleController.GetRoleById)
@@ -152,7 +228,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userRole.DELETE("/:id", userRoleController.DeleteRole)
 	}
 
-	functionClaim := engine.Group("v1/function-claim")
+	functionClaim := engine.Group("v1/function-claim", secureMiddleware.Secured())
 	{
 		functionClaim.GET("/all", functionClaimController.GetAllFunctionClaim)
 		functionClaim.GET("/:id", functionClaimController.GetFunctionClaimById)
@@ -164,7 +240,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		functionClaim.DELETE("/:id", functionClaimController.DeleteFunctionClaim)
 	}
 
-	functionClaimPermission := engine.Group("v1/function-claim-permission")
+	functionClaimPermission := engine.Group("v1/function-claim-permission", secureMiddleware.Secured())
 	{
 		functionClaimPermission.GET("/function/:function_claim_id/all", functionClaimPermissionController.GetAllFunctionClaimPermission)
 		functionClaimPermission.GET("/:id", functionClaimPermissionController.GetFunctionClaimPermissionById)
@@ -174,5 +250,23 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		functionClaimPermission.POST("/", functionClaimPermissionController.UpdateRoleClaimPermission)
 
 		functionClaimPermission.DELETE("/:id", functionClaimPermissionController.DeleteRoleClaimPermission)
+	}
+
+	userMenu := engine.Group("v1/user-menu", secureMiddleware.Secured())
+	{
+		userMenu.GET("/super-admin", menuController.GetSuperAdminMenu)
+		userMenu.GET("/org/:id", menuController.GetOrgMenu)
+		userMenu.GET("/student/:id", menuController.GetStudentMenu)
+		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu)
+		userMenu.GET("/user/:id", menuController.GetUserMenu)
+
+		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
+		userMenu.POST("/org", menuController.UploadOrgMenu)
+		userMenu.POST("/user", menuController.UploadUserMenu)
+	}
+
+	component := engine.Group("v1/component", secureMiddleware.Secured())
+	{
+		component.GET("/keys", componentController.GetAllComponentKey)
 	}
 }

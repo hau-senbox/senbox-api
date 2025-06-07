@@ -6,7 +6,6 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 
 	"gorm.io/gorm"
@@ -50,7 +49,6 @@ func (c *GetToDoListByQRCodeUseCase) getTasksByComposeTodo(todo entity.SToDo) (e
 	})
 
 	if err != nil {
-		monitor.SendMessageViaTelegram("Cannot retrieve todo name ", todo.ID, " err ", err.Error())
 		return c.GetToDoListByQRCode(todo.ID, c.dbConn)
 	}
 

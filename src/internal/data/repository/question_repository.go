@@ -19,9 +19,8 @@ type QuestionRepository struct {
 
 type CreateQuestionParams struct {
 	QuestionId       string
-	QuestionName     string
-	QuestionType     string
 	Question         string
+	QuestionType     string
 	Attributes       string
 	Status           string
 	Set              string
@@ -165,9 +164,8 @@ func (receiver *QuestionRepository) unmarshalDateQuestion(param CreateQuestionPa
 	//TODO: validate date format of attr.Value
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -195,9 +193,8 @@ func (receiver *QuestionRepository) unmarshalTimeQuestion(param CreateQuestionPa
 	//TODO: validate time format of attr.Value
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -225,9 +222,8 @@ func (receiver *QuestionRepository) unmarshalDateTimeQuestion(param CreateQuesti
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -244,9 +240,8 @@ func (receiver *QuestionRepository) unmarshalDurationForwardQuestion(param Creat
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -274,9 +269,8 @@ func (receiver *QuestionRepository) unmarshalDurationBackwardQuestion(param Crea
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -305,9 +299,8 @@ func (receiver *QuestionRepository) unmarshalScaleQuestion(param CreateQuestionP
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -324,9 +317,8 @@ func (receiver *QuestionRepository) unmarshalQRCodeQuestion(param CreateQuestion
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -357,9 +349,8 @@ func (receiver *QuestionRepository) unmarshalSelectionQuestion(param CreateQuest
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -389,9 +380,8 @@ func (receiver *QuestionRepository) unmarshalTextQuestion(param CreateQuestionPa
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -408,9 +398,8 @@ func (receiver *QuestionRepository) unmarshalCountQuestion(param CreateQuestionP
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -427,9 +416,8 @@ func (receiver *QuestionRepository) unmarshalNumberQuestion(param CreateQuestion
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -446,9 +434,8 @@ func (receiver *QuestionRepository) unmarshalPhotoQuestion(param CreateQuestionP
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -497,9 +484,8 @@ func (receiver *QuestionRepository) unmarshalMultipleChoiceQuestion(param Create
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -516,9 +502,8 @@ func (receiver *QuestionRepository) unmarshalButtonsQuestion(param CreateQuestio
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -535,9 +520,8 @@ func (receiver *QuestionRepository) unmarshalButtonQuestion(param CreateQuestion
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -554,9 +538,8 @@ func (receiver *QuestionRepository) unmarshalMessageBoxQuestion(param CreateQues
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -573,9 +556,8 @@ func (receiver *QuestionRepository) unmarshalShowPicsQuestion(param CreateQuesti
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -592,9 +574,8 @@ func (receiver *QuestionRepository) unmarshalButtonCountQuestion(param CreateQue
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -659,9 +640,8 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -682,9 +662,8 @@ func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQue
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -701,9 +680,8 @@ func (receiver *QuestionRepository) unmarshalPlayVideoQuestion(param CreateQuest
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -734,9 +712,8 @@ func (receiver *QuestionRepository) unmarshalChoiceToggleQuestion(param CreateQu
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -753,9 +730,8 @@ func (receiver *QuestionRepository) unmarshalSectionQuestion(param CreateQuestio
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -772,9 +748,8 @@ func (receiver *QuestionRepository) unmarshalUserQuestion(param CreateQuestionPa
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -792,9 +767,8 @@ func (receiver *QuestionRepository) unmarshalFormSectionQuestion(param CreateQue
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -812,9 +786,8 @@ func (receiver *QuestionRepository) unmarshalFormSendImmediately(param CreateQue
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -837,9 +810,8 @@ func (receiver *QuestionRepository) unmarshalSignatureQuestion(param CreateQuest
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
@@ -855,9 +827,8 @@ func (receiver *QuestionRepository) unmarshalWebUserQuestion(param CreateQuestio
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -874,9 +845,8 @@ func (receiver *QuestionRepository) unmarshalWebQuestion(param CreateQuestionPar
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -893,9 +863,8 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue1(param CreateQues
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -912,9 +881,8 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue2(param CreateQues
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -931,9 +899,8 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue3(param CreateQues
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -964,9 +931,8 @@ func (receiver *QuestionRepository) unmarshalDraggableListQuestion(param CreateQ
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
@@ -996,9 +962,8 @@ func (receiver *QuestionRepository) unmarshalSendNotification(param CreateQuesti
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -1031,9 +996,8 @@ func (receiver *QuestionRepository) unmarshalSendMessageQuestion(param CreateQue
 	}
 	var question = entity.SQuestion{
 		QuestionId:       uuid.MustParse(param.QuestionId),
-		QuestionName:     param.QuestionName,
-		QuestionType:     param.QuestionType,
 		Question:         param.Question,
+		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
@@ -1050,9 +1014,8 @@ func (receiver *QuestionRepository) unmarshalCodeCountingQuestion(param CreateQu
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
@@ -1068,9 +1031,8 @@ func (receiver *QuestionRepository) unmarshalRandomizerQuestion(param CreateQues
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
@@ -1086,9 +1048,8 @@ func (receiver *QuestionRepository) unmarshalDocumentQuestion(param CreateQuesti
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
@@ -1104,9 +1065,8 @@ func (receiver *QuestionRepository) unmarshalQRCodeGeneratorQuestion(param Creat
 	}
 	var question = entity.SQuestion{
 		QuestionId:     uuid.MustParse(param.QuestionId),
-		QuestionName:   param.QuestionName,
-		QuestionType:   param.QuestionType,
 		Question:       param.Question,
+		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,

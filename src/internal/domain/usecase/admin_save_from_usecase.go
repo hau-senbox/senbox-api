@@ -105,9 +105,8 @@ func (receiver *SaveFormUseCase) saveQuestions(rawQuestions []parameters.RawQues
 
 		param := repository.CreateQuestionParams{
 			QuestionId:   rawQuestion.QuestionId,
-			QuestionName: rawQuestion.Question,
-			QuestionType: strings.ToLower(rawQuestion.Type),
 			Question:     rawQuestion.Question,
+			QuestionType: strings.ToLower(rawQuestion.Type),
 			Attributes:   attString,
 			Status:       value.GetRawStatusValue(status),
 		}

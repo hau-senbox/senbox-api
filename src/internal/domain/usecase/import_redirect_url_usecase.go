@@ -24,7 +24,6 @@ type ImportRedirectUrlsUseCase struct {
 }
 
 func (receiver *ImportRedirectUrlsUseCase) SyncUrls(req request.ImportRedirectUrlsRequest) error {
-	monitor.SendMessageViaTelegram(fmt.Sprintf("[INFO][SYNC] Start sync URLS with interval %d", req.Interval))
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(req.SpreadsheetUrl)
 
@@ -94,7 +93,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 		return err
 	}
 	for rowNo, row := range values {
-		if len(row) >= 5 && cap(row) >= 5 && row[2].(string) != "" && strings.ToLower(row[4].(string)) == "upload" {
+		if len(row) >= 5 && cap(row) >= 5 && strings.ToLower(row[4].(string)) == "upload" {
 			hint := ""
 			if len(row) > 8 {
 				hint = row[8].(string)
@@ -104,9 +103,9 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 				hash := row[9].(string)
 				hashPwd = &hash
 			}
-			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[1].(string), row[2].(string), row[3].(string), row[4].(string), hint, hashPwd)
+			importErr := receiver.RedirectUrlRepository.SaveRedirectUrl(row[1].(string), row[3].(string), row[2].(string), row[4].(string), hint, hashPwd)
 			if importErr != nil {
-				log.Error(importErr)
+				log.Errorf("ROW NO %d: %v", rowNo, importErr)
 			} else {
 				_, err = receiver.SpreadsheetWriter.UpdateRange(sheet.WriteRangeParams{
 					Range:     "URL_FORWARD!P" + strconv.Itoa(rowNo+12) + ":Q",
@@ -114,8 +113,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 					Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
 				}, spreadsheetId)
 				if err != nil {
-					log.Debug("Row No: ", rowNo)
-					log.Error(err)
+					log.Errorf("ROW NO %d: %v", rowNo, err)
 				}
 			}
 		}

@@ -8,7 +8,6 @@ import (
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"strings"
@@ -70,12 +69,10 @@ func (receiver *SendEmailUseCase) SendEmail(target string, subject string, conte
 func (receiver *SendEmailUseCase) logHistory(target string, subject string, device entity.SDevice) {
 	setting, err := receiver.GetEmailSettings()
 	if err != nil {
-		monitor.SendMessageViaTelegram("Error when get email settings: " + err.Error())
 		return
 	}
 
 	if setting == nil {
-		monitor.SendMessageViaTelegram("Error when get email settings: setting is nil")
 		return
 	}
 
@@ -87,7 +84,6 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 	err = json.Unmarshal([]byte(setting.Settings), &emailSettings)
 
 	if err != nil {
-		monitor.SendMessageViaTelegram("Error when get email settings: " + err.Error())
 		return
 	}
 
@@ -108,7 +104,6 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 	}, emailSettings.SpreadsheetId)
 
 	if err != nil {
-		monitor.SendMessageViaTelegram("Error when write email history: " + err.Error())
 		return
 	}
 }

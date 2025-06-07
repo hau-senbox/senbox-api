@@ -3,13 +3,13 @@ package usecase
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"regexp"
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type UpdateApiDistributorUseCase struct {
@@ -45,7 +45,6 @@ func executeUploadAPIDistributor(repo *repository.SettingRepository, r *sheet.Re
 	s, err := repo.GetAPIDistributerSetting()
 	if err != nil {
 		log.Error("Could not find API Distributor setting")
-		monitor.SendMessageViaTelegram("Could not find API Distributor setting")
 		return
 	}
 
@@ -53,14 +52,12 @@ func executeUploadAPIDistributor(repo *repository.SettingRepository, r *sheet.Re
 	err = json.Unmarshal(s.Settings, &setting)
 	if err != nil {
 		log.Error("Invalid API setting record", err.Error())
-		monitor.SendMessageViaTelegram("Invalid API setting record: ", err.Error())
 		return
 	}
 
 	allSourceSheets, err := r.GetAllSheets(setting.SpreadSheetId)
 	if err != nil {
 		log.Error("Cannot retrieve all sheets from the api distributor spreadsheet")
-		monitor.SendMessageViaTelegram("Cannot retrieve all sheets from the api distributor spreadsheet")
 	}
 
 	for _, singleSheet := range allSourceSheets {
@@ -76,7 +73,6 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 
 	if err != nil {
 		log.Error("Cannot read sheet ", singleSheet.Title, " err ", err.Error())
-		monitor.SendMessageViaTelegram("Cannot read sheet ", singleSheet.Title, " err ", err.Error())
 		return
 	}
 
@@ -150,7 +146,6 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 
 		if err != nil {
 			log.Error("Failed on delete sheet ", singleSheet.Title+" from spreadsheet ", targetSpreadsheetId)
-			monitor.SendMessageViaTelegram("Failed on delete sheet ", sourceSheet.Title+" from spreadsheet ", targetSpreadsheetId)
 			continue
 		}
 
@@ -162,7 +157,6 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 
 		if err != nil {
 			log.Error("Failed to copy sheet ", sourceSheet.Title, " to ", targetSpreadsheetId, " err ", err.Error())
-			monitor.SendMessageViaTelegram("Failed to copy sheet ", singleSheet.Title, " to ", targetSpreadsheetId, " err ", err.Error())
 
 			//TODO: update error in detail
 			continue

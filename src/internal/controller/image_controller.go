@@ -58,6 +58,83 @@ func (receiver *ImageController) GetUrlByKey(context *gin.Context) {
 	})
 }
 
+type iconResponse struct {
+	ImageName string `json:"image_name"`
+	Folder    string `json:"folder"`
+	Key       string `json:"key"`
+	URL       string `json:"url"`
+	Extension string `json:"extension"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+}
+
+func (receiver *ImageController) GetIcons(context *gin.Context) {
+	icons, err := receiver.GetImageUseCase.GetIcons()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	res := make([]iconResponse, 0)
+	for _, icon := range icons {
+		res = append(res, iconResponse{
+			ImageName: icon.ImageName,
+			Folder:    icon.Folder,
+			Key:       icon.Key,
+			URL:       icon.URL,
+			Extension: icon.Extension,
+			Width:     icon.Width,
+			Height:    icon.Height,
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "icons were get successfully",
+		Data:    res,
+	})
+}
+
+type getPublicImageByKeyRequest struct {
+	Key string `json:"key" binding:"required"`
+}
+
+func (receiver *ImageController) GetIconByKey(context *gin.Context) {
+	var req getPublicImageByKeyRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	icon, err := receiver.GetImageUseCase.GetIconByKey(req.Key)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "icons were get successfully",
+		Data: iconResponse{
+			ImageName: icon.ImageName,
+			Folder:    icon.Folder,
+			Key:       icon.Key,
+			URL:       icon.URL,
+			Extension: icon.Extension,
+			Width:     icon.Width,
+			Height:    icon.Height,
+		},
+	})
+}
+
 func (receiver *ImageController) CreateImage(context *gin.Context) {
 	fileHeader, err := context.FormFile("file")
 	if err != nil {

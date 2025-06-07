@@ -5,7 +5,6 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/messaging"
-	"sen-global-api/pkg/monitor"
 
 	firebase "firebase.google.com/go/v4"
 	log "github.com/sirupsen/logrus"
@@ -49,7 +48,6 @@ func (receiver *SendNotificationUseCase) Execute(params request.SendNotification
 	err = messaging.SendNotification(receiver.FirebaseApp, noti)
 	if err != nil {
 		log.Error("Failed to send notification ", err)
-		monitor.SendMessageViaTelegram("Failed to send notification for a top buttons: ", err.Error())
 	}
 
 	return err

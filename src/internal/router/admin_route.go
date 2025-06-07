@@ -12,7 +12,6 @@ import (
 	"sen-global-api/pkg/job"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
-	"strconv"
 	"time"
 
 	firebase "firebase.google.com/go/v4"
@@ -583,19 +582,5 @@ func (t *TimeMachineSubscriber) ExecuteSyncTodos() {
 
 // register, import 1 todo, import 1 form, screen button, top button
 func (t *TimeMachineSubscriber) ExecuteGoogleAPIRequestMonitor() {
-	if (monitor.TotalRequestInitDevice +
-		monitor.TotalRequestImportToDo +
-		monitor.TotalRequestImportForm +
-		monitor.TotalRequestGETScreenButton +
-		monitor.TotalRequestGETTopButton) > 300 {
-		monitor.SendMessageViaTelegram(
-			"Number of request for register: "+strconv.Itoa(monitor.TotalRequestInitDevice),
-			"Number of request for import 1 todo: "+strconv.Itoa(monitor.TotalRequestImportToDo),
-			"Number of request for import 1 form: "+strconv.Itoa(monitor.TotalRequestImportForm),
-			"Number of request for screen button: "+strconv.Itoa(monitor.TotalRequestGETScreenButton),
-			"Number of request for top button: "+strconv.Itoa(monitor.TotalRequestGETTopButton),
-		)
-	}
-
 	monitor.ResetGoogleAPIRequestMonitor()
 }

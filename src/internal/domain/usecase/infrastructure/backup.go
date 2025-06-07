@@ -2,16 +2,15 @@ package infrastructure
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
 	"sen-global-api/internal/domain/response"
-	"sen-global-api/pkg/monitor"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -63,9 +62,7 @@ func Backup() {
 	err := cmd.Run()
 
 	if err != nil {
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 
@@ -74,9 +71,7 @@ func Backup() {
 	err = cmd.Run()
 
 	if err != nil {
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 
@@ -87,9 +82,7 @@ func Backup() {
 	err = cmd.Run()
 
 	if err != nil {
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 
@@ -98,32 +91,25 @@ func Backup() {
 	err = cmd.Run()
 
 	if err != nil {
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
+		log.Errorf("error in get current working directory: %v", err)
 		return
 	}
 	srv, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
 
 	if err != nil {
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when establishing Google Drive service for uploading backup: " + err.Error(),
-		)
+		logrus.Errorf("[URGENT] Error when establishing Google Drive service for uploading backup: " + err.Error())
 		return
 	}
 
 	file, err := os.Open("sen_master_db.tar.gz")
 	if err != nil {
-		log.Errorf("Error: %v", err)
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 	defer file.Close()
@@ -133,10 +119,7 @@ func Backup() {
 	driveID := os.Getenv("SENBOX_BACKUP_GOOGLE_DRIVE_ID")
 
 	if driveID == "" {
-		log.Error("Error: SENBOX_BACKUP_GOOGLE_DRIVE_ID is empty")
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when backup database: SENBOX_BACKUP_GOOGLE_DRIVE_ID is empty",
-		)
+		log.Error("SENBOX_BACKUP_GOOGLE_DRIVE_ID is empty")
 		return
 	}
 
@@ -146,16 +129,9 @@ func Backup() {
 	}
 	_, err = srv.Files.Create(f).Media(file).Do()
 	if err != nil {
-		log.Errorf("Error: %v", err)
-		monitor.SendMessageViaTelegram(
-			"[URGENT] Error when upload database: " + err.Error(),
-		)
+		logrus.Errorf("Error when backup database: %s", err.Error())
 		return
 	}
 
 	log.Info("Backup database success")
-
-	monitor.SendMessageViaTelegram(
-		"Backup database success",
-	)
 }

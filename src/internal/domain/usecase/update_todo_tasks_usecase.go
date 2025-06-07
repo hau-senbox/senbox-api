@@ -12,7 +12,6 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"time"
@@ -84,8 +83,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
-		return entity.SToDo{}, err
+		return entity.SToDo{}, fmt.Errorf("failed to get current working directory: %w", err)
 	}
 	if todo.SpreadsheetID == "" {
 		var outputSettings OutputSetting
@@ -107,10 +105,8 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 
 		file, err := os.Open(templateFilePath)
 		if err != nil {
-			log.Errorf("Error: %v", err)
-			return entity.SToDo{}, err
+			return entity.SToDo{}, fmt.Errorf("failed to open file: %w", err)
 		}
-		log.Debug("File: ", file.Name())
 		defer file.Close()
 		f := &drive.File{
 			Name:     todo.ID + ".xlsx",
@@ -119,9 +115,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 		}
 		res, err := srv.Files.Create(f).Media(file, googleapi.ContentType(baseMimeType)).Do()
 		if err != nil {
-			log.Error("Error: ", err)
-			monitor.SendMessageViaTelegram("Failed to create spreadsheet for ToDo")
-			return entity.SToDo{}, err
+			return entity.SToDo{}, fmt.Errorf("failed to create file: %w", err)
 		}
 		todo.SpreadsheetID = res.Id
 
@@ -226,8 +220,6 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 	if err != nil {
 		return entity.SToDo{}, err
 	}
-
-	monitor.SendMessageViaTelegram("Todo: ", todo.ID, " at ", todo.SpreadsheetID, " has been updated ")
 
 	return c.repository.Save(c.db, todo)
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -24,7 +25,7 @@ func NewUserEntityRepository(dbConn *gorm.DB) *UserEntityRepository {
 
 func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	var users []entity.SUserEntity
-	query := receiver.DBConn.Table("s_user_entity")
+	query := receiver.DBConn.Model(entity.SUserEntity{})
 	err := query.
 		Preload("Roles").
 		Preload("Guardians").
@@ -290,12 +291,36 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 		Birthday: birthday,
 		Password: req.Password,
 	}
-	userResult := tx.Create(&userReq)
+	err = tx.Create(&userReq).Error
 
-	if userResult.Error != nil {
-		log.Error("UserRepository.CreateUser: " + userResult.Error.Error())
+	if err != nil {
+		log.Error("UserRepository.CreateUser: " + err.Error())
 		tx.Rollback()
 		return errors.New("failed to create user " + req.Username)
+	}
+
+	var organization entity.SOrganization
+	err = tx.Model(&entity.SOrganization{}).
+		Where("organization_name = 'SENBOX WAITLIST'").
+		Attrs(entity.SOrganization{
+			OrganizationName: "SENBOX WAITLIST",
+			Password:         "123",
+		}).
+		FirstOrCreate(&organization).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("UserRepository.CreateUser: " + err.Error())
+		return fmt.Errorf("failed to link user with default organization")
+	}
+
+	err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+		"user_id":         userReq.ID.String(),
+		"organization_id": organization.ID,
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())
+		return errors.New("failed to assign user for organization")
 	}
 
 	if req.Guardians != nil && len(*req.Guardians) > 0 {
@@ -338,7 +363,6 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 		tx.Commit()
 		err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserId: userReq.ID.String(), Roles: roles})
 		if err != nil {
-			tx.Rollback()
 			return err
 		}
 	}
@@ -610,4 +634,479 @@ func (receiver *UserEntityRepository) CreatePreRegisterUser(email string) error 
 	}
 
 	return err
+}
+
+// Teacher
+
+func (receiver *UserEntityRepository) GetAllTeacherFormApplication() ([]*entity.STeacherFormApplication, error) {
+	var forms []*entity.STeacherFormApplication
+	err := receiver.DBConn.Model(&entity.STeacherFormApplication{}).Find(&forms).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllTeacherFormApplication: " + err.Error())
+		return nil, errors.New("failed to get all application form")
+	}
+
+	return forms, nil
+}
+
+func (receiver *UserEntityRepository) GetTeacherFormApplicationByID(applicationID int64) (*entity.STeacherFormApplication, error) {
+	var form entity.STeacherFormApplication
+	err := receiver.DBConn.Model(&entity.STeacherFormApplication{}).
+		Where("id = ?", applicationID).
+		Preload("User").
+		Preload("Organization").
+		First(&form).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllTeacherFormApplication: " + err.Error())
+		return nil, errors.New("failed to get application form")
+	}
+
+	return &form, nil
+}
+
+func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationID int64) error {
+	form, err := receiver.GetTeacherFormApplicationByID(applicationID)
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveTeacherFormApplication: " + err.Error())
+		return err
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("teacher has already been approved")
+	}
+
+	tx := receiver.DBConn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Update application status
+	err = tx.Model(&entity.STeacherFormApplication{}).
+		Where("id = ?", applicationID).
+		Updates(map[string]interface{}{
+			"status":      value.Approved,
+			"approved_at": time.Now(),
+		}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Update application status failed: " + err.Error())
+		return errors.New("failed to approve teacher")
+	}
+
+	tx.Rollback()
+	return errors.New("this function is not implemented yet")
+
+	//// Create organization
+	//organization := entity.STeacherFormApplication{
+	//	TeacheranizationName: form.TeacheranizationName,
+	//}
+	//err = tx.Create(&organization).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create organization failed: " + err.Error())
+	//	return errors.New("failed to create organization")
+	//}
+	//
+	//// Create user organization mapping (Manager)
+	//userTeacher := entity.SUserTeacher{
+	//	UserId:             form.UserId,
+	//	TeacheranizationId: organization.ID,
+	//	UserNickName:       "Manager",
+	//	IsManager:          true,
+	//}
+	//err = tx.Create(&userTeacher).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create user organization mapping failed: " + err.Error())
+	//	return errors.New("failed to create user-organization relationship")
+	//}
+	//
+	//// Add user to organization (if needed)
+	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+	//	"user_id":         form.UserId.String(),
+	//	"organization_id": organization.ID,
+	//}).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("insert into s_user_organizations failed: " + err.Error())
+	//	return errors.New("failed to join organization")
+	//}
+	//
+	//// Assign admin role to user
+	//userRole := entity.SUserRoles{
+	//	UserId: form.UserId,
+	//	RoleId: 5, // admin
+	//}
+	//err = tx.Create(&userRole).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Assign admin role failed: " + err.Error())
+	//	return errors.New("failed to assign admin role to user")
+	//}
+	//
+	//// Commit the transaction
+	//if err := tx.Commit().Error; err != nil {
+	//	log.Error("Transaction commit failed: " + err.Error())
+	//	return errors.New("failed to commit transaction")
+	//}
+	//
+	//return nil
+}
+
+func (receiver *UserEntityRepository) BlockTeacherFormApplication(applicationID int64) error {
+	form, err := receiver.GetTeacherFormApplicationByID(applicationID)
+
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveTeacherFromApplication: " + err.Error())
+		return errors.New("failed to get application form")
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("teacher has not been approved")
+	}
+
+	err = receiver.DBConn.Model(&entity.STeacherFormApplication{}).Where("id = ?", applicationID).
+		Updates(map[string]interface{}{"status": value.Blocked}).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.BlockTeacherFromApplication: " + err.Error())
+		return errors.New("failed to block teacher")
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
+	result := receiver.DBConn.Create(&entity.STeacherFormApplication{
+		UserID:         uuid.MustParse(req.UserID),
+		OrganizationID: req.OrganizationID,
+	})
+
+	if result.Error != nil {
+		log.Error("UserEntityRepository.CreateTeacherFormApplication: " + result.Error.Error())
+		return errors.New("failed to create teacher form application")
+	}
+
+	return nil
+}
+
+// Staff
+
+func (receiver *UserEntityRepository) GetAllStaffFormApplication() ([]*entity.SStaffFormApplication, error) {
+	var forms []*entity.SStaffFormApplication
+	err := receiver.DBConn.Model(&entity.SStaffFormApplication{}).Find(&forms).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllStaffFormApplication: " + err.Error())
+		return nil, errors.New("failed to get all application form")
+	}
+
+	return forms, nil
+}
+
+func (receiver *UserEntityRepository) GetStaffFormApplicationByID(applicationID int64) (*entity.SStaffFormApplication, error) {
+	var form entity.SStaffFormApplication
+	err := receiver.DBConn.Model(&entity.SStaffFormApplication{}).
+		Where("id = ?", applicationID).
+		Preload("User").
+		Preload("Organization").
+		First(&form).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllStaffFormApplication: " + err.Error())
+		return nil, errors.New("failed to get application form")
+	}
+
+	return &form, nil
+}
+
+func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID int64) error {
+	form, err := receiver.GetStaffFormApplicationByID(applicationID)
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveStaffFormApplication: " + err.Error())
+		return err
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("staff has already been approved")
+	}
+
+	tx := receiver.DBConn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Update application status
+	err = tx.Model(&entity.SStaffFormApplication{}).
+		Where("id = ?", applicationID).
+		Updates(map[string]interface{}{
+			"status":      value.Approved,
+			"approved_at": time.Now(),
+		}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Update application status failed: " + err.Error())
+		return errors.New("failed to approve staff")
+	}
+
+	tx.Rollback()
+	return errors.New("this function is not implemented yet")
+
+	//// Create organization
+	//organization := entity.SStaffFormApplication{
+	//	StaffanizationName: form.StaffanizationName,
+	//}
+	//err = tx.Create(&organization).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create organization failed: " + err.Error())
+	//	return errors.New("failed to create organization")
+	//}
+	//
+	//// Create user organization mapping (Manager)
+	//userStaff := entity.SUserStaff{
+	//	UserId:             form.UserId,
+	//	StaffanizationId: organization.ID,
+	//	UserNickName:       "Manager",
+	//	IsManager:          true,
+	//}
+	//err = tx.Create(&userStaff).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create user organization mapping failed: " + err.Error())
+	//	return errors.New("failed to create user-organization relationship")
+	//}
+	//
+	//// Add user to organization (if needed)
+	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+	//	"user_id":         form.UserId.String(),
+	//	"organization_id": organization.ID,
+	//}).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("insert into s_user_organizations failed: " + err.Error())
+	//	return errors.New("failed to join organization")
+	//}
+	//
+	//// Assign admin role to user
+	//userRole := entity.SUserRoles{
+	//	UserId: form.UserId,
+	//	RoleId: 5, // admin
+	//}
+	//err = tx.Create(&userRole).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Assign admin role failed: " + err.Error())
+	//	return errors.New("failed to assign admin role to user")
+	//}
+	//
+	//// Commit the transaction
+	//if err := tx.Commit().Error; err != nil {
+	//	log.Error("Transaction commit failed: " + err.Error())
+	//	return errors.New("failed to commit transaction")
+	//}
+	//
+	//return nil
+}
+
+func (receiver *UserEntityRepository) BlockStaffFormApplication(applicationID int64) error {
+	form, err := receiver.GetStaffFormApplicationByID(applicationID)
+
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveStaffFromApplication: " + err.Error())
+		return errors.New("failed to get application form")
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("staff has not been approved")
+	}
+
+	err = receiver.DBConn.Model(&entity.SStaffFormApplication{}).Where("id = ?", applicationID).
+		Updates(map[string]interface{}{"status": value.Blocked}).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.BlockStaffFromApplication: " + err.Error())
+		return errors.New("failed to block staff")
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) CreateStaffFormApplication(req request.CreateStaffFormApplicationRequest) error {
+	result := receiver.DBConn.Create(&entity.SStaffFormApplication{
+		UserID:         uuid.MustParse(req.UserID),
+		OrganizationID: req.OrganizationID,
+	})
+
+	if result.Error != nil {
+		log.Error("UserEntityRepository.CreateStaffFormApplication: " + result.Error.Error())
+		return errors.New("failed to create staff form application")
+	}
+
+	return nil
+}
+
+// Student
+
+func (receiver *UserEntityRepository) GetAllStudentFormApplication() ([]*entity.SStudentFormApplication, error) {
+	var forms []*entity.SStudentFormApplication
+	err := receiver.DBConn.Model(&entity.SStudentFormApplication{}).Find(&forms).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllStudentFormApplication: " + err.Error())
+		return nil, errors.New("failed to get all application form")
+	}
+
+	return forms, nil
+}
+
+func (receiver *UserEntityRepository) GetStudentFormApplicationByID(applicationID int64) (*entity.SStudentFormApplication, error) {
+	var form entity.SStudentFormApplication
+	err := receiver.DBConn.Model(&entity.SStudentFormApplication{}).
+		Where("id = ?", applicationID).
+		Preload("User").
+		Preload("Organization").
+		First(&form).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllStudentFormApplication: " + err.Error())
+		return nil, errors.New("failed to get application form")
+	}
+
+	return &form, nil
+}
+
+func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationID int64) error {
+	form, err := receiver.GetStudentFormApplicationByID(applicationID)
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveStudentFormApplication: " + err.Error())
+		return err
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("student has already been approved")
+	}
+
+	tx := receiver.DBConn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Update application status
+	err = tx.Model(&entity.SStudentFormApplication{}).
+		Where("id = ?", applicationID).
+		Updates(map[string]interface{}{
+			"status":      value.Approved,
+			"approved_at": time.Now(),
+		}).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("Update application status failed: " + err.Error())
+		return errors.New("failed to approve student")
+	}
+
+	tx.Rollback()
+	return errors.New("this function is not implemented yet")
+
+	//// Create organization
+	//organization := entity.SStudentFormApplication{
+	//	StudentanizationName: form.StudentanizationName,
+	//}
+	//err = tx.Create(&organization).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create organization failed: " + err.Error())
+	//	return errors.New("failed to create organization")
+	//}
+	//
+	//// Create user organization mapping (Manager)
+	//userStudent := entity.SUserStudent{
+	//	UserId:             form.UserId,
+	//	StudentanizationId: organization.ID,
+	//	UserNickName:       "Manager",
+	//	IsManager:          true,
+	//}
+	//err = tx.Create(&userStudent).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Create user organization mapping failed: " + err.Error())
+	//	return errors.New("failed to create user-organization relationship")
+	//}
+	//
+	//// Add user to organization (if needed)
+	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+	//	"user_id":         form.UserId.String(),
+	//	"organization_id": organization.ID,
+	//}).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("insert into s_user_organizations failed: " + err.Error())
+	//	return errors.New("failed to join organization")
+	//}
+	//
+	//// Assign admin role to user
+	//userRole := entity.SUserRoles{
+	//	UserId: form.UserId,
+	//	RoleId: 5, // admin
+	//}
+	//err = tx.Create(&userRole).Error
+	//if err != nil {
+	//	tx.Rollback()
+	//	log.Error("Assign admin role failed: " + err.Error())
+	//	return errors.New("failed to assign admin role to user")
+	//}
+	//
+	//// Commit the transaction
+	//if err := tx.Commit().Error; err != nil {
+	//	log.Error("Transaction commit failed: " + err.Error())
+	//	return errors.New("failed to commit transaction")
+	//}
+	//
+	//return nil
+}
+
+func (receiver *UserEntityRepository) BlockStudentFormApplication(applicationID int64) error {
+	form, err := receiver.GetStudentFormApplicationByID(applicationID)
+
+	if err != nil {
+		log.Error("UserEntityRepository.ApproveStudentFromApplication: " + err.Error())
+		return errors.New("failed to get application form")
+	}
+
+	if !form.ApprovedAt.IsZero() {
+		return errors.New("student has not been approved")
+	}
+
+	err = receiver.DBConn.Model(&entity.SStudentFormApplication{}).Where("id = ?", applicationID).
+		Updates(map[string]interface{}{"status": value.Blocked}).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.BlockStudentFromApplication: " + err.Error())
+		return errors.New("failed to block student")
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
+	result := receiver.DBConn.Create(&entity.SStudentFormApplication{
+		StudentName:    req.StudentName,
+		UserID:         uuid.MustParse(req.UserID),
+		OrganizationID: req.OrganizationID,
+	})
+
+	if result.Error != nil {
+		log.Error("UserEntityRepository.CreateStudentFormApplication: " + result.Error.Error())
+		return errors.New("failed to create student form application")
+	}
+
+	return nil
 }

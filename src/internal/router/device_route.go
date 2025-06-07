@@ -2,14 +2,12 @@ package router
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sen-global-api/config"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
-	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
 	"sen-global-api/pkg/uploader"
 	"time"
@@ -32,7 +30,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Error getting current directory: %s", err))
+		log.Errorf("error getting current directory: %w", err)
 		return
 	}
 	driveService, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
@@ -216,6 +214,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	image := engine.Group("v1/images", secureMiddleware.Secured())
 	{
 		image.POST("/", imageController.GetUrlByKey)
+		image.GET("/icons", imageController.GetIcons)
+		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
 	}

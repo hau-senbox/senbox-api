@@ -10,11 +10,15 @@ type GetOrganizationUseCase struct {
 }
 
 func (receiver *GetOrganizationUseCase) GetOrganizationById(id int64) (*entity.SOrganization, error) {
-	return receiver.GetByID(id)
+	return receiver.OrganizationRepository.GetByID(id)
+}
+
+func (receiver *GetOrganizationUseCase) GetByName(name string) (*entity.SOrganization, error) {
+	return receiver.OrganizationRepository.GetByName(name)
 }
 
 func (receiver *GetOrganizationUseCase) GetAllOrganization(user *entity.SUserEntity) ([]*entity.SOrganization, error) {
-	return receiver.GetAll(user)
+	return receiver.OrganizationRepository.GetAll(user)
 }
 
 func (receiver *GetOrganizationUseCase) GetAllUserByOrganization(organizationID uint) ([]*entity.SUserOrg, error) {

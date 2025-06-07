@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
+	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/pkg/common"
 	"time"
 
@@ -52,6 +54,14 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SUserOrg{},
 		&entity.SOrgFormApplication{},
 		&entity.SPreRegister{},
+		&components.Component{},
+		&menu.SuperAdminMenu{},
+		&menu.OrgMenu{},
+		&menu.UserMenu{},
+		&entity.PublicImage{},
+		&entity.SStaffFormApplication{},
+		&entity.SStudentFormApplication{},
+		&entity.STeacherFormApplication{},
 	)
 
 	// Seed

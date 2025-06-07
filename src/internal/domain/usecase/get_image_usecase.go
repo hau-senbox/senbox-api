@@ -26,6 +26,14 @@ func (receiver *GetImageUseCase) GetImageById(id uint64) (*entity.SImage, error)
 	return receiver.ImageRepository.GetByID(id)
 }
 
+func (receiver *GetImageUseCase) GetIcons() ([]entity.PublicImage, error) {
+	return receiver.ImageRepository.GetIcons()
+}
+
+func (receiver *GetImageUseCase) GetIconByKey(key string) (*entity.PublicImage, error) {
+	return receiver.ImageRepository.GetIconByKey(key)
+}
+
 func (receiver *GetImageUseCase) GetUrlByKey(key string, mode uploader.UploadMode) (*string, error) {
 	img, err := receiver.ImageRepository.GetByKey(key)
 	if err != nil {

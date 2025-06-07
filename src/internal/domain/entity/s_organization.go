@@ -9,7 +9,7 @@ import (
 
 type SOrganization struct {
 	ID               int64     `gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	OrganizationName string    `gorm:"type:varchar(255);not null;"`
+	OrganizationName string    `gorm:"type:varchar(255);not null;unique"`
 	Password         string    `gorm:"type:varchar(255);not null;default:''"`
 	Address          string    `gorm:"type:varchar(255);not null;default:''"`
 	Description      string    `gorm:"type:varchar(255);not null;default:''"`

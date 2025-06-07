@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/monitor"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -139,8 +137,6 @@ func (receiver *DeviceController) InitDeviceV1(context *gin.Context) {
 		)
 		return
 	}
-
-	monitor.SendMessageViaTelegram("Init Device: ", req.DeviceUUID, req.AppVersion)
 
 	user, err := receiver.GetUserFromToken(context)
 	if err != nil {
@@ -476,11 +472,6 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 	}
 
 	req.UserId = user.ID.String()
-
-	// reportMsgHeader := fmt.Sprintf("[FORM SUMBITTING]: %s", context.Request.Header)
-	// userInfo := fmt.Sprintf("\nSUBMITTED with [USER INFO] 1: %s \n [USER INFO] 2:%s \n", user.Fullname, user.Organization.OrganizationName)
-	// reportMsgBody := fmt.Sprintf("\n[FORM] RoleId: %d - \nNOTE:%s \n [SUBMITTED by USER]: %s \n %s - \n %v\n", form.RoleId, form.Note, user.Username, user.Fullname, req)
-	// monitor.SendMessageViaTelegram(reportMsgHeader, reportMsgBody, userInfo)
 	err = receiver.AnswerForm(form.ID, req)
 	if err != nil {
 		context.JSON(http.StatusNotAcceptable, response.FailedResponse{
@@ -638,7 +629,6 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 	// 			Message: err.Error(),
 	// 		},
 	// 	})
-	// 	monitor.SendMessageViaTelegram(fmt.Sprintf("Get Device Status Failed: %s", err.Error()))
 	// 	return
 	// }
 
@@ -675,7 +665,6 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Get Device Status Failed: %s", err.Error()))
 		return
 	}
 
@@ -685,7 +674,6 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
-		monitor.SendMessageViaTelegram(fmt.Sprintf("Get Device Status Failed: %s", err.Error()))
 		return
 	}
 
@@ -741,11 +729,6 @@ func (receiver *DeviceController) Reserve(context *gin.Context) {
 			Error: err.Error(),
 		})
 
-		monitor.SendMessageViaTelegram(
-			fmt.Sprintf("[FAILED] Reserve Device: %s", err.Error()),
-			fmt.Sprintf("Device RoleId: %s", request.DeviceId),
-			fmt.Sprintf("App Version: %s", request.AppVersion),
-		)
 		return
 	}
 

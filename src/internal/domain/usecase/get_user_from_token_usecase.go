@@ -18,11 +18,11 @@ type GetUserFromTokenUseCase struct {
 func (c *GetUserFromTokenUseCase) GetUserFromToken(context *gin.Context) (*entity.SUserEntity, error) {
 	authorization := context.GetHeader("Authorization")
 	if authorization == "" {
-		return nil, errors.New("no authorization header")
+		return nil, errors.New("no authorization")
 	}
 
 	if len(authorization) == 0 {
-		return nil, errors.New("no authorization header")
+		return nil, errors.New("no authorization")
 	}
 
 	tokenString := strings.Split(authorization, " ")[1]
