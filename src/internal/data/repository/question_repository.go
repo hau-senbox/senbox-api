@@ -18,7 +18,7 @@ type QuestionRepository struct {
 }
 
 type CreateQuestionParams struct {
-	QuestionId       string
+	ID               string
 	Question         string
 	QuestionType     string
 	Attributes       string
@@ -163,7 +163,7 @@ func (receiver *QuestionRepository) unmarshalDateQuestion(param CreateQuestionPa
 	log.Debug(attr)
 	//TODO: validate date format of attr.Value
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -192,7 +192,7 @@ func (receiver *QuestionRepository) unmarshalTimeQuestion(param CreateQuestionPa
 	}
 	//TODO: validate time format of attr.Value
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -221,7 +221,7 @@ func (receiver *QuestionRepository) unmarshalDateTimeQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -239,7 +239,7 @@ func (receiver *QuestionRepository) unmarshalDurationForwardQuestion(param Creat
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -268,7 +268,7 @@ func (receiver *QuestionRepository) unmarshalDurationBackwardQuestion(param Crea
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -298,7 +298,7 @@ func (receiver *QuestionRepository) unmarshalScaleQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -316,7 +316,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -348,7 +348,7 @@ func (receiver *QuestionRepository) unmarshalSelectionQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -364,7 +364,7 @@ func (receiver *QuestionRepository) SaveQuestions(questions []entity.SQuestion) 
 	err := receiver.DBConn.Table("s_question").
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "question_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"question_name", "question_type", "question", "attributes", "status", "updated_at"}),
+			DoUpdates: clause.AssignmentColumns([]string{"question", "question_type", "attributes", "status", "updated_at"}),
 		}).Create(&questions).Error
 	if err != nil {
 		return nil, err
@@ -379,7 +379,7 @@ func (receiver *QuestionRepository) unmarshalTextQuestion(param CreateQuestionPa
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -397,7 +397,7 @@ func (receiver *QuestionRepository) unmarshalCountQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -415,7 +415,7 @@ func (receiver *QuestionRepository) unmarshalNumberQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -433,7 +433,7 @@ func (receiver *QuestionRepository) unmarshalPhotoQuestion(param CreateQuestionP
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -483,7 +483,7 @@ func (receiver *QuestionRepository) unmarshalMultipleChoiceQuestion(param Create
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -501,7 +501,7 @@ func (receiver *QuestionRepository) unmarshalButtonsQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -519,7 +519,7 @@ func (receiver *QuestionRepository) unmarshalButtonQuestion(param CreateQuestion
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -537,7 +537,7 @@ func (receiver *QuestionRepository) unmarshalMessageBoxQuestion(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -555,7 +555,7 @@ func (receiver *QuestionRepository) unmarshalShowPicsQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -573,7 +573,7 @@ func (receiver *QuestionRepository) unmarshalButtonCountQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -588,11 +588,11 @@ func (receiver *QuestionRepository) unmarshalButtonCountQuestion(param CreateQue
 func (receiver *QuestionRepository) GetQuestionsByFormId(id uint64) ([]model.FormQuestionItem, error) {
 	var questions []model.FormQuestionItem
 	//goland:noinspection ALL
-	rows, err := receiver.DBConn.Raw("SELECT s_question.question_id as question_id, s_question.question_name as question_name, "+
+	rows, err := receiver.DBConn.Raw("SELECT s_question.id as id,"+
 		"s_question.question_type as question_type, s_question.attributes as attributes, s_question.status as status, "+
 		"s_question.created_at as created_at, s_question.updated_at as updated_at, s_form_question.order as `order`, s_form_question.answer_required as answer_required, s_question.question as question,"+
 		"s_question.enable_on_mobile as enable_on_mobile, s_question.question_unique_id as question_unique_id "+
-		"FROM s_question RIGHT JOIN s_form_question ON s_form_question.question_id = s_question.question_id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
+		"FROM s_question RIGHT JOIN s_form_question ON s_form_question.question_id = s_question.id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
 
 	if err != nil {
 		return nil, err
@@ -639,7 +639,7 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -652,7 +652,7 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 }
 
 func (receiver *QuestionRepository) DeleteQuestionsFormNote(note string) error {
-	return receiver.DBConn.Exec("DELETE s FROM s_question s INNER JOIN s_form_question fq ON fq.question_id = s.question_id INNER JOIN s_form f ON f.id = fq.form_id WHERE f.note = ?", note).Error
+	return receiver.DBConn.Exec("DELETE s FROM s_question s INNER JOIN s_form_question fq ON fq.question_id = s.id INNER JOIN s_form f ON f.id = fq.form_id WHERE f.note = ?", note).Error
 }
 
 func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
@@ -661,7 +661,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -679,7 +679,7 @@ func (receiver *QuestionRepository) unmarshalPlayVideoQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -711,7 +711,7 @@ func (receiver *QuestionRepository) unmarshalChoiceToggleQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -729,7 +729,7 @@ func (receiver *QuestionRepository) unmarshalSectionQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -747,7 +747,7 @@ func (receiver *QuestionRepository) unmarshalUserQuestion(param CreateQuestionPa
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -766,7 +766,7 @@ func (receiver *QuestionRepository) unmarshalFormSectionQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -785,7 +785,7 @@ func (receiver *QuestionRepository) unmarshalFormSendImmediately(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -799,7 +799,7 @@ func (receiver *QuestionRepository) unmarshalFormSendImmediately(param CreateQue
 
 func (receiver *QuestionRepository) GetQuestionsByIDs(IDs []string) ([]entity.SQuestion, error) {
 	var questions []entity.SQuestion
-	err := receiver.DBConn.Where("question_id IN (?)", IDs).Find(&questions).Error
+	err := receiver.DBConn.Where("id IN (?)", IDs).Find(&questions).Error
 	return questions, err
 }
 
@@ -809,7 +809,7 @@ func (receiver *QuestionRepository) unmarshalSignatureQuestion(param CreateQuest
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
@@ -826,7 +826,7 @@ func (receiver *QuestionRepository) unmarshalWebUserQuestion(param CreateQuestio
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -844,7 +844,7 @@ func (receiver *QuestionRepository) unmarshalWebQuestion(param CreateQuestionPar
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -862,7 +862,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue1(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -880,7 +880,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue2(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -898,7 +898,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue3(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -930,7 +930,7 @@ func (receiver *QuestionRepository) unmarshalDraggableListQuestion(param CreateQ
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
@@ -961,7 +961,7 @@ func (receiver *QuestionRepository) unmarshalSendNotification(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -995,7 +995,7 @@ func (receiver *QuestionRepository) unmarshalSendMessageQuestion(param CreateQue
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:       uuid.MustParse(param.QuestionId),
+		ID:               uuid.MustParse(param.ID),
 		Question:         param.Question,
 		QuestionType:     param.QuestionType,
 		Attributes:       datatypes.JSON(param.Attributes),
@@ -1013,7 +1013,7 @@ func (receiver *QuestionRepository) unmarshalCodeCountingQuestion(param CreateQu
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
@@ -1030,7 +1030,7 @@ func (receiver *QuestionRepository) unmarshalRandomizerQuestion(param CreateQues
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
@@ -1047,7 +1047,7 @@ func (receiver *QuestionRepository) unmarshalDocumentQuestion(param CreateQuesti
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),
@@ -1064,7 +1064,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeGeneratorQuestion(param Creat
 		return nil, err
 	}
 	var question = entity.SQuestion{
-		QuestionId:     uuid.MustParse(param.QuestionId),
+		ID:             uuid.MustParse(param.ID),
 		Question:       param.Question,
 		QuestionType:   param.QuestionType,
 		Attributes:     datatypes.JSON(param.Attributes),

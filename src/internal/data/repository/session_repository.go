@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sen-global-api/internal/domain/entity"
@@ -26,7 +27,9 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 func (receiver *SessionRepository) VerifyRoleAccesses(user *entity.SUserEntity, roles ...string) bool {
 	for _, role := range roles {
 		for _, userRole := range user.Roles {
-			if strings.ToLower(userRole.Role.String()) == strings.ToLower(role) {
+			r, _ := json.Marshal(userRole)
+			println("ROLE USER: ", string(r))
+			if strings.EqualFold(userRole.Role.String(), role) {
 				return true
 			}
 		}

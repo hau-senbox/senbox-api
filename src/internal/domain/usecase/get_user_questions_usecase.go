@@ -24,8 +24,8 @@ func (c GetUserQuestionsUseCase) GetQuestionsBelongToDevice(device *entity.SDevi
 		_ = json.Unmarshal([]byte(question.Attributes), &att)
 		result[i] = response.QuestionListData{
 			QuestionId:   question.QuestionId,
-			QuestionType: strings.ToUpper(question.QuestionType),
 			Question:     question.Question,
+			QuestionType: strings.ToUpper(question.QuestionType),
 			Attributes:   att,
 			Order:        question.Order,
 			Enabled:      question.EnableOnMobile == "enabled",

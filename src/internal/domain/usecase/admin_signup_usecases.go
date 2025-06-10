@@ -123,7 +123,7 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 				required = row[4].(string)
 			}
 			item := parameters.RawQuestion{
-				// QuestionId:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + row[0].(string),
+				// ID:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + row[0].(string),
 				QuestionId:        uuid.NewString(),
 				Question:          row[2].(string),
 				Type:              row[1].(string),

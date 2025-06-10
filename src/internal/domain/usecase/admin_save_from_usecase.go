@@ -104,7 +104,7 @@ func (receiver *SaveFormUseCase) saveQuestions(rawQuestions []parameters.RawQues
 		}
 
 		param := repository.CreateQuestionParams{
-			QuestionId:   rawQuestion.QuestionId,
+			ID:           rawQuestion.QuestionId,
 			Question:     rawQuestion.Question,
 			QuestionType: strings.ToLower(rawQuestion.Type),
 			Attributes:   attString,
@@ -245,14 +245,14 @@ func (receiver *SaveFormUseCase) createForm(questions []entity.SQuestion, params
 		var order = 0
 		var answerRequired = false
 		for _, rq := range params.RawQuestions {
-			if rq.QuestionId == question.QuestionId.String() {
+			if rq.QuestionId == question.ID.String() {
 				order = rq.RowNumber
 				answerRequired = strings.ToLower(rq.AnswerRequired) == "true"
 			}
 		}
 
 		formQuestions = append(formQuestions, request.CreateFormQuestionItem{
-			QuestionId:     question.QuestionId.String(),
+			QuestionId:     question.ID.String(),
 			Order:          order,
 			AnswerRequired: answerRequired,
 		})

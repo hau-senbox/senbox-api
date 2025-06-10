@@ -62,7 +62,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 
 	for _, answer := range req.Answers {
 		for _, question := range questions {
-			if answer.QuestionId == question.QuestionId.String() {
+			if answer.QuestionId == question.ID.String() {
 				var msg *repository.Messaging = nil
 				if answer.Messaging != nil {
 					msg = &repository.Messaging{
@@ -73,7 +73,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 					}
 				}
 				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionId: question.QuestionId.String(),
+					QuestionId: question.ID.String(),
 					Question:   question.Question,
 					Answer:     answer.Answer,
 					Messaging:  msg,
@@ -116,7 +116,7 @@ func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
 			sendNotificationQuestion = q
 		}
 	}
-	if sendNotificationQuestion.QuestionId == "" {
+	if sendNotificationQuestion.ID == "" {
 		log.Debug("Form ", form.Note, " has not send notification question")
 		return
 	}

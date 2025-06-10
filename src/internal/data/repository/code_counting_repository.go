@@ -87,7 +87,7 @@ func (receiver *CodeCountingRepository) CreateForQuestion(question entity.SQuest
 func (receiver *CodeCountingRepository) CreateForQuestionWithID(questionId string, db *gorm.DB) (string, error) {
 	var q entity.SQuestion
 
-	err := db.Where("question_id = ?", questionId).First(&q).Error
+	err := db.Where("id = ?", questionId).First(&q).Error
 	if err != nil {
 		log.Error(err)
 		return "", err

@@ -440,7 +440,7 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 				uniqueId = &id
 			}
 			item := parameters.RawQuestion{
-				// QuestionId:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + strconv.Itoa(index-1),
+				// ID:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + strconv.Itoa(index-1),
 				QuestionId:        uuid.NewString(),
 				Question:          row[3].(string),
 				Type:              row[2].(string),
@@ -518,7 +518,7 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 				enabled = value.QuestionForMobile_Disabled
 			}
 			item := parameters.RawQuestion{
-				// QuestionId:        strings.ToUpper(code) + "_" + spreadsheetId + "_" + row[2].(string),
+				// ID:        strings.ToUpper(code) + "_" + spreadsheetId + "_" + row[2].(string),
 				QuestionId:        uuid.NewString(),
 				Question:          row[4].(string),
 				Type:              row[3].(string),
@@ -611,7 +611,7 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 		}
 
 		param := repository.CreateQuestionParams{
-			QuestionId:       rawQuestion.QuestionId,
+			ID:               rawQuestion.QuestionId,
 			Question:         rawQuestion.Question,
 			QuestionType:     strings.ToLower(rawQuestion.Type),
 			Attributes:       attString,
@@ -837,14 +837,14 @@ func (receiver *ImportFormsUseCase) createForm(questions []entity.SQuestion, par
 		var order = 0
 		var answerRequired = false
 		for _, rq := range params.RawQuestions {
-			if rq.QuestionId == question.QuestionId.String() {
+			if rq.QuestionId == question.ID.String() {
 				order = rq.RowNumber
 				answerRequired = strings.ToLower(rq.AnswerRequired) == "true"
 			}
 		}
 
 		formQuestions = append(formQuestions, request.CreateFormQuestionItem{
-			QuestionId:     question.QuestionId.String(),
+			QuestionId:     question.ID.String(),
 			Order:          order,
 			AnswerRequired: answerRequired,
 		})

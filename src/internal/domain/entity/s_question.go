@@ -11,7 +11,7 @@ import (
 )
 
 type SQuestion struct {
-	QuestionId       uuid.UUID               `gorm:"type:char(36);primary_key"`
+	ID               uuid.UUID               `gorm:"type:char(36);primary_key"`
 	Question         string                  `gorm:"type:varchar(1000);not null;default:''"`
 	QuestionType     string                  `gorm:"type:varchar(255);not null;default:1"`
 	Attributes       datatypes.JSON          `gorm:"type:json;not null;default:'{}'"`

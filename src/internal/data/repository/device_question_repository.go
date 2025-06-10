@@ -3,7 +3,6 @@ package repository
 import (
 	"sen-global-api/internal/domain/entity"
 
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -19,9 +18,8 @@ type DeviceQuestionRepository struct {
 
 type UserQuestion struct {
 	QuestionId     string `sql:"question_id"`
-	QuestionName   string `sql:"question_name"`
-	QuestionType   string `sql:"question_type"`
 	Question       string `sql:"question"`
+	QuestionType   string `sql:"question_type"`
 	Attributes     string `sql:"attributes"`
 	Order          int    `sql:"order"`
 	EnableOnMobile string `sql:"enable_on_mobile"`
@@ -34,6 +32,6 @@ func (receiver *DeviceQuestionRepository) GetQuestionsBelongToDevice(device *ent
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("rawUserQuestions: ", rawUserQuestions)
+
 	return rawUserQuestions, nil
 }

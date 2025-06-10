@@ -45,7 +45,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 		}
 
 		q := response.QuestionListData{
-			QuestionId:     question.QuestionId,
+			QuestionId:     question.ID,
 			QuestionType:   strings.ToUpper(question.QuestionType),
 			Question:       question.Question,
 			Attributes:     att,
@@ -117,7 +117,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionsByForm(form entity.SForm)
 			continue
 		}
 		q := response.QuestionListData{
-			QuestionId:     question.QuestionId,
+			QuestionId:     question.ID,
 			QuestionType:   strings.ToUpper(question.QuestionType),
 			Question:       question.Question,
 			Attributes:     att,
