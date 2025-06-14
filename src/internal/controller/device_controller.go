@@ -1,15 +1,17 @@
 package controller
 
 import (
+	"github.com/samber/lo"
 	"net/http"
 	"os"
+	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"github.com/tiendc/gofn"
 	"gorm.io/gorm"
 )
@@ -33,12 +35,12 @@ type DeviceController struct {
 	*usecase.RegisterFcmDeviceUseCase
 	*usecase.SendNotificationUseCase
 	*usecase.ResetCodeCountingUseCase
-	*usecase.GetDevicesByUserIdUseCase
 	*usecase.GetUserFromTokenUseCase
 	*usecase.GetUserDeviceUseCase
+	*usecase.OrgDeviceRegistrationUseCase
 }
 
-func (receiver *DeviceController) GetDeviceById(c *gin.Context) {
+func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
 	deviceId := c.Param("device_id")
 	if deviceId == "" {
 		c.JSON(
@@ -62,6 +64,7 @@ func (receiver *DeviceController) GetDeviceById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: &response.DeviceResponseDataV2{
 			Id:                device.ID,
 			DeviceName:        device.DeviceName,
@@ -77,9 +80,9 @@ func (receiver *DeviceController) GetDeviceById(c *gin.Context) {
 	})
 }
 
-func (receiver *DeviceController) GetAllDeviceByUserId(c *gin.Context) {
-	userId := c.Param("user_id")
-	if userId == "" {
+func (receiver *DeviceController) GetAllDeviceByUserID(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -89,7 +92,7 @@ func (receiver *DeviceController) GetAllDeviceByUserId(c *gin.Context) {
 		return
 	}
 
-	devices, err := receiver.GetDevicesByUserId(userId)
+	devices, err := receiver.GetDeviceListUseCase.GetDeviceListByUserID(userID)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -102,7 +105,7 @@ func (receiver *DeviceController) GetAllDeviceByUserId(c *gin.Context) {
 
 	var deviceResponse []response.DeviceResponseV2
 
-	for _, device := range *devices {
+	for _, device := range devices {
 		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
 			ID:         device.ID,
 			DeviceName: device.DeviceName,
@@ -110,7 +113,106 @@ func (receiver *DeviceController) GetAllDeviceByUserId(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: deviceResponse,
+	})
+}
+
+func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
+	organizationID := c.Param("organization_id")
+	if organizationID == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "organization id is required",
+			},
+		)
+		return
+	}
+
+	id, err := strconv.ParseUint(organizationID, 10, 32)
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "organization id is required",
+			},
+		)
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
+		return org.ID == int64(id)
+	})
+	if !present {
+		c.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: "access denied",
+		})
+		return
+	}
+
+	devices, err := receiver.GetDeviceListUseCase.GetDeviceListByOrgID(organizationID)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	var deviceResponse []response.DeviceResponseV2
+
+	for _, device := range devices {
+		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
+			ID:         device.ID,
+			DeviceName: device.DeviceName,
+		})
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: deviceResponse,
+	})
+}
+
+func (receiver *DeviceController) RegisterOrgDevice(c *gin.Context) {
+	var req request.RegisteringDeviceForOrg
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	err := receiver.OrgDeviceRegistrationUseCase.RegisterOrgDevice(req)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "device was registered successfully",
 	})
 }
 
@@ -159,6 +261,7 @@ func (receiver *DeviceController) InitDeviceV1(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: deviceId,
 	})
 }
@@ -292,7 +395,8 @@ func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, response.UpdateDeviceResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: response.DeviceResponseData{
 			DeviceUUID:        device.ID,
 			DeviceName:        device.DeviceName,
@@ -309,8 +413,8 @@ func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
 }
 
 func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
-	deviceId := context.Param("device_id")
-	if deviceId == "" {
+	deviceID := context.Param("device_id")
+	if deviceID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -329,7 +433,7 @@ func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
 		)
 		return
 	}
-	device, err := receiver.UpdateDeviceUseCase.UpdateDeviceV2(deviceId, req)
+	device, err := receiver.UpdateDeviceUseCase.UpdateDeviceV2(deviceID, req)
 	if err != nil {
 		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -341,7 +445,7 @@ func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
 	}
 
 	go func() {
-		// err = usecase.SyncDevice(deviceId)
+		// err = usecase.SyncDevice(deviceID)
 		// if err != nil {
 		// 	context.JSON(http.StatusInternalServerError, response.FailedResponse{
 		// 		Error: response.Cause{
@@ -353,7 +457,8 @@ func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
 		// }
 	}()
 
-	context.JSON(http.StatusOK, response.UpdateDeviceResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: response.DeviceResponseData{
 			DeviceUUID:        device.ID,
 			DeviceName:        device.DeviceName,
@@ -403,7 +508,7 @@ func (receiver *DeviceController) TakeNote(context *gin.Context) {
 	userDevices, err := receiver.GetUserDeviceById(takeNoteRequest.DeviceId)
 	var userIds []string
 	for _, userDevice := range *userDevices {
-		userIds = append(userIds, userDevice.UserId.String())
+		userIds = append(userIds, userDevice.UserID.String())
 	}
 	isExist := gofn.ContainSlice(userIds, []string{
 		user.ID.String(),
@@ -535,6 +640,7 @@ func (receiver *DeviceController) GetLastSubmissionByForm(context *gin.Context) 
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: res,
 	})
 }
@@ -546,10 +652,6 @@ type refreshAccessTokenRequest struct {
 type refreshAccessTokenResponseData struct {
 	AccessToken  string `json:"access_token" binding:"required"`
 	RefreshToken string `json:"refresh_token" binding:"required"`
-}
-
-type refreshAccessTokenResponse struct {
-	Data refreshAccessTokenResponseData `json:"data"`
 }
 
 // Refresh Access Token godoc
@@ -566,9 +668,8 @@ type refreshAccessTokenResponse struct {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/refresh-token [post]
 func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
-	log.Debug(context.Request.Body)
-	var request refreshAccessTokenRequest
-	if err := context.ShouldBindJSON(&request); err != nil {
+	var req refreshAccessTokenRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
@@ -576,7 +677,7 @@ func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := receiver.RefreshAccessTokenUseCase.Execute(request.RefreshToken)
+	accessToken, refreshToken, err := receiver.RefreshAccessTokenUseCase.Execute(req.RefreshToken)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -584,16 +685,13 @@ func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
 		})
 		return
 	}
-	context.JSON(http.StatusOK, refreshAccessTokenResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: refreshAccessTokenResponseData{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 		},
 	})
-}
-
-type getDeviceStatusResponse struct {
-	Data response.GetDeviceStatusResponseData `json:"data"`
 }
 
 // Get Device Status godoc
@@ -644,7 +742,7 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 	// }
 	// var userIds []string
 	// for _, userDevice := range *userDevices {
-	// 	userIds = append(userIds, userDevice.UserId.String())
+	// 	userIds = append(userIds, userDevice.UserID.String())
 	// }
 	// isExist := gofn.ContainSlice(userIds, []string{
 	// 	user.RoleId.String(),
@@ -677,7 +775,8 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, getDeviceStatusResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: status,
 	})
 }
@@ -711,17 +810,16 @@ func (receiver *DeviceController) Reserve(context *gin.Context) {
 		return
 	}
 
-	var request reserveRequest
-	if err := context.ShouldBindJSON(&request); err != nil {
+	var req reserveRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "invalid request",
+			Error: "invalid req",
 		})
 		return
 	}
 
-	log.Debug(request)
-	err := receiver.RegisterDeviceUseCase.Reserve(request.DeviceId, request.AppVersion)
+	err := receiver.RegisterDeviceUseCase.Reserve(req.DeviceId, req.AppVersion)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -788,6 +886,7 @@ func (receiver *DeviceController) Discover(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: discoverResponse{
 			DeviceId: res.DeviceId,
 		},
@@ -875,6 +974,7 @@ func (receiver *DeviceController) GetSignUpForm(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: r.Data,
 	})
 }
@@ -903,6 +1003,7 @@ func (receiver *DeviceController) GetPreset2(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: getPresetResponse{
 			Value: r,
 		},
@@ -929,6 +1030,7 @@ func (receiver *DeviceController) GetPreset1(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: getPresetResponse{
 			Value: r,
 		},

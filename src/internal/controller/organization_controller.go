@@ -49,7 +49,7 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 			managers := make([]response.GetOrgManagerInfoResponse, 0)
 			for _, userOrg := range organization.UserOrgs {
 				managers = append(managers, response.GetOrgManagerInfoResponse{
-					UserId:       userOrg.UserId.String(),
+					UserId:       userOrg.UserID.String(),
 					UserNickName: userOrg.UserNickName,
 					IsManager:    userOrg.IsManager,
 				})
@@ -105,7 +105,7 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 	managers := make([]response.GetOrgManagerInfoResponse, 0)
 	for _, userOrg := range organization.UserOrgs {
 		managers = append(managers, response.GetOrgManagerInfoResponse{
-			UserId:       userOrg.UserId.String(),
+			UserId:       userOrg.UserID.String(),
 			UserNickName: userOrg.UserNickName,
 			IsManager:    userOrg.IsManager,
 		})
@@ -148,7 +148,7 @@ func (receiver OrganizationController) GetOrganizationByName(context *gin.Contex
 	managers := make([]response.GetOrgManagerInfoResponse, 0)
 	for _, userOrg := range organization.UserOrgs {
 		managers = append(managers, response.GetOrgManagerInfoResponse{
-			UserId:       userOrg.UserId.String(),
+			UserId:       userOrg.UserID.String(),
 			UserNickName: userOrg.UserNickName,
 			IsManager:    userOrg.IsManager,
 		})
@@ -257,7 +257,7 @@ func (receiver OrganizationController) GetAllUserByOrganization(context *gin.Con
 	var res []response.GetOrgManagerInfoResponse
 	for _, user := range users {
 		res = append(res, response.GetOrgManagerInfoResponse{
-			UserId:       user.UserId.String(),
+			UserId:       user.UserID.String(),
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
 		})
@@ -293,7 +293,7 @@ func (receiver OrganizationController) GetAllOrgFormApplication(context *gin.Con
 				Status:             application.Status.String(),
 				ApprovedAt:         "",
 				CreatedAt:          application.CreatedAt.Format("2006-01-02 15:04:05"),
-				UserId:             application.UserId.String(),
+				UserId:             application.UserID.String(),
 			}
 			if application.ApprovedAt != defaultTime {
 				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
@@ -346,7 +346,7 @@ func (receiver OrganizationController) GetOrgFormApplicationByID(context *gin.Co
 		Status:             application.Status.String(),
 		ApprovedAt:         "",
 		CreatedAt:          application.CreatedAt.Format("2006-01-02 15:04:05"),
-		UserId:             application.UserId.String(),
+		UserId:             application.UserID.String(),
 	}
 	if application.ApprovedAt != defaultTime {
 		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")

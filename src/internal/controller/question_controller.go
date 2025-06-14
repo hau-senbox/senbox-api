@@ -41,15 +41,15 @@ type QuestionController struct {
 // @Failure      500  {object}  response.FailedResponse
 // @Router /v1/form [post]
 func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
-	var request request.GetFormRequest
-	if err := context.ShouldBindJSON(&request); err != nil {
+	var req request.GetFormRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
 		})
 		return
 	}
-	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(request.QrCode)
+	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(req.QrCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

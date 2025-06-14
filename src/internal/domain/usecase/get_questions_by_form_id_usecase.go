@@ -33,7 +33,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 	var rawQuestions = make([]response.QuestionListData, 0)
 	for _, question := range questions {
 		var att response.QuestionAttributes
-		err = json.Unmarshal([]byte(question.Attributes), &att)
+		err = json.Unmarshal(question.Attributes, &att)
 		if err != nil {
 			continue
 		}

@@ -40,7 +40,7 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	}
 
 	//authMiddleware := jwtauth.JwtMiddleware()
-	//token := authMiddleware.TokenGen(user.UserId)
+	//token := authMiddleware.TokenGen(user.UserID)
 	return token, nil
 }
 
@@ -54,14 +54,13 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	}
 
 	reqRegisterDevice := request.RegisterDeviceRequest{
-		UserID:     user.ID.String(),
 		DeviceUUID: req.DeviceUUID,
 		InputMode:  string(value.InfoInputTypeBarcode),
 	}
 
 	if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
-		UserId:   user.ID.String(),
-		DeviceId: req.DeviceUUID,
+		UserID:   user.ID.String(),
+		DeviceID: req.DeviceUUID,
 	}); err == nil {
 		_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
 		if err != nil {
@@ -80,6 +79,6 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	}
 
 	//authMiddleware := jwtauth.JwtMiddleware()
-	//token := authMiddleware.TokenGen(user.UserId)
+	//token := authMiddleware.TokenGen(user.UserID)
 	return token, nil
 }

@@ -99,7 +99,7 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 
 		// create a new one if user not have function claim
 		userFunctionAuthorize = entity.SUserFunctionAuthorize{
-			UserId:                    user.ID,
+			UserID:                    user.ID,
 			FunctionClaimId:           functionClaim.ID,
 			FunctionClaimPermissionId: functionClaimPermission.ID,
 		}
@@ -232,7 +232,7 @@ func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]r
 	var result []response.UserEntityResponseData
 	for _, userGuardian := range userGuardians {
 		var user entity.SUserEntity
-		err := receiver.DBConn.Where("id = ?", userGuardian.UserId).First(&user).Error
+		err := receiver.DBConn.Where("id = ?", userGuardian.UserID).First(&user).Error
 		if err != nil {
 			log.Error("UserEntityRepository.GetUserDeviceById: " + err.Error())
 			return nil, errors.New("failed to get user")
@@ -326,7 +326,7 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 	if req.Guardians != nil && len(*req.Guardians) > 0 {
 		for _, guardian := range *req.Guardians {
 			userGuardianResult := tx.Create(&entity.SUserGuardians{
-				UserId:     userReq.ID,
+				UserID:     userReq.ID,
 				GuardianId: uuid.MustParse(guardian),
 			})
 			if userGuardianResult.Error != nil {
@@ -468,8 +468,8 @@ func (receiver *UserEntityRepository) UpdateUserDevice(req request.UpdateUserDev
 		}
 
 		userDeviceResult := receiver.DBConn.Create(&entity.SUserDevices{
-			UserId:   user.ID,
-			DeviceId: device.ID,
+			UserID:   user.ID,
+			DeviceID: device.ID,
 		})
 		if userDeviceResult.Error != nil {
 			log.Errorf("UserEntityRepository.UpdateUser: %v", userDeviceResult.Error)
@@ -506,7 +506,7 @@ func (receiver *UserEntityRepository) UpdateUserGuardian(req request.UpdateUserG
 		}
 
 		userGuardianResult := receiver.DBConn.Create(&entity.SUserGuardians{
-			UserId:     user.ID,
+			UserID:     user.ID,
 			GuardianId: guardian.ID,
 		})
 
@@ -547,7 +547,7 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 		}
 
 		result := receiver.DBConn.Create(&entity.SUserRoles{
-			UserId: user.ID,
+			UserID: user.ID,
 			RoleId: role.ID,
 		})
 
@@ -713,7 +713,7 @@ func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationI
 	//
 	//// Create user organization mapping (Manager)
 	//userTeacher := entity.SUserTeacher{
-	//	UserId:             form.UserId,
+	//	UserID:             form.UserID,
 	//	TeacheranizationId: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
@@ -727,7 +727,7 @@ func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationI
 	//
 	//// Add user to organization (if needed)
 	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
-	//	"user_id":         form.UserId.String(),
+	//	"user_id":         form.UserID.String(),
 	//	"organization_id": organization.ID,
 	//}).Error
 	//if err != nil {
@@ -738,7 +738,7 @@ func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationI
 	//
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
-	//	UserId: form.UserId,
+	//	UserID: form.UserID,
 	//	RoleId: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error
@@ -871,7 +871,7 @@ func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID 
 	//
 	//// Create user organization mapping (Manager)
 	//userStaff := entity.SUserStaff{
-	//	UserId:             form.UserId,
+	//	UserID:             form.UserID,
 	//	StaffanizationId: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
@@ -885,7 +885,7 @@ func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID 
 	//
 	//// Add user to organization (if needed)
 	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
-	//	"user_id":         form.UserId.String(),
+	//	"user_id":         form.UserID.String(),
 	//	"organization_id": organization.ID,
 	//}).Error
 	//if err != nil {
@@ -896,7 +896,7 @@ func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID 
 	//
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
-	//	UserId: form.UserId,
+	//	UserID: form.UserID,
 	//	RoleId: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error
@@ -1029,7 +1029,7 @@ func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationI
 	//
 	//// Create user organization mapping (Manager)
 	//userStudent := entity.SUserStudent{
-	//	UserId:             form.UserId,
+	//	UserID:             form.UserID,
 	//	StudentanizationId: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
@@ -1043,7 +1043,7 @@ func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationI
 	//
 	//// Add user to organization (if needed)
 	//err = tx.Table("s_user_organizations").Create(map[string]interface{}{
-	//	"user_id":         form.UserId.String(),
+	//	"user_id":         form.UserID.String(),
 	//	"organization_id": organization.ID,
 	//}).Error
 	//if err != nil {
@@ -1054,7 +1054,7 @@ func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationI
 	//
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
-	//	UserId: form.UserId,
+	//	UserID: form.UserID,
 	//	RoleId: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error

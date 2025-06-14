@@ -20,8 +20,8 @@ type RegisterDeviceUseCase struct {
 
 func (receiver *RegisterDeviceUseCase) RegisterDevice(user *entity.SUserEntity, req request.RegisterDeviceRequest) (*string, error) {
 	err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
-		UserId:   user.ID.String(),
-		DeviceId: req.DeviceUUID,
+		UserID:   user.ID.String(),
+		DeviceID: req.DeviceUUID,
 	})
 
 	var deviceId *string
@@ -38,6 +38,9 @@ func (receiver *RegisterDeviceUseCase) RegisterDevice(user *entity.SUserEntity, 
 		deviceId = &req.DeviceUUID
 	}
 	device, err := receiver.FindDeviceById(*deviceId)
+	if err != nil {
+		return nil, err
+	}
 
 	// defer receiver.saveNewDeviceToSyncSheet(user, device, req)
 

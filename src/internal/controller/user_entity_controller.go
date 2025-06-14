@@ -446,7 +446,7 @@ func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context)
 	var res []response.GetOrgManagerInfoResponse
 	for _, user := range *users {
 		res = append(res, response.GetOrgManagerInfoResponse{
-			UserId:       user.UserId.String(),
+			UserId:       user.UserID.String(),
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
 		})

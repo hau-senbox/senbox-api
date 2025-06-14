@@ -62,6 +62,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SStaffFormApplication{},
 		&entity.SStudentFormApplication{},
 		&entity.STeacherFormApplication{},
+		&entity.SOrgDevices{},
 	)
 
 	// Seed

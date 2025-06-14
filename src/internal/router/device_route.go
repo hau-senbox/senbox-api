@@ -107,15 +107,19 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		RegisterFcmDeviceUseCase:           usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
 		SendNotificationUseCase:            usecase.NewSendNotificationUseCase(dbConn, fcm),
 		ResetCodeCountingUseCase:           usecase.NewResetCodeCountingUseCase(dbConn),
-		GetDevicesByUserIdUseCase: &usecase.GetDevicesByUserIdUseCase{
-			DeviceRepository: deviceRepository,
-		},
 		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
 			UserEntityRepository: userEntityRepository,
 			SessionRepository:    sessionRepository,
 		},
 		GetUserDeviceUseCase: &usecase.GetUserDeviceUseCase{
 			UserEntityRepository: &userEntityRepository,
+		},
+		GetDeviceStatusUseCase: &usecase.GetDeviceStatusUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		OrgDeviceRegistrationUseCase: &usecase.OrgDeviceRegistrationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:       deviceRepository,
 		},
 	}
 
@@ -148,8 +152,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	v1 := engine.Group("v1/device")
 	{
-		v1.GET("/:device_id", deviceController.GetDeviceById)
-		v1.GET("/user/:user_id", deviceController.GetAllDeviceByUserId)
+		v1.GET("/:device_id", deviceController.GetDeviceByID)
+		v1.GET("/user/:user_id", deviceController.GetAllDeviceByUserID)
+		v1.GET("/org/:organization_id", deviceController.GetAllDeviceByOrgID)
+		v1.POST("/org", deviceController.RegisterOrgDevice)
 		// Init for first setting
 		v1.POST("/init", secureMiddleware.Secured(), deviceController.InitDeviceV1)
 		v1.POST("/refresh-token", deviceController.RefreshAccessToken)

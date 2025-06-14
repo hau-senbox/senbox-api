@@ -286,7 +286,7 @@ func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID 
 
 	// Create user organization mapping (Manager)
 	userOrg := entity.SUserOrg{
-		UserId:         form.UserId,
+		UserID:         form.UserID,
 		OrganizationId: organization.ID,
 		UserNickName:   "Manager",
 		IsManager:      true,
@@ -300,7 +300,7 @@ func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID 
 
 	// Add user to organization (if needed)
 	err = tx.Table("s_user_organizations").Create(map[string]interface{}{
-		"user_id":         form.UserId.String(),
+		"user_id":         form.UserID.String(),
 		"organization_id": organization.ID,
 	}).Error
 	if err != nil {
@@ -311,7 +311,7 @@ func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID 
 
 	// Assign admin role to user
 	userRole := entity.SUserRoles{
-		UserId: form.UserId,
+		UserID: form.UserID,
 		RoleId: 5, // admin
 	}
 	err = tx.Create(&userRole).Error
@@ -357,7 +357,7 @@ func (receiver *OrganizationRepository) CreateOrgFormApplication(req request.Cre
 	result := receiver.DBConn.Create(&entity.SOrgFormApplication{
 		OrganizationName:   req.OrganizationName,
 		ApplicationContent: req.ApplicationContent,
-		UserId:             uuid.MustParse(req.UserID),
+		UserID:             uuid.MustParse(req.UserID),
 	})
 
 	if result.Error != nil {

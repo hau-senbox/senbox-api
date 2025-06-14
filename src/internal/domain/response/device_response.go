@@ -9,6 +9,7 @@ type DeviceListSettingResponse struct {
 	Note         string `json:"note"`
 	DateInstall  string `json:"dateInstall"`
 }
+
 type DeviceDetailsAdminResponse struct {
 	MacAddress      string `json:"macAddress"`
 	DeviceName      string `json:"deviceName"`
@@ -81,10 +82,6 @@ type DeviceListResponse struct {
 type DeviceListResponseV2 struct {
 	Data   []DeviceResponseDataV2 `json:"data"`
 	Paging Pagination             `json:"pagination"`
-}
-
-type UpdateDeviceResponse struct {
-	Data DeviceResponseData `json:"data"`
 }
 
 type DeviceResponseV2 struct {

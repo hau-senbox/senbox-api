@@ -1,6 +1,11 @@
 package request
 
 type RegisteringDeviceForUser struct {
-	UserId   string `json:"user_id" binding:"required"`
-	DeviceId string `json:"device_id" binding:"required"`
+	UserID   string `json:"user_id" binding:"required"`
+	DeviceID string `json:"device_id" binding:"required"`
+}
+
+type RegisteringDeviceForOrg struct {
+	OrgID    int64  `json:"organization_id" binding:"required"`
+	DeviceID string `json:"device_id" binding:"required"`
 }

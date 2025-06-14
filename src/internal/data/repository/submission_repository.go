@@ -67,7 +67,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 
 	submission := entity.SSubmission{
 		FormId:         params.FormId,
-		UserId:         params.UserId,
+		UserID:         params.UserId,
 		SubmissionData: dataInJSON,
 		OpenedAt:       params.OpenedAt,
 	}
@@ -116,7 +116,7 @@ func (receiver *SubmissionRepository) DublicateSubmissions(params CreateSubmissi
 
 	submission := entity.SSubmission{
 		FormId:         params.FormId,
-		UserId:         params.UserId,
+		UserID:         params.UserId,
 		SubmissionData: dataInJSON,
 		OpenedAt:       params.OpenedAt,
 	}
