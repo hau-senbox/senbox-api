@@ -1,13 +1,13 @@
 package request
 
 type SaveDeviceComponentValuesByOrganizationRequest struct {
-	ID       *uint              `json:"id"`
-	Settings SaveSettingRequest `json:"setting" binding:"required"`
-	Organization  uint               `json:"organization_id" binding:"required"`
+	ID           *uint              `json:"id"`
+	Settings     SaveSettingRequest `json:"setting" binding:"required"`
+	Organization string             `json:"organization_id" binding:"required"`
 }
 
 type SaveDeviceComponentValuesByDeviceRequest struct {
-	ID       *uint              `json:"id"`
+	ID       *string            `json:"id"`
 	Settings SaveSettingRequest `json:"setting" binding:"required"`
 }
 

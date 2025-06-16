@@ -783,7 +783,7 @@ func (receiver *UserEntityRepository) BlockTeacherFormApplication(applicationID 
 func (receiver *UserEntityRepository) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
 	result := receiver.DBConn.Create(&entity.STeacherFormApplication{
 		UserID:         uuid.MustParse(req.UserID),
-		OrganizationID: req.OrganizationID,
+		OrganizationID: uuid.MustParse(req.OrganizationID),
 	})
 
 	if result.Error != nil {
@@ -941,7 +941,7 @@ func (receiver *UserEntityRepository) BlockStaffFormApplication(applicationID in
 func (receiver *UserEntityRepository) CreateStaffFormApplication(req request.CreateStaffFormApplicationRequest) error {
 	result := receiver.DBConn.Create(&entity.SStaffFormApplication{
 		UserID:         uuid.MustParse(req.UserID),
-		OrganizationID: req.OrganizationID,
+		OrganizationID: uuid.MustParse(req.OrganizationID),
 	})
 
 	if result.Error != nil {
@@ -1100,7 +1100,7 @@ func (receiver *UserEntityRepository) CreateStudentFormApplication(req request.C
 	result := receiver.DBConn.Create(&entity.SStudentFormApplication{
 		StudentName:    req.StudentName,
 		UserID:         uuid.MustParse(req.UserID),
-		OrganizationID: req.OrganizationID,
+		OrganizationID: uuid.MustParse(req.OrganizationID),
 	})
 
 	if result.Error != nil {

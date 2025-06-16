@@ -15,7 +15,7 @@ type UserJoinOrganizationUseCase struct {
 }
 
 func (receiver *UserJoinOrganizationUseCase) UserJoinOrganization(req request.UserJoinOrganizationRequest) error {
-	organization, err := receiver.GetByID(req.OrganizationId)
+	organization, err := receiver.GetByID(req.OrganizationID)
 
 	if err != nil {
 		log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())

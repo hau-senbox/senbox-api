@@ -19,13 +19,13 @@ func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, erro
 	return receiver.MenuRepository.GetSuperAdminMenu()
 }
 
-func (receiver *GetMenuUseCase) GetOrgMenu(orgID int64) ([]menu.OrgMenu, error) {
+func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error) {
 	org, err := receiver.OrganizationRepository.GetByID(orgID)
 	if err != nil {
 		return nil, err
 	}
 
-	return receiver.MenuRepository.GetOrgMenu(org.ID)
+	return receiver.MenuRepository.GetOrgMenu(org.ID.String())
 }
 
 func (receiver *GetMenuUseCase) GetStudentMenu(userID string) ([]menu.UserMenu, error) {

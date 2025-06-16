@@ -28,14 +28,14 @@ func (receiver *GetUserEntityUseCase) GetAllUsers() ([]entity.SUserEntity, error
 	return receiver.UserEntityRepository.GetAll()
 }
 
-func (receiver *GetUserEntityUseCase) GetUserOrgInfo(userId string, organization int64) (*entity.SUserOrg, error) {
-	return receiver.OrganizationRepository.GetUserOrgInfo(userId, organization)
+func (receiver *GetUserEntityUseCase) GetUserOrgInfo(userID, organization string) (*entity.SUserOrg, error) {
+	return receiver.OrganizationRepository.GetUserOrgInfo(userID, organization)
 }
 
 func (receiver *GetUserEntityUseCase) GetAllOrgManagerInfo(organization string) (*[]entity.SUserOrg, error) {
 	return receiver.OrganizationRepository.GetAllOrgManagerInfo(organization)
 }
 
-func (receiver *GetUserEntityUseCase) GetAllUserAuthorize(userId string) ([]entity.SUserFunctionAuthorize, error) {
-	return receiver.UserEntityRepository.GetAllUserAuthorize(userId)
+func (receiver *GetUserEntityUseCase) GetAllUserAuthorize(userID string) ([]entity.SUserFunctionAuthorize, error) {
+	return receiver.UserEntityRepository.GetAllUserAuthorize(userID)
 }

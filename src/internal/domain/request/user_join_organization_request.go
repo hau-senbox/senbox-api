@@ -1,7 +1,7 @@
 package request
 
 type UserJoinOrganizationRequest struct {
-	UserId         string `json:"user_id" binding:"required"`
-	OrganizationId int64  `json:"organization_id" binding:"required"`
+	UserID         string `json:"user_id" binding:"required"`
+	OrganizationID string `json:"organization_id" binding:"required"`
 	Password       string `json:"password" default:""`
 }

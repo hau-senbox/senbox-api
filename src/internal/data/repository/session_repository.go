@@ -39,8 +39,8 @@ func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*resp
 	roles := gofn.MapSliceToMap(user.Roles, func(role entity.SRole) (int64, string) {
 		return role.ID, role.Role.String()
 	})
-	organizations := gofn.MapSliceToMap(user.Organizations, func(organization entity.SOrganization) (int64, string) {
-		return organization.ID, organization.OrganizationName
+	organizations := gofn.MapSliceToMap(user.Organizations, func(organization entity.SOrganization) (string, string) {
+		return organization.ID.String(), organization.OrganizationName
 	})
 
 	expirationTime := time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour)
@@ -59,7 +59,7 @@ func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*resp
 
 	userOrgs := make([]string, 0)
 	for _, organization := range user.Organizations {
-		userOrg, err := receiver.GetUserOrgInfo(user.ID.String(), organization.ID)
+		userOrg, err := receiver.GetUserOrgInfo(user.ID.String(), organization.ID.String())
 		if err != nil {
 			return nil, err
 		}

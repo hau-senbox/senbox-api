@@ -7,7 +7,7 @@ import (
 )
 
 type OrgMenu struct {
-	OrganizationID int64                `gorm:"column:organization_id;primary_key"`
+	OrganizationID uuid.UUID            `gorm:"column:organization_id;primary_key"`
 	Organization   entity.SOrganization `gorm:"foreignKey:OrganizationID;references:id;constraint:OnDelete:CASCADE;"`
 	Direction      Direction            `gorm:"column:direction;primary_key"`
 	ComponentID    uuid.UUID            `gorm:"column:component_id;primary_key"`

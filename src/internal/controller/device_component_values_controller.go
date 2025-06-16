@@ -2,13 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 type DeviceComponentValuesController struct {
@@ -17,8 +15,8 @@ type DeviceComponentValuesController struct {
 }
 
 func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrganization(context *gin.Context) {
-	organizationId := context.Param("organization_id")
-	if organizationId == "" {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -28,18 +26,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrgan
 		return
 	}
 
-	id, err := strconv.ParseUint(organizationId, 10, 32)
-	if err != nil {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: "Organization Id is invalid",
-			},
-		)
-		return
-	}
-
-	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByOrganization(request.GetDeviceComponentValuesByOrganizationRequest{ID: uint(id)})
+	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByOrganization(request.GetDeviceComponentValuesByOrganizationRequest{ID: organizationID})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -63,14 +50,14 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrgan
 		Data: response.DeviceComponentValuesResponse{
 			ID:           int(setting.ID),
 			Setting:      settingString,
-			Organization: uint(*setting.OrganizationId),
+			Organization: setting.OrganizationID.String(),
 		},
 	})
 }
 
 func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevice(context *gin.Context) {
-	organizationId := context.Param("organization_id")
-	if organizationId == "" {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -80,18 +67,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 		return
 	}
 
-	id, err := strconv.ParseUint(organizationId, 10, 32)
-	if err != nil {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: "Organization Id is invalid",
-			},
-		)
-		return
-	}
-
-	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByDevice(request.GetDeviceComponentValuesByDeviceRequest{ID: uint(id)})
+	setting, err := receiver.GetDeviceComponentValuesUseCase.GetDeviceComponentValuesByDevice(request.GetDeviceComponentValuesByDeviceRequest{ID: organizationID})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

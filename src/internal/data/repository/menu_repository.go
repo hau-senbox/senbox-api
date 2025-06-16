@@ -30,7 +30,7 @@ func (receiver *MenuRepository) GetSuperAdminMenu() ([]menu.SuperAdminMenu, erro
 	return menus, nil
 }
 
-func (receiver *MenuRepository) GetOrgMenu(orgID int64) ([]menu.OrgMenu, error) {
+func (receiver *MenuRepository) GetOrgMenu(orgID string) ([]menu.OrgMenu, error) {
 	var menus []menu.OrgMenu
 	err := receiver.DBConn.Model(&menu.OrgMenu{}).
 		Where("organization_id = ?", orgID).
@@ -114,7 +114,7 @@ func (receiver *MenuRepository) CreateOrgMenu(req request.CreateOrgMenuRequest, 
 	var menus []menu.OrgMenu
 	for _, component := range req.Components {
 		menus = append(menus, menu.OrgMenu{
-			OrganizationID: req.OrganizationID,
+			OrganizationID: uuid.MustParse(req.OrganizationID),
 			Direction:      req.Direction,
 			ComponentID:    component.ID,
 			Order:          component.Order,
@@ -141,7 +141,7 @@ func (receiver *MenuRepository) CreateOrgMenu(req request.CreateOrgMenuRequest, 
 	return nil
 }
 
-func (receiver *MenuRepository) DeleteOrgMenu(organizationID int64, tx *gorm.DB) error {
+func (receiver *MenuRepository) DeleteOrgMenu(organizationID string, tx *gorm.DB) error {
 	if tx == nil {
 		err := receiver.DBConn.Exec("DELETE c, om FROM component c JOIN org_menu om ON c.id = om.component_id WHERE om.organization_id = ?", organizationID).Error
 		if err != nil {

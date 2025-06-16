@@ -10,7 +10,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sort"
-	"strconv"
 )
 
 type MenuController struct {
@@ -101,15 +100,6 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		return
 	}
 
-	id, err := strconv.Atoi(organizationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
-
 	//user, err := receiver.GetUserFromToken(context)
 	//if err != nil {
 	//	context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -130,7 +120,7 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 	//	return
 	//}
 
-	menus, err := receiver.GetMenuUseCase.GetOrgMenu(int64(id))
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -360,7 +350,7 @@ func (receiver *MenuController) UploadOrgMenu(context *gin.Context) {
 	}
 
 	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-		return org.ID == req.OrganizationID
+		return org.ID.String() == req.OrganizationID
 	})
 	if !present {
 		context.JSON(http.StatusForbidden, response.FailedResponse{
@@ -405,7 +395,7 @@ func (receiver *MenuController) UploadUserMenu(context *gin.Context) {
 	}
 
 	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-		return org.ID == req.OrganizationID
+		return org.ID.String() == req.OrganizationID
 	})
 	if !present {
 		context.JSON(http.StatusForbidden, response.FailedResponse{

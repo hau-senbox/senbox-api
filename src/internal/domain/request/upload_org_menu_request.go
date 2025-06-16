@@ -1,7 +1,7 @@
 package request
 
 type UploadOrgMenuRequest struct {
-	OrganizationID int64                        `json:"organization_id" binding:"required"`
+	OrganizationID string                       `json:"organization_id" binding:"required"`
 	Top            []CreateMenuComponentRequest `json:"top" binding:"required"`
 	Bottom         []CreateMenuComponentRequest `json:"bottom" binding:"required"`
 }

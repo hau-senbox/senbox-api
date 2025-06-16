@@ -12,7 +12,7 @@ type SStudentFormApplication struct {
 	StudentName    string                      `gorm:"column:student_name;type:varchar(255);not null"`
 	UserID         uuid.UUID                   `gorm:"column:user_id;primary_key"`
 	User           SUserEntity                 `gorm:"foreignKey:UserID;references:id;constraint:OnDelete:CASCADE;"`
-	OrganizationID int64                       `gorm:"column:organization_id;primary_key"`
+	OrganizationID uuid.UUID                   `gorm:"column:organization_id;primary_key"`
 	Organization   SOrganization               `gorm:"foreignKey:OrganizationID;references:id;constraint:OnDelete:CASCADE;"`
 	Status         value.FromApplicationStatus `gorm:"column:status;not null"`
 	ApprovedAt     time.Time                   `gorm:"column:approved_at;type:datetime"`

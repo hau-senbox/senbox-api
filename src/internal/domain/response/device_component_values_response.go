@@ -1,9 +1,9 @@
 package response
 
 type DeviceComponentValuesResponse struct {
-	ID      int             `json:"id"`
-	Setting SettingResponse `json:"setting"`
-	Organization uint            `json:"organization_id"`
+	ID           int             `json:"id"`
+	Setting      SettingResponse `json:"setting"`
+	Organization string          `json:"organization_id"`
 }
 
 type ComponentPositionValues string

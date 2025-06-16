@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"github.com/google/uuid"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -8,7 +9,7 @@ import (
 )
 
 type SOrganization struct {
-	ID               int64     `gorm:"column:id;primary_key;AUTO_INCREMENT"`
+	ID               uuid.UUID `gorm:"type:char(36);primary_key"`
 	OrganizationName string    `gorm:"type:varchar(255);not null;unique"`
 	Password         string    `gorm:"type:varchar(255);not null;default:''"`
 	Address          string    `gorm:"type:varchar(255);not null;default:''"`

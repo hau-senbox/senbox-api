@@ -6,6 +6,6 @@ type RegisteringDeviceForUser struct {
 }
 
 type RegisteringDeviceForOrg struct {
-	OrgID    int64  `json:"organization_id" binding:"required"`
+	OrgID    string `json:"organization_id" binding:"required"`
 	DeviceID string `json:"device_id" binding:"required"`
 }

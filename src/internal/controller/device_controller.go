@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
+	"github.com/tiendc/gofn"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"sen-global-api/internal/domain/entity"
@@ -9,11 +12,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
-	"github.com/tiendc/gofn"
-	"gorm.io/gorm"
 )
 
 type DeviceController struct {
@@ -130,17 +128,6 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseUint(organizationID, 10, 32)
-	if err != nil {
-		c.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: "organization id is required",
-			},
-		)
-		return
-	}
-
 	user, err := receiver.GetUserFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -151,7 +138,7 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 	}
 
 	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-		return org.ID == int64(id)
+		return org.ID.String() == organizationID
 	})
 	if !present {
 		c.JSON(http.StatusForbidden, response.FailedResponse{

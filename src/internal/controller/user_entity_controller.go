@@ -73,10 +73,10 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		}
 	}
 
-	organizations := make([]int64, 0)
+	organizations := make([]string, 0)
 	if len(userEntity.Organizations) > 0 {
-		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) int64 {
-			return item.ID
+		organizations = lo.Map(userEntity.Organizations, func(item entity.SOrganization, index int) string {
+			return item.ID.String()
 		})
 	}
 
@@ -372,7 +372,7 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 
 func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 	userId := context.Param("user_id")
-	organizationId := context.Param("organization_id")
+	organizationID := context.Param("organization_id")
 	if userId == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -383,7 +383,7 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 		return
 	}
 
-	if organizationId == "" {
+	if organizationID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -393,16 +393,7 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 		return
 	}
 
-	orgID, err := strconv.Atoi(organizationId)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Code:  http.StatusBadRequest,
-			Error: "invalid organization id",
-		})
-		return
-	}
-
-	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userId, int64(orgID))
+	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userId, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -422,8 +413,8 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 }
 
 func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context) {
-	organizationId := context.Param("organization_id")
-	if organizationId == "" {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -433,7 +424,7 @@ func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context)
 		return
 	}
 
-	users, err := receiver.GetUserEntityUseCase.GetAllOrgManagerInfo(organizationId)
+	users, err := receiver.GetUserEntityUseCase.GetAllOrgManagerInfo(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

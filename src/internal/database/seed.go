@@ -97,7 +97,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 	// 	Phone:          "",
 	// 	Email:          "admin@senbox.vn",
 	// 	Password:       "SEN@box",
-	// 	OrganizationId: 1,
+	// 	OrganizationID: 1,
 	// }
 
 	var appKey = &entity.SAppKey{

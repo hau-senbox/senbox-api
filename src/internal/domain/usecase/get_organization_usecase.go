@@ -9,7 +9,7 @@ type GetOrganizationUseCase struct {
 	*repository.OrganizationRepository
 }
 
-func (receiver *GetOrganizationUseCase) GetOrganizationById(id int64) (*entity.SOrganization, error) {
+func (receiver *GetOrganizationUseCase) GetOrganizationById(id string) (*entity.SOrganization, error) {
 	return receiver.OrganizationRepository.GetByID(id)
 }
 

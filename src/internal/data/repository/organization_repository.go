@@ -40,8 +40,8 @@ func (receiver *OrganizationRepository) GetAll(user *entity.SUserEntity) ([]*ent
 			log.Error("OrganizationRepository.GetAll: " + err.Error())
 			return nil, errors.New("failed to get user org")
 		}
-		orgs := gofn.MapSliceToMap(userOrgs, func(org *entity.SUserOrg) (int64, string) {
-			return org.OrganizationId, org.Organization.OrganizationName
+		orgs := gofn.MapSliceToMap(userOrgs, func(org *entity.SUserOrg) (string, string) {
+			return org.OrganizationID.String(), org.Organization.OrganizationName
 		})
 
 		err = receiver.DBConn.Preload("UserOrgs").Where("id in (?)", gofn.MapKeys(orgs)).Find(&organizations).Error
@@ -54,7 +54,7 @@ func (receiver *OrganizationRepository) GetAll(user *entity.SUserEntity) ([]*ent
 	return organizations, nil
 }
 
-func (receiver *OrganizationRepository) GetByID(id int64) (*entity.SOrganization, error) {
+func (receiver *OrganizationRepository) GetByID(id string) (*entity.SOrganization, error) {
 	var organization entity.SOrganization
 	err := receiver.DBConn.Preload("UserOrgs").Where("id = ?", id).First(&organization).Error
 	if err != nil {
@@ -110,7 +110,7 @@ func (receiver *OrganizationRepository) UpdateOrganization(req request.UpdateOrg
 
 func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoinOrganizationRequest) error {
 	var user entity.SUserEntity
-	err := receiver.DBConn.Model(&entity.SUserEntity{}).Where("id = ?", req.UserId).First(&user).Error
+	err := receiver.DBConn.Model(&entity.SUserEntity{}).Where("id = ?", req.UserID).First(&user).Error
 
 	if err != nil {
 		log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())
@@ -120,7 +120,7 @@ func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoi
 		return errors.New("failed to get user")
 	}
 
-	organization, err := receiver.GetByID(req.OrganizationId)
+	organization, err := receiver.GetByID(req.OrganizationID)
 
 	if err != nil {
 		log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())
@@ -132,7 +132,7 @@ func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoi
 
 	var count int64
 	err = receiver.DBConn.Table("s_user_organizations").
-		Where("user_id = ? AND organization_id = ?", req.UserId, req.OrganizationId).
+		Where("user_id = ? AND organization_id = ?", req.UserID, req.OrganizationID).
 		Count(&count).Error
 	if count > 0 {
 		return errors.New("user already joined the organization")
@@ -158,10 +158,10 @@ func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoi
 	return nil
 }
 
-func (receiver *OrganizationRepository) GetUserOrgInfo(userId string, organizationId int64) (*entity.SUserOrg, error) {
+func (receiver *OrganizationRepository) GetUserOrgInfo(userID, organizationId string) (*entity.SUserOrg, error) {
 	var userOrg entity.SUserOrg
 	err := receiver.DBConn.Model(&entity.SUserOrg{}).
-		Where("user_id = ? AND organization_id = ?", userId, organizationId).
+		Where("user_id = ? AND organization_id = ?", userID, organizationId).
 		Find(&userOrg).Error
 
 	if err != nil {
@@ -172,10 +172,10 @@ func (receiver *OrganizationRepository) GetUserOrgInfo(userId string, organizati
 	return &userOrg, nil
 }
 
-func (receiver *OrganizationRepository) GetAllOrgManagerInfo(organizationId string) (*[]entity.SUserOrg, error) {
+func (receiver *OrganizationRepository) GetAllOrgManagerInfo(organizationID string) (*[]entity.SUserOrg, error) {
 	var userOrg []entity.SUserOrg
 	err := receiver.DBConn.Model(&entity.SUserOrg{}).
-		Where("organization_id = ? AND is_manager = 1", organizationId).
+		Where("organization_id = ? AND is_manager = 1", organizationID).
 		Find(&userOrg).Error
 
 	if err != nil {
@@ -287,7 +287,7 @@ func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID 
 	// Create user organization mapping (Manager)
 	userOrg := entity.SUserOrg{
 		UserID:         form.UserID,
-		OrganizationId: organization.ID,
+		OrganizationID: organization.ID,
 		UserNickName:   "Manager",
 		IsManager:      true,
 	}

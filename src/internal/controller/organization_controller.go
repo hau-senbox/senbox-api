@@ -56,7 +56,7 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 			}
 
 			organizationResponse = append(organizationResponse, response.OrganizationResponse{
-				ID:               organization.ID,
+				ID:               organization.ID.String(),
 				OrganizationName: organization.OrganizationName,
 				Address:          organization.Address,
 				Description:      organization.Description,
@@ -83,16 +83,7 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 		return
 	}
 
-	id, err := strconv.Atoi(organizationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
-
-	organization, err := receiver.GetOrganizationUseCase.GetOrganizationById(int64(id))
+	organization, err := receiver.GetOrganizationUseCase.GetOrganizationById(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: err.Error(),
@@ -114,7 +105,7 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.OrganizationResponse{
-			ID:               organization.ID,
+			ID:               organization.ID.String(),
 			OrganizationName: organization.OrganizationName,
 			Address:          organization.Address,
 			Description:      organization.Description,
@@ -157,7 +148,7 @@ func (receiver OrganizationController) GetOrganizationByName(context *gin.Contex
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.OrganizationResponse{
-			ID:               organization.ID,
+			ID:               organization.ID.String(),
 			OrganizationName: organization.OrganizationName,
 			Address:          organization.Address,
 			Description:      organization.Description,
@@ -210,7 +201,7 @@ func (receiver OrganizationController) UserJoinOrganization(context *gin.Context
 		return
 	}
 
-	req.UserId = user.ID.String()
+	req.UserID = user.ID.String()
 
 	err = receiver.UserJoinOrganizationUseCase.UserJoinOrganization(req)
 	if err != nil {

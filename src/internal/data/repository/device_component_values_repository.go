@@ -2,10 +2,10 @@ package repository
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -44,15 +44,15 @@ func (receiver *DeviceComponentValuesRepository) SaveByOrganization(req request.
 	}
 
 	if setting == nil {
-		organizationID := int64(req.Organization)
+		organizationID := uuid.MustParse(req.Organization)
 		result := receiver.DBConn.Create(&entity.SDeviceComponentValues{
-			Setting:   datatypes.JSON(string(jsonSetting)),
-			OrganizationId: &organizationID,
+			Setting:        jsonSetting,
+			OrganizationID: &organizationID,
 		})
 
 		return result.Error
 	} else {
-		setting.Setting = datatypes.JSON(string(jsonSetting))
+		setting.Setting = jsonSetting
 
 		return receiver.DBConn.Save(&setting).Error
 	}
@@ -71,12 +71,12 @@ func (receiver *DeviceComponentValuesRepository) SaveByDevice(req request.SaveDe
 
 	if setting == nil {
 		result := receiver.DBConn.Create(&entity.SDeviceComponentValues{
-			Setting: datatypes.JSON(string(jsonSetting)),
+			Setting: jsonSetting,
 		})
 
 		return result.Error
 	} else {
-		setting.Setting = datatypes.JSON(string(jsonSetting))
+		setting.Setting = jsonSetting
 
 		return receiver.DBConn.Save(&setting).Error
 	}
