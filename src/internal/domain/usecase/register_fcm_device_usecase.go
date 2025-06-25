@@ -25,7 +25,7 @@ func NewRegisterFcmDeviceUseCase(db *gorm.DB, app *firebase.App) *RegisterFcmDev
 
 func (r *RegisterFcmDeviceUseCase) Execute(req request.RegisterFCMRequest) error {
 	_, err := r.Repository.Save(entity.SMobileDevice{
-		DeviceId: req.DeviceId,
+		DeviceID: req.DeviceID,
 		FCMToken: req.DeviceToken,
 		Type:     req.Type,
 	}, r.DBConn)

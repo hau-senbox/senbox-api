@@ -116,14 +116,14 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	if settings.Output != nil {
 		outputSettings = &response.GetSettingsResponseDataSubmission{
 			SettingName: settings.Output.SettingName,
-			FolderUrl:   "https://drive.google.com/drive/folders/" + settings.Output.FolderId,
+			FolderUrl:   "https://drive.google.com/drive/folders/" + settings.Output.FolderID,
 		}
 	}
 
 	if settings.Summary != nil {
 		summarySettings = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.Summary.SettingName,
-			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.Summary.SpreadsheetId,
+			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.Summary.SpreadsheetID,
 		}
 	}
 
@@ -148,21 +148,21 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	if settings.EmailSetting != nil {
 		emailSettings = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.EmailSetting.SettingName,
-			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.EmailSetting.SpreadsheetId,
+			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.EmailSetting.SpreadsheetID,
 		}
 	}
 
 	if settings.OutputTemplate != nil {
 		outputTemplate = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.OutputTemplate.SettingName,
-			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.OutputTemplate.SpreadsheetId,
+			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.OutputTemplate.SpreadsheetID,
 		}
 	}
 
 	if settings.OutputTemplateForTeacher != nil {
 		outputTemplateForTeacher = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.OutputTemplateForTeacher.SettingName,
-			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.OutputTemplateForTeacher.SpreadsheetId,
+			SpreadSheetUrl: "https://docs.google.com/spreadsheets/d/" + settings.OutputTemplateForTeacher.SpreadsheetID,
 		}
 	}
 
@@ -209,28 +209,28 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	if settings.SignUpButtonConfiguration != nil {
 		signUpButtonConfiguration = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.SignUpButtonConfiguration.SettingName,
-			SpreadSheetUrl: settings.SignUpButtonConfiguration.SpreadsheetId,
+			SpreadSheetUrl: settings.SignUpButtonConfiguration.SpreadsheetID,
 		}
 	}
 
 	if settings.RegistrationForm != nil {
 		registrationForm = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.RegistrationForm.SettingName,
-			SpreadSheetUrl: settings.RegistrationForm.SpreadsheetId,
+			SpreadSheetUrl: settings.RegistrationForm.SpreadsheetID,
 		}
 	}
 
 	if settings.RegistrationSubmission != nil {
 		registrationSubmission = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.RegistrationSubmission.SettingName,
-			SpreadSheetUrl: settings.RegistrationSubmission.SpreadsheetId,
+			SpreadSheetUrl: settings.RegistrationSubmission.SpreadsheetID,
 		}
 	}
 
 	if settings.RegistrationPreset2 != nil {
 		registrationPreset2 = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.RegistrationPreset2.SettingName,
-			SpreadSheetUrl: settings.RegistrationPreset2.SpreadsheetId,
+			SpreadSheetUrl: settings.RegistrationPreset2.SpreadsheetID,
 		}
 	}
 
@@ -260,7 +260,7 @@ func (receiver *SettingController) GetSettings(context *gin.Context) {
 	if settings.RegistrationPreset1 != nil {
 		registrationPreset1 = &response.GetSettingsResponseDataSummary{
 			SettingName:    settings.RegistrationPreset1.SettingName,
-			SpreadSheetUrl: settings.RegistrationPreset1.SpreadsheetId,
+			SpreadSheetUrl: settings.RegistrationPreset1.SpreadsheetID,
 		}
 	}
 

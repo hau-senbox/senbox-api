@@ -14,15 +14,15 @@ type GetImageUseCase struct {
 	*repository.ImageRepository
 }
 
-func (receiver *GetImageUseCase) GetAllByIds(ids []int) ([]entity.SImage, error) {
-	return receiver.ImageRepository.GetAllByIds(ids)
+func (receiver *GetImageUseCase) GetAllByIDs(ids []int) ([]entity.SImage, error) {
+	return receiver.ImageRepository.GetAllByIDs(ids)
 }
 
 func (receiver *GetImageUseCase) GetAllByName(imageName string) ([]entity.SImage, error) {
 	return receiver.ImageRepository.GetAllByName(imageName)
 }
 
-func (receiver *GetImageUseCase) GetImageById(id uint64) (*entity.SImage, error) {
+func (receiver *GetImageUseCase) GetImageByID(id uint64) (*entity.SImage, error) {
 	return receiver.ImageRepository.GetByID(id)
 }
 

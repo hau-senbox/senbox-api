@@ -2,17 +2,10 @@ package request
 
 import "time"
 
-type Messaging struct {
-	Email        []string `json:"email" binding:"required"`
-	Value3       []string `json:"value3" binding:"required"`
-	MessageBox   *string  `json:"messageBox"`
-	QuestionType string   `json:"questionType" binding:"required"`
-}
-
 type Answer struct {
-	QuestionId string     `json:"question_id" binding:"required"`
-	Answer     string     `json:"answer" binding:"required"`
-	Messaging  *Messaging `json:"messaging"`
+	QuestionID string `json:"question_id" binding:"required"`
+	Answer     string `json:"answer" binding:"required"`
+	Remember   bool   `json:"remember"`
 }
 
 type AnswerFormRequest struct {

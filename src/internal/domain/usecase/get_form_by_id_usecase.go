@@ -5,14 +5,14 @@ import (
 	"sen-global-api/internal/domain/entity"
 )
 
-type GetFormByIdUseCase struct {
+type GetFormByIDUseCase struct {
 	*repository.FormRepository
 }
 
-func (receiver *GetFormByIdUseCase) GetFormById(formId int) (*entity.SForm, error) {
-	return receiver.FormRepository.GetFormById(uint64(formId))
+func (receiver *GetFormByIDUseCase) GetFormByID(formID int) (*entity.SForm, error) {
+	return receiver.FormRepository.GetFormByID(uint64(formID))
 }
 
-func (receiver *GetFormByIdUseCase) GetFormByQRCode(qrCode string) (*entity.SForm, error) {
+func (receiver *GetFormByIDUseCase) GetFormByQRCode(qrCode string) (*entity.SForm, error) {
 	return receiver.FormRepository.GetFormByQRCode(qrCode)
 }

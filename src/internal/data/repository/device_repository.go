@@ -20,7 +20,7 @@ type DeviceRepository struct {
 	DefaultOutputSpreadsheetUrl string
 }
 
-func (receiver *DeviceRepository) FindDeviceById(id string) (*entity.SDevice, error) {
+func (receiver *DeviceRepository) FindDeviceByID(id string) (*entity.SDevice, error) {
 	var device entity.SDevice
 	err := receiver.DBConn.First(&device, "id = ?", id).Error
 	if err != nil {
@@ -122,9 +122,9 @@ func (receiver *DeviceRepository) CreateDevice(req request.RegisterDeviceRequest
 	return &device, err
 }
 
-func (receiver *DeviceRepository) GetDeviceById(deviceId string) (*entity.SDevice, error) {
+func (receiver *DeviceRepository) GetDeviceByID(deviceID string) (*entity.SDevice, error) {
 	var device entity.SDevice
-	err := receiver.DBConn.First(&device, "id = ?", deviceId).Error
+	err := receiver.DBConn.First(&device, "id = ?", deviceID).Error
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (receiver *DeviceRepository) CheckDeviceLimitation(userID string) error {
 
 func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEntity, req request.RegisterDeviceRequest) (*string, error) {
 	var deviceID *string
-	device, err := receiver.GetDeviceById(req.DeviceUUID)
+	device, err := receiver.GetDeviceByID(req.DeviceUUID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -352,7 +352,7 @@ func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEnt
 
 		var device *entity.SDevice
 		// check if device already exist
-		device, _ = receiver.GetDeviceById(req.DeviceUUID)
+		device, _ = receiver.GetDeviceByID(req.DeviceUUID)
 		if device == nil {
 			device, err = receiver.CreateDevice(req)
 			if err != nil {
@@ -385,7 +385,7 @@ func (receiver *DeviceRepository) RegisteringDeviceForUser(user *entity.SUserEnt
 
 func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganization, req request.RegisterDeviceRequest) (*string, error) {
 	var deviceID *string
-	device, err := receiver.GetDeviceById(req.DeviceUUID)
+	device, err := receiver.GetDeviceByID(req.DeviceUUID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -408,7 +408,7 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 
 		var device *entity.SDevice
 		// check if device already exist
-		device, _ = receiver.GetDeviceById(req.DeviceUUID)
+		device, _ = receiver.GetDeviceByID(req.DeviceUUID)
 		if device == nil {
 			device, err = receiver.CreateDevice(req)
 			if err != nil {

@@ -42,30 +42,30 @@ func (receiver *RoleController) GetAllRole(context *gin.Context) {
 	})
 }
 
-func (receiver *RoleController) GetRoleById(context *gin.Context) {
-	roleId := context.Param("id")
-	if roleId == "" {
+func (receiver *RoleController) GetRoleByID(context *gin.Context) {
+	roleID := context.Param("id")
+	if roleID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Role Id is required",
+				Error: "Role ID is required",
 			},
 		)
 		return
 	}
 
-	id, err := strconv.ParseUint(roleId, 10, 32)
+	id, err := strconv.ParseUint(roleID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Role Id is invalid",
+				Error: "Role ID is invalid",
 			},
 		)
 		return
 	}
 
-	userRole, err := receiver.GetRoleUseCase.GetRoleById(request.GetRoleByIdRequest{ID: uint(id)})
+	userRole, err := receiver.GetRoleUseCase.GetRoleByID(request.GetRoleByIDRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -164,23 +164,23 @@ func (receiver *RoleController) UpdateRole(context *gin.Context) {
 }
 
 func (receiver *RoleController) DeleteRole(context *gin.Context) {
-	roleId := context.Param("id")
-	if roleId == "" {
+	roleID := context.Param("id")
+	if roleID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Role Id is required",
+				Error: "Role ID is required",
 			},
 		)
 		return
 	}
 
-	id, err := strconv.ParseUint(roleId, 10, 32)
+	id, err := strconv.ParseUint(roleID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Role Id is invalid",
+				Error: "Role ID is invalid",
 			},
 		)
 		return

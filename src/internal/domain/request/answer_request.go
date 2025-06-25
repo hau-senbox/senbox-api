@@ -1,7 +1,7 @@
 package request
 
 type QuestionAnswer struct {
-	QuestionId string `json:"question_id" binding:"required"`
+	QuestionID string `json:"question_id" binding:"required"`
 	Answer     string `json:"answer" binding:"required"`
 }
 

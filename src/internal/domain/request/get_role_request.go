@@ -1,6 +1,6 @@
 package request
 
-type GetRoleByIdRequest struct {
+type GetRoleByIDRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 

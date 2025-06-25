@@ -1,9 +1,10 @@
 package request
 
 type CreateFormQuestionItem struct {
-	QuestionId     string `json:"question_id"`
+	QuestionID     string `json:"question_id"`
 	Order          int    `json:"order"`
 	AnswerRequired bool   `json:"answer_required"`
+	AnswerRemember bool   `json:"answer_remember"`
 }
 
 type CreateFormRequest struct {

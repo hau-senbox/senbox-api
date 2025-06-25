@@ -92,13 +92,13 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 		return entity.SForm{}, fmt.Errorf("import sign up form invalid spreadsheet url: %s", spreadsheetUrl)
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 	values, err := c.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetNameToRead + `!` + c.Google.FirstColumn + strconv.Itoa(c.Google.FirstRow-1) + `:Q`,
 	})
-	if err != nil || values == nil {
+	if err != nil {
 		log.Error(fmt.Sprintf("Error reading spreadsheet: %s - note : %s", err.Error(), note))
 		return entity.SForm{}, err
 	}
@@ -115,20 +115,23 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 			}
 
 			additionalInfo := ""
+			remember := "false"
 			if len(row) >= 6 {
 				additionalInfo = row[5].(string)
+				remember = row[6].(string)
 			}
 			required := "false"
 			if len(row) >= 5 {
 				required = row[4].(string)
 			}
 			item := parameters.RawQuestion{
-				// ID:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + row[0].(string),
-				QuestionId:        uuid.NewString(),
+				// ID:        strings.ToUpper(note) + "_" + spreadsheetID + "_" + row[0].(string),
+				QuestionID:        uuid.NewString(),
 				Question:          row[2].(string),
 				Type:              row[1].(string),
 				Attributes:        strings.ReplaceAll(row[3].(string), "\n", ""),
 				AnswerRequired:    required,
+				AnswerRemember:    remember,
 				AdditionalOptions: additionalInfo,
 				Status:            "1",
 				RowNumber:         index + 1,
@@ -141,7 +144,7 @@ func (c *AdminSignUpUseCases) importForm(spreadsheetUrl, note, sheetNameToRead s
 		Note:           note,
 		Name:           formName,
 		SpreadsheetUrl: spreadsheetUrl,
-		SpreadsheetId:  spreadsheetId,
+		SpreadsheetID:  spreadsheetID,
 		Password:       "",
 		RawQuestions:   rawQuestions,
 		SheetName:      sheetNameToRead,

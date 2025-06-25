@@ -70,7 +70,7 @@ func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*resp
 
 	isSuperAdmin := gofn.Contain(gofn.MapValues(roles), "SuperAdmin")
 	return &response.LoginResponseData{
-		UserId:        user.ID.String(),
+		UserID:        user.ID.String(),
 		Username:      user.Username,
 		IsSuperAdmin:  isSuperAdmin,
 		Organizations: userOrgs,
@@ -101,7 +101,7 @@ func (receiver *SessionRepository) ValidateToken(encodedToken string) (*jwt.Toke
 	return nil, errors.New("invalid token")
 }
 
-func (receiver *SessionRepository) ExtractUserIdFromToken(tokenString string) (*string, error) {
+func (receiver *SessionRepository) ExtractUserIDFromToken(tokenString string) (*string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -117,8 +117,8 @@ func (receiver *SessionRepository) ExtractUserIdFromToken(tokenString string) (*
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userId, ok := claims["user_id"].(string); ok {
-			return &userId, nil
+		if userID, ok := claims["user_id"].(string); ok {
+			return &userID, nil
 		}
 	}
 
@@ -126,7 +126,7 @@ func (receiver *SessionRepository) ExtractUserIdFromToken(tokenString string) (*
 }
 
 type TokenData struct {
-	UserId        string
+	UserID        string
 	Roles         []string
 	Organizations []string
 }
@@ -147,12 +147,12 @@ func (receiver *SessionRepository) GetDataFromToken(token *jwt.Token) (*TokenDat
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userId := claims["user_id"].(string)
+		userID := claims["user_id"].(string)
 		roles := claims["roles"].(string)
 		organizations := claims["organizations"].(string)
 
 		return &TokenData{
-			UserId:        userId,
+			UserID:        userID,
 			Roles:         strings.Split(roles, ", "),
 			Organizations: strings.Split(organizations, ", "),
 		}, nil
@@ -183,7 +183,7 @@ func (receiver *SessionRepository) GenerateTokenByDevice(device entity.SDevice) 
 	return tokenString, rt, nil
 }
 
-func (receiver *SessionRepository) ExtractDeviceIdFromToken(tokenString string) (*string, error) {
+func (receiver *SessionRepository) ExtractDeviceIDFromToken(tokenString string) (*string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -199,8 +199,8 @@ func (receiver *SessionRepository) ExtractDeviceIdFromToken(tokenString string) 
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userId, ok := claims["device_uuid"].(string); ok {
-			return &userId, nil
+		if userID, ok := claims["device_uuid"].(string); ok {
+			return &userID, nil
 		}
 	}
 
@@ -208,7 +208,7 @@ func (receiver *SessionRepository) ExtractDeviceIdFromToken(tokenString string) 
 }
 
 func (receiver *SessionRepository) GetDeviceIDFromRefreshToken(accessToken string) (string, error) {
-	uuid, err := receiver.ExtractDeviceIdFromToken(accessToken)
+	uuid, err := receiver.ExtractDeviceIDFromToken(accessToken)
 	if err != nil {
 		return "", err
 	}

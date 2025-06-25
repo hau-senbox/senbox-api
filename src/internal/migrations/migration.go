@@ -12,7 +12,7 @@ import (
 )
 
 type SLegacyDevice struct {
-	DeviceId             string             `gorm:"type:varchar(36);primary_key;not null"`
+	DeviceID             string             `gorm:"type:varchar(36);primary_key;not null"`
 	DeviceName           string             `gorm:"type:varchar(255);not null;default:''"`
 	Attributes           datatypes.JSON     `gorm:"type:json;not null;default:'{}'"`
 	PrimaryUserInfo      string             `gorm:"column:primary_user_info;type:varchar(255);not null;"`
@@ -20,8 +20,8 @@ type SLegacyDevice struct {
 	ScreenButton         datatypes.JSON     `gorm:"type:json;not null;default:'{}'"`
 	Status               value.DeviceStatus `gorm:"type:tinyint(1);not null;default:1"`
 	ProfilePictureUrl    string             `gorm:"type:varchar(255);"`
-	SpreadsheetId        string             `gorm:"type:varchar(255);not null;"`
-	TeacherSpreadsheetId string             `gorm:"type:varchar(255);not null;default:''"`
+	SpreadsheetID        string             `gorm:"type:varchar(255);not null;"`
+	TeacherSpreadsheetID string             `gorm:"type:varchar(255);not null;default:''"`
 	Message              string             `gorm:"type:varchar(255);not null;default:''"`
 	ButtonUrl            string             `gorm:"type:varchar(255);not null;default:''"`
 	Note                 string             `gorm:"type:varchar(255);not null;default:''"`
@@ -32,7 +32,7 @@ type SLegacyDevice struct {
 }
 
 type SDevice struct {
-	DeviceId          string                 `gorm:"type:varchar(36);primary_key;not null"`
+	DeviceID          string                 `gorm:"type:varchar(36);primary_key;not null"`
 	DeviceName        string                 `gorm:"type:varchar(255);not null;default:''"`
 	InputMode         value.InfoInputType    `gorm:"type:varchar(32);not null;default:1"`
 	ScreenButtonType  value.ScreenButtonType `gorm:"type:varchar(16);not null;default:'scan'"`
@@ -117,7 +117,7 @@ func MigrateDevices(db *gorm.DB) error {
 			mode = value.DeviceModeL
 		}
 		var newDevice SDevice
-		newDevice.DeviceId = device.DeviceId
+		newDevice.DeviceID = device.DeviceID
 		newDevice.DeviceName = device.DeviceName
 		newDevice.InputMode = inputMode
 		newDevice.ScreenButtonType = buttonType

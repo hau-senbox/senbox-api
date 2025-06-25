@@ -31,9 +31,9 @@ func (receiver *SaveFormUseCase) SaveForm(req request.SaveFormRequest) (*entity.
 	if len(match) < 2 {
 		return nil, fmt.Errorf("invalid spreadsheet url")
 	}
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     "Questions!A2:G",
 	})
 	if err != nil {
@@ -48,7 +48,7 @@ func (receiver *SaveFormUseCase) SaveForm(req request.SaveFormRequest) (*entity.
 				continue
 			}
 			item := parameters.RawQuestion{
-				QuestionId:        spreadsheetId + "_" + row[0].(string),
+				QuestionID:        spreadsheetID + "_" + row[0].(string),
 				Question:          row[2].(string),
 				Type:              row[1].(string),
 				Attributes:        strings.ReplaceAll(row[3].(string), "\n", ""),
@@ -64,7 +64,7 @@ func (receiver *SaveFormUseCase) SaveForm(req request.SaveFormRequest) (*entity.
 	form, err := receiver.saveForm(parameters.SaveFormParams{
 		Note:           req.Note,
 		SpreadsheetUrl: req.SpreadsheetUrl,
-		SpreadsheetId:  spreadsheetId,
+		SpreadsheetID:  spreadsheetID,
 		Password:       req.Password,
 		RawQuestions:   rawQuestions,
 	})
@@ -104,7 +104,7 @@ func (receiver *SaveFormUseCase) saveQuestions(rawQuestions []parameters.RawQues
 		}
 
 		param := repository.CreateQuestionParams{
-			ID:           rawQuestion.QuestionId,
+			ID:           rawQuestion.QuestionID,
 			Question:     rawQuestion.Question,
 			QuestionType: strings.ToLower(rawQuestion.Type),
 			Attributes:   attString,
@@ -245,14 +245,14 @@ func (receiver *SaveFormUseCase) createForm(questions []entity.SQuestion, params
 		var order = 0
 		var answerRequired = false
 		for _, rq := range params.RawQuestions {
-			if rq.QuestionId == question.ID.String() {
+			if rq.QuestionID == question.ID.String() {
 				order = rq.RowNumber
 				answerRequired = strings.ToLower(rq.AnswerRequired) == "true"
 			}
 		}
 
 		formQuestions = append(formQuestions, request.CreateFormQuestionItem{
-			QuestionId:     question.ID.String(),
+			QuestionID:     question.ID.String(),
 			Order:          order,
 			AnswerRequired: answerRequired,
 		})

@@ -1,6 +1,6 @@
 package request
 
-type GetUserDeviceByIdRequest struct {
-	UserId   *string `json:"user_id"`
-	DeviceId *string `json:"device_id"`
+type GetUserDeviceByIDRequest struct {
+	UserID   *string `json:"user_id"`
+	DeviceID *string `json:"device_id"`
 }

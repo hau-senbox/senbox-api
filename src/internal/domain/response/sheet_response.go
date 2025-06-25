@@ -1,14 +1,14 @@
 package response
 
 type ListLocationResponse struct {
-	LocationId   int64  `json:"locationId"`
+	LocationID   int64  `json:"locationID"`
 	LocationName string `json:"locationName"`
 }
 type SettingListResponse struct {
 	Uid             string `json:"uid"`
 	DeviceName      string `json:"deviceName"`
-	LocationId      int64  `json:"locationId"`
-	SheetId         string `json:"sheetId"`
+	LocationID      int64  `json:"locationID"`
+	SheetID         string `json:"sheetID"`
 	SheetName       string `json:"sheetName"`
-	SheetLocationId string `json:"sheetLocationId"`
+	SheetLocationID string `json:"sheetLocationID"`
 }

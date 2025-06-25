@@ -54,7 +54,7 @@ func connect(appConfig config.AppConfig) (*gorm.DB, error) {
 		panic(err)
 	}
 	//db.LogMode(appConfig.Config.Env == "development")
-	//db.DB().SetMaxIdleConns(appConfig.Config.Database.MaxIdleConn)
+	//db.DB().SetMaxIDleConns(appConfig.Config.Database.MaxIDleConn)
 	//db.DB().SetMaxOpenConns(appConfig.Config.Database.MaxConn)
 	//db.DB().SetConnMaxLifetime(time.Duration(appConfig.Config.Database.MaxLifetime))
 	logrus.Info("Established database!")

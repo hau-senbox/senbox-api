@@ -6,7 +6,7 @@ type GetUserOrgInfoResponse struct {
 }
 
 type GetOrgManagerInfoResponse struct {
-	UserId       string `json:"user_id"`
+	UserID       string `json:"user_id"`
 	UserNickName string `json:"user_nick_name"`
 	IsManager    bool   `json:"is_manager"`
 }

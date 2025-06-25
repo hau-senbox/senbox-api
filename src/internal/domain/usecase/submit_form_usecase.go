@@ -31,13 +31,13 @@ type SubmitFormUseCase struct {
 	*sheet.Writer
 	*sheet.Reader
 	DriveService        *drive.Service
-	OutputSpreadsheetId string
+	OutputSpreadsheetID string
 	FirebaseApp         *firebase.App
 	DB                  *gorm.DB
 }
 
 func (receiver *SubmitFormUseCase) AnswerForm(id uint64, req request.SubmitFormRequest) error {
-	form, err := receiver.GetFormById(id)
+	form, err := receiver.GetFormByID(id)
 	if err != nil {
 		return err
 	}
@@ -55,28 +55,26 @@ func Map[T, U any](ts []T, f func(T) U) []U {
 
 func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.SForm, req request.SubmitFormRequest) error {
 	submissionItems := make([]repository.SubmissionDataItem, 0)
-	questions, err := receiver.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionId }))
+	questions, err := receiver.GetQuestionsByIDs(Map(req.Answers, func(answer request.Answer) string { return answer.QuestionID }))
 	if err != nil {
 		return fmt.Errorf("system cannot find questions for this form: %s", form.Name)
 	}
 
+	rememberAnswers := make([]entity.MemoryComponentValue, 0)
 	for _, answer := range req.Answers {
 		for _, question := range questions {
-			if answer.QuestionId == question.ID.String() {
-				var msg *repository.Messaging = nil
-				if answer.Messaging != nil {
-					msg = &repository.Messaging{
-						Email:        answer.Messaging.Email,
-						Value3:       answer.Messaging.Value3,
-						MessageBox:   answer.Messaging.MessageBox,
-						QuestionType: answer.Messaging.QuestionType,
-					}
+			if answer.QuestionID == question.ID.String() {
+				if answer.Remember {
+					rememberAnswers = append(rememberAnswers, entity.MemoryComponentValue{
+						ComponentName: question.QuestionType,
+						Value:         answer.Answer,
+					})
 				}
+
 				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionId: question.ID.String(),
+					QuestionID: question.ID.String(),
 					Question:   question.Question,
 					Answer:     answer.Answer,
-					Messaging:  msg,
 				})
 			}
 		}
@@ -86,8 +84,8 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		Items: submissionItems,
 	}
 	createSubmissionParams := repository.CreateSubmissionParams{
-		FormId:         form.ID,
-		UserId:         req.UserId,
+		FormID:         form.ID,
+		UserID:         req.UserID,
 		SubmissionData: submissionData,
 		OpenedAt:       req.OpenedAt,
 	}
@@ -95,6 +93,14 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 	if err != nil {
 		log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
 		return errors.New("system cannot handle the submission")
+	}
+
+	if len(rememberAnswers) > 0 {
+		err = receiver.QuestionRepository.CreateMemoryComponentValuesDuplicate(rememberAnswers)
+		if err != nil {
+			log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
+			return errors.New("system cannot handle the submission memory component values")
+		}
 	}
 
 	defer func() {
@@ -105,7 +111,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 }
 
 func (receiver *SubmitFormUseCase) sendNotification(form *entity.SForm) {
-	questions, err := receiver.GetQuestionsByFormId(form.ID)
+	questions, err := receiver.GetQuestionsByFormID(form.ID)
 	if err != nil {
 		log.Error("Form ", form.Note, " has not send notification question")
 		return

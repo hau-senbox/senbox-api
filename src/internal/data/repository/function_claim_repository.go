@@ -30,7 +30,7 @@ func (receiver *FunctionClaimRepository) GetAll() ([]entity.SFunctionClaim, erro
 	return functionClaims, err
 }
 
-func (receiver *FunctionClaimRepository) GetByID(req request.GetFunctionClaimByIdRequest) (*entity.SFunctionClaim, error) {
+func (receiver *FunctionClaimRepository) GetByID(req request.GetFunctionClaimByIDRequest) (*entity.SFunctionClaim, error) {
 	var functionClaim entity.SFunctionClaim
 	err := receiver.DBConn.Where("id = ?", req.ID).
 		Preload("ClaimPermissions").
@@ -74,7 +74,7 @@ func (receiver *FunctionClaimRepository) CreateFunctionClaim(req request.CreateF
 }
 
 func (receiver *FunctionClaimRepository) UpdateFunctionClaim(req request.UpdateFunctionClaimRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).
+	updateResult := receiver.DBConn.Model(&entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimID).
 		Updates(map[string]interface{}{
 			"function_name": req.FunctionName,
 		})

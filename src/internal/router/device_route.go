@@ -52,7 +52,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			Writer:            userSpreadsheet.Writer,
 			Reader:            userSpreadsheet.Reader,
 		},
-		GetDeviceByIdUseCase: &usecase.GetDeviceByIdUseCase{
+		GetDeviceByIDUseCase: &usecase.GetDeviceByIDUseCase{
 			DeviceRepository: deviceRepository,
 		},
 		GetDeviceListUseCase: &usecase.GetDeviceListUseCase{
@@ -65,7 +65,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			DeviceRepository:  deviceRepository,
 			SessionRepository: &sessionRepository,
 		},
-		GetFormByIdUseCase: &usecase.GetFormByIdUseCase{
+		GetFormByIDUseCase: &usecase.GetFormByIDUseCase{
 			FormRepository: formRepo,
 		},
 		TakeNoteUseCase: &usecase.TakeNoteUseCase{
@@ -82,7 +82,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			CodeCountingRepository: repository.NewCodeCountingRepository(),
 			Writer:                 userSpreadsheet.Writer,
 			Reader:                 userSpreadsheet.Reader,
-			OutputSpreadsheetId:    config.Google.SpreadsheetId,
+			OutputSpreadsheetID:    config.Google.SpreadsheetID,
 			DriveService:           driveService,
 			FirebaseApp:            fcm,
 			DB:                     dbConn,
@@ -103,7 +103,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 				DB:                     dbConn,
 			},
 		},
-		GetRecentSubmissionByFormIdUseCase: usecase.NewGetRecentSubmissionByFormIdUseCase(dbConn),
+		GetRecentSubmissionByFormIDUseCase: usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
 		RegisterFcmDeviceUseCase:           usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
 		SendNotificationUseCase:            usecase.NewSendNotificationUseCase(dbConn, fcm),
 		ResetCodeCountingUseCase:           usecase.NewResetCodeCountingUseCase(dbConn),

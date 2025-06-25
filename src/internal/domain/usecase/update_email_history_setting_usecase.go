@@ -19,7 +19,7 @@ func (receiver *UpdateEmailHistorySettingUseCase) Execute(req request.UpdateEmai
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 
-	return receiver.UpdateEmaiHistorySetting(spreadsheetId)
+	return receiver.UpdateEmaiHistorySetting(spreadsheetID)
 }

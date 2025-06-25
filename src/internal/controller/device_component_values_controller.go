@@ -20,7 +20,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrgan
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Organization Id is required",
+				Error: "Organization ID is required",
 			},
 		)
 		return
@@ -47,6 +47,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByOrgan
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: response.DeviceComponentValuesResponse{
 			ID:           int(setting.ID),
 			Setting:      settingString,
@@ -61,7 +62,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Organization Id is required",
+				Error: "Organization ID is required",
 			},
 		)
 		return
@@ -88,6 +89,7 @@ func (receiver *DeviceComponentValuesController) GetDeviceComponentValuesByDevic
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: response.DeviceComponentValuesResponse{
 			ID:      int(setting.ID),
 			Setting: settingString,

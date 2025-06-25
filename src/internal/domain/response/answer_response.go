@@ -1,7 +1,7 @@
 package response
 
 type AnsweredItem struct {
-	QuestionId string `json:"question_id"`
+	QuestionID string `json:"question_id"`
 	Question   string `json:"question"`
 	Answer     string `json:"answer"`
 	AnsweredAt string `json:"answered_at"`

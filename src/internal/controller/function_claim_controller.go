@@ -52,9 +52,9 @@ func (receiver *FunctionClaimController) GetAllFunctionClaim(context *gin.Contex
 	})
 }
 
-func (receiver *FunctionClaimController) GetFunctionClaimById(context *gin.Context) {
-	claimId := context.Param("id")
-	if claimId == "" {
+func (receiver *FunctionClaimController) GetFunctionClaimByID(context *gin.Context) {
+	claimID := context.Param("id")
+	if claimID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -64,7 +64,7 @@ func (receiver *FunctionClaimController) GetFunctionClaimById(context *gin.Conte
 		return
 	}
 
-	id, err := strconv.ParseUint(claimId, 10, 32)
+	id, err := strconv.ParseUint(claimID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -75,7 +75,7 @@ func (receiver *FunctionClaimController) GetFunctionClaimById(context *gin.Conte
 		return
 	}
 
-	functionClaim, err := receiver.GetFunctionClaimUseCase.GetFunctionClaimById(request.GetFunctionClaimByIdRequest{ID: uint(id)})
+	functionClaim, err := receiver.GetFunctionClaimUseCase.GetFunctionClaimByID(request.GetFunctionClaimByIDRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -218,8 +218,8 @@ func (receiver *FunctionClaimController) UpdateFunctionClaim(context *gin.Contex
 }
 
 func (receiver *FunctionClaimController) DeleteFunctionClaim(context *gin.Context) {
-	claimId := context.Param("id")
-	if claimId == "" {
+	claimID := context.Param("id")
+	if claimID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -229,7 +229,7 @@ func (receiver *FunctionClaimController) DeleteFunctionClaim(context *gin.Contex
 		return
 	}
 
-	id, err := strconv.ParseUint(claimId, 10, 32)
+	id, err := strconv.ParseUint(claimID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{

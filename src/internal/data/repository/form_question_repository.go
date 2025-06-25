@@ -16,21 +16,22 @@ type FormQuestionRepository struct {
 	DBConn *gorm.DB
 }
 
-func (receiver *FormQuestionRepository) CreateFormQuestions(formId uint64, questionItems []request.CreateFormQuestionItem) ([]entity.SFormQuestion, error) {
+func (receiver *FormQuestionRepository) CreateFormQuestions(formID uint64, questionItems []request.CreateFormQuestionItem) ([]entity.SFormQuestion, error) {
 	var formQuestions []entity.SFormQuestion
 	for _, questionItem := range questionItems {
 		formQuestions = append(formQuestions, entity.SFormQuestion{
-			FormId:         formId,
-			QuestionId:     uuid.MustParse(questionItem.QuestionId),
+			FormID:         formID,
+			QuestionID:     uuid.MustParse(questionItem.QuestionID),
 			Order:          questionItem.Order,
 			AnswerRequired: questionItem.AnswerRequired,
+			AnswerRemember: questionItem.AnswerRemember,
 		})
 	}
 
 	err := receiver.DBConn.Table("s_form_question").Clauses(
 		clause.OnConflict{
 			Columns:   []clause.Column{{Name: "form_id"}, {Name: "question_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"order", "answer_required"}),
+			DoUpdates: clause.AssignmentColumns([]string{"order", "answer_required", "answer_remember"}),
 		}).Create(&formQuestions).Error
 	if err != nil {
 		return nil, err
@@ -46,8 +47,8 @@ func (receiver *FormQuestionRepository) Update(form *entity.SForm, questions []e
 	formQuestions := make([]entity.SFormQuestion, 0)
 	for _, rawQuestion := range rawQuestions {
 		formQuestions = append(formQuestions, entity.SFormQuestion{
-			FormId:         form.ID,
-			QuestionId:     uuid.MustParse(rawQuestion.QuestionId),
+			FormID:         form.ID,
+			QuestionID:     uuid.MustParse(rawQuestion.QuestionID),
 			Order:          rawQuestion.RowNumber,
 			AnswerRequired: strings.ToLower(rawQuestion.AnswerRequired) == "true",
 		})

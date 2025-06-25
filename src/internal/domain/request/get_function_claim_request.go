@@ -1,6 +1,6 @@
 package request
 
-type GetFunctionClaimByIdRequest struct {
+type GetFunctionClaimByIDRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 

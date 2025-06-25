@@ -24,20 +24,20 @@ func (receiver *RegisterDeviceUseCase) RegisterDevice(user *entity.SUserEntity, 
 		DeviceID: req.DeviceUUID,
 	})
 
-	var deviceId *string
+	var deviceID *string
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			deviceId, err = receiver.RegisteringDeviceForUser(user, req)
+			deviceID, err = receiver.RegisteringDeviceForUser(user, req)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	if deviceId == nil {
-		deviceId = &req.DeviceUUID
+	if deviceID == nil {
+		deviceID = &req.DeviceUUID
 	}
-	device, err := receiver.FindDeviceById(*deviceId)
+	device, err := receiver.FindDeviceByID(*deviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +47,10 @@ func (receiver *RegisterDeviceUseCase) RegisterDevice(user *entity.SUserEntity, 
 	return &device.ID, err
 }
 
-func (receiver *RegisterDeviceUseCase) Reserve(deviceId string, appVersion string) error {
+func (receiver *RegisterDeviceUseCase) Reserve(deviceID string, appVersion string) error {
 
 	return nil
-	// device, _ := receiver.DeviceRepository.FindDeviceById(deviceId)
+	// device, _ := receiver.DeviceRepository.FindDeviceByID(deviceID)
 	// if device != nil {
 	// 	return errors.New("this device is already existing")
 	// }
@@ -80,11 +80,11 @@ func (receiver *RegisterDeviceUseCase) Reserve(deviceId string, appVersion strin
 	// 	return err
 	// }
 
-	// spreadsheetId := match[1]
+	// spreadsheetID := match[1]
 
 	// rowNo := 0
 	// uuids, err := receiver.Reader.Get(sheet.ReadSpecificRangeParams{
-	// 	SpreadsheetId: spreadsheetId,
+	// 	SpreadsheetID: spreadsheetID,
 	// 	ReadRange:     "Devices!L12:L5000",
 	// })
 
@@ -100,7 +100,7 @@ func (receiver *RegisterDeviceUseCase) Reserve(deviceId string, appVersion strin
 	// 		break
 	// 	}
 	// 	if len(uuid) != 0 {
-	// 		if uuid[0].(string) == deviceId {
+	// 		if uuid[0].(string) == deviceID {
 	// 			rowNo = rowNumber + 12
 	// 			break
 	// 		}
@@ -109,16 +109,16 @@ func (receiver *RegisterDeviceUseCase) Reserve(deviceId string, appVersion strin
 
 	// deviceData := make([][]interface{}, 0)
 	// deviceData = append(deviceData, []interface{}{time.Now().Format("2006-01-02")}) //Created At
-	// deviceData = append(deviceData, []interface{}{deviceId})                        //Device Id
+	// deviceData = append(deviceData, []interface{}{deviceID})                        //Device ID
 	// deviceData = append(deviceData, []interface{}{appVersion})
 
 	// if rowNo == 0 {
-	// 	log.Error(fmt.Sprintf("failed to find placeholder row in sync devices sheet https://docs.google.com/spreadsheets/d/%s", spreadsheetId))
+	// 	log.Error(fmt.Sprintf("failed to find placeholder row in sync devices sheet https://docs.google.com/spreadsheets/d/%s", spreadsheetID))
 	// 	_, err := receiver.Writer.WriteRanges(sheet.WriteRangeParams{
 	// 		Range:     "Devices!K" + strconv.Itoa(len(uuids)+12),
 	// 		Rows:      deviceData,
 	// 		Dimension: "COLUMNS",
-	// 	}, spreadsheetId)
+	// 	}, spreadsheetID)
 
 	// 	return err
 	// } else {

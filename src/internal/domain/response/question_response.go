@@ -2,28 +2,23 @@ package response
 
 import "time"
 
-type Messaging struct {
-	Email          []string `json:"email"`
-	Value3         []string `json:"value3"`
-	ShowMessageBox bool     `json:"showMessageBox"`
-}
-
 type QuestionAttributes struct {
 	Value                string              `json:"value"`
 	Number               int                 `json:"number"`
 	Steps                int                 `json:"steps"`
 	Options              []map[string]string `json:"options"`
 	ButtonConfigurations []map[string]string `json:"button_configurations"`
-	Messaging            Messaging           `json:"messaging"`
 }
 
 type QuestionListData struct {
-	QuestionId     string             `json:"question_id"`
+	QuestionID     string             `json:"question_id"`
 	QuestionType   string             `json:"question_type"`
 	Question       string             `json:"question"`
 	Attributes     QuestionAttributes `json:"attributes"`
 	Order          int                `json:"order"`
 	AnswerRequired bool               `json:"answer_required"`
+	AnswerRemember bool               `json:"answer_remember"`
+	RememberValue  string             `json:"remember_value"`
 	Enabled        bool               `json:"enabled"`
 }
 
@@ -38,7 +33,7 @@ type QuestionListResponse struct {
 }
 
 type AllQuestionsResponseData struct {
-	QuestionId   string             `json:"question_id"`
+	QuestionID   string             `json:"question_id"`
 	QuestionType string             `json:"question_type"`
 	Question     string             `json:"question"`
 	Attributes   QuestionAttributes `json:"attributes"`

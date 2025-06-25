@@ -8,7 +8,7 @@ import (
 
 type SMobileDevice struct {
 	gorm.Model
-	DeviceId string           `gorm:"type:varchar(36);not null;unique"`
+	DeviceID string           `gorm:"type:varchar(36);not null;unique"`
 	Type     value.DeviceType `gorm:"type:varchar(16);not null"`
 	FCMToken string           `gorm:"type:mediumtext;not null"`
 }

@@ -25,7 +25,7 @@ type CreateQuestionParams struct {
 	Status           string
 	Set              string
 	EnableOnMobile   value.QuestionForMobile
-	QuestionUniqueId *string
+	QuestionUniqueID *string
 }
 
 func (receiver *QuestionRepository) Create(params []CreateQuestionParams) ([]entity.SQuestion, error) {
@@ -44,6 +44,47 @@ func (receiver *QuestionRepository) Create(params []CreateQuestionParams) ([]ent
 	}
 
 	return rawQuestions, nil
+}
+
+func (receiver *QuestionRepository) GetMemoryComponentValue(componentName string) (*entity.MemoryComponentValue, error) {
+	var componentValue entity.MemoryComponentValue
+	err := receiver.DBConn.Where("component_name = ?", componentName).First(&componentValue).Error
+
+	return &componentValue, err
+}
+
+func (receiver *QuestionRepository) CreateMemoryComponentValues(values []entity.MemoryComponentValue) error {
+	if len(values) == 0 {
+		return nil
+	}
+
+	err := receiver.DBConn.Model(&entity.MemoryComponentValue{}).Clauses(
+		clause.OnConflict{
+			Columns:   []clause.Column{{Name: "component_name"}},
+			DoNothing: true,
+		}).Create(&values).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (receiver *QuestionRepository) CreateMemoryComponentValuesDuplicate(values []entity.MemoryComponentValue) error {
+	if len(values) == 0 {
+		return nil
+	}
+
+	err := receiver.DBConn.Model(&entity.MemoryComponentValue{}).Clauses(
+		clause.OnConflict{
+			Columns:   []clause.Column{{Name: "component_name"}},
+			DoUpdates: clause.AssignmentColumns([]string{"value"}),
+		}).Create(&values).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (receiver *QuestionRepository) unmarshalQuestions(params []CreateQuestionParams) ([]entity.SQuestion, error) {
@@ -169,7 +210,7 @@ func (receiver *QuestionRepository) unmarshalDateQuestion(param CreateQuestionPa
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -198,7 +239,7 @@ func (receiver *QuestionRepository) unmarshalTimeQuestion(param CreateQuestionPa
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -227,7 +268,7 @@ func (receiver *QuestionRepository) unmarshalDateTimeQuestion(param CreateQuesti
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -245,7 +286,7 @@ func (receiver *QuestionRepository) unmarshalDurationForwardQuestion(param Creat
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -274,7 +315,7 @@ func (receiver *QuestionRepository) unmarshalDurationBackwardQuestion(param Crea
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -304,7 +345,7 @@ func (receiver *QuestionRepository) unmarshalScaleQuestion(param CreateQuestionP
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -322,7 +363,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeQuestion(param CreateQuestion
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -354,7 +395,7 @@ func (receiver *QuestionRepository) unmarshalSelectionQuestion(param CreateQuest
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -385,7 +426,7 @@ func (receiver *QuestionRepository) unmarshalTextQuestion(param CreateQuestionPa
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -403,7 +444,7 @@ func (receiver *QuestionRepository) unmarshalCountQuestion(param CreateQuestionP
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -421,7 +462,7 @@ func (receiver *QuestionRepository) unmarshalNumberQuestion(param CreateQuestion
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -439,28 +480,19 @@ func (receiver *QuestionRepository) unmarshalPhotoQuestion(param CreateQuestionP
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
 }
 
-func (receiver *QuestionRepository) FindById(id string) (*entity.SQuestion, error) {
+func (receiver *QuestionRepository) FindByID(id string) (*entity.SQuestion, error) {
 	var question entity.SQuestion
 	err := receiver.DBConn.Table("s_question").Where("question_id = ?", id).First(&question).Error
 	if err != nil {
 		return nil, err
 	}
 	return &question, err
-}
-
-func (receiver *QuestionRepository) GetQuestionsByIds(ids []string) ([]entity.SQuestion, error) {
-	var questions []entity.SQuestion
-	err := receiver.DBConn.Table("s_question").Where("question_id in (?)", ids).Find(&questions).Error
-	if err != nil {
-		return nil, err
-	}
-	return questions, err
 }
 
 func (receiver *QuestionRepository) unmarshalMultipleChoiceQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
@@ -489,7 +521,7 @@ func (receiver *QuestionRepository) unmarshalMultipleChoiceQuestion(param Create
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -507,7 +539,7 @@ func (receiver *QuestionRepository) unmarshalButtonsQuestion(param CreateQuestio
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -525,7 +557,7 @@ func (receiver *QuestionRepository) unmarshalButtonQuestion(param CreateQuestion
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -543,7 +575,7 @@ func (receiver *QuestionRepository) unmarshalMessageBoxQuestion(param CreateQues
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -561,7 +593,7 @@ func (receiver *QuestionRepository) unmarshalShowPicsQuestion(param CreateQuesti
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -579,18 +611,19 @@ func (receiver *QuestionRepository) unmarshalButtonCountQuestion(param CreateQue
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
 }
 
-func (receiver *QuestionRepository) GetQuestionsByFormId(id uint64) ([]model.FormQuestionItem, error) {
+func (receiver *QuestionRepository) GetQuestionsByFormID(id uint64) ([]model.FormQuestionItem, error) {
 	var questions []model.FormQuestionItem
 	//goland:noinspection ALL
 	rows, err := receiver.DBConn.Raw("SELECT s_question.id as id,"+
 		"s_question.question_type as question_type, s_question.attributes as attributes, s_question.status as status, "+
-		"s_question.created_at as created_at, s_question.updated_at as updated_at, s_form_question.order as `order`, s_form_question.answer_required as answer_required, s_question.question as question,"+
+		"s_question.created_at as created_at, s_question.updated_at as updated_at, s_form_question.order as `order`, "+
+		"s_form_question.answer_required as answer_required, s_form_question.answer_remember as answer_remember, s_question.question as question,"+
 		"s_question.enable_on_mobile as enable_on_mobile, s_question.question_unique_id as question_unique_id "+
 		"FROM s_question RIGHT JOIN s_form_question ON s_form_question.question_id = s_question.id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
 
@@ -645,7 +678,7 @@ func (receiver *QuestionRepository) unmarshalSingleChoiceQuestion(param CreateQu
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -667,7 +700,7 @@ func (receiver *QuestionRepository) unmarshalQRCodeFrontQuestion(param CreateQue
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -685,7 +718,7 @@ func (receiver *QuestionRepository) unmarshalPlayVideoQuestion(param CreateQuest
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -717,7 +750,7 @@ func (receiver *QuestionRepository) unmarshalChoiceToggleQuestion(param CreateQu
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -735,7 +768,7 @@ func (receiver *QuestionRepository) unmarshalSectionQuestion(param CreateQuestio
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -754,7 +787,7 @@ func (receiver *QuestionRepository) unmarshalUserQuestion(param CreateQuestionPa
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
 		Set:              param.Set,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -772,7 +805,7 @@ func (receiver *QuestionRepository) unmarshalFormSectionQuestion(param CreateQue
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -791,7 +824,7 @@ func (receiver *QuestionRepository) unmarshalFormSendImmediately(param CreateQue
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -832,7 +865,7 @@ func (receiver *QuestionRepository) unmarshalWebUserQuestion(param CreateQuestio
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -850,7 +883,7 @@ func (receiver *QuestionRepository) unmarshalWebQuestion(param CreateQuestionPar
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -868,7 +901,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue1(param CreateQues
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -886,7 +919,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue2(param CreateQues
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -904,7 +937,7 @@ func (receiver *QuestionRepository) unmarshalSignUpPreSetValue3(param CreateQues
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, nil
@@ -967,7 +1000,7 @@ func (receiver *QuestionRepository) unmarshalSendNotification(param CreateQuesti
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err
@@ -1001,7 +1034,7 @@ func (receiver *QuestionRepository) unmarshalSendMessageQuestion(param CreateQue
 		Attributes:       datatypes.JSON(param.Attributes),
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
-		QuestionUniqueId: param.QuestionUniqueId,
+		QuestionUniqueID: param.QuestionUniqueID,
 	}
 
 	return &question, err

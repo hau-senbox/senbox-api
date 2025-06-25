@@ -14,7 +14,7 @@ func (receiver *GetRoleUseCase) GetAllRole() ([]entity.SRole, error) {
 	return receiver.GetAll()
 }
 
-func (receiver *GetRoleUseCase) GetRoleById(req request.GetRoleByIdRequest) (*entity.SRole, error) {
+func (receiver *GetRoleUseCase) GetRoleByID(req request.GetRoleByIDRequest) (*entity.SRole, error) {
 	return receiver.GetByID(req)
 }
 

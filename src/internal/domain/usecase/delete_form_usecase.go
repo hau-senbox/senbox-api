@@ -6,8 +6,8 @@ type DeleteFormUseCase struct {
 	*repository.FormRepository
 }
 
-func (receiver *DeleteFormUseCase) DeleteForm(formId uint64) error {
-	err := receiver.FormRepository.DeleteForm(formId)
+func (receiver *DeleteFormUseCase) DeleteForm(formID uint64) error {
+	err := receiver.FormRepository.DeleteForm(formID)
 	if err != nil {
 		return err
 	}

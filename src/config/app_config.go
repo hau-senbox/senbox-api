@@ -22,7 +22,7 @@ type GoogleConfig struct {
 	UserCredentialsFilePath     string   `env-required:"true" yaml:"user_credentials_file_path" env:"GOOGLE_CREDENTIALS_USER_FILE_PATH"`
 	UploaderCredentialsFilePath string   `env-required:"true" yaml:"uploader_credentials_file_path" env:"GOOGLE_CREDENTIALS_UPLOADER_FILE_PATH"`
 	Scopes                      []string `env-required:"true" yaml:"scopes" env:"GOOGLE_SCOPES"`
-	SpreadsheetId               string   `env-required:"true" yaml:"spreadsheet_id" env:"GOOGLE_SPREADSHEET_ID"`
+	SpreadsheetID               string   `env-required:"true" yaml:"spreadsheet_id" env:"GOOGLE_SPREADSHEET_ID"`
 	FirstColumn                 string   `env-required:"true" yaml:"first_column" env:"GOOGLE_FIRST_COLUMN"`
 	FirstRow                    int      `env-required:"true" yaml:"first_row" env:"GOOGLE_FIRST_ROW"`
 }

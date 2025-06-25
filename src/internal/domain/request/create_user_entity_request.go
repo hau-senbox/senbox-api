@@ -11,12 +11,11 @@ type CreateUserEntityRequest struct {
 	Nickname string `json:"nickname" default:""`
 	// Fullname *string `json:"fullname"`
 	// Phone    *string `json:"phone"`
-	Email      *string   `json:"email"`
-	Birthday   string    `json:"birthday" binding:"required"`
-	Password   string    `json:"password" binding:"required"`
-	Guardians  *[]string `json:"guardians"`
-	Roles      *[]string `json:"roles"`
-	DeviceUUID string    `json:"device_uuid" binding:"required"`
+	Email      *string `json:"email"`
+	Birthday   string  `json:"birthday" binding:"required"`
+	Password   string  `json:"password" binding:"required"`
+	Role       *string  `json:"role"`
+	DeviceUUID string  `json:"device_uuid" binding:"required"`
 }
 
 // IsOver18 validates if the user is over 18 years old

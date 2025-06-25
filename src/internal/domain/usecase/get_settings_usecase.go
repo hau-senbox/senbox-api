@@ -19,12 +19,12 @@ type ImportSetting struct {
 }
 
 type OutputSetting struct {
-	FolderId    string `json:"folder_id"`
+	FolderID    string `json:"folder_id"`
 	SettingName string `json:"setting_name"`
 }
 
 type SummarySetting struct {
-	SpreadsheetId string `json:"spreadsheet_id"`
+	SpreadsheetID string `json:"spreadsheet_id"`
 	SettingName   string `json:"setting_name"`
 }
 

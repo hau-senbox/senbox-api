@@ -20,6 +20,8 @@ type SUserEntity struct {
 	Email     string    `gorm:"type:varchar(255);not null;default:''"`
 	Birthday  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	QRLogin   string    `gorm:"type:varchar(255);not null;default:''"`
+	Avatar    string    `gorm:"type:varchar(255);not null;default:''"`
+	AvatarURL string    `gorm:"type:longtext;not null;default:''"`
 	Password  string    `gorm:"type:varchar(255);not null;default:''"`
 	IsBlocked bool      `gorm:"type:tinyint;not null;default:0"`
 	BlockedAt time.Time `gorm:"type:datetime"`
@@ -31,8 +33,7 @@ type SUserEntity struct {
 
 	Organizations []SOrganization `gorm:"many2many:s_user_organizations;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:organization_id"`
 
-	Guardians []SUserEntity `gorm:"many2many:s_user_guardians;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:guardian_id"`
-	Devices   []SDevice     `gorm:"many2many:s_user_devices;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:device_id"`
+	Devices []SDevice `gorm:"many2many:s_user_devices;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:device_id"`
 }
 
 func (user *SUserEntity) BeforeCreate(tx *gorm.DB) (err error) {

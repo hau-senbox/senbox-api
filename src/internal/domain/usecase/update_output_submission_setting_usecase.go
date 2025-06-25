@@ -22,6 +22,6 @@ func (receiver *UpdateOutputSubmissionSettingUseCase) UpdateSubmissionSetting(sp
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	folderId := match[1]
-	return receiver.SettingRepository.UpdateSubmissionSetting(folderId, sheetName)
+	folderID := match[1]
+	return receiver.SettingRepository.UpdateSubmissionSetting(folderID, sheetName)
 }

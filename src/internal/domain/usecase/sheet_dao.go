@@ -29,7 +29,7 @@ func GetLocationListDao(c *gin.Context, req request.LocationSheetRequest) ([]res
 	if err != nil {
 		return resp, err
 	}
-	resps, err := sheetsService.Spreadsheets.Values.Get(req.SheetId, "sheet1").ValueRenderOption("FORMATTED_VALUE").Context(c).Do()
+	resps, err := sheetsService.Spreadsheets.Values.Get(req.SheetID, "sheet1").ValueRenderOption("FORMATTED_VALUE").Context(c).Do()
 	if err != nil {
 		return resp, err
 	}
@@ -44,7 +44,7 @@ func GetLocationListDao(c *gin.Context, req request.LocationSheetRequest) ([]res
 		for _, n := range locationName {
 			if !CheckLocationData(resp, m, n) {
 				resp = append(resp, response.ListLocationResponse{
-					LocationId:   m,
+					LocationID:   m,
 					LocationName: n,
 				})
 			}
@@ -55,7 +55,7 @@ func GetLocationListDao(c *gin.Context, req request.LocationSheetRequest) ([]res
 }
 func CheckLocationData(a []response.ListLocationResponse, id int64, location string) bool {
 	for _, n := range a {
-		if n.LocationId == id || n.LocationName == location {
+		if n.LocationID == id || n.LocationName == location {
 			return true
 		}
 	}

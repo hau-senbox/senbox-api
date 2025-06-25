@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bufio"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -20,6 +21,7 @@ type OrganizationController struct {
 	*usecase.ApproveOrgFormApplicationUseCase
 	*usecase.BlockOrgFormApplicationUseCase
 	*usecase.CreateOrgFormApplicationUseCase
+	*usecase.UploadOrgAvatarUseCase
 }
 
 func (receiver OrganizationController) GetAllOrganization(context *gin.Context) {
@@ -49,7 +51,7 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 			managers := make([]response.GetOrgManagerInfoResponse, 0)
 			for _, userOrg := range organization.UserOrgs {
 				managers = append(managers, response.GetOrgManagerInfoResponse{
-					UserId:       userOrg.UserID.String(),
+					UserID:       userOrg.UserID.String(),
 					UserNickName: userOrg.UserNickName,
 					IsManager:    userOrg.IsManager,
 				})
@@ -58,6 +60,8 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 			organizationResponse = append(organizationResponse, response.OrganizationResponse{
 				ID:               organization.ID.String(),
 				OrganizationName: organization.OrganizationName,
+				Avatar:           organization.Avatar,
+				AvatarURL:        organization.AvatarURL,
 				Address:          organization.Address,
 				Description:      organization.Description,
 				Managers:         managers,
@@ -71,7 +75,7 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 	})
 }
 
-func (receiver OrganizationController) GetOrganizationById(context *gin.Context) {
+func (receiver OrganizationController) GetOrganizationByID(context *gin.Context) {
 	organizationID := context.Param("id")
 	if organizationID == "" {
 		context.JSON(
@@ -83,7 +87,7 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 		return
 	}
 
-	organization, err := receiver.GetOrganizationUseCase.GetOrganizationById(organizationID)
+	organization, err := receiver.GetOrganizationUseCase.GetOrganizationByID(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Error: err.Error(),
@@ -96,7 +100,7 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 	managers := make([]response.GetOrgManagerInfoResponse, 0)
 	for _, userOrg := range organization.UserOrgs {
 		managers = append(managers, response.GetOrgManagerInfoResponse{
-			UserId:       userOrg.UserID.String(),
+			UserID:       userOrg.UserID.String(),
 			UserNickName: userOrg.UserNickName,
 			IsManager:    userOrg.IsManager,
 		})
@@ -107,6 +111,8 @@ func (receiver OrganizationController) GetOrganizationById(context *gin.Context)
 		Data: response.OrganizationResponse{
 			ID:               organization.ID.String(),
 			OrganizationName: organization.OrganizationName,
+			Avatar:           organization.Avatar,
+			AvatarURL:        organization.AvatarURL,
 			Address:          organization.Address,
 			Description:      organization.Description,
 			Managers:         managers,
@@ -139,7 +145,7 @@ func (receiver OrganizationController) GetOrganizationByName(context *gin.Contex
 	managers := make([]response.GetOrgManagerInfoResponse, 0)
 	for _, userOrg := range organization.UserOrgs {
 		managers = append(managers, response.GetOrgManagerInfoResponse{
-			UserId:       userOrg.UserID.String(),
+			UserID:       userOrg.UserID.String(),
 			UserNickName: userOrg.UserNickName,
 			IsManager:    userOrg.IsManager,
 		})
@@ -150,6 +156,8 @@ func (receiver OrganizationController) GetOrganizationByName(context *gin.Contex
 		Data: response.OrganizationResponse{
 			ID:               organization.ID.String(),
 			OrganizationName: organization.OrganizationName,
+			Avatar:           organization.Avatar,
+			AvatarURL:        organization.AvatarURL,
 			Address:          organization.Address,
 			Description:      organization.Description,
 			Managers:         managers,
@@ -248,7 +256,7 @@ func (receiver OrganizationController) GetAllUserByOrganization(context *gin.Con
 	var res []response.GetOrgManagerInfoResponse
 	for _, user := range users {
 		res = append(res, response.GetOrgManagerInfoResponse{
-			UserId:       user.UserID.String(),
+			UserID:       user.UserID.String(),
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
 		})
@@ -284,7 +292,7 @@ func (receiver OrganizationController) GetAllOrgFormApplication(context *gin.Con
 				Status:             application.Status.String(),
 				ApprovedAt:         "",
 				CreatedAt:          application.CreatedAt.Format("2006-01-02 15:04:05"),
-				UserId:             application.UserID.String(),
+				UserID:             application.UserID.String(),
 			}
 			if application.ApprovedAt != defaultTime {
 				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
@@ -337,7 +345,7 @@ func (receiver OrganizationController) GetOrgFormApplicationByID(context *gin.Co
 		Status:             application.Status.String(),
 		ApprovedAt:         "",
 		CreatedAt:          application.CreatedAt.Format("2006-01-02 15:04:05"),
-		UserId:             application.UserID.String(),
+		UserID:             application.UserID.String(),
 	}
 	if application.ApprovedAt != defaultTime {
 		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
@@ -456,5 +464,75 @@ func (receiver OrganizationController) CreateOrgFormApplication(context *gin.Con
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Application created successfully",
+	})
+}
+
+func (receiver OrganizationController) UploadAvatar(context *gin.Context) {
+	fileHeader, err := context.FormFile("file")
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	orgID := context.PostForm("organization_id")
+	if orgID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "organization id is required",
+		})
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	defer file.Close()
+
+	dataBytes := make([]byte, fileHeader.Size)
+	if _, err := bufio.NewReader(file).Read(dataBytes); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	url, img, err := receiver.UploadOrgAvatarUseCase.UploadAvatar(orgID, dataBytes, fileHeader.Filename)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	if url == nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "avatar was not created",
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "avatar was create successfully",
+		Data: response.ImageResponse{
+			ImageName: img.ImageName,
+			Key:       img.Key,
+			Extension: img.Extension,
+			Url:       *url,
+			Width:     img.Width,
+			Height:    img.Height,
+		},
 	})
 }

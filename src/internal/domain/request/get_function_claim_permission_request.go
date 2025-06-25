@@ -1,6 +1,6 @@
 package request
 
-type GetFunctionClaimPermissionByIdRequest struct {
+type GetFunctionClaimPermissionByIDRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 

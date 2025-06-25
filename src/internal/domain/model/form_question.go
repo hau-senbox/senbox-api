@@ -14,8 +14,9 @@ type FormQuestionItem struct {
 	Status           value.Status            `gorm:"type:int;not null;default:0"`
 	Order            int                     `gorm:"type:int;not null;default:0"`
 	AnswerRequired   bool                    `gorm:"type:tinyint(1);not null;default:0"`
+	AnswerRemember   bool                    `gorm:"type:tinyint(1);not null;default:0"`
 	EnableOnMobile   value.QuestionForMobile `gorm:"type:varchar(16);not null;default:'enabled'"`
-	QuestionUniqueId *string                 `gorm:"type:varchar(255);default:null"`
+	QuestionUniqueID *string                 `gorm:"type:varchar(255);default:null"`
 	CreatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 }

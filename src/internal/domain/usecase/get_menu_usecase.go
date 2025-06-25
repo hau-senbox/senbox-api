@@ -29,7 +29,7 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 }
 
 func (receiver *GetMenuUseCase) GetStudentMenu(userID string) ([]menu.UserMenu, error) {
-	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: userID})
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (receiver *GetMenuUseCase) GetStudentMenu(userID string) ([]menu.UserMenu, 
 }
 
 func (receiver *GetMenuUseCase) GetTeacherMenu(userID string) ([]menu.UserMenu, error) {
-	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: userID})
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (receiver *GetMenuUseCase) GetTeacherMenu(userID string) ([]menu.UserMenu, 
 }
 
 func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, error) {
-	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: userID})
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		return nil, err
 	}

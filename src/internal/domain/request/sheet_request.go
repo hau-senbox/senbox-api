@@ -1,7 +1,7 @@
 package request
 
 type SheetEntryRequest struct {
-	SheetId        string `json:"sheetId" binding:"required"`
+	SheetID        string `json:"sheetID" binding:"required"`
 	SheetName      string `json:"sheetName" binding:"required"`
 	DeviceName     string `json:"deviceName" binding:"required"`
 	Count          int64  `json:"count" binding:"required"`
@@ -15,5 +15,5 @@ type SheetEntryRequest struct {
 }
 
 type LocationSheetRequest struct {
-	SheetId string `json:"sheetId" binding:"required"`
+	SheetID string `json:"sheetID" binding:"required"`
 }

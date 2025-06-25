@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bufio"
 	"github.com/samber/lo"
 	"net/http"
 	"sen-global-api/internal/domain/entity"
@@ -31,6 +32,7 @@ type UserEntityController struct {
 	*usecase.CreateUserFormApplicationUseCase
 	*usecase.ApproveUserFormApplicationUseCase
 	*usecase.BlockUserFormApplicationUseCase
+	*usecase.UploadUserAvatarUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -50,17 +52,6 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			roleListResponse = append(roleListResponse, response.RoleListResponseData{
 				ID:       role.ID,
 				RoleName: role.Role.String(),
-			})
-		}
-	}
-
-	guardianListResponse := make([]response.UserEntityResponseData, 0)
-	if len(userEntity.Guardians) > 0 {
-		guardianListResponse = make([]response.UserEntityResponseData, 0)
-		for _, guardian := range userEntity.Guardians {
-			guardianListResponse = append(guardianListResponse, response.UserEntityResponseData{
-				ID:       guardian.ID.String(),
-				Username: guardian.Username,
 			})
 		}
 	}
@@ -91,12 +82,13 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
 			QRLogin:      userEntity.QRLogin,
+			Avatar:       userEntity.Avatar,
+			AvatarURL:    userEntity.AvatarURL,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
 			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
-			Guardians:    &guardianListResponse,
 			Devices:      &deviceListResponse,
 		},
 	})
@@ -140,10 +132,12 @@ func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
 		}
 
 		userResponse = append(userResponse, response.UserEntityResponseData{
-			ID:       user.ID.String(),
-			Username: user.Username,
-			Nickname: user.Nickname,
-			Roles:    roles,
+			ID:        user.ID.String(),
+			Username:  user.Username,
+			Nickname:  user.Nickname,
+			Avatar:    user.Avatar,
+			AvatarURL: user.AvatarURL,
+			Roles:     roles,
 		})
 	}
 
@@ -153,36 +147,9 @@ func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
 	})
 }
 
-func (receiver *UserEntityController) GetChildrenOfGuardian(context *gin.Context) {
-	userId := context.Param("id")
-	if userId == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: "user id is required",
-			},
-		)
-		return
-	}
-
-	users, err := receiver.GetUserEntityUseCase.GetChildrenOfGuardian(userId)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:  http.StatusInternalServerError,
-			Error: err.Error(),
-		})
-
-		return
-	}
-
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: *users,
-	})
-}
 func (receiver *UserEntityController) BlockUser(context *gin.Context) {
-	userId := context.Param("id")
-	if userId == "" {
+	userID := context.Param("id")
+	if userID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -192,7 +159,7 @@ func (receiver *UserEntityController) BlockUser(context *gin.Context) {
 		return
 	}
 
-	err := receiver.UpdateUserEntityUseCase.BlockUser(userId)
+	err := receiver.UpdateUserEntityUseCase.BlockUser(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -208,9 +175,9 @@ func (receiver *UserEntityController) BlockUser(context *gin.Context) {
 	})
 }
 
-func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
-	userId := context.Param("id")
-	if userId == "" {
+func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
+	userID := context.Param("id")
+	if userID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -220,11 +187,11 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 		return
 	}
 
-	userEntity, err := receiver.GetUserById(request.GetUserEntityByIdRequest{ID: userId})
+	userEntity, err := receiver.GetUserByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
-			Error: err.Error(),
+			Error: "Your phone has been unable to locate your account. Try log in again or contact our customer support via our webpage.",
 		})
 
 		return
@@ -237,17 +204,6 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 			roleListResponse = append(roleListResponse, response.RoleListResponseData{
 				ID:       role.ID,
 				RoleName: role.Role.String(),
-			})
-		}
-	}
-
-	guardianListResponse := make([]response.UserEntityResponseData, 0)
-	if len(userEntity.Guardians) > 0 {
-		guardianListResponse = make([]response.UserEntityResponseData, 0)
-		for _, guardian := range userEntity.Guardians {
-			guardianListResponse = append(guardianListResponse, response.UserEntityResponseData{
-				ID:       guardian.ID.String(),
-				Username: guardian.Username,
 			})
 		}
 	}
@@ -278,12 +234,13 @@ func (receiver *UserEntityController) GetUserEntityById(context *gin.Context) {
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
 			QRLogin:      userEntity.QRLogin,
+			Avatar:       userEntity.Avatar,
+			AvatarURL:    userEntity.AvatarURL,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
 			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
-			Guardians:    &guardianListResponse,
 			Devices:      &deviceListResponse,
 		},
 	})
@@ -322,17 +279,6 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 		}
 	}
 
-	guardianListResponse := make([]response.UserEntityResponseData, 0)
-	if len(userEntity.Guardians) > 0 {
-		guardianListResponse = make([]response.UserEntityResponseData, 0)
-		for _, guardian := range userEntity.Guardians {
-			guardianListResponse = append(guardianListResponse, response.UserEntityResponseData{
-				ID:       guardian.ID.String(),
-				Username: guardian.Username,
-			})
-		}
-	}
-
 	deviceListResponse := make([]string, 0)
 	if len(userEntity.Devices) > 0 {
 		deviceListResponse = make([]string, 0)
@@ -359,21 +305,22 @@ func (receiver *UserEntityController) GetUserEntityByName(context *gin.Context) 
 			Email:        userEntity.Email,
 			Dob:          userEntity.Birthday.Format("2006-01-02"),
 			QRLogin:      userEntity.QRLogin,
+			Avatar:       userEntity.Avatar,
+			AvatarURL:    userEntity.AvatarURL,
 			IsBlocked:    userEntity.IsBlocked,
 			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
 			Organization: organizations,
 			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
-			Guardians:    &guardianListResponse,
 			Devices:      &deviceListResponse,
 		},
 	})
 }
 
 func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
-	userId := context.Param("user_id")
+	userID := context.Param("user_id")
 	organizationID := context.Param("organization_id")
-	if userId == "" {
+	if userID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -393,7 +340,7 @@ func (receiver *UserEntityController) GetUserOrgInfo(context *gin.Context) {
 		return
 	}
 
-	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userId, organizationID)
+	user, err := receiver.GetUserEntityUseCase.GetUserOrgInfo(userID, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -437,7 +384,7 @@ func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context)
 	var res []response.GetOrgManagerInfoResponse
 	for _, user := range *users {
 		res = append(res, response.GetOrgManagerInfoResponse{
-			UserId:       user.UserID.String(),
+			UserID:       user.UserID.String(),
 			UserNickName: user.UserNickName,
 			IsManager:    user.IsManager,
 		})
@@ -450,8 +397,8 @@ func (receiver *UserEntityController) GetAllOrgManagerInfo(context *gin.Context)
 }
 
 func (receiver *UserEntityController) GetAllUserAuthorize(context *gin.Context) {
-	userId := context.Param("id")
-	if userId == "" {
+	userID := context.Param("id")
+	if userID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -461,7 +408,7 @@ func (receiver *UserEntityController) GetAllUserAuthorize(context *gin.Context) 
 		return
 	}
 
-	rights, err := receiver.GetUserEntityUseCase.GetAllUserAuthorize(userId)
+	rights, err := receiver.GetUserEntityUseCase.GetAllUserAuthorize(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -480,13 +427,13 @@ func (receiver *UserEntityController) GetAllUserAuthorize(context *gin.Context) 
 	}
 
 	type functionAuthorizeResponse struct {
-		FunctionClaimId int64  `json:"function_claim_id"`
+		FunctionClaimID int64  `json:"function_claim_id"`
 		FunctionName    string `json:"function_name"`
-		PermissionId    int64  `json:"permission_id"`
+		PermissionID    int64  `json:"permission_id"`
 		PermissionName  string `json:"permission_name"`
 	}
 	type getAllUserAuthorizeResponse struct {
-		UserId            string                      `json:"user_id"`
+		UserID            string                      `json:"user_id"`
 		Username          string                      `json:"username"`
 		FunctionAuthorize []functionAuthorizeResponse `json:"function_authorize"`
 	}
@@ -494,15 +441,15 @@ func (receiver *UserEntityController) GetAllUserAuthorize(context *gin.Context) 
 	var functionAuthorize []functionAuthorizeResponse
 	for _, right := range rights {
 		functionAuthorize = append(functionAuthorize, functionAuthorizeResponse{
-			FunctionClaimId: right.FunctionClaimId,
+			FunctionClaimID: right.FunctionClaimID,
 			FunctionName:    right.FunctionClaim.FunctionName,
-			PermissionId:    right.FunctionClaimPermissionId,
+			PermissionID:    right.FunctionClaimPermissionID,
 			PermissionName:  right.FunctionClaimPermission.PermissionName,
 		})
 	}
 
 	res := &getAllUserAuthorizeResponse{
-		UserId:            userId,
+		UserID:            userID,
 		Username:          rights[0].User.Username,
 		FunctionAuthorize: functionAuthorize,
 	}
@@ -1359,5 +1306,75 @@ func (receiver *UserEntityController) CreateStudentFormApplication(context *gin.
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Application created successfully",
+	})
+}
+
+func (receiver *UserEntityController) UploadAvatar(context *gin.Context) {
+	fileHeader, err := context.FormFile("file")
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	userID := context.PostForm("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "user id is required",
+		})
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	defer file.Close()
+
+	dataBytes := make([]byte, fileHeader.Size)
+	if _, err := bufio.NewReader(file).Read(dataBytes); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	url, img, err := receiver.UploadUserAvatarUseCase.UploadAvatar(userID, dataBytes, fileHeader.Filename)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	if url == nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "avatar was not created",
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "avatar was create successfully",
+		Data: response.ImageResponse{
+			ImageName: img.ImageName,
+			Key:       img.Key,
+			Extension: img.Extension,
+			Url:       *url,
+			Width:     img.Width,
+			Height:    img.Height,
+		},
 	})
 }

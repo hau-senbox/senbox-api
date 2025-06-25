@@ -1,5 +1,7 @@
 package response
 
+import "sen-global-api/internal/domain/value"
+
 type DeviceComponentValuesResponse struct {
 	ID           int             `json:"id"`
 	Setting      SettingResponse `json:"setting"`
@@ -27,8 +29,8 @@ type ComponentSettingResponse struct {
 }
 
 type ComponentConditionResponse struct {
-	ConditionName  string  `json:"condition_name"`
-	ConditionValue *string `json:"condition_value"`
-	DelayDisplay   *int    `json:"delay_display"`
-	Priority       int     `json:"priority"`
+	ConditionName string                   `json:"condition_name"`
+	ConditionKey  value.DeviceConditionKey `json:"condition_key"`
+	DelayDisplay  *int                     `json:"delay_display"`
+	Priority      int                      `json:"priority"`
 }

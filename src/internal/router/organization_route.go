@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/uploader"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,16 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 
 		TokenExpireTimeInHour: time.Duration(config.TokenExpireDurationInHour),
 	}
+
+	provider := uploader.NewS3Provider(
+		config.S3.SenboxFormSubmitBucket.AccessKey,
+		config.S3.SenboxFormSubmitBucket.SecretKey,
+		config.S3.SenboxFormSubmitBucket.BucketName,
+		config.S3.SenboxFormSubmitBucket.Region,
+		config.S3.SenboxFormSubmitBucket.Domain,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
+	)
 
 	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
 
@@ -49,18 +60,30 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 		},
+		UploadOrgAvatarUseCase: &usecase.UploadOrgAvatarUseCase{
+			OrganizationRepository: repository.OrganizationRepository{DBConn: dbConn},
+			UploadImageUseCase: usecase.UploadImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+			DeleteImageUseCase: usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+		},
 	}
 
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
-	user := engine.Group("/v1/organization")
+	org := engine.Group("/v1/organization")
 	{
-		user.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrganization)
-		user.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrganizationById)
-		user.GET("/name", secureMiddleware.Secured(), organizationController.GetOrganizationByName)
-		user.GET("/:id/users", secureMiddleware.Secured(), organizationController.GetAllUserByOrganization)
-		user.POST("/", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.CreateOrganization)
-		user.POST("/join", secureMiddleware.Secured(), organizationController.UserJoinOrganization)
+		org.GET("/", secureMiddleware.Secured(), organizationController.GetAllOrganization)
+		org.GET("/:id", secureMiddleware.Secured(), organizationController.GetOrganizationByID)
+		org.GET("/name", secureMiddleware.Secured(), organizationController.GetOrganizationByName)
+		org.GET("/:id/users", secureMiddleware.Secured(), organizationController.GetAllUserByOrganization)
+		org.POST("/", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.CreateOrganization)
+		org.POST("/join", secureMiddleware.Secured(), organizationController.UserJoinOrganization)
+		org.POST("/avatar", secureMiddleware.Secured(), organizationController.UploadAvatar)
 	}
 
 	application := engine.Group("/v1/organization/application")

@@ -23,7 +23,7 @@ type Database struct {
 	Password    string `env-required:"true" yaml:"password" env:"DATABASE_PASSWORD"`
 	Database    string `env-required:"true" yaml:"database" env:"DATABASE_NAME"`
 	MaxConn     int    `env-required:"true" yaml:"max_conn" env:"DATABASE_MAX_CONN"`
-	MaxIdleConn int    `env-required:"true" yaml:"max_idle_conn" env:"DATABASE_MAX_IDLE_CONN"`
+	MaxIDleConn int    `env-required:"true" yaml:"max_idle_conn" env:"DATABASE_MAX_IDLE_CONN"`
 	MaxLifetime int    `env-required:"true" yaml:"max_lifetime_conn" env:"DATABASE_MAX_LIFETIME_CONN"`
 }
 

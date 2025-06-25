@@ -7,5 +7,5 @@ type OrgFormApplicationResponse struct {
 	Status             string `json:"status"`
 	ApprovedAt         string `json:"approved_at"`
 	CreatedAt          string `json:"created_at"`
-	UserId             string `json:"user_id"`
+	UserID             string `json:"user_id"`
 }

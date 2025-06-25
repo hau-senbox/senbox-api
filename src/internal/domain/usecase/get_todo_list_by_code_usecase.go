@@ -26,7 +26,7 @@ func NewGetToDoListByQRCodeUseCase(cfg config.AppConfig, db *gorm.DB, r *sheet.R
 }
 
 func (c *GetToDoListByQRCodeUseCase) Execute(qrCode string) (entity.SToDo, error) {
-	todo, err := c.FindById(qrCode, c.dbConn)
+	todo, err := c.FindByID(qrCode, c.dbConn)
 	if err != nil {
 		return entity.SToDo{}, err
 	}
@@ -44,7 +44,7 @@ func (c *GetToDoListByQRCodeUseCase) Execute(qrCode string) (entity.SToDo, error
 
 func (c *GetToDoListByQRCodeUseCase) getTasksByComposeTodo(todo entity.SToDo) (entity.SToDo, error) {
 	res, err := c.r.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: todo.SpreadsheetID,
+		SpreadsheetID: todo.SpreadsheetID,
 		ReadRange:     todo.SheetName + "!K11:K11",
 	})
 

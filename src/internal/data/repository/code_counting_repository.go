@@ -84,10 +84,10 @@ func (receiver *CodeCountingRepository) CreateForQuestion(question entity.SQuest
 	return att.Value + strconv.Itoa(codeCounting.CurrentValue), nil
 }
 
-func (receiver *CodeCountingRepository) CreateForQuestionWithID(questionId string, db *gorm.DB) (string, error) {
+func (receiver *CodeCountingRepository) CreateForQuestionWithID(questionID string, db *gorm.DB) (string, error) {
 	var q entity.SQuestion
 
-	err := db.Where("id = ?", questionId).First(&q).Error
+	err := db.Where("id = ?", questionID).First(&q).Error
 	if err != nil {
 		log.Error(err)
 		return "", err
@@ -181,7 +181,7 @@ func (receiver *CodeCountingRepository) UpdateCodeCounting(conn *gorm.DB, rq req
 		return err
 	}
 
-	//Delete records in s_code_counting table where token = rq.Prefix except rq.RoleId
+	//Delete records in s_code_counting table where token = rq.Prefix except rq.RoleID
 	err = conn.Where("token = ?", codeCounting.Token).Not("id = ?", rq.ID).Delete(&entity.SCodeCounting{}).Error
 	if err != nil {
 		log.Error(err)

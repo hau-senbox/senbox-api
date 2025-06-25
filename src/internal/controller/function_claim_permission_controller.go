@@ -18,8 +18,8 @@ type FunctionClaimPermissionController struct {
 }
 
 func (receiver *FunctionClaimPermissionController) GetAllFunctionClaimPermission(context *gin.Context) {
-	functionClaimId := context.Param("function_claim_id")
-	if functionClaimId == "" {
+	functionClaimID := context.Param("function_claim_id")
+	if functionClaimID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -29,7 +29,7 @@ func (receiver *FunctionClaimPermissionController) GetAllFunctionClaimPermission
 		return
 	}
 
-	id, err := strconv.ParseUint(functionClaimId, 10, 32)
+	id, err := strconv.ParseUint(functionClaimID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -64,9 +64,9 @@ func (receiver *FunctionClaimPermissionController) GetAllFunctionClaimPermission
 	})
 }
 
-func (receiver *FunctionClaimPermissionController) GetFunctionClaimPermissionById(context *gin.Context) {
-	permissionId := context.Param("id")
-	if permissionId == "" {
+func (receiver *FunctionClaimPermissionController) GetFunctionClaimPermissionByID(context *gin.Context) {
+	permissionID := context.Param("id")
+	if permissionID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -76,7 +76,7 @@ func (receiver *FunctionClaimPermissionController) GetFunctionClaimPermissionByI
 		return
 	}
 
-	id, err := strconv.ParseUint(permissionId, 10, 32)
+	id, err := strconv.ParseUint(permissionID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -87,7 +87,7 @@ func (receiver *FunctionClaimPermissionController) GetFunctionClaimPermissionByI
 		return
 	}
 
-	functionClaimPermission, err := receiver.GetFunctionClaimPermissionUseCase.GetFunctionClaimPermissionById(request.GetFunctionClaimPermissionByIdRequest{ID: uint(id)})
+	functionClaimPermission, err := receiver.GetFunctionClaimPermissionUseCase.GetFunctionClaimPermissionByID(request.GetFunctionClaimPermissionByIDRequest{ID: uint(id)})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -185,8 +185,8 @@ func (receiver *FunctionClaimPermissionController) UpdateRoleClaimPermission(con
 }
 
 func (receiver *FunctionClaimPermissionController) DeleteRoleClaimPermission(context *gin.Context) {
-	permissionId := context.Param("id")
-	if permissionId == "" {
+	permissionID := context.Param("id")
+	if permissionID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -196,7 +196,7 @@ func (receiver *FunctionClaimPermissionController) DeleteRoleClaimPermission(con
 		return
 	}
 
-	id, err := strconv.ParseUint(permissionId, 10, 32)
+	id, err := strconv.ParseUint(permissionID, 10, 32)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{

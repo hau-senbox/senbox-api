@@ -18,9 +18,9 @@ func NewFunctionClaimPermissionRepository(dbConn *gorm.DB) *FunctionClaimPermiss
 	return &FunctionClaimPermissionRepository{DBConn: dbConn}
 }
 
-func (receiver *FunctionClaimPermissionRepository) GetAllByFunctionClaim(functionClaimId int64) ([]entity.SFunctionClaimPermission, error) {
+func (receiver *FunctionClaimPermissionRepository) GetAllByFunctionClaim(functionClaimID int64) ([]entity.SFunctionClaimPermission, error) {
 	var permissions []entity.SFunctionClaimPermission
-	err := receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where("function_claim_id = ?", functionClaimId).Find(&permissions).Error
+	err := receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where("function_claim_id = ?", functionClaimID).Find(&permissions).Error
 	if err != nil {
 		log.Error("FunctionClaimPermissionRepository.GetAll: " + err.Error())
 		return nil, errors.New("failed to get all permissions")
@@ -29,7 +29,7 @@ func (receiver *FunctionClaimPermissionRepository) GetAllByFunctionClaim(functio
 	return permissions, err
 }
 
-func (receiver *FunctionClaimPermissionRepository) GetByID(req request.GetFunctionClaimPermissionByIdRequest) (*entity.SFunctionClaimPermission, error) {
+func (receiver *FunctionClaimPermissionRepository) GetByID(req request.GetFunctionClaimPermissionByIDRequest) (*entity.SFunctionClaimPermission, error) {
 	var permission entity.SFunctionClaimPermission
 	err := receiver.DBConn.Where("id = ?", req.ID).First(&permission).Error
 	if err != nil {
@@ -52,7 +52,7 @@ func (receiver *FunctionClaimPermissionRepository) GetByName(req request.GetFunc
 func (receiver *FunctionClaimPermissionRepository) CreateFunctionClaimPermission(req request.CreateFunctionClaimPermissionRequest) error {
 	var permissionCount int64
 	err := receiver.DBConn.Model(&entity.SFunctionClaimPermission{}).
-		Where("permission_name = ? AND function_claim_id = ?", req.PermissionName, req.FunctionClaimId).
+		Where("permission_name = ? AND function_claim_id = ?", req.PermissionName, req.FunctionClaimID).
 		Count(&permissionCount).Error
 	if err != nil {
 		return fmt.Errorf("FunctionClaimPermissionRepository.CreateFunctionClaimPermission: %w", err)
@@ -65,7 +65,7 @@ func (receiver *FunctionClaimPermissionRepository) CreateFunctionClaimPermission
 
 	permissionReq := entity.SFunctionClaimPermission{
 		PermissionName:  req.PermissionName,
-		FunctionClaimId: req.FunctionClaimId,
+		FunctionClaimID: req.FunctionClaimID,
 	}
 	permissionResult := receiver.DBConn.Create(&permissionReq)
 
@@ -78,10 +78,10 @@ func (receiver *FunctionClaimPermissionRepository) CreateFunctionClaimPermission
 }
 
 func (receiver *FunctionClaimPermissionRepository) UpdateFunctionClaimPermission(req request.UpdateFunctionClaimPermissionRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SFunctionClaimPermission{}).Where("id = ?", req.PermissionId).
+	updateResult := receiver.DBConn.Model(&entity.SFunctionClaimPermission{}).Where("id = ?", req.PermissionID).
 		Updates(map[string]interface{}{
 			"permission_name":   req.PermissionName,
-			"function_claim_id": req.FunctionClaimId,
+			"function_claim_id": req.FunctionClaimID,
 		})
 
 	if updateResult.Error != nil {

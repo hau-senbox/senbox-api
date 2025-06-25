@@ -77,7 +77,7 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 	}
 
 	type EmailSetting struct {
-		SpreadsheetId string `json:"spreadsheet_id"`
+		SpreadsheetID string `json:"spreadsheet_id"`
 	}
 
 	var emailSettings *EmailSetting = nil
@@ -101,7 +101,7 @@ func (receiver *SendEmailUseCase) logHistory(target string, subject string, devi
 		Range:     "History!K11",
 		Dimension: "COLUMNS",
 		Rows:      log,
-	}, emailSettings.SpreadsheetId)
+	}, emailSettings.SpreadsheetID)
 
 	if err != nil {
 		return

@@ -5,10 +5,10 @@ import (
 	"sen-global-api/internal/domain/entity"
 )
 
-type GetQuestionByIdUseCase struct {
+type GetQuestionByIDUseCase struct {
 	repository.QuestionRepository
 }
 
-func (receiver *GetQuestionByIdUseCase) GetQuestionById(id string) (*entity.SQuestion, error) {
-	return receiver.FindById(id)
+func (receiver *GetQuestionByIDUseCase) GetQuestionByID(id string) (*entity.SQuestion, error) {
+	return receiver.FindByID(id)
 }

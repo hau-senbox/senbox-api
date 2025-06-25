@@ -18,7 +18,7 @@ func (receiver *UpdateOutputSummarySettingUseCase) UpdateOutputSummarySetting(sp
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 
-	return receiver.SettingRepository.UpdateOutputSummarySetting(spreadsheetId)
+	return receiver.SettingRepository.UpdateOutputSummarySetting(spreadsheetID)
 }

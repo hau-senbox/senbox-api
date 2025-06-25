@@ -35,9 +35,9 @@ func (receiver *ImportRedirectUrlsUseCase) SyncUrls(req request.ImportRedirectUr
 		return nil
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     "URL_FORWARD!K12:O",
 	})
 	if err != nil {
@@ -54,7 +54,7 @@ func (receiver *ImportRedirectUrlsUseCase) SyncUrls(req request.ImportRedirectUr
 					Range:     "URL_FORWARD!O" + strconv.Itoa(rowNo+12) + "P",
 					Dimension: "ROWS",
 					Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
-				}, spreadsheetId)
+				}, spreadsheetID)
 				if err != nil {
 					log.Debug("Row No: ", rowNo)
 					log.Error(err)
@@ -83,9 +83,9 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 		return err
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     "URL_FORWARD!K12:T",
 	})
 	if err != nil {
@@ -111,7 +111,7 @@ func (receiver *ImportRedirectUrlsUseCase) Import(req request.ImportRedirectUrls
 					Range:     "URL_FORWARD!P" + strconv.Itoa(rowNo+12) + ":Q",
 					Dimension: "ROWS",
 					Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
-				}, spreadsheetId)
+				}, spreadsheetID)
 				if err != nil {
 					log.Errorf("ROW NO %d: %v", rowNo, err)
 				}
@@ -135,11 +135,11 @@ func (receiver *ImportRedirectUrlsUseCase) ImportPartially(url string, sheetName
 	if len(match) < 2 {
 		return fmt.Errorf("invalid spreadsheet url")
 	}
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetName + `!K12:T`,
 	})
 	if err != nil {
@@ -165,7 +165,7 @@ func (receiver *ImportRedirectUrlsUseCase) ImportPartially(url string, sheetName
 					Range:     sheetName + "!P" + strconv.Itoa(rowNo+12) + ":Q",
 					Dimension: "ROWS",
 					Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
-				}, spreadsheetId)
+				}, spreadsheetID)
 				if err != nil {
 					log.Debug("Row No: ", rowNo)
 					log.Error(err)

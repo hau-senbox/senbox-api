@@ -127,7 +127,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				Writer:            userSpreadsheet.Writer,
 				Reader:            userSpreadsheet.Reader,
 			},
-			GetDeviceByIdUseCase: &usecase.GetDeviceByIdUseCase{
+			GetDeviceByIDUseCase: &usecase.GetDeviceByIDUseCase{
 				DeviceRepository: deviceRepository,
 			},
 			GetDeviceListUseCase: &usecase.GetDeviceListUseCase{

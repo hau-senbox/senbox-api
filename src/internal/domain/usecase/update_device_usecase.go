@@ -15,8 +15,8 @@ type UpdateDeviceUseCase struct {
 	*sheet.Writer
 }
 
-func (receiver *UpdateDeviceUseCase) UpdateDevice(deviceId string, req request.UpdateDeviceRequest) (*entity.SDevice, error) {
-	device, err := receiver.GetDeviceById(deviceId)
+func (receiver *UpdateDeviceUseCase) UpdateDevice(deviceID string, req request.UpdateDeviceRequest) (*entity.SDevice, error) {
+	device, err := receiver.GetDeviceByID(deviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (receiver *UpdateDeviceUseCase) UpdateDevice(deviceId string, req request.U
 	return dv, nil
 }
 
-func (receiver *UpdateDeviceUseCase) UpdateDeviceV2(deviceId string, req request.UpdateDeviceRequestV2) (*entity.SDevice, error) {
-	device, err := receiver.GetDeviceById(deviceId)
+func (receiver *UpdateDeviceUseCase) UpdateDeviceV2(deviceID string, req request.UpdateDeviceRequestV2) (*entity.SDevice, error) {
+	device, err := receiver.GetDeviceByID(deviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (receiver *UpdateDeviceUseCase) UpdateDeviceV2(deviceId string, req request
 		device.Status = value.DeviceMode(*req.Status)
 	}
 	if req.OutputSpreadsheetUrl != nil {
-		// device.SpreadsheetId = *req.OutputSpreadsheetUrl
+		// device.SpreadsheetID = *req.OutputSpreadsheetUrl
 	}
 	if req.ButtonUrl != nil {
 		device.ButtonUrl = *req.ButtonUrl

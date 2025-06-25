@@ -22,9 +22,9 @@ func (receiver *MobileDeviceRepository) Save(device entity.SMobileDevice, db *go
 	return device, err
 }
 
-func (receiver *MobileDeviceRepository) FindByDeviceID(deviceId string, db *gorm.DB) (entity.SMobileDevice, error) {
+func (receiver *MobileDeviceRepository) FindByDeviceID(deviceID string, db *gorm.DB) (entity.SMobileDevice, error) {
 	var d entity.SMobileDevice
-	err := db.Where("device_id = ?", deviceId).First(&d).Error
+	err := db.Where("device_id = ?", deviceID).First(&d).Error
 
 	return d, err
 }

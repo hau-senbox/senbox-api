@@ -15,14 +15,14 @@ func NewImageRepository(dbConn *gorm.DB) *ImageRepository {
 	return &ImageRepository{DBConn: dbConn}
 }
 
-func (receiver *ImageRepository) GetAllByIds(ids []int) ([]entity.SImage, error) {
+func (receiver *ImageRepository) GetAllByIDs(ids []int) ([]entity.SImage, error) {
 	var images []entity.SImage
 	err := receiver.DBConn.Table(entity.SImage{}.TableName()).Find(&images).Where("id IN (?)", ids).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return []entity.SImage{}, nil
 		}
-		log.Error("ImageRepository.GetAllByIds: " + err.Error())
+		log.Error("ImageRepository.GetAllByIDs: " + err.Error())
 		return nil, errors.New("failed to get images")
 	}
 

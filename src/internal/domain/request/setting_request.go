@@ -2,10 +2,10 @@ package request
 
 type SettingEntryRequest struct {
 	Uid             string `json:"uid"`
-	LocationId      int64  `json:"locationId"`
-	SheetId         string `json:"sheetId"`
+	LocationID      int64  `json:"locationID"`
+	SheetID         string `json:"sheetID"`
 	SheetName       string `json:"sheetName"`
-	SheetLocationId string `json:"sheetLocationId"`
+	SheetLocationID string `json:"sheetLocationID"`
 	DeviceName      string `json:"deviceName"`
 	Mac             string `json:"mac"`
 }
@@ -25,10 +25,10 @@ type DeleteDeviceRequest struct {
 type AdminDeviceUpdateRequest struct {
 	MacAddress      string `json:"macAddress"`
 	DeviceName      string `json:"deviceName"`
-	SheetId         string `json:"sheetId"`
+	SheetID         string `json:"sheetID"`
 	SheetName       string `json:"sheetName"`
-	SheetLocationId string `json:"sheetLocationId"`
-	LocationId      int64  `json:"locationId"`
+	SheetLocationID string `json:"sheetLocationID"`
+	LocationID      int64  `json:"locationID"`
 	SendEmailTo     string `json:"sendEmailTo"`
 	Note            string `json:"note"`
 }

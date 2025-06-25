@@ -23,8 +23,8 @@ type UpdateFormUseCase struct {
 	SpreadsheetReader *sheet.Reader
 }
 
-func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.UpdateFormRequest) (*entity.SForm, error) {
-	form, err := receiver.GetFormById(uint64(formId))
+func (receiver *UpdateFormUseCase) UpdateForm(formID int, request request.UpdateFormRequest) (*entity.SForm, error) {
+	form, err := receiver.GetFormByID(uint64(formID))
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.Update
 		form.Password = *request.Password
 	}
 
-	rawQuestions, err := receiver.getRawQuestions(form.SpreadsheetId)
+	rawQuestions, err := receiver.getRawQuestions(form.SpreadsheetID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +51,9 @@ func (receiver *UpdateFormUseCase) UpdateForm(formId int, request request.Update
 	return receiver.FormRepository.UpdateForm(form)
 }
 
-func (receiver *UpdateFormUseCase) getRawQuestions(spreadsheetId string) ([]parameters.RawQuestion, error) {
+func (receiver *UpdateFormUseCase) getRawQuestions(spreadsheetID string) ([]parameters.RawQuestion, error) {
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     "Questions!A2:G",
 	})
 	if err != nil {
@@ -67,7 +67,7 @@ func (receiver *UpdateFormUseCase) getRawQuestions(spreadsheetId string) ([]para
 				continue
 			}
 			item := parameters.RawQuestion{
-				QuestionId:        spreadsheetId + "_" + row[0].(string),
+				QuestionID:        spreadsheetID + "_" + row[0].(string),
 				Question:          row[2].(string),
 				Type:              row[1].(string),
 				Attributes:        strings.ReplaceAll(row[3].(string), "\n", ""),
@@ -102,7 +102,7 @@ func (receiver *UpdateFormUseCase) syncQuestions(rawQuestions []parameters.RawQu
 		}
 
 		param := repository.CreateQuestionParams{
-			ID:           rawQuestion.QuestionId,
+			ID:           rawQuestion.QuestionID,
 			Question:     rawQuestion.Question,
 			QuestionType: strings.ToLower(rawQuestion.Type),
 			Attributes:   attString,

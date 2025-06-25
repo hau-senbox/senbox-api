@@ -9,13 +9,13 @@ import (
 )
 
 type GetRawQuestionFromSpreadsheetUseCase struct {
-	SpreadsheetId     string
+	SpreadsheetID     string
 	SpreadsheetReader *sheet.Reader
 }
 
 func (receiver *GetRawQuestionFromSpreadsheetUseCase) GetRawQuestions() ([]parameters.RawQuestion, error) {
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: receiver.SpreadsheetId,
+		SpreadsheetID: receiver.SpreadsheetID,
 		ReadRange:     "Questions!A2:F",
 	})
 	if err != nil {
@@ -26,7 +26,7 @@ func (receiver *GetRawQuestionFromSpreadsheetUseCase) GetRawQuestions() ([]param
 	for index, row := range values {
 		if len(row) == 6 && cap(row) == 6 {
 			item := parameters.RawQuestion{
-				QuestionId:        row[0].(string),
+				QuestionID:        row[0].(string),
 				Question:          row[2].(string),
 				Type:              row[1].(string),
 				Attributes:        strings.ReplaceAll(row[3].(string), "\n", ""),

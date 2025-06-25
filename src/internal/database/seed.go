@@ -44,7 +44,6 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SDeviceComponentValues{},
 		&entity.SRole{},
 		&entity.SUserEntity{},
-		&entity.SUserGuardians{},
 		&entity.SUserRoles{},
 		&entity.SFunctionClaim{},
 		&entity.SFunctionClaimPermission{},
@@ -63,6 +62,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SStudentFormApplication{},
 		&entity.STeacherFormApplication{},
 		&entity.SOrgDevices{},
+		&entity.MemoryComponentValue{},
 	)
 
 	// Seed
@@ -90,7 +90,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 	}
 
 	// var superAdmin = &entity.SUserEntity{
-	// 	RoleId:             uuid.New(),
+	// 	RoleID:             uuid.New(),
 	// 	Username:       "root",
 	// 	Fullname:       "Senbox Super Administrator",
 	// 	Birthday:       time.Time{},

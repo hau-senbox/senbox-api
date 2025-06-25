@@ -13,7 +13,7 @@ type SForm struct {
 	Note           string         `gorm:"type:varchar(255);not null;unique"`
 	Name           string         `gorm:"type:varchar(1000);not null;default:''"`
 	SpreadsheetUrl string         `gorm:"type:varchar(255);not null"`
-	SpreadsheetId  string         `gorm:"type:varchar(255);not null"`
+	SpreadsheetID  string         `gorm:"type:varchar(255);not null"`
 	Password       string         `gorm:"type:varchar(255);"`
 	Status         value.Status   `gorm:"type:tinyint;not null;default:1"`
 	SheetName      string         `gorm:"type:varchar(255);not null;default:'Questions'"`

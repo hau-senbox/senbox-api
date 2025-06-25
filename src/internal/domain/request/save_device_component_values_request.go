@@ -1,5 +1,7 @@
 package request
 
+import "sen-global-api/internal/domain/value"
+
 type SaveDeviceComponentValuesByOrganizationRequest struct {
 	ID           *uint              `json:"id"`
 	Settings     SaveSettingRequest `json:"setting" binding:"required"`
@@ -32,8 +34,8 @@ type SaveComponentSettingRequest struct {
 }
 
 type SaveComponentConditionsRequest struct {
-	ConditionName  string  `json:"condition_name" binding:"required"`
-	ConditionValue *string `json:"condition_value"`
-	DelayDisplay   *int    `json:"delay_display"`
-	Priority       int     `json:"priority" binding:"required"`
+	ConditionName string                   `json:"condition_name" binding:"required"`
+	ConditionKey  value.DeviceConditionKey `json:"condition_key"`
+	DelayDisplay  *int                     `json:"delay_display"`
+	Priority      int                      `json:"priority" binding:"required"`
 }

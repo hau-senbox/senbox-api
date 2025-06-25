@@ -18,7 +18,7 @@ type WriteRangeParams struct {
 }
 
 type ClearRangeParams struct {
-	SpreadsheetId string
+	SpreadsheetID string
 	Range         string
 }
 
@@ -28,13 +28,13 @@ type AppendParams struct {
 	Rows      [][]interface{}
 }
 
-func (receiver Writer) WriteRanges(params WriteRangeParams, spreadsheetId string) (*sheets.AppendValuesResponse, error) {
+func (receiver Writer) WriteRanges(params WriteRangeParams, spreadsheetID string) (*sheets.AppendValuesResponse, error) {
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
 		Values:         params.Rows,
 	}
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetId, params.Range, updateValues).ValueInputOption("RAW").Do()
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetID, params.Range, updateValues).ValueInputOption("RAW").Do()
 	if err != nil {
 		log.Error("Unable to append data from sheet: ", err)
 		return nil, err
@@ -43,13 +43,13 @@ func (receiver Writer) WriteRanges(params WriteRangeParams, spreadsheetId string
 	return resp, nil
 }
 
-func (receiver Writer) WriteRangesAsUserEntered(params WriteRangeParams, spreadsheetId string) (*sheets.AppendValuesResponse, error) {
+func (receiver Writer) WriteRangesAsUserEntered(params WriteRangeParams, spreadsheetID string) (*sheets.AppendValuesResponse, error) {
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
 		Values:         params.Rows,
 	}
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetId, params.Range, updateValues).ValueInputOption("USER_ENTERED").Do()
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetID, params.Range, updateValues).ValueInputOption("USER_ENTERED").Do()
 	if err != nil {
 		log.Error("Unable to append data from sheet: ", err)
 		return nil, err
@@ -58,13 +58,13 @@ func (receiver Writer) WriteRangesAsUserEntered(params WriteRangeParams, spreads
 	return resp, nil
 }
 
-func (receiver Writer) UpdateRange(params WriteRangeParams, spreadsheetId string) (*sheets.UpdateValuesResponse, error) {
+func (receiver Writer) UpdateRange(params WriteRangeParams, spreadsheetID string) (*sheets.UpdateValuesResponse, error) {
 	var updateValues = &sheets.ValueRange{
 		MajorDimension: params.Dimension,
 		Range:          params.Range,
 		Values:         params.Rows,
 	}
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Update(spreadsheetId, params.Range, updateValues).ValueInputOption("RAW").Do()
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Update(spreadsheetID, params.Range, updateValues).ValueInputOption("RAW").Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet: ", err)
 		return nil, err
@@ -73,7 +73,7 @@ func (receiver Writer) UpdateRange(params WriteRangeParams, spreadsheetId string
 	return resp, nil
 }
 
-func (receiver Writer) UpdateRanges(spreadsheetId string, params []WriteRangeParams) error {
+func (receiver Writer) UpdateRanges(spreadsheetID string, params []WriteRangeParams) error {
 	rbb := &sheets.BatchUpdateSpreadsheetRequest{}
 	//for _, p := range params {
 	//	rbb.Requests = append(rbb.Requests, &sheets.Request{
@@ -98,7 +98,7 @@ func (receiver Writer) UpdateRanges(spreadsheetId string, params []WriteRangePar
 	//	})
 	//}
 
-	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
+	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetID, rbb).Do()
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (receiver Writer) UpdateRanges(spreadsheetId string, params []WriteRangePar
 	return err
 }
 
-func (receiver Writer) CreateSheet(sheetName string, spreadsheetId string) error {
+func (receiver Writer) CreateSheet(sheetName string, spreadsheetID string) error {
 	req := sheets.Request{
 		AddSheet: &sheets.AddSheetRequest{
 			Properties: &sheets.SheetProperties{
@@ -119,7 +119,7 @@ func (receiver Writer) CreateSheet(sheetName string, spreadsheetId string) error
 		Requests: []*sheets.Request{&req},
 	}
 
-	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetId, rbb).Do()
+	_, err := receiver.sheetsService.Spreadsheets.BatchUpdate(spreadsheetID, rbb).Do()
 	if err != nil {
 		return err
 	}
@@ -127,14 +127,14 @@ func (receiver Writer) CreateSheet(sheetName string, spreadsheetId string) error
 	return nil
 }
 
-func (receiver Writer) AppendSheet(params AppendParams, spreadsheetId string) (*sheets.UpdateValuesResponse, error) {
+func (receiver Writer) AppendSheet(params AppendParams, spreadsheetID string) (*sheets.UpdateValuesResponse, error) {
 	data := &sheets.ValueRange{
 		Range:          params.SheetName,
 		MajorDimension: params.Dimension,
 		Values:         params.Rows,
 	}
 
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetId, params.SheetName, data).ValueInputOption("RAW").Do()
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Append(spreadsheetID, params.SheetName, data).ValueInputOption("RAW").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (receiver Writer) AppendSheet(params AppendParams, spreadsheetId string) (*
 
 func (receiver Writer) ClearRange(params ClearRangeParams) (*sheets.ClearValuesResponse, error) {
 	resp, err := receiver.sheetsService.Spreadsheets.Values.
-		Clear(params.SpreadsheetId, params.Range, &sheets.ClearValuesRequest{}).
+		Clear(params.SpreadsheetID, params.Range, &sheets.ClearValuesRequest{}).
 		Do()
 
 	if err != nil {
@@ -155,17 +155,17 @@ func (receiver Writer) ClearRange(params ClearRangeParams) (*sheets.ClearValuesR
 }
 
 type CopySingleSheetParam struct {
-	FromSpreadsheetId string
+	FromSpreadsheetID string
 	SingleSheet       SingleSheet
-	ToSpreadsheetId   string
+	ToSpreadsheetID   string
 }
 
 func (receiver Writer) CopySingleSheet(params CopySingleSheetParam) error {
 	copyRequest := &sheets.CopySheetToAnotherSpreadsheetRequest{
-		DestinationSpreadsheetId: params.ToSpreadsheetId,
+		DestinationSpreadsheetId: params.ToSpreadsheetID,
 	}
 	copiedSheet, err := receiver.sheetsService.Spreadsheets.Sheets.
-		CopyTo(params.FromSpreadsheetId, params.SingleSheet.ID, copyRequest).
+		CopyTo(params.FromSpreadsheetID, params.SingleSheet.ID, copyRequest).
 		Context(context.Background()).
 		Do()
 
@@ -190,7 +190,7 @@ func (receiver Writer) CopySingleSheet(params CopySingleSheetParam) error {
 	}
 
 	_, err = receiver.sheetsService.Spreadsheets.
-		BatchUpdate(params.ToSpreadsheetId, request).
+		BatchUpdate(params.ToSpreadsheetID, request).
 		Context(context.Background()).
 		Do()
 	if err != nil {
@@ -239,19 +239,19 @@ func (receiver Writer) DeleteSheet(params DeleteSheetParams) error {
 }
 
 type DuplicateSpreadsheetParams struct {
-	SourceSpreadsheetId   string
+	SourceSpreadsheetID   string
 	TargetSpreadsheetName string
 	TargetSheetName       string
 }
 
 type DuplicateSpreadsheetResult struct {
-	SpreadsheetId string
+	SpreadsheetID string
 }
 
 func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (DuplicateSpreadsheetResult, error) {
 	ctx := context.Background()
 	resp, err := receiver.sheetsService.Spreadsheets.
-		Get(params.SourceSpreadsheetId).
+		Get(params.SourceSpreadsheetID).
 		Context(ctx).
 		Do()
 	if err != nil {
@@ -281,15 +281,15 @@ func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (
 		log.Fatalf("Failed to create new spreadsheet: %v", err)
 	}
 
-	destinationSpreadsheetId := createResp.SpreadsheetId
+	destinationSpreadsheetID := createResp.SpreadsheetId
 
 	err = receiver.CopySingleSheet(CopySingleSheetParam{
-		FromSpreadsheetId: params.SourceSpreadsheetId,
+		FromSpreadsheetID: params.SourceSpreadsheetID,
 		SingleSheet: SingleSheet{
 			ID:    signUpSheetId,
 			Title: params.TargetSheetName,
 		},
-		ToSpreadsheetId: destinationSpreadsheetId,
+		ToSpreadsheetID: destinationSpreadsheetID,
 	})
 
 	if err != nil {
@@ -298,6 +298,6 @@ func (receiver Writer) DuplicateSpreadsheet(params DuplicateSpreadsheetParams) (
 	}
 
 	return DuplicateSpreadsheetResult{
-		SpreadsheetId: destinationSpreadsheetId,
+		SpreadsheetID: destinationSpreadsheetID,
 	}, nil
 }

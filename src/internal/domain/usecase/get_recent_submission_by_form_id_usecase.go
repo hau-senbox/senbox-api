@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type GetRecentSubmissionByFormIdUseCase struct {
+type GetRecentSubmissionByFormIDUseCase struct {
 	formRepository       *repository.FormRepository
 	submissionRepository *repository.SubmissionRepository
 }
 
-func NewGetRecentSubmissionByFormIdUseCase(db *gorm.DB) *GetRecentSubmissionByFormIdUseCase {
-	return &GetRecentSubmissionByFormIdUseCase{
+func NewGetRecentSubmissionByFormIDUseCase(db *gorm.DB) *GetRecentSubmissionByFormIDUseCase {
+	return &GetRecentSubmissionByFormIDUseCase{
 		formRepository: &repository.FormRepository{
 			DBConn:                 db,
 			DefaultRequestPageSize: 0,
@@ -31,12 +31,12 @@ type RecentSubmission struct {
 }
 
 type RecentSubmissionItem struct {
-	QuestionId string `json:"question_id" binding:"required"`
+	QuestionID string `json:"question_id" binding:"required"`
 	Answer     string `json:"answer" binding:"required"`
 }
 
-func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string, userId string) ([]RecentSubmissionItem, error) {
-	form, err := g.formRepository.GetFormByQRCode(formId)
+func (g *GetRecentSubmissionByFormIDUseCase) Execute(formID string, userID string) ([]RecentSubmissionItem, error) {
+	form, err := g.formRepository.GetFormByQRCode(formID)
 	if err != nil {
 		return []RecentSubmissionItem{}, err
 	}
@@ -45,7 +45,7 @@ func (g *GetRecentSubmissionByFormIdUseCase) Execute(formId string, userId strin
 		return []RecentSubmissionItem{}, errors.New("this form does not support recent submission")
 	}
 
-	s, err := g.submissionRepository.FindRecentByFormId(form.ID, userId)
+	s, err := g.submissionRepository.FindRecentByFormID(form.ID, userID)
 	if err != nil {
 		return []RecentSubmissionItem{}, nil
 	}

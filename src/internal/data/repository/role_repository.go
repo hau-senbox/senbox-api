@@ -27,7 +27,7 @@ func (receiver *RoleRepository) GetAll() ([]entity.SRole, error) {
 	return roles, err
 }
 
-func (receiver *RoleRepository) GetByID(req request.GetRoleByIdRequest) (*entity.SRole, error) {
+func (receiver *RoleRepository) GetByID(req request.GetRoleByIDRequest) (*entity.SRole, error) {
 	var userRole entity.SRole
 	err := receiver.DBConn.Where("id = ?", req.ID).First(&userRole).Error
 	if err != nil {
@@ -72,7 +72,7 @@ func (receiver *RoleRepository) CreateRole(req request.CreateRoleRequest) error 
 }
 
 func (receiver *RoleRepository) UpdateRole(req request.UpdateRoleRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", req.RoleId).
+	updateResult := receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", req.RoleID).
 		Updates(map[string]interface{}{
 			"role_name": req.RoleName,
 		})

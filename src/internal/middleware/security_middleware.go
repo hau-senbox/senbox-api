@@ -32,11 +32,11 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 		if err != nil {
 			context.AbortWithStatus(http.StatusForbidden)
 		} else if token.Valid {
-			userId, err := receiver.SessionRepository.ExtractUserIdFromToken(tokenString)
+			userID, err := receiver.SessionRepository.ExtractUserIDFromToken(tokenString)
 			if err != nil {
 				context.AbortWithStatus(http.StatusForbidden)
 			}
-			context.Set("user_id", *userId)
+			context.Set("user_id", *userID)
 			context.Next()
 		} else {
 			context.AbortWithStatus(http.StatusUnauthorized)
@@ -62,7 +62,7 @@ func (receiver SecuredMiddleware) ValidateSuperAdminRole() gin.HandlerFunc {
 				context.AbortWithStatus(http.StatusForbidden)
 			}
 			if lo.Contains(tokenData.Roles, "SuperAdmin") {
-				context.Set("user_id", tokenData.UserId)
+				context.Set("user_id", tokenData.UserID)
 				context.Next()
 			} else {
 				context.AbortWithStatus(http.StatusForbidden)

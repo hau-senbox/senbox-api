@@ -9,16 +9,16 @@ type DiscoverUseCase struct {
 }
 
 type DiscoveredDeviceData struct {
-	DeviceId string `json:"device_id"`
+	DeviceID string `json:"device_id"`
 }
 
-func (receiver *DiscoverUseCase) Execute(deviceId string) (DiscoveredDeviceData, error) {
-	device, err := receiver.GetDeviceById(deviceId)
+func (receiver *DiscoverUseCase) Execute(deviceID string) (DiscoveredDeviceData, error) {
+	device, err := receiver.GetDeviceByID(deviceID)
 	if err != nil {
 		return DiscoveredDeviceData{}, err
 	}
 
 	return DiscoveredDeviceData{
-		DeviceId: device.ID,
+		DeviceID: device.ID,
 	}, nil
 }

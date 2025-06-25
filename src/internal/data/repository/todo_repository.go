@@ -28,7 +28,7 @@ func (r *ToDoRepository) GetToDoListByQRCode(code string, dbConn *gorm.DB) (enti
 	return todo, nil
 }
 
-func (r *ToDoRepository) FindById(id string, db *gorm.DB) (*entity.SToDo, error) {
+func (r *ToDoRepository) FindByID(id string, db *gorm.DB) (*entity.SToDo, error) {
 	var todo entity.SToDo
 	err := db.Where("id = ?", id).First(&todo).Error
 

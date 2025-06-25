@@ -111,6 +111,7 @@ const (
 
 	OrganizationName
 	ApplicationContent
+	WaterCup
 )
 
 type DeviceStatus int
@@ -389,6 +390,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "organization_name"
 	case ApplicationContent:
 		return "application_content"
+	case WaterCup:
+		return "water_cup"
 	}
 
 	return ""
@@ -549,6 +552,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "organization_name"
 	case ApplicationContent:
 		return "application_content"
+	case WaterCup:
+		return "water_cup"
 
 	default:
 		return ""
@@ -755,6 +760,7 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OrganizationName, nil
 	case "application_content":
 		return ApplicationContent, nil
+	case "water_cup": return WaterCup, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -843,7 +849,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		SubmitText,
 
 		OrganizationName,
-		ApplicationContent:
+		ApplicationContent,
+		WaterCup:
 		return true
 	default:
 		return false
@@ -1113,4 +1120,12 @@ const (
 	DeviceModeS           DeviceMode = "mode s"
 	DeviceModeP           DeviceMode = "mode p"
 	DeviceModeL           DeviceMode = "mode l"
+)
+
+type DeviceConditionKey string
+
+const (
+	DeviceConditionKeyStudent      DeviceConditionKey = "key-student"
+	DeviceConditionKeyTeacher      DeviceConditionKey = "key-teacher"
+	DeviceConditionKeyOrganization DeviceConditionKey = "key-organization"
 )

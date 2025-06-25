@@ -19,7 +19,7 @@ type FormController struct {
 	ImportFormsUseCase *usecase.ImportFormsUseCase
 }
 
-// Create Form godoc
+// CreateForm Create Form godoc
 // @Summary Create Form
 // @Description Create Form
 // @Tags Admin
@@ -53,7 +53,7 @@ func (receiver *FormController) CreateForm(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SaveFormResponse{Data: response.SaveFormResponseData{
-		Id:          form.ID,
+		ID:          form.ID,
 		Spreadsheet: form.SpreadsheetUrl,
 		Password:    form.Password,
 		Note:        form.Note,
@@ -62,7 +62,7 @@ func (receiver *FormController) CreateForm(context *gin.Context) {
 	}})
 }
 
-// Get Forms godoc
+// GetFormList Get Forms godoc
 // @Summary Get Forms
 // @Description Get Forms
 // @Tags Admin
@@ -95,14 +95,14 @@ func (receiver *FormController) GetFormList(context *gin.Context) {
 	context.JSON(http.StatusOK, response.GetFormListResponse{Data: forms, Paging: *paging})
 }
 
-// Delete Form godoc
+// DeleteForm Delete Form godoc
 // @Summary Delete Form
 // @Description Delete Form
 // @Tags Admin
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Form RoleId"
+// @Param id path int true "Form RoleID"
 // @Success 200 {object} response.SucceedResponse
 // @Failure 400 {object} response.FailedResponse
 // @Failure 401 {object} response.FailedResponse
@@ -110,8 +110,8 @@ func (receiver *FormController) GetFormList(context *gin.Context) {
 // @Failure 500 {object} response.FailedResponse
 // @Router /v1/admin/form/delete/:id [delete]
 func (receiver *FormController) DeleteForm(context *gin.Context) {
-	formIdString := context.Param("id")
-	formId, err := strconv.Atoi(formIdString)
+	formIDString := context.Param("id")
+	formID, err := strconv.Atoi(formIDString)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -119,7 +119,7 @@ func (receiver *FormController) DeleteForm(context *gin.Context) {
 		})
 		return
 	}
-	err = receiver.DeleteFormUseCase.DeleteForm(uint64(formId))
+	err = receiver.DeleteFormUseCase.DeleteForm(uint64(formID))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -133,14 +133,14 @@ func (receiver *FormController) DeleteForm(context *gin.Context) {
 	})
 }
 
-// Update Form godoc
+// UpdateForm Update Form godoc
 // @Summary Update Form
 // @Description Update Form
 // @Tags Admin
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Form RoleId"
+// @Param id path int true "Form RoleID"
 // @Param request body request.UpdateFormRequest true "Update Form Request"
 // @Success 200 {object} response.UpdateFormResponse
 // @Failure 400 {object} response.FailedResponse
@@ -157,7 +157,7 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 		})
 		return
 	}
-	formId, err := strconv.Atoi(id)
+	formID, err := strconv.Atoi(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -173,7 +173,7 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 		})
 		return
 	}
-	form, err := receiver.UpdateFormUseCase.UpdateForm(formId, req)
+	form, err := receiver.UpdateFormUseCase.UpdateForm(formID, req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -183,7 +183,7 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, response.UpdateFormResponse{
 		Data: response.GetFormListResponseData{
-			Id:          form.ID,
+			ID:          form.ID,
 			Spreadsheet: form.SpreadsheetUrl,
 			Password:    form.Password,
 			Note:        form.Note,
@@ -193,7 +193,7 @@ func (receiver *FormController) UpdateForm(context *gin.Context) {
 	})
 }
 
-// Search Forms godoc
+// SearchForms Search Forms godoc
 // @Summary Search Forms
 // @Description Search Forms
 // @Tags Admin
@@ -232,7 +232,7 @@ func (receiver *FormController) SearchForms(context *gin.Context) {
 	context.JSON(http.StatusOK, response.GetFormListResponse{Data: forms})
 }
 
-// Import Forms godoc
+// ImportForms Import Forms godoc
 // @Summary Import Forms
 // @Description Import Forms
 // @Tags Admin
@@ -250,7 +250,7 @@ func (receiver *FormController) ImportForms(context *gin.Context) {
 	receiver.importForms(context, usecase.FormsUploaderIndexFirst)
 }
 
-// Import Forms2 godoc
+// ImportForms2 Import Forms2 godoc
 // @Summary Import Forms2
 // @Description Import Forms2
 // @Tags Admin
@@ -268,7 +268,7 @@ func (receiver *FormController) ImportForms2(context *gin.Context) {
 	receiver.importForms(context, usecase.FormsUploaderIndexSecond)
 }
 
-// Import Forms3 godoc
+// ImportForms3 Import Forms3 godoc
 // @Summary Import Forms3
 // @Description Import Forms3
 // @Tags Admin
@@ -286,7 +286,7 @@ func (receiver *FormController) ImportForms3(context *gin.Context) {
 	receiver.importForms(context, usecase.FormsUploaderIndexThird)
 }
 
-// Import Forms4 godoc
+// ImportForms4 Import Forms4 godoc
 // @Summary Import Forms4
 // @Description Import Forms4
 // @Tags Admin
@@ -332,7 +332,7 @@ type importPartiallyFormRequest struct {
 	TabName        string `json:"tab_name" binding:"required"`
 }
 
-// Import Forms Partially godoc
+// ImportFormsPartially Import Forms Partially godoc
 // @Summary Import Forms Partially
 // @Description Import Forms Partially
 // @Tags Admin
@@ -371,7 +371,7 @@ func (receiver *FormController) ImportFormsPartially(context *gin.Context) {
 	})
 }
 
-// Import Sign Up Forms godoc
+// ImportSignUpForms Import Sign Up Forms godoc
 // @Summary Import Sign Up Forms
 // @Description Import Sign Up Forms
 // @Tags Admin

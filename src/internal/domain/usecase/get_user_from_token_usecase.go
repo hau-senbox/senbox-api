@@ -27,10 +27,10 @@ func (c *GetUserFromTokenUseCase) GetUserFromToken(context *gin.Context) (*entit
 
 	tokenString := strings.Split(authorization, " ")[1]
 
-	userId, err := c.ExtractUserIdFromToken(tokenString)
+	userID, err := c.ExtractUserIDFromToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.GetByID(request.GetUserEntityByIdRequest{ID: *userId})
+	return c.GetByID(request.GetUserEntityByIDRequest{ID: *userID})
 }

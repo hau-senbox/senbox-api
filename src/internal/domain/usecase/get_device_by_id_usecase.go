@@ -7,16 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type GetDeviceByIdUseCase struct {
+type GetDeviceByIDUseCase struct {
 	*repository.DeviceRepository
 }
 
-func NewGetDeviceByIdUseCase(db *gorm.DB) *GetDeviceByIdUseCase {
-	return &GetDeviceByIdUseCase{
+func NewGetDeviceByIDUseCase(db *gorm.DB) *GetDeviceByIDUseCase {
+	return &GetDeviceByIDUseCase{
 		DeviceRepository: &repository.DeviceRepository{DBConn: db},
 	}
 }
 
-func (receiver *GetDeviceByIdUseCase) Get(deviceId string) (*entity.SDevice, error) {
-	return receiver.FindDeviceById(deviceId)
+func (receiver *GetDeviceByIDUseCase) Get(deviceID string) (*entity.SDevice, error) {
+	return receiver.FindDeviceByID(deviceID)
 }

@@ -93,16 +93,44 @@ func (receiver *OrganizationRepository) CreateOrganization(req request.CreateOrg
 }
 
 func (receiver *OrganizationRepository) UpdateOrganization(req request.UpdateOrganizationRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SOrganization{}).Where("id = ?", req.ID).
+	err := receiver.DBConn.Model(&entity.SOrganization{}).Where("id = ?", req.ID).
 		Updates(map[string]interface{}{
 			"organization_name": req.OrganizationName,
 			"address":           req.Address,
 			"description":       req.Description,
-		})
+		}).Error
 
-	if updateResult.Error != nil {
-		log.Error("OrganizationRepository.UpdateOrganization: " + updateResult.Error.Error())
+	if err != nil {
+		log.Error("OrganizationRepository.UpdateOrganization: " + err.Error())
 		return errors.New("failed to update organization")
+	}
+
+	return nil
+}
+
+func (receiver *OrganizationRepository) GetOrgAvatar(orgID string) (*string, *string, error) {
+	var organization entity.SOrganization
+	err := receiver.DBConn.Model(&entity.SOrganization{}).Where("id = ?", orgID).First(&organization).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.GetOrgAvatar: " + err.Error())
+		return nil, nil, errors.New("failed to get org avatar")
+	}
+
+	return &organization.Avatar, &organization.AvatarURL, nil
+}
+
+func (receiver *OrganizationRepository) UpdateOrgAvatar(orgID, key, url string) error {
+	err := receiver.DBConn.Model(&entity.SOrganization{}).
+		Where("id = ?", orgID).
+		Updates(map[string]interface{}{
+			"avatar":     key,
+			"avatar_url": url,
+		}).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.UpdateOrgAvatar: " + err.Error())
+		return errors.New("failed to update org avatar")
 	}
 
 	return nil
@@ -158,10 +186,10 @@ func (receiver *OrganizationRepository) UserJoinOrganization(req request.UserJoi
 	return nil
 }
 
-func (receiver *OrganizationRepository) GetUserOrgInfo(userID, organizationId string) (*entity.SUserOrg, error) {
+func (receiver *OrganizationRepository) GetUserOrgInfo(userID, organizationID string) (*entity.SUserOrg, error) {
 	var userOrg entity.SUserOrg
 	err := receiver.DBConn.Model(&entity.SUserOrg{}).
-		Where("user_id = ? AND organization_id = ?", userID, organizationId).
+		Where("user_id = ? AND organization_id = ?", userID, organizationID).
 		Find(&userOrg).Error
 
 	if err != nil {
@@ -187,7 +215,7 @@ func (receiver *OrganizationRepository) GetAllOrgManagerInfo(organizationID stri
 }
 
 func (receiver *OrganizationRepository) UpdateUserOrgInfo(req request.UpdateUserOrgInfoRequest) error {
-	updateResult := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ? AND organization_id = ?", req.UserId, req.OrganizationId).
+	updateResult := receiver.DBConn.Model(&entity.SUserOrg{}).Where("user_id = ? AND organization_id = ?", req.UserID, req.OrganizationID).
 		Updates(map[string]interface{}{
 			"user_nick_name": req.UserNickName,
 			"is_manager":     req.IsManager,
@@ -312,7 +340,7 @@ func (receiver *OrganizationRepository) ApproveOrgFormApplication(applicationID 
 	// Assign admin role to user
 	userRole := entity.SUserRoles{
 		UserID: form.UserID,
-		RoleId: 5, // admin
+		RoleID: 5, // admin
 	}
 	err = tx.Create(&userRole).Error
 	if err != nil {

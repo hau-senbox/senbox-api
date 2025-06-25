@@ -51,10 +51,10 @@ func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequ
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportTodo()
 	values, err := receiver.reader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     `TODOs!` + receiver.cfg.Google.FirstColumn + strconv.Itoa(receiver.cfg.Google.FirstRow+2) + `:AA`,
 	})
 	if err != nil {
@@ -73,7 +73,7 @@ func (receiver *ImportToDoListUseCase) ImportToDoList(req request.ImportFormRequ
 				Range:     "TODOs!P" + strconv.Itoa(rowNo+receiver.cfg.Google.FirstRow+2) + ":Q",
 				Dimension: "ROWS",
 				Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
-			}, spreadsheetId)
+			}, spreadsheetID)
 			if err != nil {
 				log.Debug("Row No: ", rowNo)
 				log.Error(err)
@@ -106,21 +106,21 @@ func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}
 				return errors.New("invalid todo spreadsheet url")
 			}
 
-			spreadsheetId := match[1]
+			spreadsheetID := match[1]
 			var tabName = "ToDos"
 			if row[2].(string) != "" {
 				tabName = row[2].(string)
 			}
 
-			var historySpreadsheetId string
+			var historySpreadsheetID string
 			match = re.FindStringSubmatch(row[9].(string))
 			if len(match) < 2 {
 				log.Error("invalid history spreadsheet url")
 				return errors.New("invalid history spreadsheet url")
 			}
-			historySpreadsheetId = match[1]
+			historySpreadsheetID = match[1]
 
-			return receiver.importToDo(spreadsheetId, tabName, row[0].(string), historySpreadsheetId)
+			return receiver.importToDo(spreadsheetID, tabName, row[0].(string), historySpreadsheetID)
 		} else if row[0].(string) != "" && strings.Contains(strings.ToLower(row[0].(string)), "[todo-mobile]") && row[1].(string) == "" && strings.ToLower(row[4].(string)) == "upload" && row[9] != "" {
 			re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 			match := re.FindStringSubmatch(row[9].(string))
@@ -128,14 +128,14 @@ func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}
 				log.Error("invalid history spreadsheet url")
 				return errors.New("invalid history spreadsheet url")
 			}
-			historySpreadsheetId := match[1]
+			historySpreadsheetID := match[1]
 
 			var tabName = "ToDos"
 			if row[2].(string) != "" {
 				tabName = row[2].(string)
 			}
 
-			return receiver.importToDoTypeCompose(row[0].(string), tabName, historySpreadsheetId)
+			return receiver.importToDoTypeCompose(row[0].(string), tabName, historySpreadsheetID)
 		} else {
 			log.Info("skip row: ", rowNo)
 			return errors.New("skip row: " + strconv.Itoa(rowNo))
@@ -146,10 +146,10 @@ func (receiver *ImportToDoListUseCase) saveToDoList(rowNo int, row []interface{}
 	}
 }
 
-func (receiver *ImportToDoListUseCase) importToDo(spreadsheetId string, tabName string, qrCode string, historySpreadsheetID string) error {
+func (receiver *ImportToDoListUseCase) importToDo(spreadsheetID string, tabName string, qrCode string, historySpreadsheetID string) error {
 	monitor.LogGoogleAPIRequestImportTodo()
 	values, err := receiver.reader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     tabName + `!` + receiver.cfg.Google.FirstColumn + strconv.Itoa(11) + `:P`,
 	})
 	if err != nil {
@@ -160,7 +160,7 @@ func (receiver *ImportToDoListUseCase) importToDo(spreadsheetId string, tabName 
 	var todoList = &entity.SToDo{
 		ID:                   qrCode,
 		Type:                 value.ToDoTypeAssign,
-		SpreadsheetID:        spreadsheetId,
+		SpreadsheetID:        spreadsheetID,
 		SheetName:            tabName,
 		HistorySpreadsheetID: historySpreadsheetID,
 	}
@@ -284,10 +284,10 @@ func (receiver *ImportToDoListUseCase) ImportPartiallyToDos(spreadsheetURL strin
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportTodo()
 	values, err := receiver.reader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetName + `!` + receiver.cfg.Google.FirstColumn + strconv.Itoa(receiver.cfg.Google.FirstRow+2) + `:AA`,
 	})
 	if err != nil {
@@ -306,7 +306,7 @@ func (receiver *ImportToDoListUseCase) ImportPartiallyToDos(spreadsheetURL strin
 				Range:     "TODOs!P" + strconv.Itoa(rowNo+receiver.cfg.Google.FirstRow+2) + ":Q",
 				Dimension: "ROWS",
 				Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05")}},
-			}, spreadsheetId)
+			}, spreadsheetID)
 			if err != nil {
 				log.Debug("Row No: ", rowNo)
 				log.Error(err)

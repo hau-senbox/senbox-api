@@ -14,11 +14,11 @@ type DeviceDetailsAdminResponse struct {
 	MacAddress      string `json:"macAddress"`
 	DeviceName      string `json:"deviceName"`
 	DateInstall     string `json:"dateInstall"`
-	SheetId         string `json:"sheetId"`
+	SheetID         string `json:"sheetID"`
 	SheetName       string `json:"sheetName"`
-	SheetLocationId string `json:"sheetLocationId"`
+	SheetLocationID string `json:"sheetLocationID"`
 	Location        string `json:"location"`
-	LocationId      int64  `json:"locationId"`
+	LocationID      int64  `json:"locationID"`
 	SendEmailTo     string `json:"sendEmailTo"`
 	Note            string `json:"note"`
 }
@@ -62,7 +62,7 @@ type DeviceResponseData struct {
 }
 
 type DeviceResponseDataV2 struct {
-	Id                string `json:"id"`
+	ID                string `json:"id"`
 	DeviceName        string `json:"device_name"`
 	InputMode         string `json:"input_mode"`
 	Status            string `json:"status"`

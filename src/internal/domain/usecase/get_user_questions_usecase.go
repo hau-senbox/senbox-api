@@ -23,7 +23,7 @@ func (c GetUserQuestionsUseCase) GetQuestionsBelongToDevice(device *entity.SDevi
 		var att response.QuestionAttributes
 		_ = json.Unmarshal([]byte(question.Attributes), &att)
 		result[i] = response.QuestionListData{
-			QuestionId:   question.QuestionId,
+			QuestionID:   question.QuestionID,
 			Question:     question.Question,
 			QuestionType: strings.ToUpper(question.QuestionType),
 			Attributes:   att,

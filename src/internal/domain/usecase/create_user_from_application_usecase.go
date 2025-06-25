@@ -10,7 +10,7 @@ type CreateUserFormApplicationUseCase struct {
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
-	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: req.UserID})
+	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req request.CreateStaffFormApplicationRequest) error {
-	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: req.UserID})
+	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
-	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: req.UserID})
+	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}

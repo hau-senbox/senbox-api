@@ -4,7 +4,6 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
-	"sen-global-api/internal/domain/response"
 )
 
 type GetUserEntityUseCase struct {
@@ -12,12 +11,8 @@ type GetUserEntityUseCase struct {
 	*repository.OrganizationRepository
 }
 
-func (receiver *GetUserEntityUseCase) GetUserById(req request.GetUserEntityByIdRequest) (*entity.SUserEntity, error) {
+func (receiver *GetUserEntityUseCase) GetUserByID(req request.GetUserEntityByIDRequest) (*entity.SUserEntity, error) {
 	return receiver.UserEntityRepository.GetByID(req)
-}
-
-func (receiver *GetUserEntityUseCase) GetChildrenOfGuardian(userId string) (*[]response.UserEntityResponseData, error) {
-	return receiver.UserEntityRepository.GetChildrenOfGuardian(userId)
 }
 
 func (receiver *GetUserEntityUseCase) GetUserByUsername(req request.GetUserEntityByUsernameRequest) (*entity.SUserEntity, error) {

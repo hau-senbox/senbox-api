@@ -9,7 +9,6 @@ type Role string
 
 const (
 	Student    Role = "Student"
-	Guardian   Role = "Guardian"
 	Teacher    Role = "Teacher"
 	Staff      Role = "Staff"
 	Admin      Role = "Admin"
@@ -27,8 +26,6 @@ func RoleFromString(role string) (Role, error) {
 	switch role {
 	case "Student":
 		return Student, nil
-	case "Guardian":
-		return Guardian, nil
 	case "Teacher":
 		return Teacher, nil
 	case "Staff":

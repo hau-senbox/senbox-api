@@ -9,6 +9,6 @@ type GetUserDeviceUseCase struct {
 	*repository.UserEntityRepository
 }
 
-func (receiver *GetUserDeviceUseCase) GetUserDeviceById(deviceId string) (*[]entity.SUserDevices, error) {
-	return receiver.UserEntityRepository.GetUserDeviceById(deviceId)
+func (receiver *GetUserDeviceUseCase) GetUserDeviceByID(deviceID string) (*[]entity.SUserDevices, error) {
+	return receiver.UserEntityRepository.GetUserDeviceByID(deviceID)
 }

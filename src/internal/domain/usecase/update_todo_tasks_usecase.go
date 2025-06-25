@@ -54,7 +54,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 	if err != nil {
 		return entity.SToDo{}, err
 	}
-	todo, err := c.repository.FindById(req.QRCode, c.db)
+	todo, err := c.repository.FindByID(req.QRCode, c.db)
 	if err != nil {
 		return entity.SToDo{}, err
 	}
@@ -110,7 +110,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 		defer file.Close()
 		f := &drive.File{
 			Name:     todo.ID + ".xlsx",
-			Parents:  []string{outputSettings.FolderId},
+			Parents:  []string{outputSettings.FolderID},
 			MimeType: "application/vnd.google-apps.spreadsheet",
 		}
 		res, err := srv.Files.Create(f).Media(file, googleapi.ContentType(baseMimeType)).Do()
@@ -133,11 +133,11 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 			return entity.SToDo{}, fmt.Errorf("invalid spreadsheet url in import todo setting")
 		}
 
-		todoUploaderSpreadsheetId := match[1]
+		todoUploaderSpreadsheetID := match[1]
 
 		//Find row where todo id belong to
 		readColumnsK, err := c.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-			SpreadsheetId: todoUploaderSpreadsheetId,
+			SpreadsheetID: todoUploaderSpreadsheetID,
 			ReadRange:     "TODOs!K12:K1000",
 		})
 		if err != nil {
@@ -159,7 +159,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 				Dimension: "COLUMNS",
 				Rows:      row,
 			}
-			_, err = c.SpreadsheetWriter.UpdateRange(updateUploaderParams, todoUploaderSpreadsheetId)
+			_, err = c.SpreadsheetWriter.UpdateRange(updateUploaderParams, todoUploaderSpreadsheetID)
 			if err != nil {
 				return entity.SToDo{}, err
 			}
@@ -168,7 +168,7 @@ func (c *UpdateToDoTasksUseCase) UpdateTask(req request.UpdateToDoTasksRequest) 
 		}
 	} else {
 		_, err := c.SpreadsheetWriter.ClearRange(sheet.ClearRangeParams{
-			SpreadsheetId: todo.SpreadsheetID,
+			SpreadsheetID: todo.SpreadsheetID,
 			Range:         todo.SheetName + "!I13:V500",
 		})
 		if err != nil {

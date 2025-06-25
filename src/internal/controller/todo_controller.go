@@ -18,8 +18,8 @@ type ToDoController struct {
 	findDeviceFromRequestCase  *usecase.FindDeviceFromRequestCase
 	markToDoAsDoneUseCase      *usecase.MarkToDoAsDoneUseCase
 	updateToDoTasksUseCase     *usecase.UpdateToDoTasksUseCase
-	findTodoByIdUseCase        *usecase.FindTodoByIdUseCase
-	getDeviceByIdUseCase       *usecase.GetDeviceByIdUseCase
+	findTodoByIDUseCase        *usecase.FindTodoByIDUseCase
+	getDeviceByIDUseCase       *usecase.GetDeviceByIDUseCase
 }
 
 type getTodoByQRCodeParams struct {
@@ -123,7 +123,7 @@ func (c *ToDoController) MarkToDoAsDone(context *gin.Context) {
 		return
 	}
 
-	device, err := c.getDeviceByIdUseCase.Get(req.DeviceID)
+	device, err := c.getDeviceByIDUseCase.Get(req.DeviceID)
 	if err != nil || device == nil {
 		context.JSON(http.StatusBadGateway, response.FailedResponse{
 			Code:  http.StatusBadGateway,
@@ -132,7 +132,7 @@ func (c *ToDoController) MarkToDoAsDone(context *gin.Context) {
 		return
 	}
 
-	_, err = c.findTodoByIdUseCase.Execute(req.QRCode)
+	_, err = c.findTodoByIDUseCase.Execute(req.QRCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -162,8 +162,8 @@ func NewToDoController(cfg config.AppConfig, dbConn *gorm.DB, reader *sheet.Read
 		findDeviceFromRequestCase:  usecase.NewFindDeviceFromRequestCase(cfg, dbConn),
 		markToDoAsDoneUseCase:      usecase.NewMarkToDoAsDoneUseCase(cfg, dbConn, reader, writer),
 		updateToDoTasksUseCase:     usecase.NewUpdateToDoTasksUseCase(cfg, dbConn, reader, writer),
-		findTodoByIdUseCase:        usecase.NewFindTodoByIdUseCase(dbConn),
-		getDeviceByIdUseCase:       usecase.NewGetDeviceByIdUseCase(dbConn),
+		findTodoByIDUseCase:        usecase.NewFindTodoByIDUseCase(dbConn),
+		getDeviceByIDUseCase:       usecase.NewGetDeviceByIDUseCase(dbConn),
 	}
 }
 

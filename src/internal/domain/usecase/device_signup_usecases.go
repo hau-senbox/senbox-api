@@ -16,7 +16,7 @@ type DeviceSignUpTextButtonSetting struct {
 }
 
 type DeviceSignUpFormSetting struct {
-	FormId uint64 `json:"form_id"`
+	FormID uint64 `json:"form_id"`
 }
 
 type DeviceSignUpSetting struct {
@@ -108,47 +108,34 @@ func (c *DeviceSignUpUseCases) GetSignUpSetting() (DeviceSignUpSetting, error) {
 
 func (c *DeviceSignUpUseCases) GetSignUpPreset2Setting() *string {
 	s, err := c.SettingRepository.GetRegistrationPreset2Setting()
-
-	if err != nil || s == nil {
+	if err != nil {
 		log.Error(err)
 	}
 
-	type SummarySetting struct {
-		SpreadsheetId string `json:"spreadsheet_id"`
-	}
-
 	var registrationPresetSettings *SummarySetting = nil
-
-	err = json.Unmarshal([]byte(s.Settings), &registrationPresetSettings)
+	err = json.Unmarshal(s.Settings, &registrationPresetSettings)
 	if err != nil {
 		log.Info(err.Error())
-
 		return nil
 	}
 
-	return &registrationPresetSettings.SpreadsheetId
+	return &registrationPresetSettings.SpreadsheetID
 }
+
 func (c *DeviceSignUpUseCases) GetSignUpPreset1Setting() *string {
 	s, err := c.SettingRepository.GetRegistrationPreset1Setting()
-
-	if err != nil || s == nil {
+	if err != nil {
 		log.Error(err)
 	}
 
-	type SummarySetting struct {
-		SpreadsheetId string `json:"spreadsheet_id"`
-	}
-
 	var registrationPresetSettings *SummarySetting = nil
-
-	err = json.Unmarshal([]byte(s.Settings), &registrationPresetSettings)
+	err = json.Unmarshal(s.Settings, &registrationPresetSettings)
 	if err != nil {
 		log.Info(err.Error())
-
 		return nil
 	}
 
-	return &registrationPresetSettings.SpreadsheetId
+	return &registrationPresetSettings.SpreadsheetID
 }
 
 func (c *DeviceSignUpUseCases) GetSignUpFormQuestions() *response.QuestionListResponse {
@@ -176,7 +163,7 @@ func (c *DeviceSignUpUseCases) findSignUpForm() (entity.SForm, error) {
 		return entity.SForm{}, err
 	}
 
-	f, err := c.FormRepository.GetFormById(formSetting.FormId)
+	f, err := c.FormRepository.GetFormByID(formSetting.FormID)
 	if err != nil {
 		return entity.SForm{}, err
 	}

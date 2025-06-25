@@ -13,10 +13,10 @@ type Reader struct {
 }
 
 // / ReadSpecificRangeParams is the params for reading a specific range of a spreadsheet
-// / SpreadsheetId is the id of the spreadsheet
+// / SpreadsheetID is the id of the spreadsheet
 // / ReadRange is the range to read. Eg, "Sheet1!A1:B2"
 type ReadSpecificRangeParams struct {
-	SpreadsheetId string
+	SpreadsheetID string
 	ReadRange     string
 }
 
@@ -24,7 +24,7 @@ type ReadSpecificRangeParams struct {
 // / params is the params for reading a specific range of a spreadsheet
 // / returns the rows of the spreadsheet
 func (receiver Reader) Get(params ReadSpecificRangeParams) ([][]interface{}, error) {
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetId, params.ReadRange).
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetID, params.ReadRange).
 		ValueRenderOption("FORMATTED_VALUE").
 		Do()
 	if err != nil {
@@ -44,7 +44,7 @@ func (receiver Reader) Get(params ReadSpecificRangeParams) ([][]interface{}, err
 // / params is the params for reading a specific range of a spreadsheet
 // / returns the rows of the spreadsheet
 func (receiver Reader) GetFirstRow(params ReadSpecificRangeParams) ([][]interface{}, error) {
-	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetId, params.ReadRange).
+	resp, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetID, params.ReadRange).
 		MajorDimension("COLUMNS").
 		ValueRenderOption("FORMATTED_VALUE").
 		Do()
@@ -62,7 +62,7 @@ func (receiver Reader) GetFirstRow(params ReadSpecificRangeParams) ([][]interfac
 }
 
 func (receiver Reader) FindFirstRow(params ReadSpecificRangeParams, deviceID string) (int, error) {
-	_, err := receiver.sheetsService.Spreadsheets.Values.Update(params.SpreadsheetId, params.ReadRange, &sheets.ValueRange{
+	_, err := receiver.sheetsService.Spreadsheets.Values.Update(params.SpreadsheetID, params.ReadRange, &sheets.ValueRange{
 		MajorDimension: "ROWS",
 		Values:         [][]interface{}{{"=MATCH(\"" + deviceID + "\", Devices!L:L, 0)"}},
 	}).ValueInputOption("USER_ENTERED").
@@ -72,7 +72,7 @@ func (receiver Reader) FindFirstRow(params ReadSpecificRangeParams, deviceID str
 		return 0, err
 	}
 
-	updatedRows, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetId, "LOOKUP_SHEET!A1").MajorDimension("COLUMNS").
+	updatedRows, err := receiver.sheetsService.Spreadsheets.Values.Get(params.SpreadsheetID, "LOOKUP_SHEET!A1").MajorDimension("COLUMNS").
 		ValueRenderOption("FORMATTED_VALUE").Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet:", err)
@@ -93,8 +93,8 @@ func (receiver Reader) FindFirstRow(params ReadSpecificRangeParams, deviceID str
 	return rowNo, err
 }
 
-func (receiver Reader) GetSheets(spreadsheetId string) ([]string, error) {
-	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetId).Do()
+func (receiver Reader) GetSheets(spreadsheetID string) ([]string, error) {
+	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetID).Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet:", err)
 		return nil, err
@@ -113,8 +113,8 @@ type SingleSheet struct {
 	Title string
 }
 
-func (receiver Reader) GetAllSheets(spreadsheetId string) ([]SingleSheet, error) {
-	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetId).Do()
+func (receiver Reader) GetAllSheets(spreadsheetID string) ([]SingleSheet, error) {
+	resp, err := receiver.sheetsService.Spreadsheets.Get(spreadsheetID).Do()
 	if err != nil {
 		log.Error("Unable to retrieve data from sheet:", err)
 		return nil, err

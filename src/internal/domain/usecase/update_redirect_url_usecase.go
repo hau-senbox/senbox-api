@@ -13,7 +13,7 @@ type UpdateRedirectUrlUseCase struct {
 }
 
 func (receiver *UpdateRedirectUrlUseCase) Update(id int, req request.UpdateRedirectUrlRequest) (*entity.SRedirectUrl, error) {
-	form, err := receiver.GetById(uint64(id))
+	form, err := receiver.GetByID(uint64(id))
 	if err != nil {
 		return nil, err
 	}

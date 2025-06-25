@@ -32,7 +32,7 @@ type SendNotificationParams struct {
 }
 
 func (receiver *SendNotificationUseCase) Execute(params request.SendNotificationRequest) error {
-	md, err := receiver.repository.FindByDeviceID(params.DeviceId, receiver.DB)
+	md, err := receiver.repository.FindByDeviceID(params.DeviceID, receiver.DB)
 
 	if err != nil {
 		return err

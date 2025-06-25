@@ -10,11 +10,11 @@ type GetFunctionClaimPermissionUseCase struct {
 	*repository.FunctionClaimPermissionRepository
 }
 
-func (receiver *GetFunctionClaimPermissionUseCase) GetAllFunctionClaimPermission(roleClaimId int64) ([]entity.SFunctionClaimPermission, error) {
-	return receiver.GetAllByFunctionClaim(roleClaimId)
+func (receiver *GetFunctionClaimPermissionUseCase) GetAllFunctionClaimPermission(roleClaimID int64) ([]entity.SFunctionClaimPermission, error) {
+	return receiver.GetAllByFunctionClaim(roleClaimID)
 }
 
-func (receiver *GetFunctionClaimPermissionUseCase) GetFunctionClaimPermissionById(req request.GetFunctionClaimPermissionByIdRequest) (*entity.SFunctionClaimPermission, error) {
+func (receiver *GetFunctionClaimPermissionUseCase) GetFunctionClaimPermissionByID(req request.GetFunctionClaimPermissionByIDRequest) (*entity.SFunctionClaimPermission, error) {
 	return receiver.GetByID(req)
 }
 

@@ -30,7 +30,7 @@ func (c *MarkToDoAsDoneUseCase) Execute(device entity.SDevice, code string, inde
 	}
 
 	values, err := c.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: todoList.SpreadsheetID,
+		SpreadsheetID: todoList.SpreadsheetID,
 		ReadRange:     todoList.SheetName + `!K12:K1000`,
 	})
 
@@ -130,7 +130,7 @@ func findFirstRow(id string, values [][]interface{}, startRow int) (int, error) 
 }
 
 func (c *MarkToDoAsDoneUseCase) LogTask(req request.LogTaskRequest, device entity.SDevice) error {
-	todo, err := c.FindById(req.ToDoID, c.dbConn)
+	todo, err := c.FindByID(req.ToDoID, c.dbConn)
 	if err != nil {
 		return err
 	}

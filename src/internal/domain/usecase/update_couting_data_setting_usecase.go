@@ -27,7 +27,7 @@ func UpdateCodeCountingDataUseCase(req request.UpdateCodeCountingSettingRequest)
 		return errors.New("failed to parse spreadsheet id from sync devices sheet")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 
-	return repo.UpdateCodeCountingDataSetting(spreadsheetId, req.SpreadsheetUrl)
+	return repo.UpdateCodeCountingDataSetting(spreadsheetID, req.SpreadsheetUrl)
 }

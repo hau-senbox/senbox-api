@@ -6,18 +6,18 @@ import (
 	"sen-global-api/internal/domain/entity"
 )
 
-type FindTodoByIdUseCase struct {
+type FindTodoByIDUseCase struct {
 	TodoRepository repository.ToDoRepository
 	DB             *gorm.DB
 }
 
-func NewFindTodoByIdUseCase(db *gorm.DB) *FindTodoByIdUseCase {
-	return &FindTodoByIdUseCase{
+func NewFindTodoByIDUseCase(db *gorm.DB) *FindTodoByIDUseCase {
+	return &FindTodoByIDUseCase{
 		TodoRepository: repository.ToDoRepository{},
 		DB:             db,
 	}
 }
 
-func (c *FindTodoByIdUseCase) Execute(id string) (*entity.SToDo, error) {
-	return c.TodoRepository.FindById(id, c.DB)
+func (c *FindTodoByIDUseCase) Execute(id string) (*entity.SToDo, error) {
+	return c.TodoRepository.FindByID(id, c.DB)
 }

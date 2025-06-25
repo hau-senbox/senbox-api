@@ -3,15 +3,14 @@ package request
 import "regexp"
 
 type UpdateUserEntityRequest struct {
-	ID        string    `json:"id" binding:"required"`
-	Username  string    `json:"username" binding:"required"`
-	Nickname  *string   `json:"nickname"`
-	Fullname  *string   `json:"fullname"`
-	Phone     *string   `json:"phone"`
-	Email     *string   `json:"email"`
-	Guardians *[]string `json:"guardians"`
-	Roles     *[]string `json:"roles"`
-	Devices   *[]string `json:"devices"`
+	ID       string    `json:"id" binding:"required"`
+	Username string    `json:"username" binding:"required"`
+	Nickname *string   `json:"nickname"`
+	Fullname *string   `json:"fullname"`
+	Phone    *string   `json:"phone"`
+	Email    *string   `json:"email"`
+	Roles    *string   `json:"roles"`
+	Devices  *[]string `json:"devices"`
 }
 
 // Email pattern to validate email format

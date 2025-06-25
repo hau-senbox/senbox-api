@@ -16,7 +16,7 @@ func (c *RefreshAccessTokenUseCase) Execute(refreshToken string) (string, string
 		return "", "", err
 	}
 
-	device, err := c.FindDeviceById(deviceID)
+	device, err := c.FindDeviceByID(deviceID)
 	if err != nil || device == nil {
 		return "", "", err
 	}

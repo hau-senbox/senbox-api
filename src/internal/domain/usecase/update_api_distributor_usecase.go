@@ -34,11 +34,11 @@ func (receiver *UpdateApiDistributorUseCase) Execute(url string) error {
 		return fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 
 	defer executeUploadAPIDistributor(receiver.repository, receiver.reader, receiver.writer)
 
-	return receiver.repository.UpdateAPIDistributerSetting(spreadsheetId, url)
+	return receiver.repository.UpdateAPIDistributerSetting(spreadsheetID, url)
 }
 
 func executeUploadAPIDistributor(repo *repository.SettingRepository, r *sheet.Reader, w *sheet.Writer) {
@@ -55,7 +55,7 @@ func executeUploadAPIDistributor(repo *repository.SettingRepository, r *sheet.Re
 		return
 	}
 
-	allSourceSheets, err := r.GetAllSheets(setting.SpreadSheetId)
+	allSourceSheets, err := r.GetAllSheets(setting.SpreadSheetID)
 	if err != nil {
 		log.Error("Cannot retrieve all sheets from the api distributor spreadsheet")
 	}
@@ -67,7 +67,7 @@ func executeUploadAPIDistributor(repo *repository.SettingRepository, r *sheet.Re
 
 func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *sheet.Writer, setting repository.APIDistributorSetting) {
 	targets, err := r.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: setting.SpreadSheetId,
+		SpreadsheetID: setting.SpreadSheetID,
 		ReadRange:     singleSheet.Title + "!M9:N",
 	})
 
@@ -96,9 +96,9 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 		return
 	}
 
-	sourceSpreadsheetId := match[1]
+	sourceSpreadsheetID := match[1]
 
-	allSourceSheets, err := r.GetAllSheets(sourceSpreadsheetId)
+	allSourceSheets, err := r.GetAllSheets(sourceSpreadsheetID)
 	if err != nil {
 		log.Error("Cannot fetch the sheets from source spreadsheet")
 		return
@@ -118,7 +118,7 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 	log.Info("Dis ", singleSheet.Title)
 
 	if sourceSheet.Title == "" {
-		log.Error("The sheet with name ", singleSheet.Title, " does not exist from source spreadsheet ", sourceSpreadsheetId)
+		log.Error("The sheet with name ", singleSheet.Title, " does not exist from source spreadsheet ", sourceSpreadsheetID)
 		return
 	}
 
@@ -138,25 +138,25 @@ func copyAPIDistributorAt(singleSheet sheet.SingleSheet, r *sheet.Reader, w *she
 			continue
 		}
 
-		targetSpreadsheetId := match[1]
+		targetSpreadsheetID := match[1]
 		err = w.DeleteSheet(sheet.DeleteSheetParams{
-			SpreadsheetID: targetSpreadsheetId,
+			SpreadsheetID: targetSpreadsheetID,
 			SheetTitle:    sourceSheet.Title,
 		})
 
 		if err != nil {
-			log.Error("Failed on delete sheet ", singleSheet.Title+" from spreadsheet ", targetSpreadsheetId)
+			log.Error("Failed on delete sheet ", singleSheet.Title+" from spreadsheet ", targetSpreadsheetID)
 			continue
 		}
 
 		err = w.CopySingleSheet(sheet.CopySingleSheetParam{
-			FromSpreadsheetId: sourceSpreadsheetId,
+			FromSpreadsheetID: sourceSpreadsheetID,
 			SingleSheet:       sourceSheet,
-			ToSpreadsheetId:   targetSpreadsheetId,
+			ToSpreadsheetID:   targetSpreadsheetID,
 		})
 
 		if err != nil {
-			log.Error("Failed to copy sheet ", sourceSheet.Title, " to ", targetSpreadsheetId, " err ", err.Error())
+			log.Error("Failed to copy sheet ", sourceSheet.Title, " to ", targetSpreadsheetID, " err ", err.Error())
 
 			//TODO: update error in detail
 			continue

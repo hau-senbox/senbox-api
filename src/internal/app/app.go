@@ -34,10 +34,10 @@ import (
 const (
 	serviceName = "go-main-service"
 	ttl         = time.Second * 8
-	checkId     = "go-main-service-health-check"
+	checkID     = "go-main-service-health-check"
 )
 
-var serviceId = fmt.Sprintf("%s-%d", serviceName, rand.Intn(100))
+var serviceID = fmt.Sprintf("%s-%d", serviceName, rand.Intn(100))
 
 func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	if appConfig.Config.Env == "development" {
@@ -76,7 +76,7 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 
 	//Initial server
 	handler := gin.New()
-	handler.Use(gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
+	handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
 	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm)
 
 	docs.SwaggerInfo.BasePath = "/"
@@ -141,8 +141,8 @@ func updateHealthCheck(client *api.Client) {
 	ticker := time.NewTicker(time.Second * 5)
 
 	for {
-		err := client.Agent().UpdateTTL(checkId, "online", api.HealthPassing)
-		// _, _, err := client.Agent().AgentHealthServiceByID(serviceId)
+		err := client.Agent().UpdateTTL(checkID, "online", api.HealthPassing)
+		// _, _, err := client.Agent().AgentHealthServiceByID(serviceID)
 		if err != nil {
 			// log.Fatalf("Failed to update health check: %v", err)
 			log.Fatalf("Failed to check AgentHealthService: %v", err)
@@ -169,12 +169,12 @@ func setupConsul(client *api.Client, consulHost string, appConfig *config.AppCon
 		// Timeout:  "30s",
 		DeregisterCriticalServiceAfter: ttl.String(),
 		TTL:                            ttl.String(),
-		CheckID:                        checkId,
+		CheckID:                        checkID,
 	}
 
 	// Service registration
 	registration := &api.AgentServiceRegistration{
-		ID:      serviceId,   // Unique service RoleId
+		ID:      serviceID,   // Unique service RoleID
 		Name:    serviceName, // Service name
 		Port:    port,        // Service port
 		Address: hostname,    // Service address
@@ -218,7 +218,7 @@ func setupConsul(client *api.Client, consulHost string, appConfig *config.AppCon
 
 func deregisterConsul(client *api.Client) {
 	// Deregister service
-	err := client.Agent().ServiceDeregister(serviceId)
+	err := client.Agent().ServiceDeregister(serviceID)
 	if err != nil {
 		log.Fatalf("Failed to deregister service: %v", err)
 	}

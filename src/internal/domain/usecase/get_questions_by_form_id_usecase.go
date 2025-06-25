@@ -21,7 +21,7 @@ type GetQuestionsByFormUseCase struct {
 }
 
 func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) (*response.QuestionListResponse, *response.FailedResponse) {
-	questions, err := receiver.GetQuestionsByFormId(form.ID)
+	questions, err := receiver.GetQuestionsByFormID(form.ID)
 
 	if err != nil {
 		return nil, &response.FailedResponse{
@@ -45,12 +45,13 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 		}
 
 		q := response.QuestionListData{
-			QuestionId:     question.ID,
+			QuestionID:     question.ID,
 			QuestionType:   strings.ToUpper(question.QuestionType),
 			Question:       question.Question,
 			Attributes:     att,
 			Order:          question.Order,
 			AnswerRequired: question.AnswerRequired,
+			AnswerRemember: question.AnswerRemember,
 			Enabled:        question.EnableOnMobile == value.QuestionForMobile_Enabled,
 		}
 
@@ -69,6 +70,17 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 			}
 		}
 
+		if rawQuestion.AnswerRemember {
+			rememberValue, err := receiver.QuestionRepository.GetMemoryComponentValue(rawQuestion.QuestionType)
+			if err != nil {
+				return nil, &response.FailedResponse{
+					Code:  http.StatusBadRequest,
+					Error: fmt.Sprintf("Failed to get questions, invalid question type: %v", qType),
+				}
+			}
+			rawQuestion.RememberValue = rememberValue.Value
+		}
+
 		// Check code counting & code generation
 		switch qType {
 		case value.QuestionCodeCounting:
@@ -76,7 +88,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 			if err != nil {
 				return nil, &response.FailedResponse{
 					Code:  555,
-					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
+					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionID + " err: " + err.Error(),
 				}
 			}
 			result = append(result, q)
@@ -85,7 +97,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 			if err != nil {
 				return nil, &response.FailedResponse{
 					Code:  555,
-					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionId + " err: " + err.Error(),
+					Error: "Could not parsed user form data fo question: " + rawQuestion.QuestionID + " err: " + err.Error(),
 				}
 			}
 			result = append(result, q)
@@ -104,7 +116,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 }
 
 func (receiver *GetQuestionsByFormUseCase) GetQuestionsByForm(form entity.SForm) *response.QuestionListResponse {
-	questions, err := receiver.GetQuestionsByFormId(form.ID)
+	questions, err := receiver.GetQuestionsByFormID(form.ID)
 	if err != nil {
 		return nil
 	}
@@ -117,7 +129,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionsByForm(form entity.SForm)
 			continue
 		}
 		q := response.QuestionListData{
-			QuestionId:     question.ID,
+			QuestionID:     question.ID,
 			QuestionType:   strings.ToUpper(question.QuestionType),
 			Question:       question.Question,
 			Attributes:     att,
@@ -137,6 +149,15 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionsByForm(form entity.SForm)
 		if value.IsGeneralQuestionType(qType) {
 			result = append(result, rawQuestion)
 		}
+
+		if rawQuestion.AnswerRemember {
+			rememberValue, err := receiver.QuestionRepository.GetMemoryComponentValue(rawQuestion.QuestionType)
+			if err != nil {
+				log.Errorf("Failed to get questions, invalid question type: %v", qType)
+				continue
+			}
+			rawQuestion.RememberValue = rememberValue.Value
+		}
 	}
 
 	return &response.QuestionListResponse{
@@ -152,7 +173,7 @@ func (receiver *GetQuestionsByFormUseCase) BuildCodeCountingQuestion(question re
 	var att response.QuestionAttributes
 	var attInJSONString string
 
-	newCodeCountingValue, err := receiver.CreateForQuestionWithID(question.QuestionId, receiver.DB)
+	newCodeCountingValue, err := receiver.CreateForQuestionWithID(question.QuestionID, receiver.DB)
 	if err != nil {
 		log.Error(err)
 		return response.QuestionListData{}, err
@@ -165,7 +186,7 @@ func (receiver *GetQuestionsByFormUseCase) BuildCodeCountingQuestion(question re
 	}
 
 	q := response.QuestionListData{
-		QuestionId:     question.QuestionId,
+		QuestionID:     question.QuestionID,
 		QuestionType:   strings.ToUpper(question.QuestionType),
 		Question:       question.Question,
 		Attributes:     att,
@@ -190,7 +211,7 @@ func (receiver *GetQuestionsByFormUseCase) BuildRandomizerQuestion(question resp
 	}
 
 	q := response.QuestionListData{
-		QuestionId:     question.QuestionId,
+		QuestionID:     question.QuestionID,
 		QuestionType:   strings.ToUpper(question.QuestionType),
 		Question:       question.Question,
 		Attributes:     att,

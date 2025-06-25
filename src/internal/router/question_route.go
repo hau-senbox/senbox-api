@@ -37,10 +37,10 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			UserEntityRepository: userEntityRepository,
 			SessionRepository:    sessionRepository,
 		},
-		GetQuestionByIdUseCase: usecase.GetQuestionByIdUseCase{
+		GetQuestionByIDUseCase: usecase.GetQuestionByIDUseCase{
 			QuestionRepository: questionRepository,
 		},
-		GetDeviceIdFromTokenUseCase: usecase.GetDeviceIdFromTokenUseCase{
+		GetDeviceIDFromTokenUseCase: usecase.GetDeviceIDFromTokenUseCase{
 			SessionRepository: &sessionRepository,
 			DeviceRepository:  &repository.DeviceRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl},
 		},
@@ -49,7 +49,7 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			CodeCountingRepository: repository.NewCodeCountingRepository(),
 			DB:                     conn,
 		},
-		GetFormByIdUseCase: usecase.GetFormByIdUseCase{
+		GetFormByIDUseCase: usecase.GetFormByIDUseCase{
 			FormRepository: formRepo,
 		},
 		GetAllQuestionsUseCase: usecase.GetAllQuestionsUseCase{
@@ -60,7 +60,7 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 			FormQuestionRepository: &repository.FormQuestionRepository{DBConn: conn},
 		},
 		GetRawQuestionFromSpreadsheetUseCase: usecase.GetRawQuestionFromSpreadsheetUseCase{
-			SpreadsheetId:     config.Google.SpreadsheetId,
+			SpreadsheetID:     config.Google.SpreadsheetID,
 			SpreadsheetReader: spreadSheet.Reader,
 		},
 		GetShowPicsQuestionDetailUseCase: usecase.GetShowPicsQuestionDetailUseCase{
@@ -73,7 +73,7 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 		GetUserDeviceUseCase: usecase.GetUserDeviceUseCase{
 			UserEntityRepository: &userEntityRepository,
 		},
-		GetDeviceByIdUseCase: usecase.GetDeviceByIdUseCase{
+		GetDeviceByIDUseCase: usecase.GetDeviceByIDUseCase{
 			DeviceRepository: &repository.DeviceRepository{DBConn: conn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl},
 		},
 	}

@@ -27,7 +27,7 @@ func (receiver *FormRepository) Create(form *entity.SForm) (*entity.SForm, error
 	return form, nil
 }
 
-func (receiver *FormRepository) GetFormById(id uint64) (*entity.SForm, error) {
+func (receiver *FormRepository) GetFormByID(id uint64) (*entity.SForm, error) {
 	var form entity.SForm
 	err := receiver.DBConn.Where("id = ?", id).First(&form).Error
 	if err != nil {
@@ -42,7 +42,7 @@ func (receiver *FormRepository) SaveForm(request parameters.SaveFormParams) (*en
 		Note:           request.Note,
 		Name:           request.Name,
 		SpreadsheetUrl: request.SpreadsheetUrl,
-		SpreadsheetId:  request.SpreadsheetId,
+		SpreadsheetID:  request.SpreadsheetID,
 		Password:       request.Password,
 		Status:         value.Active,
 		SheetName:      request.SheetName,
@@ -61,9 +61,9 @@ func (receiver *FormRepository) SaveForm(request parameters.SaveFormParams) (*en
 	return &form, err
 }
 
-func (receiver *FormRepository) DeleteForm(formId uint64) error {
+func (receiver *FormRepository) DeleteForm(formID uint64) error {
 	form := entity.SForm{}
-	err := receiver.DBConn.Where("id = ?", formId).First(&form).Error
+	err := receiver.DBConn.Where("id = ?", formID).First(&form).Error
 	if err != nil {
 		return err
 	}

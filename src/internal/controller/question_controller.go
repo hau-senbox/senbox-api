@@ -14,20 +14,20 @@ type QuestionController struct {
 	DBConn                               *gorm.DB
 	GetUserQuestionsUseCase              usecase.GetUserQuestionsUseCase
 	GetUserFromTokenUseCase              usecase.GetUserFromTokenUseCase
-	GetQuestionByIdUseCase               usecase.GetQuestionByIdUseCase
-	GetDeviceIdFromTokenUseCase          usecase.GetDeviceIdFromTokenUseCase
+	GetQuestionByIDUseCase               usecase.GetQuestionByIDUseCase
+	GetDeviceIDFromTokenUseCase          usecase.GetDeviceIDFromTokenUseCase
 	GetQuestionByFormUseCase             usecase.GetQuestionsByFormUseCase
-	GetFormByIdUseCase                   usecase.GetFormByIdUseCase
+	GetFormByIDUseCase                   usecase.GetFormByIDUseCase
 	GetAllQuestionsUseCase               usecase.GetAllQuestionsUseCase
 	CreateFormUseCase                    usecase.CreateFormUseCase
 	GetRawQuestionFromSpreadsheetUseCase usecase.GetRawQuestionFromSpreadsheetUseCase
 	GetShowPicsQuestionDetailUseCase     usecase.GetShowPicsQuestionDetailUseCase
 	FindDeviceFromRequestCase            usecase.FindDeviceFromRequestCase
 	GetUserDeviceUseCase                 usecase.GetUserDeviceUseCase
-	GetDeviceByIdUseCase                 usecase.GetDeviceByIdUseCase
+	GetDeviceByIDUseCase                 usecase.GetDeviceByIDUseCase
 }
 
-// Get Form's Questions by QR Code godoc
+// GetFormQRCode Get Form's Questions by QR Code godoc
 // @Summary Get Form's Questions by QR Code
 // @Description Get Form's Questions by QR Code
 // @Tags Form
@@ -49,7 +49,7 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 		})
 		return
 	}
-	form, err := receiver.GetFormByIdUseCase.GetFormByQRCode(req.QrCode)
+	form, err := receiver.GetFormByIDUseCase.GetFormByQRCode(req.QrCode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -68,22 +68,22 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 	context.JSON(http.StatusOK, succeedRes)
 }
 
-// Get Show Pics Question Detail godoc
+// GetShowPicsQuestion Get Show Pics Question Detail godoc
 // @Summary Get Show Pics Question Detail
 // @Description Get Show Pics Question Detail
 // @Tags Question
 // @Accept  json
 // @Produce  json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path string true "Question RoleId"
+// @Param id path string true "Question RoleID"
 // @Success 200 {object} response.GetShowPicsQuestionResponse
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
 // @Router /v1/question/show-pics [get]
 func (receiver *QuestionController) GetShowPicsQuestion(context *gin.Context) {
-	questionId := context.Query("id")
-	photo, err := receiver.GetShowPicsQuestionDetailUseCase.Execute(questionId)
+	questionID := context.Query("id")
+	photo, err := receiver.GetShowPicsQuestionDetailUseCase.Execute(questionID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

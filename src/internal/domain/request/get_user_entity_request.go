@@ -1,6 +1,6 @@
 package request
 
-type GetUserEntityByIdRequest struct {
+type GetUserEntityByIDRequest struct {
 	ID string `json:"id" binding:"required"`
 }
 

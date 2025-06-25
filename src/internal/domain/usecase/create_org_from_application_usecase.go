@@ -11,7 +11,7 @@ type CreateOrgFormApplicationUseCase struct {
 }
 
 func (receiver *CreateOrgFormApplicationUseCase) CreateOrgFormApplication(req request.CreateOrgFormApplicationRequest) error {
-	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIdRequest{ID: req.UserID})
+	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}

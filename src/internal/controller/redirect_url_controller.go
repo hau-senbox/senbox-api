@@ -50,7 +50,7 @@ func (receiver *RedirectUrlController) CreateRedirectUrl(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response.SaveRedirectUrlResponse{Data: response.SaveRedirectUrlResponseData{
-		Id:        form.ID,
+		ID:        form.ID,
 		QRCode:    form.QRCode,
 		TargetUrl: form.TargetUrl,
 		Password:  form.Password,
@@ -100,7 +100,7 @@ func (receiver *RedirectUrlController) GetRedirectUrlList(context *gin.Context) 
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Redirect Url RoleId"
+// @Param id path int true "Redirect Url RoleID"
 // @Success 200 {object} response.SucceedResponse
 // @Failure 400 {object} response.FailedResponse
 // @Failure 401 {object} response.FailedResponse
@@ -108,8 +108,8 @@ func (receiver *RedirectUrlController) GetRedirectUrlList(context *gin.Context) 
 // @Failure 500 {object} response.FailedResponse
 // @Router /v1/admin/redirect-url/:id [delete]
 func (receiver *RedirectUrlController) DeleteRedirectUrl(context *gin.Context) {
-	formIdString := context.Param("id")
-	formId, err := strconv.Atoi(formIdString)
+	formIDString := context.Param("id")
+	formID, err := strconv.Atoi(formIDString)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -117,7 +117,7 @@ func (receiver *RedirectUrlController) DeleteRedirectUrl(context *gin.Context) {
 		})
 		return
 	}
-	err = receiver.Delete(uint64(formId))
+	err = receiver.Delete(uint64(formID))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -138,7 +138,7 @@ func (receiver *RedirectUrlController) DeleteRedirectUrl(context *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {token}"
-// @Param id path int true "Redirect Url RoleId"
+// @Param id path int true "Redirect Url RoleID"
 // @Param request body request.UpdateRedirectUrlRequest true "Update Redirect Url Request"
 // @Success 200 {object} response.UpdateRedirectUrlResponse
 // @Failure 400 {object} response.FailedResponse
@@ -155,7 +155,7 @@ func (receiver *RedirectUrlController) UpdateRedirectUrl(context *gin.Context) {
 		})
 		return
 	}
-	formId, err := strconv.Atoi(id)
+	formID, err := strconv.Atoi(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -171,7 +171,7 @@ func (receiver *RedirectUrlController) UpdateRedirectUrl(context *gin.Context) {
 		})
 		return
 	}
-	form, err := receiver.Update(formId, req)
+	form, err := receiver.Update(formID, req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -181,7 +181,7 @@ func (receiver *RedirectUrlController) UpdateRedirectUrl(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, response.UpdateRedirectUrlResponse{
 		Data: response.GetRedirectUrlListResponseData{
-			Id:           form.ID,
+			ID:           form.ID,
 			QRCode:       form.QRCode,
 			TargetUrl:    form.TargetUrl,
 			Password:     form.Password,
@@ -226,7 +226,7 @@ func (receiver *RedirectUrlController) GetRedirectUrlByQRCode(context *gin.Conte
 	}
 	context.JSON(http.StatusOK, response.GetRedirectUrlResponse{
 		Data: response.GetRedirectUrlListResponseData{
-			Id:           form.ID,
+			ID:           form.ID,
 			QRCode:       form.QRCode,
 			TargetUrl:    form.TargetUrl,
 			Password:     form.Password,

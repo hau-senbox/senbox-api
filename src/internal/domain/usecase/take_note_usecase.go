@@ -9,8 +9,8 @@ type TakeNoteUseCase struct {
 	*repository.DeviceRepository
 }
 
-func (receiver *TakeNoteUseCase) TakeNote(params request.TakeNoteRequest, deviceId string) error {
-	device, err := receiver.GetDeviceById(deviceId)
+func (receiver *TakeNoteUseCase) TakeNote(params request.TakeNoteRequest, deviceID string) error {
+	device, err := receiver.GetDeviceByID(deviceID)
 	if err != nil {
 		return err
 	}

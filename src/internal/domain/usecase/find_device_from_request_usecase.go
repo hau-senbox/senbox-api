@@ -29,12 +29,12 @@ func (receiver *FindDeviceFromRequestCase) FindDevice(context *gin.Context) (*en
 
 	tokenString := strings.Split(authorization, " ")[1]
 
-	deviceId, err := receiver.ExtractDeviceIdFromToken(tokenString)
-	if err != nil || deviceId == nil {
+	deviceID, err := receiver.ExtractDeviceIDFromToken(tokenString)
+	if err != nil || deviceID == nil {
 		return nil, errors.New("invalid token")
 	}
 
-	device, err := receiver.FindDeviceById(*deviceId)
+	device, err := receiver.FindDeviceByID(*deviceID)
 	if err != nil {
 		return nil, err
 	}

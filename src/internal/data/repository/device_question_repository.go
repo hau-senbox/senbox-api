@@ -7,8 +7,8 @@ import (
 )
 
 type CreateUserQuestionParams struct {
-	DeviceId   string
-	QuestionId string
+	DeviceID   string
+	QuestionID string
 	Order      int
 }
 
@@ -17,7 +17,7 @@ type DeviceQuestionRepository struct {
 }
 
 type UserQuestion struct {
-	QuestionId     string `sql:"question_id"`
+	QuestionID     string `sql:"question_id"`
 	Question       string `sql:"question"`
 	QuestionType   string `sql:"question_type"`
 	Attributes     string `sql:"attributes"`

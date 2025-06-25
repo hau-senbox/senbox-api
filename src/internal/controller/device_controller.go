@@ -18,18 +18,18 @@ type DeviceController struct {
 	DBConn *gorm.DB
 	*usecase.UpdateDeviceSheetUseCase
 	*usecase.RegisterDeviceUseCase
-	*usecase.GetDeviceByIdUseCase
+	*usecase.GetDeviceByIDUseCase
 	*usecase.GetDeviceListUseCase
 	*usecase.UpdateDeviceUseCase
 	*usecase.FindDeviceFromRequestCase
-	*usecase.GetFormByIdUseCase
+	*usecase.GetFormByIDUseCase
 	*usecase.TakeNoteUseCase
 	*usecase.SubmitFormUseCase
 	*usecase.RefreshAccessTokenUseCase
 	*usecase.GetDeviceStatusUseCase
 	*usecase.DiscoverUseCase
 	*usecase.DeviceSignUpUseCases
-	*usecase.GetRecentSubmissionByFormIdUseCase
+	*usecase.GetRecentSubmissionByFormIDUseCase
 	*usecase.RegisterFcmDeviceUseCase
 	*usecase.SendNotificationUseCase
 	*usecase.ResetCodeCountingUseCase
@@ -39,8 +39,8 @@ type DeviceController struct {
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
-	deviceId := c.Param("device_id")
-	if deviceId == "" {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -50,7 +50,7 @@ func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
 		return
 	}
 
-	device, err := receiver.Get(deviceId)
+	device, err := receiver.Get(deviceID)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -64,7 +64,7 @@ func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: &response.DeviceResponseDataV2{
-			Id:                device.ID,
+			ID:                device.ID,
 			DeviceName:        device.DeviceName,
 			InputMode:         string(device.InputMode),
 			Status:            string(device.Status),
@@ -203,7 +203,7 @@ func (receiver *DeviceController) RegisterOrgDevice(c *gin.Context) {
 	})
 }
 
-// Init a device godoc
+// InitDeviceV1 Init a device godoc
 // @Summary      Register a new device
 // @Description  Init a device
 // @Tags         Device
@@ -236,7 +236,7 @@ func (receiver *DeviceController) InitDeviceV1(context *gin.Context) {
 		return
 	}
 
-	deviceId, err := receiver.RegisterDevice(user, req)
+	deviceID, err := receiver.RegisterDevice(user, req)
 	if err != nil {
 		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -249,25 +249,25 @@ func (receiver *DeviceController) InitDeviceV1(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: deviceId,
+		Data: deviceID,
 	})
 }
 
-// Deactivate Device godoc
+// DeactivateDevice Deactivate Device godoc
 // @Summary      Deactivate Device
 // @Description  Deactivate Device
 // @Tags         Admin
 // @Accept       json
 // @Produce      json
 // @Param Authorization header string true "Bearer {token}"
-// @Param device_id path string true "Device Id"
+// @Param device_id path string true "Device ID"
 // @Success      200  {object}  response.SucceedResponse
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/admin/device/deactivate/{device_id} [put]
 func (receiver *DeviceController) DeactivateDevice(context *gin.Context) {
-	deviceId := context.Param("device_id")
+	deviceID := context.Param("device_id")
 	var req request.DeactivateDeviceRequest
 	if err := context.ShouldBind(&req); err != nil {
 		context.JSON(
@@ -279,7 +279,7 @@ func (receiver *DeviceController) DeactivateDevice(context *gin.Context) {
 		return
 	}
 
-	err := receiver.UpdateDeviceSheetUseCase.DeactivateDevice(deviceId, req)
+	err := receiver.UpdateDeviceSheetUseCase.DeactivateDevice(deviceID, req)
 	if err != nil {
 		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -295,21 +295,21 @@ func (receiver *DeviceController) DeactivateDevice(context *gin.Context) {
 	})
 }
 
-// Aactivate Device godoc
+// ActivateDevice Aactivate Device godoc
 // @Summary      Activate Device
 // @Description  Aactivate Device
 // @Tags         Admin
 // @Accept       json
 // @Produce      json
 // @Param Authorization header string true "Bearer {token}"
-// @Param device_id path string true "Device Id"
+// @Param device_id path string true "Device ID"
 // @Success      200  {object}  response.SucceedResponse
 // @Failure      400  {object}  response.FailedResponse
 // @Failure      404  {object}  response.FailedResponse
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/admin/device/activate/{device_id} [put]
 func (receiver *DeviceController) ActivateDevice(context *gin.Context) {
-	deviceId := context.Param("device_id")
+	deviceID := context.Param("device_id")
 	var req request.ReactivateDeviceRequest
 	if err := context.ShouldBind(&req); err != nil {
 		context.JSON(
@@ -320,7 +320,7 @@ func (receiver *DeviceController) ActivateDevice(context *gin.Context) {
 		)
 		return
 	}
-	err := receiver.UpdateDeviceSheetUseCase.ActivateDevice(deviceId, req)
+	err := receiver.UpdateDeviceSheetUseCase.ActivateDevice(deviceID, req)
 	if err != nil {
 		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -336,14 +336,14 @@ func (receiver *DeviceController) ActivateDevice(context *gin.Context) {
 	})
 }
 
-// Update Device godoc
+// UpdateDevice Update Device godoc
 // @Summary      Update Device
 // @Description  Update Device
 // @Tags         Admin
 // @Accept       json
 // @Produce      json
 // @Param Authorization header string true "Bearer {token}"
-// @Param device_id path string true "Device Id"
+// @Param device_id path string true "Device ID"
 // @Param req body request.UpdateDeviceRequest true "Update Device Params"
 // @Success      200  {object}  response.SucceedResponse
 // @Failure      400  {object}  response.FailedResponse
@@ -351,8 +351,8 @@ func (receiver *DeviceController) ActivateDevice(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/admin/device/{device_id}/update/ [put]
 func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
-	deviceId := context.Param("device_id")
-	if deviceId == "" {
+	deviceID := context.Param("device_id")
+	if deviceID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
@@ -371,7 +371,7 @@ func (receiver *DeviceController) UpdateDevice(context *gin.Context) {
 		)
 		return
 	}
-	device, err := receiver.UpdateDeviceUseCase.UpdateDevice(deviceId, req)
+	device, err := receiver.UpdateDeviceUseCase.UpdateDevice(deviceID, req)
 	if err != nil {
 		context.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -405,7 +405,7 @@ func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Device Id is required",
+				Error: "Device ID is required",
 			},
 		)
 		return
@@ -461,7 +461,7 @@ func (receiver *DeviceController) UpdateDeviceV2(context *gin.Context) {
 	})
 }
 
-// Save device's Note godoc
+// TakeNote Save device's Note godoc
 // @Summary      Save device's Note
 // @Description  Save device's Note
 // @Tags         Device
@@ -492,23 +492,31 @@ func (receiver *DeviceController) TakeNote(context *gin.Context) {
 		return
 	}
 
-	userDevices, err := receiver.GetUserDeviceById(takeNoteRequest.DeviceId)
-	var userIds []string
-	for _, userDevice := range *userDevices {
-		userIds = append(userIds, userDevice.UserID.String())
-	}
-	isExist := gofn.ContainSlice(userIds, []string{
-		user.ID.String(),
-	})
-	if !isExist {
-		context.JSON(http.StatusUnauthorized, response.FailedResponse{
-			Code:  http.StatusUnauthorized,
+	userDevices, err := receiver.GetUserDeviceByID(takeNoteRequest.DeviceID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
 		return
 	}
 
-	err = receiver.TakeNoteUseCase.TakeNote(takeNoteRequest, takeNoteRequest.DeviceId)
+	var userIDs []string
+	for _, userDevice := range *userDevices {
+		userIDs = append(userIDs, userDevice.UserID.String())
+	}
+	isExist := gofn.ContainSlice(userIDs, []string{
+		user.ID.String(),
+	})
+	if !isExist {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized",
+		})
+		return
+	}
+
+	err = receiver.TakeNoteUseCase.TakeNote(takeNoteRequest, takeNoteRequest.DeviceID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -522,7 +530,7 @@ func (receiver *DeviceController) TakeNote(context *gin.Context) {
 	})
 }
 
-// Submit a form godoc
+// SubmitForm Submit a form godoc
 // @Summary      Submit a form
 // @Description  Submit a form
 // @Tags         Device
@@ -563,7 +571,7 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		return
 	}
 
-	req.UserId = user.ID.String()
+	req.UserID = user.ID.String()
 	err = receiver.AnswerForm(form.ID, req)
 	if err != nil {
 		context.JSON(http.StatusNotAcceptable, response.FailedResponse{
@@ -585,7 +593,7 @@ type getLastSubmissionFromFormRequest struct {
 	QRCode string `json:"qr_code" bindding:"required"`
 }
 
-// Get last submission from a form godoc
+// GetLastSubmissionByForm Get last submission from a form godoc
 // @Summary      Get last submission from a form
 // @Description  Get last submission from a form
 // @Tags         Device
@@ -617,7 +625,7 @@ func (receiver *DeviceController) GetLastSubmissionByForm(context *gin.Context) 
 		return
 	}
 
-	res, err := receiver.GetRecentSubmissionByFormIdUseCase.Execute(req.QRCode, user.ID.String())
+	res, err := receiver.GetRecentSubmissionByFormIDUseCase.Execute(req.QRCode, user.ID.String())
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -641,7 +649,7 @@ type refreshAccessTokenResponseData struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-// Refresh Access Token godoc
+// RefreshAccessToken Refresh Access Token godoc
 // @Summary      Refresh Access Token
 // @Description  Refresh Access Token
 // @Tags         Device
@@ -681,7 +689,7 @@ func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
 	})
 }
 
-// Get Device Status godoc
+// GetDeviceStatus Get Device Status godoc
 // @Summary      Get Device Status
 // @Description  Get Device Status
 // @Tags         Device
@@ -695,12 +703,12 @@ func (receiver *DeviceController) RefreshAccessToken(context *gin.Context) {
 // @Failure      500  {object}  response.FailedResponse
 // @Router       /v1/device/status/:device_id [get]
 func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
-	deviceId := context.Param("device_id")
-	if deviceId == "" {
+	deviceID := context.Param("device_id")
+	if deviceID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:  http.StatusBadRequest,
-				Error: "Device Id is required",
+				Error: "Device ID is required",
 			},
 		)
 		return
@@ -717,7 +725,7 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 	// 	return
 	// }
 
-	// userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceById(deviceId)
+	// userDevices, err := receiver.GetUserDeviceUseCase.GetUserDeviceByID(deviceID)
 	// if err != nil {
 	// 	context.JSON(http.StatusInternalServerError, response.FailedResponse{
 	// 		Error: response.Cause{
@@ -727,12 +735,12 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 	// 	})
 	// 	return
 	// }
-	// var userIds []string
+	// var userIDs []string
 	// for _, userDevice := range *userDevices {
-	// 	userIds = append(userIds, userDevice.UserID.String())
+	// 	userIDs = append(userIDs, userDevice.UserID.String())
 	// }
-	// isExist := gofn.ContainSlice(userIds, []string{
-	// 	user.RoleId.String(),
+	// isExist := gofn.ContainSlice(userIDs, []string{
+	// 	user.RoleID.String(),
 	// })
 	// if !isExist {
 	// 	context.JSON(http.StatusUnauthorized, response.FailedResponse{
@@ -744,7 +752,7 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 	// 	return
 	// }
 
-	device, err := receiver.GetDeviceByIdUseCase.GetDeviceById(deviceId)
+	device, err := receiver.GetDeviceByIDUseCase.GetDeviceByID(deviceID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -769,7 +777,7 @@ func (receiver *DeviceController) GetDeviceStatus(context *gin.Context) {
 }
 
 type reserveRequest struct {
-	DeviceId   string `json:"device_id" binding:"required"`
+	DeviceID   string `json:"device_id" binding:"required"`
 	AppVersion string `json:"app_version" binding:"required"`
 }
 
@@ -806,7 +814,7 @@ func (receiver *DeviceController) Reserve(context *gin.Context) {
 		return
 	}
 
-	err := receiver.RegisterDeviceUseCase.Reserve(req.DeviceId, req.AppVersion)
+	err := receiver.RegisterDeviceUseCase.Reserve(req.DeviceID, req.AppVersion)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -824,11 +832,11 @@ func (receiver *DeviceController) Reserve(context *gin.Context) {
 }
 
 type discoverRequest struct {
-	DeviceId string `json:"device_id" binding:"required"`
+	DeviceID string `json:"device_id" binding:"required"`
 }
 
 type discoverResponse struct {
-	DeviceId string `json:"device_id"`
+	DeviceID string `json:"device_id"`
 }
 
 // Discover godoc
@@ -854,7 +862,7 @@ func (receiver *DeviceController) Discover(context *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DiscoverUseCase.Execute(rq.DeviceId)
+	res, err := receiver.DiscoverUseCase.Execute(rq.DeviceID)
 	if err != nil {
 		//device is not in api mode(aka not in `VIA Spreadsheet`)
 		if err.Error() == "not_api_input_mode" {
@@ -875,7 +883,7 @@ func (receiver *DeviceController) Discover(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: discoverResponse{
-			DeviceId: res.DeviceId,
+			DeviceID: res.DeviceID,
 		},
 	})
 }
@@ -893,7 +901,7 @@ type getSignUpResponse struct {
 	Button5 getSignUpResponseTextButton `json:"button_5" binding:"required"`
 }
 
-// Get Sign Up godoc
+// GetSignUp Get Sign Up godoc
 // @Summary      Get Sign Up
 // @Description  Get Sign Up
 // @Tags         Device
@@ -939,7 +947,7 @@ func (receiver *DeviceController) GetSignUp(context *gin.Context) {
 	})
 }
 
-// Get Registration Form godoc
+// GetSignUpForm Get Registration Form godoc
 // @Summary      Get Registration Form
 // @Description  Get Registration Form
 // @Tags         Device
@@ -970,7 +978,7 @@ type getPresetResponse struct {
 	Value *string `json:"value"`
 }
 
-// Get Preset Form godoc
+// GetPreset2 Get Preset Form godoc
 // @Summary      Get Preset 2 Form
 // @Description  Get Preset 2 Form
 // @Tags         Device
@@ -997,7 +1005,7 @@ func (receiver *DeviceController) GetPreset2(context *gin.Context) {
 	})
 }
 
-// Get Preset Form godoc
+// GetPreset1 Get Preset Form godoc
 // @Summary      Get Preset 1 Form
 // @Description  Get Preset 1 Form
 // @Tags         Device
@@ -1024,7 +1032,7 @@ func (receiver *DeviceController) GetPreset1(context *gin.Context) {
 	})
 }
 
-// Get Register FCM Device godoc
+// RegisterFCM Get Register FCM Device godoc
 // @Summary      Register FCM Device
 // @Description  Register FCM Device
 // @Tags         Device
@@ -1061,7 +1069,7 @@ func (receiver *DeviceController) RegisterFCM(context *gin.Context) {
 	})
 }
 
-// Send Notification	Logo
+// SenNotification Send Notification Logo
 // @Summary 	Send Notification
 // @Description Send Notification
 // @Tag Device
@@ -1101,7 +1109,7 @@ func (receiver *DeviceController) SenNotification(context *gin.Context) {
 	})
 }
 
-// Reset Code Counting
+// ResetCodeCounting Reset Code Counting
 // @Summary      Reset Code Counting
 // @Description  Reset Code Counting
 // @Tags         Device

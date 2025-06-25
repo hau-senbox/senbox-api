@@ -5,16 +5,16 @@ import (
 	"sen-global-api/internal/domain/entity"
 )
 
-type GetDeviceIdFromTokenUseCase struct {
+type GetDeviceIDFromTokenUseCase struct {
 	*repository.SessionRepository
 	*repository.DeviceRepository
 }
 
-func (receiver *GetDeviceIdFromTokenUseCase) GetDeviceFromToken(tokenString string) (*entity.SDevice, error) {
-	deviceId, err := receiver.ExtractDeviceIdFromToken(tokenString)
+func (receiver *GetDeviceIDFromTokenUseCase) GetDeviceFromToken(tokenString string) (*entity.SDevice, error) {
+	deviceID, err := receiver.ExtractDeviceIDFromToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
-	return receiver.FindDeviceById(*deviceId)
+	return receiver.FindDeviceByID(*deviceID)
 }

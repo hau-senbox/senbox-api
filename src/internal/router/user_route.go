@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/uploader"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,16 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		TokenExpireTimeInHour: time.Duration(config.TokenExpireDurationInHour),
 	}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
+
+	provider := uploader.NewS3Provider(
+		config.S3.SenboxFormSubmitBucket.AccessKey,
+		config.S3.SenboxFormSubmitBucket.SecretKey,
+		config.S3.SenboxFormSubmitBucket.BucketName,
+		config.S3.SenboxFormSubmitBucket.Region,
+		config.S3.SenboxFormSubmitBucket.Domain,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
+	)
 
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
@@ -71,6 +82,17 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 		GetUserFormApplicationUseCase: &usecase.GetUserFormApplicationUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		UploadUserAvatarUseCase: &usecase.UploadUserAvatarUseCase{
+			UploadImageUseCase: usecase.UploadImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+			DeleteImageUseCase: usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
 		},
 	}
 
@@ -165,14 +187,14 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	{
 		user.GET("/current-user", secureMiddleware.Secured(), userEntityController.GetCurrentUser)
 		user.GET("/all", secureMiddleware.Secured(), userEntityController.GetAllUserEntity)
-		user.GET("/:id", secureMiddleware.Secured(), userEntityController.GetUserEntityById)
+		user.GET("/:id", secureMiddleware.Secured(), userEntityController.GetUserEntityByID)
 		user.GET("/name/:username", secureMiddleware.Secured(), userEntityController.GetUserEntityByName)
-		user.GET("/:id/children", secureMiddleware.Secured(), userEntityController.GetChildrenOfGuardian)
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
 		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
 		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)
+		user.POST("/avatar", secureMiddleware.Secured(), userEntityController.UploadAvatar)
 
 		user.GET("/org/:organization_id/:user_id", secureMiddleware.Secured(), userEntityController.GetUserOrgInfo)
 		user.GET("/org/:organization_id/manager", secureMiddleware.Secured(), userEntityController.GetAllOrgManagerInfo)
@@ -219,7 +241,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	userRole := engine.Group("v1/user-role", secureMiddleware.Secured())
 	{
 		userRole.GET("/all", userRoleController.GetAllRole)
-		userRole.GET("/:id", userRoleController.GetRoleById)
+		userRole.GET("/:id", userRoleController.GetRoleByID)
 		userRole.GET("/name/:role_name", userRoleController.GetRoleByName)
 
 		userRole.POST("/init", userRoleController.CreateRole)
@@ -231,7 +253,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	functionClaim := engine.Group("v1/function-claim", secureMiddleware.Secured())
 	{
 		functionClaim.GET("/all", functionClaimController.GetAllFunctionClaim)
-		functionClaim.GET("/:id", functionClaimController.GetFunctionClaimById)
+		functionClaim.GET("/:id", functionClaimController.GetFunctionClaimByID)
 		functionClaim.GET("/name/:function_name", functionClaimController.GetFunctionClaimByName)
 
 		functionClaim.POST("/init", functionClaimController.CreateFunctionClaim)
@@ -243,7 +265,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	functionClaimPermission := engine.Group("v1/function-claim-permission", secureMiddleware.Secured())
 	{
 		functionClaimPermission.GET("/function/:function_claim_id/all", functionClaimPermissionController.GetAllFunctionClaimPermission)
-		functionClaimPermission.GET("/:id", functionClaimPermissionController.GetFunctionClaimPermissionById)
+		functionClaimPermission.GET("/:id", functionClaimPermissionController.GetFunctionClaimPermissionByID)
 		functionClaimPermission.GET("/name/:permission_name", functionClaimPermissionController.GetFunctionClaimPermissionByName)
 
 		functionClaimPermission.POST("/init", functionClaimPermissionController.CreateFunctionClaimPermission)

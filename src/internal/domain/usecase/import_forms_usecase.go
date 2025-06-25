@@ -57,10 +57,10 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 		return nil
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 
-	sheets, err := receiver.SpreadsheetReader.GetSheets(spreadsheetId)
+	sheets, err := receiver.SpreadsheetReader.GetSheets(spreadsheetID)
 
 	if err != nil {
 		log.Error(err)
@@ -76,7 +76,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 			continue
 		}
 		values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-			SpreadsheetId: spreadsheetId,
+			SpreadsheetID: spreadsheetID,
 			ReadRange:     sheetName + `!` + receiver.Google.FirstColumn + strconv.Itoa(receiver.Google.FirstRow+2) + `:AC`,
 		})
 		if err != nil {
@@ -99,7 +99,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"DELETED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -114,7 +114,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"DEACTIVATED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -152,7 +152,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -163,7 +163,7 @@ func (receiver *ImportFormsUseCase) SyncForms(req request.ImportFormRequest) err
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -218,10 +218,10 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 		return receiver.importSignUpForms(req)
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 
-	sheets, err := receiver.SpreadsheetReader.GetSheets(spreadsheetId)
+	sheets, err := receiver.SpreadsheetReader.GetSheets(spreadsheetID)
 
 	if err != nil {
 		log.Error(err)
@@ -237,7 +237,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 			continue
 		}
 		values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-			SpreadsheetId: spreadsheetId,
+			SpreadsheetID: spreadsheetID,
 			ReadRange:     sheetName + `!` + receiver.Google.FirstColumn + strconv.Itoa(receiver.Google.FirstRow+2) + `:AC`,
 		})
 		if err != nil {
@@ -260,7 +260,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"DELETED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -275,7 +275,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"DEACTIVATED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -313,7 +313,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -324,7 +324,7 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 							Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 							Dimension: "ROWS",
 							Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-						}, spreadsheetId)
+						}, spreadsheetID)
 						if err != nil {
 							log.Debug("Row No: ", rowNo)
 							log.Error(err)
@@ -361,10 +361,10 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 	re := regexp.MustCompile(`/spreadsheets/d/([a-zA-Z0-9-_]+)`)
 	match := re.FindStringSubmatch(req.SpreadsheetUrl)
-	signUpFormsSpreadsheetId := match[1]
+	signUpFormsSpreadsheetID := match[1]
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: signUpFormsSpreadsheetId,
+		SpreadsheetID: signUpFormsSpreadsheetID,
 		ReadRange:     "Forms" + `!K11:M`,
 	})
 	if err != nil || values == nil {
@@ -392,7 +392,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 		_, err = receiver.importSignUpForm(url, code, sheetName)
 		if err != nil {
-			return fmt.Errorf("Error importing sign up forms: %s", err.Error())
+			return fmt.Errorf("error importing sign up forms: %s", err.Error())
 		}
 	}
 
@@ -408,10 +408,10 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 		return entity.SForm{}, fmt.Errorf("import sign up form invalid spreadsheet url: %s", spreadsheetUrl)
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetNameToRead + `!J11` + `:Q`,
 	})
 	if err != nil {
@@ -434,22 +434,27 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 			if len(row) > 5 {
 				required = row[5].(string)
 			}
-			var uniqueId *string = nil
+			remember := "false"
+			if len(row) > 8 {
+				remember = row[8].(string)
+			}
+			var uniqueID *string = nil
 			if row[0].(string) != "" {
 				id := row[0].(string)
-				uniqueId = &id
+				uniqueID = &id
 			}
 			item := parameters.RawQuestion{
-				// ID:        strings.ToUpper(note) + "_" + spreadsheetId + "_" + strconv.Itoa(index-1),
-				QuestionId:        uuid.NewString(),
+				// ID:        strings.ToUpper(note) + "_" + spreadsheetID + "_" + strconv.Itoa(index-1),
+				QuestionID:        uuid.NewString(),
 				Question:          row[3].(string),
 				Type:              row[2].(string),
 				Attributes:        strings.ReplaceAll(row[4].(string), "\n", ""),
 				AnswerRequired:    required,
+				AnswerRemember:    remember,
 				AdditionalOptions: additionalInfo,
 				Status:            "1",
 				RowNumber:         index + 1,
-				QuestionUniqueId:  uniqueId,
+				QuestionUniqueID:  uniqueID,
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
@@ -459,7 +464,7 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 		Note:           note,
 		Name:           formName,
 		SpreadsheetUrl: spreadsheetUrl,
-		SpreadsheetId:  spreadsheetId,
+		SpreadsheetID:  spreadsheetID,
 		Password:       "",
 		RawQuestions:   rawQuestions,
 		SheetName:      sheetNameToRead,
@@ -483,14 +488,14 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 		return "Invalid spreadsheet url", fmt.Errorf("invalid spreadsheet url")
 	}
 
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	sheetNameToRead := "Questions"
 	if sheetName != "" {
 		sheetNameToRead = sheetName
 	}
 	monitor.LogGoogleAPIRequestImportForm()
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetNameToRead + `!I11:Q`,
 	})
 	if err != nil || values == nil {
@@ -513,17 +518,22 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 			if len(row) > 6 {
 				required = row[6].(string)
 			}
+			remember := "false"
+			if len(row) > 8 {
+				remember = row[8].(string)
+			}
 			var enabled value.QuestionForMobile = value.QuestionForMobile_Enabled
 			if strings.ToUpper(row[0].(string)) == "LOCK" {
 				enabled = value.QuestionForMobile_Disabled
 			}
 			item := parameters.RawQuestion{
-				// ID:        strings.ToUpper(code) + "_" + spreadsheetId + "_" + row[2].(string),
-				QuestionId:        uuid.NewString(),
+				// ID:        strings.ToUpper(code) + "_" + spreadsheetID + "_" + row[2].(string),
+				QuestionID:        uuid.NewString(),
 				Question:          row[4].(string),
 				Type:              row[3].(string),
 				Attributes:        strings.ReplaceAll(row[5].(string), "\n", ""),
 				AnswerRequired:    required,
+				AnswerRemember:    remember,
 				AdditionalOptions: additionalInfo,
 				Status:            "1",
 				RowNumber:         index + 1,
@@ -537,7 +547,7 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 		Note:           code,
 		Name:           formName,
 		SpreadsheetUrl: spreadsheetUrl,
-		SpreadsheetId:  spreadsheetId,
+		SpreadsheetID:  spreadsheetID,
 		Password:       password,
 		RawQuestions:   rawQuestions,
 		SheetName:      sheetNameToRead,
@@ -611,14 +621,14 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 		}
 
 		param := repository.CreateQuestionParams{
-			ID:               rawQuestion.QuestionId,
+			ID:               rawQuestion.QuestionID,
 			Question:         rawQuestion.Question,
 			QuestionType:     strings.ToLower(rawQuestion.Type),
 			Attributes:       attString,
 			Status:           value.GetRawStatusValue(status),
 			Set:              rawQuestion.Attributes,
 			EnableOnMobile:   rawQuestion.EnableOnMobile,
-			QuestionUniqueId: rawQuestion.QuestionUniqueId,
+			QuestionUniqueID: rawQuestion.QuestionUniqueID,
 		}
 		params = append(params, param)
 	}
@@ -671,7 +681,8 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 
 		value.CameraSquareLens,
 		value.OrganizationName,
-		value.ApplicationContent:
+		value.ApplicationContent,
+		value.WaterCup:
 		return "{}", nil
 	case value.QuestionDurationBackward,
 		value.QuestionShowPic,
@@ -832,22 +843,36 @@ func (receiver *ImportFormsUseCase) createForm(questions []entity.SQuestion, par
 	if err != nil {
 		return nil, err
 	}
-	var formQuestions = make([]request.CreateFormQuestionItem, 0)
+	formQuestions := make([]request.CreateFormQuestionItem, 0)
+	memoryValues := make([]entity.MemoryComponentValue, 0)
 	for _, question := range questions {
 		var order = 0
 		var answerRequired = false
+		var answerRemember = false
 		for _, rq := range params.RawQuestions {
-			if rq.QuestionId == question.ID.String() {
+			if rq.QuestionID == question.ID.String() {
 				order = rq.RowNumber
 				answerRequired = strings.ToLower(rq.AnswerRequired) == "true"
+
+				if strings.ToLower(rq.AnswerRemember) == "true" {
+					answerRemember = strings.ToLower(rq.AnswerRemember) == "true"
+					memoryValues = append(memoryValues, entity.MemoryComponentValue{
+						ComponentName: question.QuestionType,
+					})
+				}
 			}
 		}
 
 		formQuestions = append(formQuestions, request.CreateFormQuestionItem{
-			QuestionId:     question.ID.String(),
+			QuestionID:     question.ID.String(),
 			Order:          order,
 			AnswerRequired: answerRequired,
+			AnswerRemember: answerRemember,
 		})
+	}
+
+	if len(memoryValues) > 0 {
+		err = receiver.QuestionRepository.CreateMemoryComponentValues(memoryValues)
 	}
 
 	if len(formQuestions) > 0 {
@@ -868,11 +893,11 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 	if len(match) < 2 {
 		return fmt.Errorf("invalid spreadsheet url")
 	}
-	spreadsheetId := match[1]
+	spreadsheetID := match[1]
 	monitor.LogGoogleAPIRequestImportForm()
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
-		SpreadsheetId: spreadsheetId,
+		SpreadsheetID: spreadsheetID,
 		ReadRange:     sheetName + `!` + receiver.Google.FirstColumn + strconv.Itoa(receiver.Google.FirstRow+2) + `:AC`,
 	})
 	if err != nil {
@@ -895,7 +920,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 						Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 						Dimension: "ROWS",
 						Rows:      [][]interface{}{{"DELETED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-					}, spreadsheetId)
+					}, spreadsheetID)
 					if err != nil {
 						log.Debug("Row No: ", rowNo)
 						log.Error(err)
@@ -910,7 +935,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 						Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.Google.FirstRow+2) + ":Q",
 						Dimension: "ROWS",
 						Rows:      [][]interface{}{{"DEACTIVATED", time.Now().Format("2006-01-02 15:04:05"), ""}},
-					}, spreadsheetId)
+					}, spreadsheetID)
 					if err != nil {
 						log.Debug("Row No: ", rowNo)
 						log.Error(err)
@@ -926,7 +951,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 					continue
 				}
 				// var submissionType value.SubmissionType = value.SubmissionTypeValues
-				// var submissionSheetId string = ""
+				// var submissionSheetID string = ""
 				// if len(row) >= 15 {
 				// 	submissionType = value.GetSubmissionTypeFromString(row[14].(string))
 				// 	if len(row) >= 16 {
@@ -939,7 +964,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 				// 			if len(match) < 2 {
 				// 				continue
 				// 			} else {
-				// 				submissionSheetId = match[1]
+				// 				submissionSheetID = match[1]
 				// 			}
 				// 		default:
 				// 			break
@@ -954,7 +979,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 				// if len(row) >= 18 {
 				// 	outputSheetName = row[17].(string)
 				// }
-				// importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetId, tabName, outputSheetName, syncStrategy)
+				// importErr, reason := receiver.importForm(row[0].(string), row[1].(string), row[2].(string), row[3].(string), submissionType, submissionSheetID, tabName, outputSheetName, syncStrategy)
 				// if importErr != nil {
 				// 	log.Error(importErr)
 				// 	monitor.LogGoogleAPIRequestImportForm()
@@ -962,7 +987,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 				// 		Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
 				// 		Dimension: "ROWS",
 				// 		Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-				// 	}, spreadsheetId)
+				// 	}, spreadsheetID)
 				// 	if err != nil {
 				// 		log.Debug("Row No: ", rowNo)
 				// 		log.Error(err)
@@ -973,7 +998,7 @@ func (receiver *ImportFormsUseCase) ImportFormsPartially(url string, sheetName s
 				// 		Range:     sheetName + "!O" + strconv.Itoa(rowNo+receiver.AppConfig.Google.FirstRow+2) + ":Q",
 				// 		Dimension: "ROWS",
 				// 		Rows:      [][]interface{}{{"UPLOADED", time.Now().Format("2006-01-02 15:04:05"), reason}},
-				// 	}, spreadsheetId)
+				// 	}, spreadsheetID)
 				// 	if err != nil {
 				// 		log.Debug("Row No: ", rowNo)
 				// 		log.Error(err)

@@ -62,11 +62,11 @@ type ImportSetting struct {
 }
 
 type OutputSetting struct {
-	FolderId string `json:"folder_id"`
+	FolderID string `json:"folder_id"`
 }
 
 type SummarySetting struct {
-	SpreadSheetId string `json:"spreadsheet_id"`
+	SpreadSheetID string `json:"spreadsheet_id"`
 }
 
 type SignUpTextButtonSetting struct {
@@ -75,8 +75,8 @@ type SignUpTextButtonSetting struct {
 }
 
 type SignUpFormSetting struct {
-	FormId        uint64 `json:"form_id"`
-	SpreadSheetId string `json:"spreadsheet_id"`
+	FormID        uint64 `json:"form_id"`
+	SpreadSheetID string `json:"spreadsheet_id"`
 }
 
 func (receiver *SettingRepository) UpdateFormSetting(req request.ImportFormRequest) error {
@@ -175,7 +175,7 @@ func (receiver *SettingRepository) UpdateSubmissionSetting(id string, name strin
 	setting, err := receiver.getSettingsByType(value.SettingTypeSubmission)
 	if setting == nil {
 		importSetting := OutputSetting{
-			FolderId: id,
+			FolderID: id,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -189,7 +189,7 @@ func (receiver *SettingRepository) UpdateSubmissionSetting(id string, name strin
 		return result.Error
 	} else {
 		importSetting := OutputSetting{
-			FolderId: id,
+			FolderID: id,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -218,11 +218,11 @@ func (receiver *SettingRepository) GetSubmissionSetting() (OutputSetting, error)
 	return outputSetting, nil
 }
 
-func (receiver *SettingRepository) UpdateOutputSummarySetting(spreadsheetId string) error {
+func (receiver *SettingRepository) UpdateOutputSummarySetting(spreadsheetID string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeSummary)
 	if setting == nil {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -236,7 +236,7 @@ func (receiver *SettingRepository) UpdateOutputSummarySetting(spreadsheetId stri
 		return result.Error
 	} else {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -302,11 +302,11 @@ func (receiver *SettingRepository) GetEmailSettings() (*entity.SSetting, error) 
 	return receiver.getSettingsByType(value.SettingTypeEmailHistory)
 }
 
-func (receiver *SettingRepository) UpdateEmaiHistorySetting(spreadsheetId string) error {
+func (receiver *SettingRepository) UpdateEmaiHistorySetting(spreadsheetID string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeEmailHistory)
 	if setting == nil {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -320,7 +320,7 @@ func (receiver *SettingRepository) UpdateEmaiHistorySetting(spreadsheetId string
 		return result.Error
 	} else {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -336,11 +336,11 @@ func (receiver *SettingRepository) UpdateEmaiHistorySetting(spreadsheetId string
 	return err
 }
 
-func (receiver *SettingRepository) UpdateOutputTemplateSetting(spreadsheetId string) error {
+func (receiver *SettingRepository) UpdateOutputTemplateSetting(spreadsheetID string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeOutputTemplate)
 	if setting == nil {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -354,7 +354,7 @@ func (receiver *SettingRepository) UpdateOutputTemplateSetting(spreadsheetId str
 		return result.Error
 	} else {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -378,11 +378,11 @@ func (receiver *SettingRepository) GetOutputTemplateSettingsForTeacher() (*entit
 	return receiver.getSettingsByType(value.SettingTypeOutputTemplateTeacher)
 }
 
-func (receiver *SettingRepository) UpdateOutputTemplateSettingForTeacher(spreadsheetId string) error {
+func (receiver *SettingRepository) UpdateOutputTemplateSettingForTeacher(spreadsheetID string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeOutputTemplateTeacher)
 	if setting == nil {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -396,7 +396,7 @@ func (receiver *SettingRepository) UpdateOutputTemplateSettingForTeacher(spreads
 		return result.Error
 	} else {
 		importSetting := SummarySetting{
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -628,12 +628,12 @@ func (receiver *SettingRepository) UpdateSignUpButton5(name string, v string) (*
 	return setting, err
 }
 
-func (receiver *SettingRepository) UpdateRegistrationForm(formId uint64, url string) (*entity.SSetting, error) {
+func (receiver *SettingRepository) UpdateRegistrationForm(formID uint64, url string) (*entity.SSetting, error) {
 	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpForm)
 	if setting == nil {
 		importSetting := SignUpFormSetting{
-			FormId:        formId,
-			SpreadSheetId: url,
+			FormID:        formID,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -647,8 +647,8 @@ func (receiver *SettingRepository) UpdateRegistrationForm(formId uint64, url str
 		return nil, result.Error
 	} else {
 		importSetting := SignUpFormSetting{
-			FormId:        formId,
-			SpreadSheetId: url,
+			FormID:        formID,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -663,16 +663,16 @@ func (receiver *SettingRepository) UpdateRegistrationForm(formId uint64, url str
 	return setting, err
 }
 
-func (receiver *SettingRepository) UpdateSignUpButtonConfiguration(formId uint64, url string) (*entity.SSetting, error) {
+func (receiver *SettingRepository) UpdateSignUpButtonConfiguration(formID uint64, url string) (*entity.SSetting, error) {
 	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpButtonConfiguration)
 	type SignUpButton struct {
-		FormId        uint64 `json:"form_id"`
-		SpreadSheetId string `json:"spreadsheet_id"`
+		FormID        uint64 `json:"form_id"`
+		SpreadSheetID string `json:"spreadsheet_id"`
 	}
 	if setting == nil {
 		importSetting := SignUpButton{
-			FormId:        formId,
-			SpreadSheetId: url,
+			FormID:        formID,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -686,8 +686,8 @@ func (receiver *SettingRepository) UpdateSignUpButtonConfiguration(formId uint64
 		return nil, result.Error
 	} else {
 		importSetting := SignUpButton{
-			FormId:        formId,
-			SpreadSheetId: url,
+			FormID:        formID,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -706,7 +706,7 @@ func (receiver *SettingRepository) UpdateRegistrationSubmission(url string) (*en
 	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpOutput)
 	if setting == nil {
 		importSetting := SummarySetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -720,7 +720,7 @@ func (receiver *SettingRepository) UpdateRegistrationSubmission(url string) (*en
 		return nil, result.Error
 	} else {
 		importSetting := SummarySetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -739,7 +739,7 @@ func (receiver *SettingRepository) UpdateRegistrationPreset2(url string) (*entit
 	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpPresetValue2)
 	if setting == nil {
 		importSetting := SignUpFormSetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -753,7 +753,7 @@ func (receiver *SettingRepository) UpdateRegistrationPreset2(url string) (*entit
 		return nil, result.Error
 	} else {
 		importSetting := SignUpFormSetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -779,15 +779,15 @@ func (receiver *SettingRepository) SetName(name string, settingType value.Settin
 
 type APIDistributorSetting struct {
 	Url           string `json:"spreadsheet_url"`
-	SpreadSheetId string `json:"spreadsheet_id"`
+	SpreadSheetID string `json:"spreadsheet_id"`
 }
 
-func (receiver *SettingRepository) UpdateAPIDistributerSetting(spreadsheetId string, url string) error {
+func (receiver *SettingRepository) UpdateAPIDistributerSetting(spreadsheetID string, url string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeAPIDistributer)
 	if setting == nil {
 		importSetting := APIDistributorSetting{
 			Url:           url,
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -802,7 +802,7 @@ func (receiver *SettingRepository) UpdateAPIDistributerSetting(spreadsheetId str
 	} else {
 		importSetting := APIDistributorSetting{
 			Url:           url,
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -826,12 +826,12 @@ func (receiver *SettingRepository) GetCodeCountingDataSetting() (*entity.SSettin
 	return receiver.getSettingsByType(value.SettingTypeCodeCountingData)
 }
 
-func (receiver *SettingRepository) UpdateCodeCountingDataSetting(spreadsheetId string, url string) error {
+func (receiver *SettingRepository) UpdateCodeCountingDataSetting(spreadsheetID string, url string) error {
 	setting, err := receiver.getSettingsByType(value.SettingTypeCodeCountingData)
 	if setting == nil {
 		importSetting := APIDistributorSetting{
 			Url:           url,
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -846,7 +846,7 @@ func (receiver *SettingRepository) UpdateCodeCountingDataSetting(spreadsheetId s
 	} else {
 		importSetting := APIDistributorSetting{
 			Url:           url,
-			SpreadSheetId: spreadsheetId,
+			SpreadSheetID: spreadsheetID,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -930,7 +930,7 @@ func (receiver *SettingRepository) UpdateRegistrationPreset1(url string) (*entit
 	setting, err := receiver.getSettingsByType(value.SettingTypeSignUpPresetValue1)
 	if setting == nil {
 		importSetting := SignUpFormSetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {
@@ -944,7 +944,7 @@ func (receiver *SettingRepository) UpdateRegistrationPreset1(url string) (*entit
 		return nil, result.Error
 	} else {
 		importSetting := SignUpFormSetting{
-			SpreadSheetId: url,
+			SpreadSheetID: url,
 		}
 		b, err := json.Marshal(importSetting)
 		if err != nil {

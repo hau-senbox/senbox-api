@@ -14,7 +14,7 @@ func (receiver *GetFunctionClaimUseCase) GetAllFunctionClaim() ([]entity.SFuncti
 	return receiver.GetAll()
 }
 
-func (receiver *GetFunctionClaimUseCase) GetFunctionClaimById(req request.GetFunctionClaimByIdRequest) (*entity.SFunctionClaim, error) {
+func (receiver *GetFunctionClaimUseCase) GetFunctionClaimByID(req request.GetFunctionClaimByIDRequest) (*entity.SFunctionClaim, error) {
 	return receiver.GetByID(req)
 }
 

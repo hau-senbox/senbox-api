@@ -78,7 +78,7 @@ func (receiver *RedirectUrlRepository) Delete(id uint64) error {
 	return receiver.DBConn.Delete(&entity.SRedirectUrl{}, id).Error
 }
 
-func (receiver *RedirectUrlRepository) GetById(id uint64) (*entity.SRedirectUrl, error) {
+func (receiver *RedirectUrlRepository) GetByID(id uint64) (*entity.SRedirectUrl, error) {
 	var url entity.SRedirectUrl
 	err := receiver.DBConn.First(&url, id).Error
 	if err != nil {

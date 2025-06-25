@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
-	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"time"
 
@@ -28,7 +27,6 @@ func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	query := receiver.DBConn.Model(entity.SUserEntity{})
 	err := query.
 		Preload("Roles").
-		Preload("Guardians").
 		Preload("Devices").
 		Preload("Organizations").
 		Find(&users).Error
@@ -41,11 +39,11 @@ func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	return users, err
 }
 
-func (receiver *UserEntityRepository) GetAllUserAuthorize(userId string) ([]entity.SUserFunctionAuthorize, error) {
+func (receiver *UserEntityRepository) GetAllUserAuthorize(userID string) ([]entity.SUserFunctionAuthorize, error) {
 	var rights []entity.SUserFunctionAuthorize
 	query := receiver.DBConn.Model(entity.SUserFunctionAuthorize{})
 	err := query.
-		Where("user_id = ?", userId).
+		Where("user_id = ?", userID).
 		Preload("User").
 		Preload("FunctionClaim").
 		Preload("FunctionClaimPermission").
@@ -61,14 +59,14 @@ func (receiver *UserEntityRepository) GetAllUserAuthorize(userId string) ([]enti
 
 func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUserAuthorizeRequest) error {
 	// check if user exist
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	user, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}
 
 	// check if function claim exist
 	var functionClaim entity.SFunctionClaim
-	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).First(&functionClaim).Error
+	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimID).First(&functionClaim).Error
 	if err != nil {
 		return err
 	}
@@ -77,8 +75,8 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 	var functionClaimPermission entity.SFunctionClaimPermission
 	err = receiver.DBConn.Model(entity.SFunctionClaimPermission{}).Where(
 		"id = ? AND function_claim_id = ?",
-		req.FunctionClaimPermissionId,
-		req.FunctionClaimId,
+		req.FunctionClaimPermissionID,
+		req.FunctionClaimID,
 	).First(&functionClaimPermission).Error
 	if err != nil {
 		return err
@@ -90,8 +88,8 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 		// check if user already have function claim
 		err = tx.Model(entity.SUserFunctionAuthorize{}).Where(
 			"user_id = ? AND function_claim_id = ?",
-			req.UserId,
-			req.FunctionClaimId,
+			req.UserID,
+			req.FunctionClaimID,
 		).Delete(&userFunctionAuthorize).Error
 		if err != nil {
 			return errors.New("can't update user authorize")
@@ -100,8 +98,8 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 		// create a new one if user not have function claim
 		userFunctionAuthorize = entity.SUserFunctionAuthorize{
 			UserID:                    user.ID,
-			FunctionClaimId:           functionClaim.ID,
-			FunctionClaimPermissionId: functionClaimPermission.ID,
+			FunctionClaimID:           functionClaim.ID,
+			FunctionClaimPermissionID: functionClaimPermission.ID,
 		}
 		err = tx.Create(&userFunctionAuthorize).Error
 		if err != nil {
@@ -120,20 +118,20 @@ func (receiver *UserEntityRepository) UpdateUserAuthorize(req request.UpdateUser
 
 func (receiver *UserEntityRepository) DeleteUserAuthorize(req request.DeleteUserAuthorizeRequest) error {
 	// check if user exist
-	_, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	_, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
 	}
 
 	// check if function claim exist
 	var functionClaim entity.SFunctionClaim
-	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimId).First(&functionClaim).Error
+	err = receiver.DBConn.Model(entity.SFunctionClaim{}).Where("id = ?", req.FunctionClaimID).First(&functionClaim).Error
 	if err != nil {
 		return err
 	}
 
 	// delete user authorize
-	err = receiver.DBConn.Where("user_id = ? AND function_claim_id = ?", req.UserId, req.FunctionClaimId).Delete(&entity.SUserFunctionAuthorize{}).Error
+	err = receiver.DBConn.Where("user_id = ? AND function_claim_id = ?", req.UserID, req.FunctionClaimID).Delete(&entity.SUserFunctionAuthorize{}).Error
 	if err != nil {
 		log.Error("UserEntityRepository.DeleteUserAuthorize: " + err.Error())
 		return errors.New("failed to delete user authorize")
@@ -144,7 +142,7 @@ func (receiver *UserEntityRepository) DeleteUserAuthorize(req request.DeleteUser
 
 func (receiver *UserEntityRepository) BlockUser(userID string) error {
 	// check if user exist
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: userID})
+	user, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		return err
 	}
@@ -168,11 +166,10 @@ func (receiver *UserEntityRepository) BlockUser(userID string) error {
 	return nil
 }
 
-func (receiver *UserEntityRepository) GetByID(req request.GetUserEntityByIdRequest) (*entity.SUserEntity, error) {
+func (receiver *UserEntityRepository) GetByID(req request.GetUserEntityByIDRequest) (*entity.SUserEntity, error) {
 	var user entity.SUserEntity
 	err := receiver.DBConn.
 		Preload("Roles").
-		Preload("Guardians").
 		Preload("Devices").
 		Preload("Organizations").
 		Where("id = ?", req.ID).
@@ -188,7 +185,6 @@ func (receiver *UserEntityRepository) GetByUsername(req request.GetUserEntityByU
 	var user entity.SUserEntity
 	err := receiver.DBConn.
 		Preload("Roles").
-		Preload("Guardians").
 		Preload("Devices").
 		Preload("Organizations").
 		Where("username = ?", req.Username).
@@ -204,48 +200,18 @@ func (receiver *UserEntityRepository) GetByUsername(req request.GetUserEntityByU
 	return &user, nil
 }
 
-func (receiver *UserEntityRepository) GetUserDeviceById(deviceId string) (*[]entity.SUserDevices, error) {
+func (receiver *UserEntityRepository) GetUserDeviceByID(deviceID string) (*[]entity.SUserDevices, error) {
 	var userDevices []entity.SUserDevices
 	err := receiver.DBConn.Model(&entity.SUserDevices{}).
-		Where("device_id = ?", deviceId).
+		Where("device_id = ?", deviceID).
 		Find(&userDevices).Error
 
 	if err != nil {
-		log.Error("UserEntityRepository.GetUserDeviceById: " + err.Error())
+		log.Error("UserEntityRepository.GetUserDeviceByID: " + err.Error())
 		return nil, errors.New("failed to get user")
 	}
 
 	return &userDevices, nil
-}
-
-func (receiver *UserEntityRepository) GetChildrenOfGuardian(userId string) (*[]response.UserEntityResponseData, error) {
-	var userGuardians []entity.SUserGuardians
-	err := receiver.DBConn.Model(&entity.SUserGuardians{}).
-		Where("guardian_id = ?", userId).
-		Find(&userGuardians).Error
-
-	if err != nil {
-		log.Error("UserEntityRepository.GetUserDeviceById: " + err.Error())
-		return nil, errors.New("failed to get user")
-	}
-
-	var result []response.UserEntityResponseData
-	for _, userGuardian := range userGuardians {
-		var user entity.SUserEntity
-		err := receiver.DBConn.Where("id = ?", userGuardian.UserID).First(&user).Error
-		if err != nil {
-			log.Error("UserEntityRepository.GetUserDeviceById: " + err.Error())
-			return nil, errors.New("failed to get user")
-		}
-
-		result = append(result, response.UserEntityResponseData{
-			ID:       user.ID.String(),
-			Username: user.Username,
-			Nickname: user.Nickname,
-		})
-	}
-
-	return &result, nil
 }
 
 func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityRequest) error {
@@ -287,7 +253,7 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 	var userReq = entity.SUserEntity{
 		Username: req.Username,
 		Nickname: req.Nickname,
-		Fullname: signupSetting.SpreadSheetId,
+		Fullname: signupSetting.SpreadSheetID,
 		Birthday: birthday,
 		Password: req.Password,
 	}
@@ -323,45 +289,9 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 		return errors.New("failed to assign user for organization")
 	}
 
-	if req.Guardians != nil && len(*req.Guardians) > 0 {
-		for _, guardian := range *req.Guardians {
-			userGuardianResult := tx.Create(&entity.SUserGuardians{
-				UserID:     userReq.ID,
-				GuardianId: uuid.MustParse(guardian),
-			})
-			if userGuardianResult.Error != nil {
-				log.Error("UserRepository.CreateUser: " + userGuardianResult.Error.Error())
-				tx.Rollback()
-				return errors.New("failed to create user guardian")
-			}
-		}
-	}
-
-	if req.Roles != nil && len(*req.Roles) > 0 {
-		roles := make([]uint, 0)
-		for _, roleName := range *req.Roles {
-			var role entity.SRole
-			err := tx.Model(&entity.SRole{}).Where("role_name = ?", roleName).Find(&role).Error
-			if err != nil {
-				log.Error("UserRepository.CreateUser: " + err.Error())
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					tx.Rollback()
-					return errors.New("role does not exist")
-				}
-
-				tx.Rollback()
-				return errors.New("failed to get role")
-			}
-
-			if role.ID == 0 {
-				tx.Rollback()
-				return errors.New("role does not exist")
-			}
-
-			roles = append(roles, uint(role.ID))
-		}
+	if req.Role != nil {
 		tx.Commit()
-		err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserId: userReq.ID.String(), Roles: roles})
+		err = receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserID: userReq.ID.String(), Roles: []string{*req.Role}})
 		if err != nil {
 			return err
 		}
@@ -376,21 +306,14 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 
 func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityRequest) error {
 	if req.Devices != nil {
-		err := receiver.UpdateUserDevice(request.UpdateUserDeviceRequest{UserId: req.ID, Devices: *req.Devices})
+		err := receiver.UpdateUserDevice(request.UpdateUserDeviceRequest{UserID: req.ID, Devices: *req.Devices})
 		if err != nil {
 			return err
 		}
 	}
 
-	if req.Guardians != nil {
-		err := receiver.UpdateUserGuardian(request.UpdateUserGuardianRequest{UserId: req.ID, Guardians: *req.Guardians})
-		if err != nil {
-			return err
-		}
-	}
-
+	roles := make([]string, 0)
 	if req.Roles != nil {
-		roles := make([]uint, 0)
 		for _, roleName := range *req.Roles {
 			var role entity.SRole
 			err := receiver.DBConn.Model(&entity.SRole{}).Where("role_name = ?", roleName).Find(&role).Error
@@ -403,12 +326,13 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 				return errors.New("failed to get role")
 			}
 
-			roles = append(roles, uint(role.ID))
+			roles = append(roles, role.Role.String())
 		}
-		err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserId: req.ID, Roles: roles})
-		if err != nil {
-			return err
-		}
+	}
+
+	err := receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserID: req.ID, Roles: roles})
+	if err != nil {
+		return err
 	}
 
 	updatePayload := map[string]interface{}{}
@@ -442,7 +366,7 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 }
 
 func (receiver *UserEntityRepository) UpdateUserDevice(req request.UpdateUserDeviceRequest) error {
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	user, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 
 	if err != nil {
 		log.Error("UserEntityRepository.UpdateUserRole: " + err.Error())
@@ -457,10 +381,10 @@ func (receiver *UserEntityRepository) UpdateUserDevice(req request.UpdateUserDev
 		return errors.New("failed to delete user device")
 	}
 
-	for _, deviceId := range req.Devices {
+	for _, deviceID := range req.Devices {
 		// check if device is not exist
 		var device entity.SDevice
-		err := receiver.DBConn.Table("s_device").Where("id = ?", deviceId).First(&device).Error
+		err := receiver.DBConn.Table("s_device").Where("id = ?", deviceID).First(&device).Error
 
 		if err != nil {
 			log.Error("UserEntityRepository.UpdateUser: " + err.Error())
@@ -480,47 +404,8 @@ func (receiver *UserEntityRepository) UpdateUserDevice(req request.UpdateUserDev
 	return nil
 }
 
-func (receiver *UserEntityRepository) UpdateUserGuardian(req request.UpdateUserGuardianRequest) error {
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
-
-	if err != nil {
-		log.Error("UserEntityRepository.UpdateUserRole: " + err.Error())
-		return errors.New("failed to get user")
-	}
-
-	// delete if exist
-	deleteGuardians := receiver.DBConn.Where("user_id = ?", req.UserId).Delete(&entity.SUserGuardians{})
-
-	if deleteGuardians.Error != nil {
-		log.Errorf("UserEntityRepository.UpdateUser: %v", deleteGuardians.Error)
-		return errors.New("failed to delete user guardian")
-	}
-
-	for _, guardianId := range req.Guardians {
-		// check guardian user is not exist
-		guardian, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: guardianId})
-
-		if err != nil {
-			log.Error("UserEntityRepository.UpdateUser: " + err.Error())
-			return errors.New("guardian user not exist")
-		}
-
-		userGuardianResult := receiver.DBConn.Create(&entity.SUserGuardians{
-			UserID:     user.ID,
-			GuardianId: guardian.ID,
-		})
-
-		if userGuardianResult.Error != nil {
-			log.Errorf("UserEntityRepository.UpdateUser: %v", userGuardianResult.Error)
-			return errors.New("failed to create user guardian")
-		}
-	}
-
-	return nil
-}
-
 func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleRequest) error {
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	user, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 
 	if err != nil {
 		log.Error("UserEntityRepository.UpdateUserRole: " + err.Error())
@@ -534,9 +419,9 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 		return errors.New("failed to remove user role")
 	}
 
-	for _, roleId := range req.Roles {
+	for _, r := range req.Roles {
 		var role entity.SRole
-		err = receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", roleId).First(&role).Error
+		err = receiver.DBConn.Model(&entity.SRole{}).Where("role_name = ?", r).First(&role).Error
 
 		if err != nil {
 			log.Error("UserEntityRepository.UpdateUserRole: " + err.Error())
@@ -546,9 +431,16 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 			return errors.New("failed to get role")
 		}
 
+		// check if role already assigned for user
+		var userRole entity.SUserRoles
+		err = receiver.DBConn.Model(&entity.SUserRoles{}).Where("user_id = ? AND role_id = ?", user.ID, role.ID).First(&userRole).Error
+		if err == nil {
+			continue
+		}
+
 		result := receiver.DBConn.Create(&entity.SUserRoles{
 			UserID: user.ID,
-			RoleId: role.ID,
+			RoleID: role.ID,
 		})
 
 		if result.Error != nil {
@@ -561,7 +453,7 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 }
 
 func (receiver *UserEntityRepository) UpdateUserRoleClaimPermission(req request.UpdateUserRoleClaimPermissionRequest) error {
-	user, err := receiver.GetByID(request.GetUserEntityByIdRequest{ID: req.UserId})
+	user, err := receiver.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 
 	if err != nil {
 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + err.Error())
@@ -575,6 +467,21 @@ func (receiver *UserEntityRepository) UpdateUserRoleClaimPermission(req request.
 	if removeResult.Error != nil {
 		log.Error("UserEntityRepository.UpdateUserRoleClaimPermission: " + removeResult.Error.Error())
 		return errors.New("failed to remove user policy")
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) UpdateUserAvatar(userID, key, url string) error {
+	err := receiver.DBConn.Model(&entity.SUserEntity{}).
+		Where("id = ?", userID).
+		Updates(map[string]interface{}{
+			"avatar":     key,
+			"avatar_url": url,
+		}).Error
+	if err != nil {
+		log.Error("UserEntityRepository.UpdateUserAvatar: " + err.Error())
+		return errors.New("failed to update user avatar")
 	}
 
 	return nil
@@ -714,7 +621,7 @@ func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationI
 	//// Create user organization mapping (Manager)
 	//userTeacher := entity.SUserTeacher{
 	//	UserID:             form.UserID,
-	//	TeacheranizationId: organization.ID,
+	//	TeacheranizationID: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
 	//}
@@ -739,7 +646,7 @@ func (receiver *UserEntityRepository) ApproveTeacherFormApplication(applicationI
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
 	//	UserID: form.UserID,
-	//	RoleId: 5, // admin
+	//	RoleID: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error
 	//if err != nil {
@@ -872,7 +779,7 @@ func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID 
 	//// Create user organization mapping (Manager)
 	//userStaff := entity.SUserStaff{
 	//	UserID:             form.UserID,
-	//	StaffanizationId: organization.ID,
+	//	StaffanizationID: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
 	//}
@@ -897,7 +804,7 @@ func (receiver *UserEntityRepository) ApproveStaffFormApplication(applicationID 
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
 	//	UserID: form.UserID,
-	//	RoleId: 5, // admin
+	//	RoleID: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error
 	//if err != nil {
@@ -1030,7 +937,7 @@ func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationI
 	//// Create user organization mapping (Manager)
 	//userStudent := entity.SUserStudent{
 	//	UserID:             form.UserID,
-	//	StudentanizationId: organization.ID,
+	//	StudentanizationID: organization.ID,
 	//	UserNickName:       "Manager",
 	//	IsManager:          true,
 	//}
@@ -1055,7 +962,7 @@ func (receiver *UserEntityRepository) ApproveStudentFormApplication(applicationI
 	//// Assign admin role to user
 	//userRole := entity.SUserRoles{
 	//	UserID: form.UserID,
-	//	RoleId: 5, // admin
+	//	RoleID: 5, // admin
 	//}
 	//err = tx.Create(&userRole).Error
 	//if err != nil {

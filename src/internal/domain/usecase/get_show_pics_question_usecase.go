@@ -11,8 +11,8 @@ type GetShowPicsQuestionDetailUseCase struct {
 	*repository.QuestionRepository
 }
 
-func (receiver *GetShowPicsQuestionDetailUseCase) Execute(questionId string) (string, error) {
-	question, err := receiver.FindById(questionId)
+func (receiver *GetShowPicsQuestionDetailUseCase) Execute(questionID string) (string, error) {
+	question, err := receiver.FindByID(questionID)
 	if err != nil {
 		return "", err
 	}
