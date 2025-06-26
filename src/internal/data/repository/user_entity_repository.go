@@ -398,21 +398,20 @@ func (receiver *UserEntityRepository) CreateChildForParent(parentID string, req 
 
 	// check if child is already assign for parent
 	var parentChild entity.SUserParentChild
-	err = tx.Model(&entity.SUserParentChild{}).Where("parent_id = ? AND child_id = ?", parentID, child.ID).First(&parentChild).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// assign child for parent
-			parentChild = entity.SUserParentChild{
-				ParentID: uuid.MustParse(parentID),
-				ChildID:  child.ID,
-			}
-			err = tx.Create(&parentChild).Error
-			if err != nil {
-				log.Error("UserRepository.CreateChildForParent: " + err.Error())
-				return errors.New("failed to assign child for parent")
-			}
-		}
+	err = receiver.DBConn.Model(&entity.SUserParentChild{}).Where("parent_id = ? AND child_id = ?", parentID, child.ID).First(&parentChild).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
+	}
+
+	// assign child for parent
+	parentChild = entity.SUserParentChild{
+		ParentID: uuid.MustParse(parentID),
+		ChildID:  child.ID,
+	}
+	err = receiver.DBConn.Create(&parentChild).Error
+	if err != nil {
+		log.Error("UserRepository.CreateChildForParent: " + err.Error())
+		return errors.New("failed to assign child for parent")
 	}
 
 	return nil
@@ -430,7 +429,7 @@ func (receiver *UserEntityRepository) UpdateUser(req request.UpdateUserEntityReq
 	if req.Roles != nil {
 		for _, roleName := range *req.Roles {
 			var role entity.SRole
-			err := receiver.DBConn.Model(&entity.SRole{}).Where("role_name = ?", roleName).Find(&role).Error
+			err := receiver.DBConn.Model(&entity.SRole{}).Where("role = ?", roleName).Find(&role).Error
 			if err != nil {
 				log.Error("UserRepository.CreateUser: " + err.Error())
 				if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -535,7 +534,7 @@ func (receiver *UserEntityRepository) UpdateUserRole(req request.UpdateUserRoleR
 
 	for _, r := range req.Roles {
 		var role entity.SRole
-		err = receiver.DBConn.Model(&entity.SRole{}).Where("role_name = ?", r).First(&role).Error
+		err = receiver.DBConn.Model(&entity.SRole{}).Where("role = ?", r).First(&role).Error
 
 		if err != nil {
 			log.Error("UserEntityRepository.UpdateUserRole: " + err.Error())

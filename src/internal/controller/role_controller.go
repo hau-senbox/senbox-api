@@ -84,7 +84,7 @@ func (receiver *RoleController) GetRoleByID(context *gin.Context) {
 }
 
 func (receiver *RoleController) GetRoleByName(context *gin.Context) {
-	roleName := context.Param("role_name")
+	roleName := context.Param("role")
 	if roleName == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{

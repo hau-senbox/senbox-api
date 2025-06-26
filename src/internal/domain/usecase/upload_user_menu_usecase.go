@@ -18,17 +18,19 @@ func (receiver *UploadUserMenuUseCase) Upload(req request.UploadUserMenuRequest)
 		return err
 	}
 
-	err := receiver.ComponentRepository.CreateComponents(&req.Components, tx)
-	if err != nil {
-		return err
-	}
+	if len(req.Components) > 0 {
+		err := receiver.ComponentRepository.CreateComponents(&req.Components, tx)
+		if err != nil {
+			return err
+		}
 
-	if err := receiver.MenuRepository.CreateUserMenu(request.CreateUserMenuRequest{
-		UserID:     req.UserID,
-		Direction:  menu.Top,
-		Components: req.Components,
-	}, tx); err != nil {
-		return fmt.Errorf("failed to create user menu: %w", err)
+		if err := receiver.MenuRepository.CreateUserMenu(request.CreateUserMenuRequest{
+			UserID:     req.UserID,
+			Direction:  menu.Top,
+			Components: req.Components,
+		}, tx); err != nil {
+			return fmt.Errorf("failed to create user menu: %w", err)
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {

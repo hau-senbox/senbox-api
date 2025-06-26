@@ -39,7 +39,7 @@ func (receiver *RoleRepository) GetByID(req request.GetRoleByIDRequest) (*entity
 
 func (receiver *RoleRepository) GetByName(req request.GetRoleByNameRequest) (*entity.SRole, error) {
 	var userRole entity.SRole
-	err := receiver.DBConn.Where("role_name = ?", req.RoleName).First(&userRole).Error
+	err := receiver.DBConn.Where("role = ?", req.RoleName).First(&userRole).Error
 	if err != nil {
 		log.Error("RoleRepository.GetByName: " + err.Error())
 		return nil, errors.New("failed to get role or role not found")
@@ -74,7 +74,7 @@ func (receiver *RoleRepository) CreateRole(req request.CreateRoleRequest) error 
 func (receiver *RoleRepository) UpdateRole(req request.UpdateRoleRequest) error {
 	updateResult := receiver.DBConn.Model(&entity.SRole{}).Where("id = ?", req.RoleID).
 		Updates(map[string]interface{}{
-			"role_name": req.RoleName,
+			"role": req.RoleName,
 		})
 
 	if updateResult.Error != nil {

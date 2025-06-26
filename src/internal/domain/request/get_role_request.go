@@ -5,5 +5,5 @@ type GetRoleByIDRequest struct {
 }
 
 type GetRoleByNameRequest struct {
-	RoleName string `json:"role_name" binding:"required"`
+	RoleName string `json:"role" binding:"required"`
 }
