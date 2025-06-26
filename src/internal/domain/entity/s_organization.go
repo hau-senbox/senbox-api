@@ -23,6 +23,11 @@ type SOrganization struct {
 }
 
 func (organization *SOrganization) BeforeCreate(tx *gorm.DB) (err error) {
+	id, err := uuid.NewUUID()
+	if err == nil {
+		organization.ID = id
+	}
+
 	encryptedPwdData, err := bcrypt.GenerateFromPassword([]byte(organization.Password), bcrypt.DefaultCost)
 	if err == nil {
 		organization.Password = string(encryptedPwdData)

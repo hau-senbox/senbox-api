@@ -18,6 +18,7 @@ import (
 type UserEntityController struct {
 	*usecase.GetUserEntityUseCase
 	*usecase.CreateUserEntityUseCase
+	*usecase.CreateChildForParentUseCase
 	*usecase.UpdateUserEntityUseCase
 	*usecase.UpdateUserRoleUseCase
 	*usecase.AuthorizeUseCase
@@ -567,6 +568,51 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.LoginResponse{
 		Data: *data,
+	})
+}
+
+func (receiver *UserEntityController) CreateChildForParent(context *gin.Context) {
+	var req request.CreateChildForParentRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Validate username
+	if err := req.IsUsernameValid(); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	parent, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.Username = strings.ToLower(req.Username)
+
+	err = receiver.CreateChildForParentUseCase.CreateChildForParent(parent.ID.String(), req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "child was created successfully",
 	})
 }
 

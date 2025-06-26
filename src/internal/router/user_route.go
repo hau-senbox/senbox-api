@@ -40,6 +40,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		CreateUserEntityUseCase: &usecase.CreateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
+		CreateChildForParentUseCase: &usecase.CreateChildForParentUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
@@ -191,6 +194,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.GET("/name/:username", secureMiddleware.Secured(), userEntityController.GetUserEntityByName)
 
 		user.POST("/init", userEntityController.CreateUserEntity)
+		user.POST("/child/init", userEntityController.CreateChildForParent)
 		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
 		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
 		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)

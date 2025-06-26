@@ -216,13 +216,16 @@ func (receiver *UserEntityRepository) GetUserDeviceByID(deviceID string) (*[]ent
 
 func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityRequest) error {
 	tx := receiver.DBConn.Begin()
-	_, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
+	user, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			tx.Rollback()
 			return err
 		}
+	}
+	if user != nil {
+		return errors.New("user already exist")
 	}
 
 	birthday, err := time.Parse("2006-01-02", req.Birthday)
@@ -299,6 +302,117 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 
 	if err := tx.Commit().Error; err != nil {
 		log.Warnf("Attempted to commit a transaction that is already committed: %v", err)
+	}
+
+	return nil
+}
+
+func (receiver *UserEntityRepository) CreateChildForParent(parentID string, req request.CreateChildForParentRequest) error {
+	tx := receiver.DBConn.Begin()
+	child, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+
+	if child == nil {
+		birthday, err := time.Parse("2006-01-02", req.Birthday)
+		if err != nil {
+			log.Error("UserRepository.CreateChildForParent: " + err.Error())
+			tx.Rollback()
+			return errors.New("failed to create child " + req.Username)
+		}
+
+		var setting entity.SSetting
+		err = tx.Table("s_setting").Where("type = ?", value.SettingTypeSignUpPresetValue1).First(&setting).Error
+
+		if err != nil {
+			log.Error("UserRepository.CreateChildForParent: " + err.Error())
+			tx.Rollback()
+			return errors.New("failed to create child " + req.Username)
+		}
+
+		var signupSetting SignUpFormSetting
+		err = json.Unmarshal(setting.Settings, &signupSetting)
+
+		if err != nil {
+			log.Error("UserRepository.CreateChildForParent: " + err.Error())
+			tx.Rollback()
+			return errors.New("failed to create child " + req.Username)
+		}
+
+		if req.Fullname == "" {
+			req.Fullname = signupSetting.SpreadSheetID
+		}
+
+		child = &entity.SUserEntity{
+			Username: req.Username,
+			Nickname: req.Nickname,
+			Fullname: req.Fullname,
+			Birthday: birthday,
+			Password: "123",
+		}
+		err = tx.Create(child).Error
+
+		if err != nil {
+			log.Error("UserRepository.CreateChildForParent: " + err.Error())
+			tx.Rollback()
+			return errors.New("failed to create child " + req.Username)
+		}
+
+		var organization entity.SOrganization
+		err = tx.Model(&entity.SOrganization{}).
+			Where("organization_name = 'SENBOX WAITLIST'").
+			Attrs(entity.SOrganization{
+				OrganizationName: "SENBOX WAITLIST",
+				Password:         "123",
+			}).
+			FirstOrCreate(&organization).Error
+		if err != nil {
+			tx.Rollback()
+			log.Error("UserRepository.CreateChildForParent: " + err.Error())
+			return fmt.Errorf("failed to link child with default organization")
+		}
+
+		err = tx.Table("s_user_organizations").Create(map[string]interface{}{
+			"user_id":         child.ID.String(),
+			"organization_id": organization.ID,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.Error("OrganizationRepository.UserJoinOrganization: " + err.Error())
+			return errors.New("failed to assign child for organization")
+		}
+
+		tx.Commit()
+		err = receiver.UpdateUserRole(request.UpdateUserRoleRequest{UserID: child.ID.String(), Roles: []string{"Child"}})
+		if err != nil {
+			return err
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			log.Warnf("Attempted to commit a transaction that is already committed: %v", err)
+		}
+	}
+
+	// check if child is already assign for parent
+	var parentChild entity.SUserParentChild
+	err = tx.Model(&entity.SUserParentChild{}).Where("parent_id = ? AND child_id = ?", parentID, child.ID).First(&parentChild).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// assign child for parent
+			parentChild = entity.SUserParentChild{
+				ParentID: uuid.MustParse(parentID),
+				ChildID:  child.ID,
+			}
+			err = tx.Create(&parentChild).Error
+			if err != nil {
+				log.Error("UserRepository.CreateChildForParent: " + err.Error())
+				return errors.New("failed to assign child for parent")
+			}
+		}
+		return err
 	}
 
 	return nil
