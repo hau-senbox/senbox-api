@@ -193,6 +193,37 @@ func (receiver *MenuRepository) CreateUserMenu(req request.CreateUserMenuRequest
 	return nil
 }
 
+func (receiver *MenuRepository) CreateDeviceMenu(req request.CreateDeviceMenuRequest, tx *gorm.DB) error {
+	var menus []menu.DeviceMenu
+	for _, component := range req.Components {
+		menus = append(menus, menu.DeviceMenu{
+			DeviceID:    req.DeviceID,
+			Direction:   req.Direction,
+			ComponentID: component.ID,
+			Order:       component.Order,
+		})
+	}
+
+	if tx == nil {
+		err := receiver.DBConn.Create(&menus).Error
+		if err != nil {
+			log.Error("MenuRepository.CreateDeviceMenu: " + err.Error())
+			return errors.New("failed to create device menu")
+		}
+
+		return nil
+	}
+
+	err := tx.Create(&menus).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("MenuRepository.CreateDeviceMenu: " + err.Error())
+		return errors.New("failed to create device menu")
+	}
+
+	return nil
+}
+
 func (receiver *MenuRepository) DeleteUserMenu(userID string, tx *gorm.DB) error {
 	if tx == nil {
 		err := receiver.DBConn.Exec("DELETE c, um FROM component c JOIN user_menu um ON c.id = um.component_id WHERE um.user_id = ?", userID).Error
@@ -209,6 +240,27 @@ func (receiver *MenuRepository) DeleteUserMenu(userID string, tx *gorm.DB) error
 		tx.Rollback()
 		log.Error("MenuRepository.DeleteUserMenu: " + err.Error())
 		return errors.New("failed to delete user menu")
+	}
+
+	return nil
+}
+
+func (receiver *MenuRepository) DeleteDeviceMenu(deviceID string, tx *gorm.DB) error {
+	if tx == nil {
+		err := receiver.DBConn.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ?", deviceID).Error
+		if err != nil {
+			log.Error("MenuRepository.DeleteDeviceMenu: " + err.Error())
+			return errors.New("failed to delete device menu")
+		}
+
+		return nil
+	}
+
+	err := tx.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ?", deviceID).Error
+	if err != nil {
+		tx.Rollback()
+		log.Error("MenuRepository.DeleteDeviceMenu: " + err.Error())
+		return errors.New("failed to delete device menu")
 	}
 
 	return nil

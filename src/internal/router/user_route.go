@@ -209,7 +209,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.DELETE("/func", secureMiddleware.Secured(), userEntityController.DeleteUserAuthorize)
 
 		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
-		user.POST("/pre-register/", secureMiddleware.Secured(), userEntityController.CreatePreRegister)
+		user.POST("/pre-register/", userEntityController.CreatePreRegister)
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")
