@@ -62,6 +62,7 @@ main
 # User-specific stuff
 .vscode
 .idea
+keys
 logs
 sen_master_db.*
 .DS_Store
