@@ -107,14 +107,62 @@ func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
 		return
 	}
 
-	users, err := receiver.GetAllUsers()
+	user, err := receiver.GetUserFromToken(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:  http.StatusInternalServerError,
+			Code:  http.StatusForbidden,
 			Error: err.Error(),
 		})
-
 		return
+	}
+
+	isSuperAdmin := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
+		return role.Role == entity.SuperAdmin
+	})
+	var users []entity.SUserEntity
+	if isSuperAdmin {
+		users, err = receiver.GetAllUsers()
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			})
+
+			return
+		}
+	} else {
+		organizationID := context.Request.URL.Query().Get("organization_id")
+		if organizationID == "" {
+			context.JSON(
+				http.StatusBadRequest, response.FailedResponse{
+					Code:  http.StatusBadRequest,
+					Error: "organization is required",
+				},
+			)
+			return
+		}
+		isOrganization := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
+			return org.ID.String() == organizationID
+		})
+		if !isOrganization {
+			context.JSON(
+				http.StatusUnauthorized, response.FailedResponse{
+					Code:  http.StatusUnauthorized,
+					Error: "access denied",
+				},
+			)
+			return
+		}
+
+		users, err = receiver.GetAllByOrganization(organizationID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			})
+
+			return
+		}
 	}
 
 	userResponse := make([]response.UserEntityResponseData, 0)

@@ -57,6 +57,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&menu.SuperAdminMenu{},
 		&menu.OrgMenu{},
 		&menu.UserMenu{},
+		&menu.DeviceMenu{},
 		&entity.PublicImage{},
 		&entity.SStaffFormApplication{},
 		&entity.SStudentFormApplication{},

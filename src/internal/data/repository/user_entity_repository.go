@@ -22,6 +22,25 @@ func NewUserEntityRepository(dbConn *gorm.DB) *UserEntityRepository {
 	return &UserEntityRepository{DBConn: dbConn}
 }
 
+func (receiver *UserEntityRepository) GetAllByOrganizationID(organizationID string) ([]entity.SUserEntity, error) {
+	var users []entity.SUserEntity
+	query := receiver.DBConn.Model(entity.SUserEntity{})
+	err := query.
+		Preload("Roles").
+		Preload("Devices").
+		Preload("Organizations").
+		Joins("INNER JOIN s_user_organizations ON s_user_entity.id = s_user_organizations.user_id").
+		Where("s_user_organizations.organization_id = ?", organizationID).
+		Find(&users).Error
+
+	if err != nil {
+		log.Error("UserEntityRepository.GetAll: " + err.Error())
+		return nil, errors.New("failed to get all users")
+	}
+
+	return users, err
+}
+
 func (receiver *UserEntityRepository) GetAll() ([]entity.SUserEntity, error) {
 	var users []entity.SUserEntity
 	query := receiver.DBConn.Model(entity.SUserEntity{})
@@ -270,9 +289,9 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 
 	var organization entity.SOrganization
 	err = tx.Model(&entity.SOrganization{}).
-		Where("organization_name = 'SENBOX WAITLIST'").
+		Where("organization_name = 'HOME'").
 		Attrs(entity.SOrganization{
-			OrganizationName: "SENBOX WAITLIST",
+			OrganizationName: "HOME",
 			Password:         "123",
 		}).
 		FirstOrCreate(&organization).Error

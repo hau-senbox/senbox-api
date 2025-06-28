@@ -58,14 +58,10 @@ fabric.properties
 
 sen-global-api
 main
-config/config.yaml
-
 
 # User-specific stuff
-credentials
 .vscode
 .idea
-docs
 logs
 sen_master_db.*
 .DS_Store

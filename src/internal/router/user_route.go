@@ -153,6 +153,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			MenuRepository:         &repository.MenuRepository{DBConn: dbConn},
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
@@ -163,6 +164,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
 		},
 		UploadUserMenuUseCase: &usecase.UploadUserMenuUseCase{
+			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
+		},
+		UploadDeviceMenuUseCase: &usecase.UploadDeviceMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
 			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
 		},
@@ -285,10 +290,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/student/:id", menuController.GetStudentMenu)
 		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu)
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
+		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)
 		userMenu.POST("/user", menuController.UploadUserMenu)
+		userMenu.POST("/device", menuController.UploadDeviceMenu)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())

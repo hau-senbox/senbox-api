@@ -3,7 +3,6 @@ package usecase
 import (
 	"fmt"
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 )
 
@@ -14,7 +13,7 @@ type UploadDeviceMenuUseCase struct {
 
 func (receiver *UploadDeviceMenuUseCase) Upload(req request.UploadDeviceMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
-	if err := receiver.MenuRepository.DeleteDeviceMenu(req.DeviceID, tx); err != nil {
+	if err := receiver.MenuRepository.DeleteDeviceMenu(req.DeviceID, req.OrganizationID, tx); err != nil {
 		return err
 	}
 
@@ -25,9 +24,9 @@ func (receiver *UploadDeviceMenuUseCase) Upload(req request.UploadDeviceMenuRequ
 		}
 
 		if err := receiver.MenuRepository.CreateDeviceMenu(request.CreateDeviceMenuRequest{
-			DeviceID:   req.DeviceID,
-			Direction:  menu.Top,
-			Components: req.Components,
+			DeviceID:       req.DeviceID,
+			OrganizationID: req.OrganizationID,
+			Components:     req.Components,
 		}, tx); err != nil {
 			return fmt.Errorf("failed to create device menu: %w", err)
 		}

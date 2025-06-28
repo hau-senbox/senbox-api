@@ -7,10 +7,11 @@ import (
 )
 
 type DeviceMenu struct {
-	DeviceID    string               `gorm:"column:device_id;primary_key"`
-	Device      entity.SDevice       `gorm:"foreignKey:DeviceID;references:id;constraint:OnDelete:CASCADE;"`
-	Direction   Direction            `gorm:"column:direction;primary_key"`
-	ComponentID uuid.UUID            `gorm:"column:component_id;primary_key"`
-	Component   components.Component `gorm:"foreignKey:ComponentID;references:id;constraint:OnDelete:CASCADE;"`
-	Order       int                  `gorm:"type:int;not null;default:0"`
+	DeviceID       string               `gorm:"column:device_id;primary_key"`
+	Device         entity.SDevice       `gorm:"foreignKey:DeviceID;references:id;constraint:OnDelete:CASCADE;"`
+	OrganizationID uuid.UUID            `gorm:"column:organization_id;primary_key"`
+	Organization   entity.SOrganization `gorm:"foreignKey:OrganizationID;references:id;constraint:OnDelete:CASCADE;"`
+	ComponentID    uuid.UUID            `gorm:"column:component_id;primary_key"`
+	Component      components.Component `gorm:"foreignKey:ComponentID;references:id;constraint:OnDelete:CASCADE;"`
+	Order          int                  `gorm:"type:int;not null;default:0"`
 }

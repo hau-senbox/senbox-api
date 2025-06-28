@@ -3,7 +3,6 @@ package usecase
 import (
 	"fmt"
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 )
 
@@ -26,7 +25,6 @@ func (receiver *UploadUserMenuUseCase) Upload(req request.UploadUserMenuRequest)
 
 		if err := receiver.MenuRepository.CreateUserMenu(request.CreateUserMenuRequest{
 			UserID:     req.UserID,
-			Direction:  menu.Top,
 			Components: req.Components,
 		}, tx); err != nil {
 			return fmt.Errorf("failed to create user menu: %w", err)

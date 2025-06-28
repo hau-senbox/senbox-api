@@ -1,0 +1,4371 @@
+basePath: /api/v1
+definitions:
+  controller.GetDeviceSignUpResponse:
+    properties:
+      form_note:
+        type: string
+    required:
+    - form_note
+    type: object
+  controller.changePasswordRequest:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  controller.changePasswordResponse:
+    properties:
+      success:
+        type: boolean
+    type: object
+  controller.discoverRequest:
+    properties:
+      device_id:
+        type: string
+    required:
+    - device_id
+    type: object
+  controller.discoverResponse:
+    properties:
+      device_id:
+        type: string
+      user_info_1:
+        type: string
+      user_info_2:
+        type: string
+      user_info_3:
+        type: string
+    type: object
+  controller.getBrandLogoResponse:
+    properties:
+      image_url:
+        type: string
+    required:
+    - image_url
+    type: object
+  controller.getDeviceStatusResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetDeviceStatusResponseData'
+    type: object
+  controller.getLastSubmissionFromFormRequest:
+    properties:
+      code:
+        type: string
+    type: object
+  controller.getLogoRefreshIntervalResponse:
+    properties:
+      interval:
+        type: integer
+      title:
+        type: string
+    required:
+    - interval
+    - title
+    type: object
+  controller.getModeLResponse:
+    properties:
+      value:
+        type: string
+    required:
+    - value
+    type: object
+  controller.getPresetResponse:
+    properties:
+      value_12:
+        type: string
+    type: object
+  controller.getSignUpResponse:
+    properties:
+      button_1:
+        $ref: '#/definitions/controller.getSignUpResponseTextButton'
+      button_2:
+        $ref: '#/definitions/controller.getSignUpResponseTextButton'
+      button_3:
+        $ref: '#/definitions/controller.getSignUpResponseTextButton'
+      button_4:
+        $ref: '#/definitions/controller.getSignUpResponseTextButton'
+    required:
+    - button_1
+    - button_2
+    - button_3
+    - button_4
+    type: object
+  controller.getSignUpResponseTextButton:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    required:
+    - name
+    - value
+    type: object
+  controller.importPartiallyFormRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+      tab_name:
+        type: string
+    required:
+    - spreadsheet_url
+    - tab_name
+    type: object
+  controller.importPartiallyURLsRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+      tab_name:
+        type: string
+    required:
+    - spreadsheet_url
+    - tab_name
+    type: object
+  controller.markToDoAsDoneRequest:
+    properties:
+      qr_code:
+        type: string
+      select:
+        type: string
+      task_index:
+        type: integer
+    required:
+    - qr_code
+    type: object
+  controller.refreshAccessTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  controller.refreshAccessTokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/controller.refreshAccessTokenResponseData'
+    type: object
+  controller.refreshAccessTokenResponseData:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    required:
+    - access_token
+    - refresh_token
+    type: object
+  controller.reserveRequest:
+    properties:
+      app_version:
+        type: string
+      device_id:
+        type: string
+    required:
+    - app_version
+    - device_id
+    type: object
+  controller.reserveResponse:
+    type: object
+  controller.responseGoogleAPIRequest:
+    properties:
+      total_request_get_screen_button:
+        type: integer
+      total_request_get_top_button:
+        type: integer
+      total_request_import_form:
+        type: integer
+      total_request_import_to_do:
+        type: integer
+      total_request_init_device:
+        type: integer
+    type: object
+  controller.task:
+    properties:
+      due_date:
+        type: string
+      index:
+        type: integer
+      name:
+        type: string
+      selected:
+        type: string
+      selection:
+        type: string
+      value:
+        type: string
+    required:
+    - due_date
+    - index
+    - name
+    - selected
+    - selection
+    - value
+    type: object
+  controller.toDoResponse:
+    properties:
+      data:
+        $ref: '#/definitions/controller.toDoResponseData'
+    required:
+    - data
+    type: object
+  controller.toDoResponseData:
+    properties:
+      name:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/controller.task'
+        type: array
+      type:
+        $ref: '#/definitions/value.ToDoType'
+    required:
+    - name
+    - tasks
+    - type
+    type: object
+  controller.updateDeviceInfoRequest:
+    properties:
+      app_version:
+        type: string
+      user_info_3:
+        type: string
+    type: object
+  controller.updateDistributerRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  controller.updateRegistrationPresetRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  controller.updateRegistrationSpreadsheetRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  controller.updateSignUpTextButtonRequest:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    required:
+    - name
+    - value
+    type: object
+  request.Answer:
+    properties:
+      answer:
+        type: string
+      messaging:
+        $ref: '#/definitions/request.Messaging'
+      question_id:
+        type: string
+    required:
+    - answer
+    - question_id
+    type: object
+  request.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      fullname:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - fullname
+    - password
+    - username
+    type: object
+  request.GetRedirectUrlListRequest:
+    properties:
+      keyword:
+        type: string
+      limit:
+        type: integer
+      page:
+        type: integer
+    type: object
+  request.ImportFormRequest:
+    properties:
+      auto:
+        type: boolean
+      interval_in_minutes:
+        type: integer
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.ImportPartiallyTodoRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+      tab_name:
+        type: string
+    required:
+    - spreadsheet_url
+    - tab_name
+    type: object
+  request.ImportRedirectUrlsRequest:
+    properties:
+      auto:
+        type: boolean
+      interval_in_minutes:
+        type: integer
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.LogTaskRequest:
+    properties:
+      due_date:
+        type: string
+      name:
+        type: string
+      qr_code:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+    required:
+    - due_date
+    - name
+    - qr_code
+    - type
+    type: object
+  request.LoginInputReq:
+    properties:
+      loginId:
+        type: string
+      password:
+        type: string
+    required:
+    - loginId
+    - password
+    type: object
+  request.Messaging:
+    properties:
+      email:
+        items:
+          type: string
+        type: array
+      messageBox:
+        type: string
+      questionType:
+        type: string
+      value3:
+        items:
+          type: string
+        type: array
+    required:
+    - email
+    - questionType
+    - value3
+    type: object
+  request.ModifyDeviceRequest:
+    properties:
+      app_setting_spreadsheet_url:
+        type: string
+      device_name:
+        type: string
+      message:
+        type: string
+      note:
+        type: string
+      output_spreadsheet_url:
+        type: string
+      status:
+        type: string
+    type: object
+  request.RegisterDeviceRequest:
+    properties:
+      app_version:
+        type: string
+      device_uuid:
+        type: string
+      input_mode:
+        type: string
+      primary:
+        $ref: '#/definitions/request.RegisterDeviceUser'
+      profile_picture_url:
+        type: string
+      secondary:
+        $ref: '#/definitions/request.RegisterDeviceUser'
+      tertiary:
+        $ref: '#/definitions/request.RegisterDeviceUser'
+    required:
+    - device_uuid
+    - primary
+    - secondary
+    - tertiary
+    type: object
+  request.RegisterDeviceUser:
+    properties:
+      email:
+        type: string
+      fullname:
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - fullname
+    - phone
+    type: object
+  request.RegisterFCMRequest:
+    properties:
+      device_id:
+        type: string
+      device_token:
+        type: string
+      type:
+        $ref: '#/definitions/value.DeviceType'
+    required:
+    - device_id
+    - device_token
+    - type
+    type: object
+  request.ResetCodeCountingRequest:
+    properties:
+      prefix:
+        type: string
+      reset_to:
+        type: integer
+    required:
+    - prefix
+    - reset_to
+    type: object
+  request.SaveFormRequest:
+    properties:
+      note:
+        type: string
+      password:
+        type: string
+      spreadsheet_url:
+        type: string
+    required:
+    - note
+    - spreadsheet_url
+    type: object
+  request.SaveRedirectUrlRequest:
+    properties:
+      password:
+        type: string
+      qr_code:
+        type: string
+      target_url:
+        type: string
+    required:
+    - qr_code
+    - target_url
+    type: object
+  request.SendEmailRequest:
+    properties:
+      body:
+        type: string
+      subject:
+        type: string
+      to:
+        type: string
+    required:
+    - body
+    - subject
+    - to
+    type: object
+  request.SendNotificationRequest:
+    properties:
+      device_id:
+        type: string
+      message:
+        type: string
+      title:
+        type: string
+    required:
+    - device_id
+    - title
+    type: object
+  request.SetupLogoRefreshIntervalRequest:
+    properties:
+      interval:
+        type: integer
+      title:
+        type: string
+    type: object
+  request.SubmitFormRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/request.Answer'
+        type: array
+      device_id:
+        type: string
+      opened_at:
+        type: string
+      qr_code:
+        type: string
+    required:
+    - answers
+    - qr_code
+    type: object
+  request.SyncDevicesRequest:
+    properties:
+      auto:
+        type: boolean
+      interval_in_minutes:
+        type: integer
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.TakeNoteRequest:
+    properties:
+      note:
+        type: string
+    required:
+    - note
+    type: object
+  request.UpdateCodeCountingSettingRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.UpdateDeviceRequest:
+    properties:
+      button_url:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      screen_button:
+        $ref: '#/definitions/request.UpdateDeviceRequestScreenButton'
+      user_info:
+        $ref: '#/definitions/request.UpdateDeviceRequestUserInfo'
+    type: object
+  request.UpdateDeviceRequestScreenButton:
+    properties:
+      button_type:
+        enum:
+        - scan
+        - list
+        type: string
+      button_value:
+        type: string
+    required:
+    - button_type
+    - button_value
+    type: object
+  request.UpdateDeviceRequestUserInfo:
+    properties:
+      user_info_1:
+        type: string
+      user_info_2:
+        type: string
+      user_info_3:
+        type: string
+    required:
+    - user_info_1
+    - user_info_2
+    - user_info_3
+    type: object
+  request.UpdateEmailHistorySettingsRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.UpdateFormRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  request.UpdateOutputSubmissionSettingsRequest:
+    properties:
+      folder_url:
+        type: string
+      sheet_name:
+        type: string
+    required:
+    - folder_url
+    type: object
+  request.UpdateOutputSummarySettingsRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.UpdateOutputTemplateRequest:
+    properties:
+      spreadsheet_url:
+        type: string
+    required:
+    - spreadsheet_url
+    type: object
+  request.UpdateRedirectUrlRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  request.UpdateSettingNameRequest:
+    properties:
+      api_distributer_setting:
+        type: string
+      code_counting_data_setting:
+        type: string
+      email_setting:
+        type: string
+      form_setting_1:
+        type: string
+      form_setting_2:
+        type: string
+      form_setting_3:
+        type: string
+      form_setting_4:
+        type: string
+      import_sign_up_forms_setting:
+        type: string
+      output_setting:
+        type: string
+      output_template_for_teacher_setting:
+        type: string
+      output_template_setting:
+        type: string
+      registration_form_setting:
+        type: string
+      registration_preset_setting:
+        type: string
+      registration_submission_setting:
+        type: string
+      sign_up_button_1_setting:
+        type: string
+      sign_up_button_2_setting:
+        type: string
+      sign_up_button_3_setting:
+        type: string
+      sign_up_button_4_setting:
+        type: string
+      summary_setting:
+        type: string
+      sync_devices_setting:
+        type: string
+      sync_to_dos_setting:
+        type: string
+      url_setting:
+        type: string
+    type: object
+  request.UpdateTask:
+    properties:
+      due_date:
+        type: string
+      name:
+        type: string
+      selected:
+        type: string
+      selection:
+        type: string
+      value:
+        type: string
+    required:
+    - due_date
+    - name
+    - selected
+    - selection
+    - value
+    type: object
+  request.UpdateToDoTasksRequest:
+    properties:
+      name:
+        type: string
+      qr_code:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/request.UpdateTask'
+        type: array
+    required:
+    - qr_code
+    - tasks
+    type: object
+  response.AuthorizedDeviceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.AuthorizedDeviceResponseData'
+    type: object
+  response.AuthorizedDeviceResponseData:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    required:
+    - accessToken
+    - refreshToken
+    type: object
+  response.Cause:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  response.CreateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.CreateUserResponseData'
+    type: object
+  response.CreateUserResponseData:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  response.DeviceListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.DeviceListResponseData'
+        type: array
+      pagination:
+        $ref: '#/definitions/response.Pagination'
+    type: object
+  response.DeviceListResponseData:
+    properties:
+      app_version:
+        type: string
+      attribute_1:
+        type: string
+      attribute_2:
+        type: string
+      attribute_3:
+        type: string
+      button_url:
+        type: string
+      device_name:
+        type: string
+      device_uuid:
+        type: string
+      input_mode:
+        type: string
+      message:
+        type: string
+      note:
+        type: string
+      profile_picture:
+        type: string
+      screen_button_type:
+        $ref: '#/definitions/value.ScreenButtonType'
+      screen_button_value:
+        type: string
+      spreadsheet_url:
+        type: string
+      status:
+        type: string
+      teacher_spreadsheet_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  response.FailedResponse:
+    properties:
+      error:
+        $ref: '#/definitions/response.Cause'
+    type: object
+  response.GetDeviceStatusResponseData:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  response.GetFormListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.GetFormListResponseData'
+        type: array
+      paging:
+        $ref: '#/definitions/response.Pagination'
+    type: object
+  response.GetFormListResponseData:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      password:
+        type: string
+      spreadsheet_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  response.GetRedirectUrlListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.GetRedirectUrlListResponseData'
+        type: array
+      paging:
+        $ref: '#/definitions/response.Pagination'
+    required:
+    - data
+    - paging
+    type: object
+  response.GetRedirectUrlListResponseData:
+    properties:
+      created_at:
+        type: string
+      hash_password:
+        type: string
+      hint:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      qr_code:
+        type: string
+      target_url:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - hash_password
+    - hint
+    - id
+    - password
+    - qr_code
+    - target_url
+    - updated_at
+    type: object
+  response.GetRedirectUrlResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetRedirectUrlListResponseData'
+    required:
+    - data
+    type: object
+  response.GetScreenButtonsItem:
+    properties:
+      background_color:
+        type: string
+      title:
+        type: string
+      value:
+        type: string
+    type: object
+  response.GetScreenButtonsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetScreenButtonsResponseData'
+    type: object
+  response.GetScreenButtonsResponseData:
+    properties:
+      buttons:
+        items:
+          $ref: '#/definitions/response.GetScreenButtonsItem'
+        type: array
+    type: object
+  response.GetSettingMessageItem:
+    properties:
+      description:
+        type: string
+      message:
+        type: string
+    required:
+    - description
+    - message
+    type: object
+  response.GetSettingMessageResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetSettingMessageResponseData'
+    type: object
+  response.GetSettingMessageResponseData:
+    properties:
+      font_size:
+        type: integer
+      messages:
+        items:
+          $ref: '#/definitions/response.GetSettingMessageItem'
+        type: array
+    required:
+    - font_size
+    - messages
+    type: object
+  response.GetSettingsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetSettingsResponseData'
+    required:
+    - data
+    type: object
+  response.GetSettingsResponseAPIDistributor:
+    properties:
+      setting_name:
+        type: string
+      spread_sheet_url:
+        type: string
+    required:
+    - setting_name
+    - spread_sheet_url
+    type: object
+  response.GetSettingsResponseData:
+    properties:
+      api_distributer:
+        $ref: '#/definitions/response.GetSettingsResponseAPIDistributor'
+      code_counting_data:
+        $ref: '#/definitions/response.GetSettingsResponseAPIDistributor'
+      email_history:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      import_forms_setting:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_forms_setting_2:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_forms_setting_3:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_forms_setting_4:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_redirect_urls_setting:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_signup_forms:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      import_todo_list_setting:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+      output:
+        $ref: '#/definitions/response.GetSettingsResponseDataSubmission'
+      output_template:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      output_template_for_teacher:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      registration_form:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      registration_preset:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      registration_submission:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      sign_up_button_1:
+        $ref: '#/definitions/response.GetSettingsResponseTextButton'
+      sign_up_button_2:
+        $ref: '#/definitions/response.GetSettingsResponseTextButton'
+      sign_up_button_3:
+        $ref: '#/definitions/response.GetSettingsResponseTextButton'
+      sign_up_button_4:
+        $ref: '#/definitions/response.GetSettingsResponseTextButton'
+      summary:
+        $ref: '#/definitions/response.GetSettingsResponseDataSummary'
+      sync_devices:
+        $ref: '#/definitions/response.GetSettingsResponseDataImport'
+    type: object
+  response.GetSettingsResponseDataImport:
+    properties:
+      auto:
+        type: boolean
+      interval_in_minutes:
+        type: integer
+      setting_name:
+        type: string
+      spread_sheet_url:
+        type: string
+    required:
+    - auto
+    - interval_in_minutes
+    - setting_name
+    - spread_sheet_url
+    type: object
+  response.GetSettingsResponseDataSubmission:
+    properties:
+      folder_url:
+        type: string
+      setting_name:
+        type: string
+    required:
+    - folder_url
+    - setting_name
+    type: object
+  response.GetSettingsResponseDataSummary:
+    properties:
+      setting_name:
+        type: string
+      spreadsheet_url:
+        type: string
+    required:
+    - setting_name
+    - spreadsheet_url
+    type: object
+  response.GetSettingsResponseTextButton:
+    properties:
+      name:
+        type: string
+      setting_name:
+        type: string
+      value:
+        type: string
+    required:
+    - name
+    - setting_name
+    - value
+    type: object
+  response.GetShowPicsQuestionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetShowPicsQuestionResponseData'
+    required:
+    - data
+    type: object
+  response.GetShowPicsQuestionResponseData:
+    properties:
+      photo_url:
+        type: string
+    required:
+    - photo_url
+    type: object
+  response.GetTimeTableItem:
+    properties:
+      color:
+        type: string
+      end_at:
+        type: string
+      link:
+        type: string
+      message:
+        type: string
+      notification:
+        type: string
+      picture:
+        type: string
+      start_at:
+        type: string
+    required:
+    - color
+    - end_at
+    - link
+    - message
+    - notification
+    - picture
+    - start_at
+    type: object
+  response.GetTimeTableResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetTimeTableResponseData'
+    type: object
+  response.GetTimeTableResponseData:
+    properties:
+      general_message:
+        type: string
+      number_of_items_per_time:
+        type: integer
+      times:
+        items:
+          $ref: '#/definitions/response.GetTimeTableItem'
+        type: array
+    required:
+    - general_message
+    - number_of_items_per_time
+    - times
+    type: object
+  response.LoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.LoginResponseData'
+    type: object
+  response.LoginResponseData:
+    properties:
+      expired:
+        type: string
+      token:
+        type: string
+      userId:
+        type: string
+      userName:
+        type: string
+    type: object
+  response.Messaging:
+    properties:
+      email:
+        items:
+          type: string
+        type: array
+      showMessageBox:
+        type: boolean
+      value3:
+        items:
+          type: string
+        type: array
+    type: object
+  response.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_page:
+        type: integer
+    type: object
+  response.QuestionAttributes:
+    properties:
+      messaging:
+        $ref: '#/definitions/response.Messaging'
+      number:
+        type: integer
+      options:
+        items:
+          additionalProperties:
+            type: string
+          type: object
+        type: array
+      steps:
+        type: integer
+      value:
+        type: string
+    type: object
+  response.QuestionListData:
+    properties:
+      answer_required:
+        type: boolean
+      attributes:
+        $ref: '#/definitions/response.QuestionAttributes'
+      enabled:
+        type: boolean
+      order:
+        type: integer
+      question:
+        type: string
+      question_id:
+        type: string
+      question_type:
+        type: string
+    type: object
+  response.QuestionListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.QuestionListResponseData'
+    type: object
+  response.QuestionListResponseData:
+    properties:
+      decrypt_password:
+        type: string
+      form_name:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/response.QuestionListData'
+        type: array
+    required:
+    - form_name
+    - questions
+    type: object
+  response.SaveFormResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.SaveFormResponseData'
+    type: object
+  response.SaveFormResponseData:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      password:
+        type: string
+      spreadsheet_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  response.SaveRedirectUrlResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.SaveRedirectUrlResponseData'
+    required:
+    - data
+    type: object
+  response.SaveRedirectUrlResponseData:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      qr_code:
+        type: string
+      target_url:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - id
+    - qr_code
+    - target_url
+    - updated_at
+    type: object
+  response.SucceedResponse:
+    properties:
+      data: {}
+    type: object
+  response.UpdateFormResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetFormListResponseData'
+    type: object
+  response.UpdateRedirectUrlResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.GetRedirectUrlListResponseData'
+    required:
+    - data
+    type: object
+  response.UserListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.UserListResponseData'
+        type: array
+    type: object
+  response.UserListResponseData:
+    properties:
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  value.DeviceType:
+    enum:
+    - IOS
+    - ANDROID
+    type: string
+    x-enum-varnames:
+    - DeviceTypeIOS
+    - DeviceTypeANDROID
+  value.ScreenButtonType:
+    enum:
+    - scan
+    - list
+    type: string
+    x-enum-varnames:
+    - ScreenButtonType_Scan
+    - ScreenButtonType_List
+  value.ToDoType:
+    enum:
+    - assign
+    - compose
+    type: string
+    x-enum-varnames:
+    - ToDoTypeAssign
+    - ToDoTypeCompose
+info:
+  contact: {}
+  title: Swagger Sen Master API
+  version: "1.0"
+paths:
+  /v1/admin/device/{device_id}/update/:
+    put:
+      consumes:
+      - application/json
+      description: Update Device
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Device Id
+        in: path
+        name: device_id
+        required: true
+        type: string
+      - description: Update Device Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Device
+      tags:
+      - Admin
+  /v1/admin/device/activate/{device_id}:
+    put:
+      consumes:
+      - application/json
+      description: Aactivate Device
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Device Id
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Activate Device
+      tags:
+      - Admin
+  /v1/admin/device/deactivate/{device_id}:
+    put:
+      consumes:
+      - application/json
+      description: Deactivate Device
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Device Id
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Deactivate Device
+      tags:
+      - Admin
+  /v1/admin/device/list:
+    get:
+      consumes:
+      - application/json
+      description: Get Device List
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Keyword
+        in: query
+        name: keyword
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DeviceListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Device List
+      tags:
+      - Admin
+  /v1/admin/form/:id:
+    put:
+      consumes:
+      - application/json
+      description: Update Form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UpdateFormResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Form
+      tags:
+      - Admin
+  /v1/admin/form/create:
+    post:
+      consumes:
+      - application/json
+      description: Create Form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.SaveFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SaveFormResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Create Form
+      tags:
+      - Admin
+  /v1/admin/form/delete/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Delete Form
+      tags:
+      - Admin
+  /v1/admin/form/list:
+    get:
+      consumes:
+      - application/json
+      description: Get Forms
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetFormListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Forms
+      tags:
+      - Admin
+  /v1/admin/forms/import:
+    post:
+      consumes:
+      - application/json
+      description: Import Forms
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Forms
+      tags:
+      - Admin
+  /v1/admin/forms/import/partially:
+    post:
+      consumes:
+      - application/json
+      description: Import Forms Partially
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Forms At Tab Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.importPartiallyFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Forms Partially
+      tags:
+      - Admin
+  /v1/admin/forms/search:
+    get:
+      consumes:
+      - application/json
+      description: Search Forms
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Search Query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetFormListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Search Forms
+      tags:
+      - Admin
+  /v1/admin/forms/sign:
+    post:
+      consumes:
+      - application/json
+      description: Import Sign Up Forms
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Sign Up Forms
+      tags:
+      - Admin
+  /v1/admin/forms2/import:
+    post:
+      consumes:
+      - application/json
+      description: Import Forms2
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Forms2
+      tags:
+      - Admin
+  /v1/admin/forms3/import:
+    post:
+      consumes:
+      - application/json
+      description: Import Forms3
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Forms3
+      tags:
+      - Admin
+  /v1/admin/forms4/import:
+    post:
+      consumes:
+      - application/json
+      description: Import Forms4
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Forms4
+      tags:
+      - Admin
+  /v1/admin/frontend/device/:device_id:
+    post:
+      consumes:
+      - application/json
+      description: Update Device
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Device Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.ModifyDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Device
+      tags:
+      - Frontend
+  /v1/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: login using loginId and password
+      parameters:
+      - description: Login Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginInputReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Retrieve a token
+      tags:
+      - Admin
+  /v1/admin/me/new-password:
+    put:
+      consumes:
+      - application/json
+      description: Change password
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Change password request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.changePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.changePasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Change password
+      tags:
+      - Admin
+  /v1/admin/monitor/google-api:
+    get:
+      consumes:
+      - application/json
+      description: Get Google API Monitoring
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.responseGoogleAPIRequest'
+      summary: Get Google API Monitoring
+      tags:
+      - Monitoring
+  /v1/admin/redirect-url/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Redirect Url
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Redirect Url ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Delete Redirect Url
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      description: Update Redirect Url
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Redirect Url ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Redirect Url Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateRedirectUrlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UpdateRedirectUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Redirect Url
+      tags:
+      - Admin
+  /v1/admin/redirect-url/create:
+    post:
+      consumes:
+      - application/json
+      description: Create redirect url
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.SaveRedirectUrlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SaveRedirectUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Create redirect url
+      tags:
+      - Admin
+  /v1/admin/redirect-url/import:
+    post:
+      consumes:
+      - application/json
+      description: Import Redirect Urls
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Redirect Url Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportRedirectUrlsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Redirect Urls
+      tags:
+      - Admin
+  /v1/admin/redirect-url/import/partially:
+    post:
+      consumes:
+      - application/json
+      description: Import Partially Redirect Urls
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Partially Redirect Urls Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.importPartiallyURLsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Partially Redirect Urls
+      tags:
+      - Admin
+  /v1/admin/redirect-url/list:
+    get:
+      consumes:
+      - application/json
+      description: Get Redirect Url
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Get Redirect Url List Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetRedirectUrlListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetRedirectUrlListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Redirect Url
+      tags:
+      - Admin
+  /v1/admin/settings/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve settings
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Retrieve settings
+      tags:
+      - Admin
+  /v1/admin/settings/api-distributer:
+    post:
+      consumes:
+      - application/json
+      description: Update Distributer Preset
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Distributor Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateDistributerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Distributer Preset
+      tags:
+      - Admin
+  /v1/admin/settings/code-counting-data:
+    post:
+      consumes:
+      - application/json
+      description: Update Code Counting Data
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Code Counting Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateCodeCountingSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Code Counting Data
+      tags:
+      - Admin
+  /v1/admin/settings/email-history:
+    post:
+      consumes:
+      - application/json
+      description: Update Email History Settings
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Email History Setting Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateEmailHistorySettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Email History Settings
+      tags:
+      - Admin
+  /v1/admin/settings/label/name:
+    post:
+      consumes:
+      - application/json
+      description: Set Setting Label Name
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Setting Name Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateSettingNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Set Setting Label Name
+      tags:
+      - Admin
+  /v1/admin/settings/logo-refresh-interval:
+    get:
+      consumes:
+      - application/json
+      description: Get Logo Refresh Interval
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getLogoRefreshIntervalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Logo Refresh Interval
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Setup Logo Refresh Interval
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Setup Logo Refresh Interval Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.SetupLogoRefreshIntervalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Setup Logo Refresh Interval
+      tags:
+      - Admin
+  /v1/admin/settings/output-sheet:
+    post:
+      consumes:
+      - application/json
+      description: Create or Update Output Setting
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateOutputSubmissionSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Create or Update Output Setting
+      tags:
+      - Admin
+  /v1/admin/settings/output-summary:
+    post:
+      consumes:
+      - application/json
+      description: Create or Update Output Summary
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateOutputSummarySettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Create or Update Output Summary
+      tags:
+      - Admin
+  /v1/admin/settings/output-template:
+    post:
+      consumes:
+      - application/json
+      description: Update Output Template Settings for Teacher godoc
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Output Template Settings godoc
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateOutputTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Output Template Settings for Teacher godoc
+      tags:
+      - Admin
+  /v1/admin/settings/output-template-teacher:
+    post:
+      consumes:
+      - application/json
+      description: Update Output Template Settings for Teacher godoc
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Output Template Settings for Teacher godoc
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateOutputTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Output Template Settings for Teacher godoc
+      tags:
+      - Admin
+  /v1/admin/settings/registration-form:
+    post:
+      consumes:
+      - application/json
+      description: Update Registration Form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Registration Form
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateRegistrationSpreadsheetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Registration Form
+      tags:
+      - Admin
+  /v1/admin/settings/registration-preset:
+    post:
+      consumes:
+      - application/json
+      description: Update Registration Preset
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Registration Preset
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateRegistrationPresetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Registration Preset
+      tags:
+      - Admin
+  /v1/admin/settings/registration-submission:
+    post:
+      consumes:
+      - application/json
+      description: Update Registration Submission
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Registration Submission
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateRegistrationSpreadsheetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Registration Submission
+      tags:
+      - Admin
+  /v1/admin/settings/sign-up-button-1:
+    post:
+      consumes:
+      - application/json
+      description: Update Sign Up Button 1
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Sign Up Button 1
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateSignUpTextButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Sign Up Button 1
+      tags:
+      - Admin
+  /v1/admin/settings/sign-up-button-2:
+    post:
+      consumes:
+      - application/json
+      description: Update Sign Up Button 2
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Sign Up Button 2
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateSignUpTextButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Sign Up Button 2
+      tags:
+      - Admin
+  /v1/admin/settings/sign-up-button-3:
+    post:
+      consumes:
+      - application/json
+      description: Update Sign Up Button 3
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Sign Up Button 3
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateSignUpTextButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Sign Up Button 3
+      tags:
+      - Admin
+  /v1/admin/settings/sign-up-button-4:
+    post:
+      consumes:
+      - application/json
+      description: Update Sign Up Button 4
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Sign Up Button 4
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateSignUpTextButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Sign Up Button 4
+      tags:
+      - Admin
+  /v1/admin/sync-devices:
+    post:
+      consumes:
+      - application/json
+      description: Sync Devices
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Sync Devices Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.SyncDevicesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Sync Devices
+      tags:
+      - Admin
+  /v1/admin/todo/import:
+    post:
+      consumes:
+      - application/json
+      description: Import ToDos
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Form Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import ToDos
+      tags:
+      - Admin
+  /v1/admin/todo/import/partially:
+    post:
+      consumes:
+      - application/json
+      description: Import Partially ToDos
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Import Partially ToDo Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ImportPartiallyTodoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Import Partially ToDos
+      tags:
+      - Admin
+  /v1/admin/user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create user request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CreateUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Create user
+      tags:
+      - Admin
+  /v1/admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Get user list
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get user list
+      tags:
+      - Admin
+  /v1/buttons/notification:
+    post:
+      consumes:
+      - application/json
+      description: Send Notification
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Send Notification Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.SendNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Send Notification
+  /v1/buttons/screen:
+    get:
+      consumes:
+      - application/json
+      description: Get Screen Buttons
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetScreenButtonsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Screen Buttons
+      tags:
+      - Device
+  /v1/buttons/top:
+    get:
+      consumes:
+      - application/json
+      description: Get Top Buttons
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetScreenButtonsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Top Buttons
+      tags:
+      - Device
+  /v1/code-counting/reset:
+    put:
+      consumes:
+      - application/json
+      description: Reset Code Counting
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Reset Code Counting Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResetCodeCountingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Reset Code Counting
+      tags:
+      - Device
+  /v1/device/brand-logo:
+    get:
+      consumes:
+      - application/json
+      description: Brand Logo
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getBrandLogoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Brand Logo
+  /v1/device/discover:
+    post:
+      consumes:
+      - application/json
+      description: Discover
+      parameters:
+      - description: Discover Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.discoverRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.discoverResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "461":
+          description: ""
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Discover
+      tags:
+      - Device
+  /v1/device/init:
+    post:
+      consumes:
+      - application/json
+      description: Init a device
+      parameters:
+      - description: Init Device Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AuthorizedDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Register a new device
+      tags:
+      - Device
+  /v1/device/messages:
+    get:
+      consumes:
+      - application/json
+      description: Setting's Message
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetSettingMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Setting's Message
+      tags:
+      - Device
+  /v1/device/messaging/fcm/register:
+    post:
+      consumes:
+      - application/json
+      description: Register FCM Device
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Register FCM Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterFCMRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Register FCM Device
+      tags:
+      - Device
+  /v1/device/mode-l:
+    get:
+      consumes:
+      - application/json
+      description: Get Status L
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getModeLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Status L
+      tags:
+      - Device
+  /v1/device/note/:
+    put:
+      consumes:
+      - application/json
+      description: Save device's Note
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Take Note Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.TakeNoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Save device's Note
+      tags:
+      - Device
+  /v1/device/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refresh Access Token
+      parameters:
+      - description: Refresh Token Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.refreshAccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.refreshAccessTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Refresh Access Token
+      tags:
+      - Device
+  /v1/device/reserve:
+    post:
+      consumes:
+      - application/json
+      description: Reserve Device
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-KEY
+        required: true
+        type: string
+      - description: Reserve Device Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.reserveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.reserveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Reserve Device
+      tags:
+      - Device
+  /v1/device/send/email:
+    post:
+      consumes:
+      - application/json
+      description: Send An Email godoc
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Send Email request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.SendEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Send An Email godoc
+      tags:
+      - Device
+  /v1/device/sign-up:
+    get:
+      consumes:
+      - application/json
+      description: Get Sign Up
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getSignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Sign Up
+      tags:
+      - Device
+  /v1/device/sign-up/form:
+    get:
+      consumes:
+      - application/json
+      description: Get Registration Form
+      parameters:
+      - in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.QuestionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Registration Form
+      tags:
+      - Device
+    post:
+      consumes:
+      - application/json
+      description: Sign Up
+      parameters:
+      - description: Sign Up Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.SubmitFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Sign Up
+      tags:
+      - Device
+  /v1/device/sign-up/pre-set:
+    get:
+      consumes:
+      - application/json
+      description: Get Preset Form
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getPresetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Preset Form
+      tags:
+      - Device
+  /v1/device/status:
+    get:
+      consumes:
+      - application/json
+      description: Get Device Status
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.getDeviceStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Device Status
+      tags:
+      - Device
+  /v1/device/time-table:
+    get:
+      consumes:
+      - application/json
+      description: Get Time Table
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetTimeTableResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Time Table
+      tags:
+      - Device
+  /v1/device/update-info:
+    put:
+      consumes:
+      - application/json
+      description: Update Device Info
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Device Info Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateDeviceInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Device Info
+      tags:
+      - Device
+  /v1/form:
+    get:
+      consumes:
+      - application/json
+      description: Get Form's Questions by QR Code
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: QR Code
+        in: path
+        name: qr_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.QuestionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Form's Questions by QR Code
+      tags:
+      - Form
+  /v1/form/device/sign-up:
+    get:
+      consumes:
+      - application/json
+      description: Get  Device's Sign Up Form
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.GetDeviceSignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get  Device's Sign Up Form
+      tags:
+      - Device
+    put:
+      consumes:
+      - application/json
+      description: Update Device's Sign Up Form
+      parameters:
+      - description: Update Device's Sign Up Form Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.SubmitFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update Device's Sign Up Form
+      tags:
+      - Device
+  /v1/form/submission/last:
+    get:
+      consumes:
+      - application/json
+      description: Get last submission from a form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.getLastSubmissionFromFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get last submission from a form
+      tags:
+      - Device
+  /v1/form/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit a form
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Send Email Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.SubmitFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Submit a form
+      tags:
+      - Device
+  /v1/question/buttons:
+    get:
+      consumes:
+      - application/json
+      description: Get Button Question Detail
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetScreenButtonsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Button Question Detail
+      tags:
+      - Question
+  /v1/question/show-pics:
+    get:
+      consumes:
+      - application/json
+      description: Get Show Pics Question Detail
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetShowPicsQuestionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Show Pics Question Detail
+      tags:
+      - Question
+  /v1/redirect-url:
+    get:
+      consumes:
+      - application/json
+      description: Get Redirect Url by QR Code
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: QR Code
+        in: query
+        name: qrcode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetRedirectUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get Redirect Url by QR Code
+      tags:
+      - Redirect Url
+  /v1/todo:
+    get:
+      consumes:
+      - application/json
+      description: Get ToDo List By QR Code
+      parameters:
+      - description: QR Code
+        in: query
+        name: qr_code
+        required: true
+        type: string
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.toDoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Get ToDo List By QR Code
+      tags:
+      - ToDo
+    post:
+      consumes:
+      - application/json
+      description: Mark ToDo As Done
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Mark ToDo As Done Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/controller.markToDoAsDoneRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Mark ToDo As Done
+      tags:
+      - ToDo
+  /v1/todo/task/log:
+    put:
+      consumes:
+      - application/json
+      description: Log Task
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Log Task Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.LogTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Log Task
+      tags:
+      - ToDo
+  /v1/todo/tasks:
+    put:
+      consumes:
+      - application/json
+      description: Update ToDo's Taks
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Todo's Tasks Params
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateToDoTasksRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SucceedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.FailedResponse'
+      summary: Update ToDo's Tasks
+      tags:
+      - ToDo
+swagger: "2.0"

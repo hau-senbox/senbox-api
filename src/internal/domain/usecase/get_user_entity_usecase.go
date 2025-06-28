@@ -23,6 +23,10 @@ func (receiver *GetUserEntityUseCase) GetAllUsers() ([]entity.SUserEntity, error
 	return receiver.UserEntityRepository.GetAll()
 }
 
+func (receiver *GetUserEntityUseCase) GetAllByOrganization(organizationID string) ([]entity.SUserEntity, error) {
+	return receiver.UserEntityRepository.GetAllByOrganizationID(organizationID)
+}
+
 func (receiver *GetUserEntityUseCase) GetUserOrgInfo(userID, organization string) (*entity.SUserOrg, error) {
 	return receiver.OrganizationRepository.GetUserOrgInfo(userID, organization)
 }

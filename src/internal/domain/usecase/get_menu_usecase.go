@@ -13,6 +13,7 @@ type GetMenuUseCase struct {
 	MenuRepository         *repository.MenuRepository
 	UserEntityRepository   *repository.UserEntityRepository
 	OrganizationRepository *repository.OrganizationRepository
+	DeviceRepository       *repository.DeviceRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -67,4 +68,13 @@ func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, err
 	}
 
 	return receiver.MenuRepository.GetUserMenu(user.ID.String())
+}
+
+func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMenu, error) {
+	device, err := receiver.DeviceRepository.GetDeviceByID(deviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return receiver.MenuRepository.GetDeviceMenu(device.ID)
 }

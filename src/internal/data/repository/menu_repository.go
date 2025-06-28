@@ -59,6 +59,21 @@ func (receiver *MenuRepository) GetUserMenu(userID string) ([]menu.UserMenu, err
 	return menus, nil
 }
 
+func (receiver *MenuRepository) GetDeviceMenu(deviceID string) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Where("device_id = ?", deviceID).
+		Preload("Component").
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
+
 func (receiver *MenuRepository) CreateSuperAdminMenu(req request.CreateSuperAdminMenuRequest, tx *gorm.DB) error {
 	var menus []menu.SuperAdminMenu
 	for _, component := range req.Components {
@@ -167,7 +182,6 @@ func (receiver *MenuRepository) CreateUserMenu(req request.CreateUserMenuRequest
 	for _, component := range req.Components {
 		menus = append(menus, menu.UserMenu{
 			UserID:      uuid.MustParse(req.UserID),
-			Direction:   req.Direction,
 			ComponentID: component.ID,
 			Order:       component.Order,
 		})
@@ -197,10 +211,10 @@ func (receiver *MenuRepository) CreateDeviceMenu(req request.CreateDeviceMenuReq
 	var menus []menu.DeviceMenu
 	for _, component := range req.Components {
 		menus = append(menus, menu.DeviceMenu{
-			DeviceID:    req.DeviceID,
-			Direction:   req.Direction,
-			ComponentID: component.ID,
-			Order:       component.Order,
+			DeviceID:       req.DeviceID,
+			OrganizationID: uuid.MustParse(req.OrganizationID),
+			ComponentID:    component.ID,
+			Order:          component.Order,
 		})
 	}
 
@@ -245,9 +259,9 @@ func (receiver *MenuRepository) DeleteUserMenu(userID string, tx *gorm.DB) error
 	return nil
 }
 
-func (receiver *MenuRepository) DeleteDeviceMenu(deviceID string, tx *gorm.DB) error {
+func (receiver *MenuRepository) DeleteDeviceMenu(deviceID, organizationID string, tx *gorm.DB) error {
 	if tx == nil {
-		err := receiver.DBConn.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ?", deviceID).Error
+		err := receiver.DBConn.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ? AND dm.organization_id = ?", deviceID, organizationID).Error
 		if err != nil {
 			log.Error("MenuRepository.DeleteDeviceMenu: " + err.Error())
 			return errors.New("failed to delete device menu")
@@ -256,7 +270,7 @@ func (receiver *MenuRepository) DeleteDeviceMenu(deviceID string, tx *gorm.DB) e
 		return nil
 	}
 
-	err := tx.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ?", deviceID).Error
+	err := tx.Exec("DELETE c, dm FROM component c JOIN device_menu dm ON c.id = dm.component_id WHERE dm.device_id = ? AND dm.organization_id = ?", deviceID, organizationID).Error
 	if err != nil {
 		tx.Rollback()
 		log.Error("MenuRepository.DeleteDeviceMenu: " + err.Error())
