@@ -229,7 +229,7 @@ func (receiver *OrganizationRepository) UpdateUserOrgInfo(req request.UpdateUser
 	return nil
 }
 
-func (receiver *OrganizationRepository) GetAllUserByOrganization(organizationID uint) ([]*entity.SUserOrg, error) {
+func (receiver *OrganizationRepository) GetAllUserByOrganization(organizationID string) ([]*entity.SUserOrg, error) {
 	var userOrg []*entity.SUserOrg
 	err := receiver.DBConn.Model(&entity.SUserOrg{}).
 		Where("organization_id = ?", organizationID).

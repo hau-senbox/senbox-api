@@ -21,6 +21,6 @@ func (receiver *GetOrganizationUseCase) GetAllOrganization(user *entity.SUserEnt
 	return receiver.OrganizationRepository.GetAll(user)
 }
 
-func (receiver *GetOrganizationUseCase) GetAllUserByOrganization(organizationID uint) ([]*entity.SUserOrg, error) {
+func (receiver *GetOrganizationUseCase) GetAllUserByOrganization(organizationID string) ([]*entity.SUserOrg, error) {
 	return receiver.OrganizationRepository.GetAllUserByOrganization(organizationID)
 }

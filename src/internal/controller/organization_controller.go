@@ -238,16 +238,7 @@ func (receiver OrganizationController) GetAllUserByOrganization(context *gin.Con
 		return
 	}
 
-	id, err := strconv.Atoi(organizationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
-
-	users, err := receiver.GetOrganizationUseCase.GetAllUserByOrganization(uint(id))
+	users, err := receiver.GetOrganizationUseCase.GetAllUserByOrganization(organizationID)
 	if err != nil {
 		context.JSON(400, err.Error())
 		return
