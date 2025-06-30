@@ -328,10 +328,15 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 		return
 	}
 
-	res := make(map[string][]componentResponse)
+	type deviceComponentResponse struct {
+		OrganizationID string              `json:"organization_id"`
+		Components     []componentResponse `json:"components"`
+	}
+
+	resMap := make(map[string][]componentResponse)
 	for _, m := range menus {
 		key := m.OrganizationID.String()
-		res[key] = append(res[key], componentResponse{
+		resMap[key] = append(resMap[key], componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
@@ -341,9 +346,18 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 		})
 	}
 
-	for key := range res {
-		sort.Slice(res[key], func(i, j int) bool {
-			return res[key][i].Order < res[key][j].Order
+	for key := range resMap {
+		sort.Slice(resMap[key], func(i, j int) bool {
+			return resMap[key][i].Order < resMap[key][j].Order
+		})
+	}
+
+	// Convert map to slice
+	res := make([]deviceComponentResponse, 0, len(resMap))
+	for key, components := range resMap {
+		res = append(res, deviceComponentResponse{
+			OrganizationID: key,
+			Components:     components,
 		})
 	}
 
