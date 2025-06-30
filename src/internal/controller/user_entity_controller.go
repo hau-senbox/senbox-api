@@ -121,7 +121,13 @@ func (receiver *UserEntityController) GetAllUserEntity(context *gin.Context) {
 	})
 	var users []entity.SUserEntity
 	if isSuperAdmin {
-		users, err = receiver.GetAllUsers()
+		organizationID := context.Request.URL.Query().Get("organization_id")
+
+		if organizationID != "" {
+			users, err = receiver.GetAllByOrganization(organizationID)
+		} else {
+			users, err = receiver.GetAllUsers()
+		}
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, response.FailedResponse{
 				Code:  http.StatusInternalServerError,
