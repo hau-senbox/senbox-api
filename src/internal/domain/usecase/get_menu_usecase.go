@@ -78,3 +78,7 @@ func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMen
 
 	return receiver.MenuRepository.GetDeviceMenu(device.ID)
 }
+
+func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]menu.DeviceMenu, error) {
+	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
+}

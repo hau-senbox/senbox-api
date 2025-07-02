@@ -367,6 +367,50 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetDeviceMenuByOrg(organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	res := make([]componentResponse, 0)
+	for _, m := range menus {
+		res = append(res, componentResponse{
+			ID:    m.Component.ID.String(),
+			Name:  m.Component.Name,
+			Type:  m.Component.Type.String(),
+			Key:   m.Component.Key,
+			Value: string(m.Component.Value),
+			Order: m.Order,
+		})
+	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Order < res[j].Order
+	})
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
 func (receiver *MenuController) UploadSuperAdminMenu(context *gin.Context) {
 	var req request.UploadSuperAdminMenuRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
