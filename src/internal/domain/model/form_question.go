@@ -1,9 +1,10 @@
 package model
 
 import (
-	"gorm.io/datatypes"
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type FormQuestionItem struct {
@@ -19,4 +20,6 @@ type FormQuestionItem struct {
 	QuestionUniqueID *string                 `gorm:"type:varchar(255);default:null"`
 	CreatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	QuestionKey      string                  `gorm:"type:varchar(255);not null;default:''"`
+	QuestionDB       string                  `gorm:"type:varchar(255);not null;default:''"`
 }

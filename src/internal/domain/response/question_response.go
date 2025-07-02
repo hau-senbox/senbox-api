@@ -20,6 +20,8 @@ type QuestionListData struct {
 	AnswerRemember bool               `json:"answer_remember"`
 	RememberValue  string             `json:"remember_value"`
 	Enabled        bool               `json:"enabled"`
+	QuestionKey    string             `json:"question_key"`
+	QuestionDB     string             `json:"question_db"`
 }
 
 type QuestionListResponseData struct {
