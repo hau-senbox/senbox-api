@@ -112,6 +112,9 @@ const (
 	OrganizationName
 	ApplicationContent
 	WaterCup
+
+	QuestionKey
+	QuestionDB
 )
 
 type DeviceStatus int
@@ -760,7 +763,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OrganizationName, nil
 	case "application_content":
 		return ApplicationContent, nil
-	case "water_cup": return WaterCup, nil
+	case "water_cup":
+		return WaterCup, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
