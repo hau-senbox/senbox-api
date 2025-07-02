@@ -16,6 +16,8 @@ type RawQuestion struct {
 	RowNumber         int                     `json:"row_number"`
 	EnableOnMobile    value.QuestionForMobile `json:"enable_on_mobile"`
 	QuestionUniqueID  *string                 `json:"question_unique_id"`
+	QuestionKey       string                  `json:"question_key"`
+	QuestionDB        string                  `json:"question_db"`
 }
 
 type SaveFormParams struct {

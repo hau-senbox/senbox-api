@@ -1,10 +1,11 @@
 package entity
 
 import (
-	"github.com/google/uuid"
 	"sen-global-api/internal/domain/value"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -19,6 +20,8 @@ type SQuestion struct {
 	Set              string                  `gorm:"type:varchar(255);not null;default:''"`
 	EnableOnMobile   value.QuestionForMobile `gorm:"type:varchar(16);not null;default:'enabled'"`
 	QuestionUniqueID *string                 `gorm:"type:varchar(255);default:null"`
+	QuestionKey      string                  `gorm:"type:varchar(255);not null;default:''"`
+	QuestionDB       string                  `gorm:"type:varchar(255);not null;default:''"`
 	CreatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 }
