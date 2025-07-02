@@ -538,6 +538,8 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 				Status:            "1",
 				RowNumber:         index + 1,
 				EnableOnMobile:    enabled,
+				QuestionKey:       row[1].(string),
+				QuestionDB:        row[2].(string),
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
@@ -629,6 +631,8 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 			Set:              rawQuestion.Attributes,
 			EnableOnMobile:   rawQuestion.EnableOnMobile,
 			QuestionUniqueID: rawQuestion.QuestionUniqueID,
+			QuestionKey:      rawQuestion.QuestionKey,
+			QuestionDB:       rawQuestion.QuestionDB,
 		}
 		params = append(params, param)
 	}
@@ -833,6 +837,10 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		}
 		return string(result), nil
 
+	case value.QuestionKey:
+		return rawQuestion.QuestionKey, nil
+	case value.QuestionDB:
+		return rawQuestion.QuestionDB, nil
 	default:
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	}
