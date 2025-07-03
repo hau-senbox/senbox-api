@@ -38,6 +38,7 @@ type DeviceController struct {
 	*usecase.GetUserDeviceUseCase
 	*usecase.OrgDeviceRegistrationUseCase
 	*usecase.GetSubmissionByConditionUseCase
+	*usecase.GetUserEntityUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -150,6 +151,23 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 		return
 	}
 
+	userOrg, err := receiver.GetUserOrgInfo(user.ID.String(), organizationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	if !userOrg.IsManager {
+		c.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: "access denied",
+		})
+		return
+	}
+
 	devices, err := receiver.GetDeviceListUseCase.GetDeviceListByOrgID(organizationID)
 	if err != nil {
 		c.JSON(
@@ -161,8 +179,7 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 		return
 	}
 
-	var deviceResponse []response.DeviceResponseV2
-
+	deviceResponse := make([]response.DeviceResponseV2, 0)
 	for _, device := range devices {
 		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
 			ID:         device.ID,
