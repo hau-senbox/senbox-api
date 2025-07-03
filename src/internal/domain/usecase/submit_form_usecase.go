@@ -72,9 +72,11 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 				}
 
 				submissionItems = append(submissionItems, repository.SubmissionDataItem{
-					QuestionID: question.ID.String(),
-					Question:   question.Question,
-					Answer:     answer.Answer,
+					QuestionID:  question.ID.String(),
+					QuestionKey: answer.QuestionKey,
+					QuestionDB:  answer.QuestionDB,
+					Question:    question.Question,
+					Answer:      answer.Answer,
 				})
 			}
 		}

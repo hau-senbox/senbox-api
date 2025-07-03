@@ -13,9 +13,11 @@ type SubmissionRepository struct {
 }
 
 type SubmissionDataItem struct {
-	QuestionID string `json:"question_id" binding:"required"`
-	Question   string `json:"question" binding:"required"`
-	Answer     string `json:"answer" binding:"required"`
+	QuestionID  string `json:"question_id" binding:"required"`
+	QuestionKey string `json:"question_key"`
+	QuestionDB  string `json:"question_db"`
+	Question    string `json:"question" binding:"required"`
+	Answer      string `json:"answer" binding:"required"`
 }
 
 type SubmissionData struct {
@@ -32,9 +34,11 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 	items := make([]entity.SubmissionDataItem, 0)
 	for _, item := range params.SubmissionData.Items {
 		items = append(items, entity.SubmissionDataItem{
-			QuestionID: item.QuestionID,
-			Question:   item.Question,
-			Answer:     item.Answer,
+			QuestionID:  item.QuestionID,
+			QuestionKey: item.QuestionKey,
+			QuestionDB:  item.QuestionDB,
+			Question:    item.Question,
+			Answer:      item.Answer,
 		})
 	}
 
