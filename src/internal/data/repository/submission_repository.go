@@ -29,6 +29,12 @@ type CreateSubmissionParams struct {
 	SubmissionData SubmissionData
 	OpenedAt       time.Time
 }
+type GetSubmissionByConditionParam struct {
+	FormID      uint64
+	UserID      string
+	QuestionKey string
+	QuestionDB  string
+}
 
 func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
 	items := make([]entity.SubmissionDataItem, 0)
@@ -98,4 +104,37 @@ func (receiver *SubmissionRepository) DuplicateSubmissions(params CreateSubmissi
 	}
 
 	return receiver.DBConn.Create(&submission).Error
+}
+
+func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) ([]SubmissionDataItem, error) {
+	var submissions []entity.SSubmission
+
+	// Bước 1: Truy vấn theo form_id và user_id
+	err := receiver.DBConn.
+		Where("form_id = ? AND user_id = ?", param.FormID, param.UserID).
+		Find(&submissions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var result []SubmissionDataItem
+
+	// Bước 2: Duyệt từng bản ghi submission
+	for _, submission := range submissions {
+		var data SubmissionData
+
+		if err := json.Unmarshal(submission.SubmissionData, &data); err != nil {
+			continue // skip nếu có lỗi parse JSON
+		}
+
+		// Bước 3: Lọc dữ liệu theo question_key, question_db nếu được truyền
+		for _, item := range data.Items {
+			if (param.QuestionKey == "" || item.QuestionKey == param.QuestionKey) &&
+				(param.QuestionDB == "" || item.QuestionDB == param.QuestionDB) {
+				result = append(result, item)
+			}
+		}
+	}
+
+	return result, nil
 }

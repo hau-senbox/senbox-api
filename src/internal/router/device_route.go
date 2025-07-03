@@ -104,6 +104,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			},
 		},
 		GetRecentSubmissionByFormIDUseCase: usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
+		GetSubmissionByConditionUseCase:    usecase.NewGetSubmissionByConditionUseCase(dbConn),
 		RegisterFcmDeviceUseCase:           usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
 		SendNotificationUseCase:            usecase.NewSendNotificationUseCase(dbConn, fcm),
 		ResetCodeCountingUseCase:           usecase.NewResetCodeCountingUseCase(dbConn),
@@ -193,6 +194,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	{
 		form.POST("/submit", deviceController.SubmitForm)
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
+		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
 	}
 
 	redirectUrl := engine.Group("v1/redirect-url")

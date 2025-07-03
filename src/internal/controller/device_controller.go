@@ -1,10 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/samber/lo"
-	"github.com/tiendc/gofn"
-	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"sen-global-api/internal/domain/entity"
@@ -12,6 +8,11 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+
+	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
+	"github.com/tiendc/gofn"
+	"gorm.io/gorm"
 )
 
 type DeviceController struct {
@@ -36,6 +37,7 @@ type DeviceController struct {
 	*usecase.GetUserFromTokenUseCase
 	*usecase.GetUserDeviceUseCase
 	*usecase.OrgDeviceRegistrationUseCase
+	*usecase.GetSubmissionByConditionUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1144,5 +1146,44 @@ func (receiver *DeviceController) ResetCodeCounting(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Succeed",
+	})
+}
+
+func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context) {
+	var req request.GetSubmissionByConditionRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// user, err := receiver.GetUserFromToken(context)
+	// if err != nil {
+	// 	context.JSON(http.StatusForbidden, response.FailedResponse{
+	// 		Code:  http.StatusForbidden,
+	// 		Error: err.Error(),
+	// 	})
+	// 	return
+	// }
+
+	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
+		FormID:      req.FormID,
+		UserID:      req.UserID,
+		QuestionKey: req.QuestionKey,
+		QuestionDB:  req.QuestionDB,
+	})
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
 	})
 }
