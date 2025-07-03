@@ -122,6 +122,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			DeviceRepository:       deviceRepository,
 		},
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &userEntityRepository,
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
 	}
 
 	provider := uploader.NewS3Provider(
