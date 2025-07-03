@@ -13,11 +13,12 @@ type SubmissionRepository struct {
 }
 
 type SubmissionDataItem struct {
-	QuestionID  string `json:"question_id" binding:"required"`
-	QuestionKey string `json:"question_key"`
-	QuestionDB  string `json:"question_db"`
-	Question    string `json:"question" binding:"required"`
-	Answer      string `json:"answer" binding:"required"`
+	SubmissionID string `json:"id"`
+	QuestionID   string `json:"question_id" binding:"required"`
+	QuestionKey  string `json:"question_key"`
+	QuestionDB   string `json:"question_db"`
+	Question     string `json:"question" binding:"required"`
+	Answer       string `json:"answer" binding:"required"`
 }
 
 type SubmissionData struct {
@@ -29,11 +30,19 @@ type CreateSubmissionParams struct {
 	SubmissionData SubmissionData
 	OpenedAt       time.Time
 }
+type TimeSort string
+
+const (
+	TimeShortLatest TimeSort = "latest"
+	TimeShortOldest TimeSort = "oldest"
+)
+
 type GetSubmissionByConditionParam struct {
 	FormID      uint64
 	UserID      string
 	QuestionKey string
 	QuestionDB  string
+	TimeSort    TimeSort
 }
 
 func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
@@ -109,28 +118,36 @@ func (receiver *SubmissionRepository) DuplicateSubmissions(params CreateSubmissi
 func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) ([]SubmissionDataItem, error) {
 	var submissions []entity.SSubmission
 
-	// Bước 1: Truy vấn theo form_id và user_id
-	err := receiver.DBConn.
-		Where("form_id = ? AND user_id = ?", param.FormID, param.UserID).
-		Find(&submissions).Error
+	query := receiver.DBConn.Where("user_id = ?", param.UserID)
+
+	if param.FormID != 0 {
+		query = query.Where("form_id = ?", param.FormID)
+	}
+
+	// Sắp xếp theo thời gian nếu được chỉ định
+	switch param.TimeSort {
+	case TimeShortOldest:
+		query = query.Order("created_at ASC")
+	default:
+		query = query.Order("created_at DESC") // mặc định là latest
+	}
+
+	err := query.Find(&submissions).Error
 	if err != nil {
 		return nil, err
 	}
 
 	var result []SubmissionDataItem
 
-	// Bước 2: Duyệt từng bản ghi submission
 	for _, submission := range submissions {
 		var data SubmissionData
 
 		if err := json.Unmarshal(submission.SubmissionData, &data); err != nil {
-			continue // skip nếu có lỗi parse JSON
+			continue // skip bản ghi lỗi
 		}
 
-		// Bước 3: Lọc dữ liệu theo question_key, question_db nếu được truyền
 		for _, item := range data.Items {
-			if (param.QuestionKey == "" || item.QuestionKey == param.QuestionKey) &&
-				(param.QuestionDB == "" || item.QuestionDB == param.QuestionDB) {
+			if item.QuestionKey == param.QuestionKey {
 				result = append(result, item)
 			}
 		}

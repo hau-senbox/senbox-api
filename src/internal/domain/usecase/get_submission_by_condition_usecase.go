@@ -23,11 +23,19 @@ func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUs
 	}
 }
 
+// type TimeShort string
+
+// const (
+// 	TimeShortLatest TimeShort = "latest"
+// 	TimeShortOldest TimeShort = "oldest"
+// )
+
 type GetSubmissionByConditionInput struct {
-	FormID      uint64
-	UserID      string
-	QuestionKey string
-	QuestionDB  string
+	FormID      uint64              `json:"form_id"`
+	UserID      string              `json:"user_id"`
+	QuestionKey string              `json:"question_key"`
+	QuestionDB  string              `json:"question_db"`
+	TimeSort    repository.TimeSort `json:"time_sort"` // "latest" (default) or "oldest"
 }
 
 func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) ([]repository.SubmissionDataItem, error) {
@@ -36,6 +44,7 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 		UserID:      input.UserID,
 		QuestionKey: input.QuestionKey,
 		QuestionDB:  input.QuestionDB,
+		TimeSort:    repository.TimeSort(input.TimeSort),
 	}
 
 	items, err := uc.submissionRepository.GetSubmissionByCondition(param)

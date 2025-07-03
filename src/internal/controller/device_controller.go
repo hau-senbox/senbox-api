@@ -3,11 +3,13 @@ package controller
 import (
 	"net/http"
 	"os"
+	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -1159,20 +1161,23 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	// user, err := receiver.GetUserFromToken(context)
-	// if err != nil {
-	// 	context.JSON(http.StatusForbidden, response.FailedResponse{
-	// 		Code:  http.StatusForbidden,
-	// 		Error: err.Error(),
-	// 	})
-	// 	return
-	// }
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Parse atr_value_string
+	attr := parseAtrValueString(req.AtrValueString)
 
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		FormID:      req.FormID,
-		UserID:      req.UserID,
-		QuestionKey: req.QuestionKey,
-		QuestionDB:  req.QuestionDB,
+		UserID:      user.ID.String(),
+		QuestionKey: attr["question_key"],
+		QuestionDB:  attr["question_db"],
+		TimeSort:    repository.TimeSort(attr["time_sort"]),
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1186,4 +1191,18 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		Code: http.StatusOK,
 		Data: res,
 	})
+}
+
+func parseAtrValueString(s string) map[string]string {
+	result := make(map[string]string)
+	pairs := strings.Split(s, ";")
+	for _, pair := range pairs {
+		parts := strings.SplitN(pair, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			val := strings.TrimSpace(parts[1])
+			result[key] = val
+		}
+	}
+	return result
 }
