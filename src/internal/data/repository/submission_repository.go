@@ -142,8 +142,8 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		}
 
 		for _, item := range data.Items {
-			if (param.QuestionKey == "" || item.QuestionKey == param.QuestionKey) &&
-				(param.QuestionDB == "" || item.QuestionDB == param.QuestionDB) {
+			if (item.QuestionKey == param.QuestionKey) &&
+				(item.QuestionDB == param.QuestionDB) {
 				item.CreatedAt = submission.CreatedAt
 				result = append(result, item)
 			}
