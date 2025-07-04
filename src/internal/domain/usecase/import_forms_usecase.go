@@ -837,10 +837,6 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		}
 		return string(result), nil
 
-	case value.QuestionKey:
-		return rawQuestion.QuestionKey, nil
-	case value.QuestionDB:
-		return rawQuestion.QuestionDB, nil
 	default:
 		return `{"value": "` + rawQuestion.Attributes + `"}`, nil
 	}

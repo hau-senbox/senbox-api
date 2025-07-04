@@ -1192,9 +1192,7 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	if len(res) > 0 {
 		context.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
-			Data: response.GetSubmissionByConditionResponse{
-				Answer: res[0].Answer,
-			},
+			Data: res[0],
 		})
 		return
 	}
@@ -1202,7 +1200,7 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	// Nếu không có kết quả
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: nil,
+		Data: []string{},
 	})
 }
 
