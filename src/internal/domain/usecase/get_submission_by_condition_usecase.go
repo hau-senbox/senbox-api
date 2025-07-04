@@ -38,7 +38,7 @@ type GetSubmissionByConditionInput struct {
 	TimeSort    repository.TimeSort `json:"time_sort"` // "latest" (default) or "oldest"
 }
 
-func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) ([]repository.SubmissionDataItem, error) {
+func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (repository.SubmissionDataItem, error) {
 	param := repository.GetSubmissionByConditionParam{
 		FormID:      input.FormID,
 		UserID:      input.UserID,
@@ -47,10 +47,10 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 		TimeSort:    repository.TimeSort(input.TimeSort),
 	}
 
-	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
+	item, err := uc.submissionRepository.GetSubmissionByCondition(param)
 	if err != nil {
-		return nil, err
+		return repository.SubmissionDataItem{}, err
 	}
 
-	return items, nil
+	return item, nil
 }

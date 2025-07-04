@@ -1188,20 +1188,11 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	// Nếu có ít nhất 1 item thì trả về answer đầu tiên
-	if len(res) > 0 {
-		context.JSON(http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: res[0],
-		})
-		return
-	}
-
-	// Nếu không có kết quả
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: []string{},
+		Data: res,
 	})
+
 }
 
 func parseAtrValueString(s string) map[string]string {

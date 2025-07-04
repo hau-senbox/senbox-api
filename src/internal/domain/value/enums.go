@@ -112,9 +112,6 @@ const (
 	OrganizationName
 	ApplicationContent
 	WaterCup
-
-	QuestionKey
-	QuestionDB
 )
 
 type DeviceStatus int

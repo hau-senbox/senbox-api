@@ -117,7 +117,7 @@ func (receiver *SubmissionRepository) DuplicateSubmissions(params CreateSubmissi
 	return receiver.DBConn.Create(&submission).Error
 }
 
-func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) ([]SubmissionDataItem, error) {
+func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) (SubmissionDataItem, error) {
 	var submissions []entity.SSubmission
 
 	query := receiver.DBConn.Where("user_id = ?", param.UserID)
@@ -126,26 +126,24 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		query = query.Where("form_id = ?", param.FormID)
 	}
 
-	// Sắp xếp theo thời gian nếu được chỉ định
 	switch param.TimeSort {
 	case TimeShortOldest:
 		query = query.Order("created_at ASC")
 	default:
-		query = query.Order("created_at DESC") // mặc định là latest
+		query = query.Order("created_at DESC")
 	}
 
 	err := query.Find(&submissions).Error
 	if err != nil {
-		return nil, err
+		return SubmissionDataItem{}, err
 	}
 
 	var result []SubmissionDataItem
 
 	for _, submission := range submissions {
 		var data SubmissionData
-
 		if err := json.Unmarshal(submission.SubmissionData, &data); err != nil {
-			continue // skip bản ghi lỗi
+			continue
 		}
 
 		for _, item := range data.Items {
@@ -157,7 +155,6 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		}
 	}
 
-	// sort lai mang answers theo time sort enum
 	switch param.TimeSort {
 	case TimeShortOldest:
 		sort.Slice(result, func(i, j int) bool {
@@ -169,5 +166,9 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		})
 	}
 
-	return result, nil
+	if len(result) == 0 {
+		return SubmissionDataItem{}, nil
+	}
+
+	return result[0], nil
 }
