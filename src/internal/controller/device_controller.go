@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"os"
+	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -1166,6 +1167,18 @@ func (receiver *DeviceController) ResetCodeCounting(context *gin.Context) {
 	})
 }
 
+// GetSubmissionByCondition Get Submission By Condition
+// @Summary      Get Submission By Condition
+// @Description  Get Submission By Condition
+// @Tags         Device
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer {token}"
+// @Param  req body request.ResetCodeCountingRequest true "Reset Code Counting Request"
+// @Success 200 {object} response.SucceedResponse
+// @Failure      400  {object}  response.FailedResponse
+// @Failure      500  {object}  response.FailedResponse
+// @Router       /v1/form/get-submission-by-condition [post]
 func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context) {
 	var req request.GetSubmissionByConditionRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -1176,20 +1189,24 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	// user, err := receiver.GetUserFromToken(context)
-	// if err != nil {
-	// 	context.JSON(http.StatusForbidden, response.FailedResponse{
-	// 		Code:  http.StatusForbidden,
-	// 		Error: err.Error(),
-	// 	})
-	// 	return
-	// }
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
 
+	// Parse atr_value_string
+	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
+
+	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		FormID:      req.FormID,
-		UserID:      req.UserID,
-		QuestionKey: req.QuestionKey,
-		QuestionDB:  req.QuestionDB,
+		UserID:      user.ID.String(),
+		QuestionKey: attr.QuestionKey,
+		QuestionDB:  attr.QuestionDB,
+		TimeSort:    attr.TimeSort,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1203,4 +1220,5 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		Code: http.StatusOK,
 		Data: res,
 	})
+
 }
