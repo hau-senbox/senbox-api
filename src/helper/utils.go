@@ -2,6 +2,8 @@ package helper
 
 import (
 	"regexp"
+	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/value"
 	"strings"
 )
 
@@ -25,4 +27,30 @@ func Slugify(s string) string {
 	s = strings.Trim(s, "-")
 
 	return s
+}
+
+func ParseAtrValueStringToStruct(s string) request.AtrValueString {
+	result := request.AtrValueString{}
+	pairs := strings.Split(s, ";")
+
+	for _, pair := range pairs {
+		parts := strings.SplitN(pair, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		valueStr := strings.TrimSpace(parts[1])
+
+		switch key {
+		case "question_key":
+			result.QuestionKey = valueStr
+		case "question_db":
+			result.QuestionDB = valueStr
+		case "time_sort":
+			result.TimeSort = value.TimeSort(valueStr)
+		}
+	}
+
+	return result
 }

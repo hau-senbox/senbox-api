@@ -112,9 +112,6 @@ const (
 	OrganizationName
 	ApplicationContent
 	WaterCup
-
-	QuestionKey
-	QuestionDB
 )
 
 type DeviceStatus int
@@ -1132,4 +1129,11 @@ const (
 	DeviceConditionKeyStudent      DeviceConditionKey = "key-student"
 	DeviceConditionKeyTeacher      DeviceConditionKey = "key-teacher"
 	DeviceConditionKeyOrganization DeviceConditionKey = "key-organization"
+)
+
+type TimeSort string
+
+const (
+	TimeShortLatest TimeSort = "latest"
+	TimeShortOldest TimeSort = "oldest"
 )
