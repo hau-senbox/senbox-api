@@ -1173,6 +1173,7 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	// Parse atr_value_string
 	attr := parseAtrValueString(req.AtrValueString)
 
+	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
 		UserID:      user.ID.String(),
 		QuestionKey: attr["question_key"],
@@ -1187,9 +1188,21 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
+	// Nếu có ít nhất 1 item thì trả về answer đầu tiên
+	if len(res) > 0 {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.GetSubmissionByConditionResponse{
+				Answer: res[0].Answer,
+			},
+		})
+		return
+	}
+
+	// Nếu không có kết quả
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: nil,
 	})
 }
 

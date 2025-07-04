@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"sen-global-api/internal/domain/entity"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,12 +14,13 @@ type SubmissionRepository struct {
 }
 
 type SubmissionDataItem struct {
-	SubmissionID string `json:"id"`
-	QuestionID   string `json:"question_id" binding:"required"`
-	QuestionKey  string `json:"question_key"`
-	QuestionDB   string `json:"question_db"`
-	Question     string `json:"question" binding:"required"`
-	Answer       string `json:"answer" binding:"required"`
+	SubmissionID string    `json:"id"`
+	QuestionID   string    `json:"question_id" binding:"required"`
+	QuestionKey  string    `json:"question_key"`
+	QuestionDB   string    `json:"question_db"`
+	Question     string    `json:"question" binding:"required"`
+	Answer       string    `json:"answer" binding:"required"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type SubmissionData struct {
@@ -147,10 +149,24 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		}
 
 		for _, item := range data.Items {
-			if item.QuestionKey == param.QuestionKey {
+			if (param.QuestionKey == "" || item.QuestionKey == param.QuestionKey) &&
+				(param.QuestionDB == "" || item.QuestionDB == param.QuestionDB) {
+				item.CreatedAt = submission.CreatedAt
 				result = append(result, item)
 			}
 		}
+	}
+
+	// sort lai mang answers theo time sort enum
+	switch param.TimeSort {
+	case TimeShortOldest:
+		sort.Slice(result, func(i, j int) bool {
+			return result[i].CreatedAt.Before(result[j].CreatedAt)
+		})
+	default:
+		sort.Slice(result, func(i, j int) bool {
+			return result[i].CreatedAt.After(result[j].CreatedAt)
+		})
 	}
 
 	return result, nil
