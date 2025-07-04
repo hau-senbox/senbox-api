@@ -1151,6 +1151,24 @@ func (receiver *DeviceController) ResetCodeCounting(context *gin.Context) {
 	})
 }
 
+type AtrValueString struct {
+	QuestionKey string
+	QuestionDB  string
+	TimeSort    repository.TimeSort
+}
+
+// GetSubmissionByCondition Get Submission By Condition
+// @Summary      Get Submission By Condition
+// @Description  Get Submission By Condition
+// @Tags         Device
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer {token}"
+// @Param  req body request.ResetCodeCountingRequest true "Reset Code Counting Request"
+// @Success 200 {object} response.SucceedResponse
+// @Failure      400  {object}  response.FailedResponse
+// @Failure      500  {object}  response.FailedResponse
+// @Router       /v1/form/get-submission-by-condition [post]
 func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context) {
 	var req request.GetSubmissionByConditionRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -1171,14 +1189,14 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	}
 
 	// Parse atr_value_string
-	attr := parseAtrValueString(req.AtrValueString)
+	attr := ParseAtrValueStringToStruct(req.AtrValueString)
 
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
 		UserID:      user.ID.String(),
-		QuestionKey: attr["question_key"],
-		QuestionDB:  attr["question_db"],
-		TimeSort:    repository.TimeSort(attr["time_sort"]),
+		QuestionKey: attr.QuestionKey,
+		QuestionDB:  attr.QuestionDB,
+		TimeSort:    attr.TimeSort,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1195,16 +1213,28 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 
 }
 
-func parseAtrValueString(s string) map[string]string {
-	result := make(map[string]string)
+func ParseAtrValueStringToStruct(s string) AtrValueString {
+	result := AtrValueString{}
 	pairs := strings.Split(s, ";")
+
 	for _, pair := range pairs {
 		parts := strings.SplitN(pair, ":", 2)
-		if len(parts) == 2 {
-			key := strings.TrimSpace(parts[0])
-			val := strings.TrimSpace(parts[1])
-			result[key] = val
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		switch key {
+		case "question_key":
+			result.QuestionKey = value
+		case "question_db":
+			result.QuestionDB = value
+		case "time_sort":
+			result.TimeSort = repository.TimeSort(value)
 		}
 	}
+
 	return result
 }

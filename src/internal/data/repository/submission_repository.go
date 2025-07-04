@@ -117,7 +117,7 @@ func (receiver *SubmissionRepository) DuplicateSubmissions(params CreateSubmissi
 	return receiver.DBConn.Create(&submission).Error
 }
 
-func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) (SubmissionDataItem, error) {
+func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) (*SubmissionDataItem, error) {
 	var submissions []entity.SSubmission
 
 	query := receiver.DBConn.Where("user_id = ?", param.UserID)
@@ -135,7 +135,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 
 	err := query.Find(&submissions).Error
 	if err != nil {
-		return SubmissionDataItem{}, err
+		return nil, err
 	}
 
 	var result []SubmissionDataItem
@@ -167,8 +167,8 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 	}
 
 	if len(result) == 0 {
-		return SubmissionDataItem{}, nil
+		return nil, nil
 	}
 
-	return result[0], nil
+	return &result[0], nil
 }
