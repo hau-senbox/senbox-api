@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/value"
 	"sort"
 	"time"
 
@@ -32,19 +33,13 @@ type CreateSubmissionParams struct {
 	SubmissionData SubmissionData
 	OpenedAt       time.Time
 }
-type TimeSort string
-
-const (
-	TimeShortLatest TimeSort = "latest"
-	TimeShortOldest TimeSort = "oldest"
-)
 
 type GetSubmissionByConditionParam struct {
 	FormID      uint64
 	UserID      string
 	QuestionKey string
 	QuestionDB  string
-	TimeSort    TimeSort
+	TimeSort    value.TimeSort
 }
 
 func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
@@ -127,7 +122,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 	}
 
 	switch param.TimeSort {
-	case TimeShortOldest:
+	case value.TimeShortOldest:
 		query = query.Order("created_at ASC")
 	default:
 		query = query.Order("created_at DESC")
@@ -156,7 +151,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 	}
 
 	switch param.TimeSort {
-	case TimeShortOldest:
+	case value.TimeShortOldest:
 		sort.Slice(result, func(i, j int) bool {
 			return result[i].CreatedAt.Before(result[j].CreatedAt)
 		})

@@ -3,13 +3,12 @@ package controller
 import (
 	"net/http"
 	"os"
-	"sen-global-api/internal/data/repository"
+	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -1151,12 +1150,6 @@ func (receiver *DeviceController) ResetCodeCounting(context *gin.Context) {
 	})
 }
 
-type AtrValueString struct {
-	QuestionKey string
-	QuestionDB  string
-	TimeSort    repository.TimeSort
-}
-
 // GetSubmissionByCondition Get Submission By Condition
 // @Summary      Get Submission By Condition
 // @Description  Get Submission By Condition
@@ -1189,7 +1182,7 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	}
 
 	// Parse atr_value_string
-	attr := ParseAtrValueStringToStruct(req.AtrValueString)
+	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
@@ -1211,30 +1204,4 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		Data: res,
 	})
 
-}
-
-func ParseAtrValueStringToStruct(s string) AtrValueString {
-	result := AtrValueString{}
-	pairs := strings.Split(s, ";")
-
-	for _, pair := range pairs {
-		parts := strings.SplitN(pair, ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		switch key {
-		case "question_key":
-			result.QuestionKey = value
-		case "question_db":
-			result.QuestionDB = value
-		case "time_sort":
-			result.TimeSort = repository.TimeSort(value)
-		}
-	}
-
-	return result
 }

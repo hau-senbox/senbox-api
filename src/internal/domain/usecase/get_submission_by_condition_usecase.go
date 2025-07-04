@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
 )
@@ -31,11 +32,11 @@ func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUs
 // )
 
 type GetSubmissionByConditionInput struct {
-	FormID      uint64              `json:"form_id"`
-	UserID      string              `json:"user_id"`
-	QuestionKey string              `json:"question_key"`
-	QuestionDB  string              `json:"question_db"`
-	TimeSort    repository.TimeSort `json:"time_sort"` // "latest" (default) or "oldest"
+	FormID      uint64         `json:"form_id"`
+	UserID      string         `json:"user_id"`
+	QuestionKey string         `json:"question_key"`
+	QuestionDB  string         `json:"question_db"`
+	TimeSort    value.TimeSort `json:"time_sort"`
 }
 
 func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (*repository.SubmissionDataItem, error) {
@@ -44,7 +45,7 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 		UserID:      input.UserID,
 		QuestionKey: input.QuestionKey,
 		QuestionDB:  input.QuestionDB,
-		TimeSort:    repository.TimeSort(input.TimeSort),
+		TimeSort:    value.TimeSort(input.TimeSort),
 	}
 
 	item, err := uc.submissionRepository.GetSubmissionByCondition(param)

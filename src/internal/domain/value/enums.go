@@ -1130,3 +1130,10 @@ const (
 	DeviceConditionKeyTeacher      DeviceConditionKey = "key-teacher"
 	DeviceConditionKeyOrganization DeviceConditionKey = "key-organization"
 )
+
+type TimeSort string
+
+const (
+	TimeShortLatest TimeSort = "latest"
+	TimeShortOldest TimeSort = "oldest"
+)
