@@ -450,6 +450,8 @@ func (receiver *QuestionRepository) unmarshalCountQuestion(param CreateQuestionP
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
 		QuestionUniqueID: param.QuestionUniqueID,
+		QuestionKey:      param.QuestionKey,
+		QuestionDB:       param.QuestionDB,
 	}
 
 	return &question, nil
