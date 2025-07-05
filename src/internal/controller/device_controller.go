@@ -1172,21 +1172,21 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	user, err := receiver.GetUserFromToken(context)
-	if err != nil {
-		context.JSON(http.StatusForbidden, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: err.Error(),
-		})
-		return
-	}
+	// user, err := receiver.GetUserFromToken(context)
+	// if err != nil {
+	// 	context.JSON(http.StatusForbidden, response.FailedResponse{
+	// 		Code:  http.StatusForbidden,
+	// 		Error: err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	// Parse atr_value_string
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		UserID:      user.ID.String(),
+		UserID:      attr.UserID,
 		QuestionKey: attr.QuestionKey,
 		QuestionDB:  attr.QuestionDB,
 		TimeSort:    attr.TimeSort,
