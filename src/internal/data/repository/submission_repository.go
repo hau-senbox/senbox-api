@@ -39,9 +39,10 @@ type CreateSubmissionParams struct {
 type GetSubmissionByConditionParam struct {
 	FormID      uint64
 	UserID      string
-	QuestionKey string
-	QuestionDB  string
+	QuestionKey *string
+	QuestionDB  *string
 	TimeSort    value.TimeSort
+	Duration    *value.TimeRange
 }
 
 func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
@@ -148,7 +149,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		for _, item := range data.Items {
 			item.SubmissionID = submission.ID
 			// Ưu tiên lọc theo QuestionKey nếu có
-			if param.QuestionKey != "" && item.QuestionKey == param.QuestionKey {
+			if param.QuestionKey != nil && item.QuestionKey == *param.QuestionKey {
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -157,7 +158,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 			}
 
 			// Nếu có truyền thêm QuestionDB, vẫn lọc, nhưng không thêm trùng
-			if param.QuestionDB != "" && item.QuestionDB == param.QuestionDB {
+			if param.QuestionDB != nil && item.QuestionDB == *param.QuestionDB {
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -193,6 +194,10 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 		query = query.Where("form_id = ?", param.FormID)
 	}
 
+	if param.Duration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.Duration.Start, param.Duration.End)
+	}
+
 	err := query.Find(&submissions).Error
 	if err != nil {
 		return nil, err
@@ -212,9 +217,9 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 			item.SubmissionID = submission.ID
 
 			matched := false
-			if param.QuestionKey != "" && item.QuestionKey == param.QuestionKey {
+			if param.QuestionKey != nil && item.QuestionKey == *param.QuestionKey {
 				matched = true
-			} else if param.QuestionDB != "" && item.QuestionDB == param.QuestionDB {
+			} else if param.QuestionDB != nil && item.QuestionDB == *param.QuestionDB {
 				matched = true
 			}
 
