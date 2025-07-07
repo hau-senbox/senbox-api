@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"strings"
+	"time"
 )
 
 func Slugify(s string) string {
@@ -44,15 +45,33 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 
 		switch key {
 		case "question_key":
-			result.QuestionKey = valueStr
+			result.QuestionKey = &valueStr
 		case "question_db":
-			result.QuestionDB = valueStr
+			result.QuestionDB = &valueStr
 		case "time_sort":
 			result.TimeSort = value.TimeSort(valueStr)
 		case "user_id":
 			result.UserID = valueStr
+		case "duration":
+			dates := strings.Split(valueStr, ",")
+			if len(dates) == 2 {
+				start, err1 := parseDate(dates[0])
+				end, err2 := parseDate(dates[1])
+				if err1 == nil && err2 == nil {
+					result.Duration = &value.TimeRange{
+						Start: start,
+						End:   end,
+					}
+				}
+			}
 		}
+
 	}
 
 	return result
+}
+
+func parseDate(s string) (time.Time, error) {
+	// "2/3/2025-00:00" → layout: "2/1/2006-15:04"
+	return time.Parse("2/1/2006-15:04", strings.TrimSpace(s))
 }

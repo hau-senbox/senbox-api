@@ -1251,14 +1251,15 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
 	// check question key, question db NR
-	if !strings.Contains(attr.QuestionKey, "NR") {
+	if attr.QuestionKey != nil && !strings.Contains(*attr.QuestionKey, "NR") {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "Invalid request condition: the question key must contain NR!",
 		})
 		return
 	}
-	if !strings.Contains(attr.QuestionDB, "NR") {
+
+	if attr.QuestionDB != nil && !strings.Contains(*attr.QuestionDB, "NR") {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "Invalid request condition: the question db must contain NR!",
@@ -1266,12 +1267,15 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 		return
 	}
 
+	//check duration format
+
 	// Gọi use case trả về tổng
 	res, err := receiver.GetTotalNrSubmissionByConditionUseCase.Execute(usecase.GetTotalNrSubmissionByConditionInput{
 		UserID:      attr.UserID,
 		QuestionKey: attr.QuestionKey,
 		QuestionDB:  attr.QuestionDB,
 		TimeSort:    attr.TimeSort,
+		Duration:    attr.Duration,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
