@@ -103,11 +103,12 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 				DB:                     dbConn,
 			},
 		},
-		GetRecentSubmissionByFormIDUseCase: usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
-		GetSubmissionByConditionUseCase:    usecase.NewGetSubmissionByConditionUseCase(dbConn),
-		RegisterFcmDeviceUseCase:           usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
-		SendNotificationUseCase:            usecase.NewSendNotificationUseCase(dbConn, fcm),
-		ResetCodeCountingUseCase:           usecase.NewResetCodeCountingUseCase(dbConn),
+		GetRecentSubmissionByFormIDUseCase:     usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
+		GetSubmissionByConditionUseCase:        usecase.NewGetSubmissionByConditionUseCase(dbConn),
+		GetTotalNrSubmissionByConditionUseCase: usecase.NewGetTotalNrSubmissionByConditionUseCase(dbConn),
+		RegisterFcmDeviceUseCase:               usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
+		SendNotificationUseCase:                usecase.NewSendNotificationUseCase(dbConn, fcm),
+		ResetCodeCountingUseCase:               usecase.NewResetCodeCountingUseCase(dbConn),
 		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
 			UserEntityRepository: userEntityRepository,
 			SessionRepository:    sessionRepository,
@@ -199,6 +200,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		form.POST("/submit", deviceController.SubmitForm)
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
 		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
+		form.POST("/get-total-nr-submission-by-condition", deviceController.GetTotalNrSubmissionByCondition)
 	}
 
 	redirectUrl := engine.Group("v1/redirect-url")

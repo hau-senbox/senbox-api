@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -39,6 +40,7 @@ type DeviceController struct {
 	*usecase.GetUserDeviceUseCase
 	*usecase.OrgDeviceRegistrationUseCase
 	*usecase.GetSubmissionByConditionUseCase
+	*usecase.GetTotalNrSubmissionByConditionUseCase
 	*usecase.GetUserEntityUseCase
 }
 
@@ -1221,4 +1223,66 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		Data: res,
 	})
 
+}
+
+// GetTotalNrSubmissionByCondition Get Total Number Submission By Condition
+// @Summary      Get Total Submission Number
+// @Description  Get Total Submission By Condition
+// @Tags         Device
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "Bearer {token}"
+// @Param        req body request.GetSubmissionByConditionRequest true "Get Submission Total Request"
+// @Success      200 {object} response.SucceedResponse{data=response.GetSubmissionTotalNrResponse}
+// @Failure      400 {object} response.FailedResponse
+// @Failure      500 {object} response.FailedResponse
+// @Router       /v1/form/get-submission-total [post]
+func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.Context) {
+	var req request.GetSubmissionByConditionRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Parse atr_value_string
+	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
+
+	// check question key, question db NR
+	if !strings.Contains(attr.QuestionKey, "NR") {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request condition: the question key must contain NR!",
+		})
+		return
+	}
+	if !strings.Contains(attr.QuestionDB, "NR") {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request condition: the question db must contain NR!",
+		})
+		return
+	}
+
+	// Gọi use case trả về tổng
+	res, err := receiver.GetTotalNrSubmissionByConditionUseCase.Execute(usecase.GetTotalNrSubmissionByConditionInput{
+		UserID:      attr.UserID,
+		QuestionKey: attr.QuestionKey,
+		QuestionDB:  attr.QuestionDB,
+		TimeSort:    attr.TimeSort,
+	})
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
 }
