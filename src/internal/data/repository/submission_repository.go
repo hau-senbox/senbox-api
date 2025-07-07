@@ -3,8 +3,10 @@ package repository
 import (
 	"encoding/json"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"sort"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -181,4 +183,55 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 	}
 
 	return &result[0], nil
+}
+
+func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetSubmissionByConditionParam) (*response.GetSubmissionTotalNrResponse, error) {
+	var submissions []entity.SSubmission
+
+	query := receiver.DBConn.Where("user_id = ?", param.UserID)
+	if param.FormID != 0 {
+		query = query.Where("form_id = ?", param.FormID)
+	}
+
+	err := query.Find(&submissions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var total float64 = 0
+
+	for _, submission := range submissions {
+		var data SubmissionData
+		if err := json.Unmarshal(submission.SubmissionData, &data); err != nil {
+			continue
+		}
+
+		seen := make(map[uint64]bool)
+
+		for _, item := range data.Items {
+			item.SubmissionID = submission.ID
+
+			matched := false
+			if param.QuestionKey != "" && item.QuestionKey == param.QuestionKey {
+				matched = true
+			} else if param.QuestionDB != "" && item.QuestionDB == param.QuestionDB {
+				matched = true
+			}
+
+			if matched && !seen[item.SubmissionID] {
+				// Parse answer sang số
+				value, err := strconv.ParseFloat(item.Answer, 64)
+				if err != nil {
+					continue // bỏ qua nếu không phải số
+				}
+
+				total += value
+				seen[item.SubmissionID] = true
+			}
+		}
+	}
+
+	return &response.GetSubmissionTotalNrResponse{
+		Total: strconv.FormatFloat(total, 'f', -1, 64),
+	}, nil
 }

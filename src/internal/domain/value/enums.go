@@ -112,6 +112,8 @@ const (
 	OrganizationName
 	ApplicationContent
 	WaterCup
+
+	OutNrTotal
 )
 
 type DeviceStatus int
@@ -392,6 +394,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "application_content"
 	case WaterCup:
 		return "water_cup"
+	case OutNrTotal:
+		return "out_nr_total"
 	}
 
 	return ""
@@ -554,6 +558,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "application_content"
 	case WaterCup:
 		return "water_cup"
+	case OutNrTotal:
+		return "out_nr_total"
 
 	default:
 		return ""
@@ -762,6 +768,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return ApplicationContent, nil
 	case "water_cup":
 		return WaterCup, nil
+	case "out_nr_total":
+		return OutNrTotal, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -851,7 +859,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 
 		OrganizationName,
 		ApplicationContent,
-		WaterCup:
+		WaterCup,
+		OutNrTotal:
 		return true
 	default:
 		return false
