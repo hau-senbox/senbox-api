@@ -76,6 +76,21 @@ func (receiver *MenuRepository) GetDeviceMenu(deviceID string) ([]menu.DeviceMen
 	return menus, nil
 }
 
+func (receiver *MenuRepository) GetDeviceMenuByOrg(organizationID string) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Preload("Component").
+		Where("organization_id = ?", organizationID).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
+
 func (receiver *MenuRepository) CreateSuperAdminMenu(req request.CreateSuperAdminMenuRequest, tx *gorm.DB) error {
 	var menus []menu.SuperAdminMenu
 	for _, component := range req.Components {

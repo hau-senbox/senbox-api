@@ -80,13 +80,25 @@ func (receiver *DeviceRepository) GetDeviceList(request request.GetListDeviceReq
 
 func (receiver *DeviceRepository) GetDeviceListByUserID(userID string) ([]entity.SDevice, error) {
 	var devices []entity.SDevice
-	err := receiver.DBConn.Exec("SELECT * FROM s_device WHERE id IN (SELECT device_id FROM s_user_devices WHERE user_id = ?)", userID).Find(&devices).Error
+	err := receiver.DBConn.Raw(`
+    SELECT * FROM s_device 
+    WHERE id IN (
+        SELECT device_id 
+        FROM s_org_devices 
+        WHERE user_id = ?
+    )`, userID).Scan(&devices).Error
 	return devices, err
 }
 
 func (receiver *DeviceRepository) GetDeviceListByOrgID(orgID string) ([]entity.SDevice, error) {
 	var devices []entity.SDevice
-	err := receiver.DBConn.Exec("SELECT * FROM s_device WHERE id IN (SELECT device_id FROM s_org_devices WHERE organization_id = ?)", orgID).Find(&devices).Error
+	err := receiver.DBConn.Raw(`
+    SELECT * FROM s_device 
+    WHERE id IN (
+        SELECT device_id 
+        FROM s_org_devices 
+        WHERE organization_id = ?
+    )`, orgID).Scan(&devices).Error
 	return devices, err
 }
 
