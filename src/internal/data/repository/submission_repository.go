@@ -15,7 +15,7 @@ type SubmissionRepository struct {
 }
 
 type SubmissionDataItem struct {
-	SubmissionID string    `json:"id"`
+	SubmissionID uint64    `json:"id"`
 	QuestionID   string    `json:"question_id" binding:"required"`
 	QuestionKey  string    `json:"question_key"`
 	QuestionDB   string    `json:"question_db"`
@@ -141,11 +141,26 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 			continue
 		}
 
+		seen := make(map[uint64]bool)
+
 		for _, item := range data.Items {
-			if (item.QuestionKey == param.QuestionKey) &&
-				(item.QuestionDB == param.QuestionDB) {
-				item.CreatedAt = submission.CreatedAt
-				result = append(result, item)
+			item.SubmissionID = submission.ID
+			// Ưu tiên lọc theo QuestionKey nếu có
+			if param.QuestionKey != "" && item.QuestionKey == param.QuestionKey {
+				if !seen[item.SubmissionID] {
+					item.CreatedAt = submission.CreatedAt
+					result = append(result, item)
+					seen[item.SubmissionID] = true
+				}
+			}
+
+			// Nếu có truyền thêm QuestionDB, vẫn lọc, nhưng không thêm trùng
+			if param.QuestionDB != "" && item.QuestionDB == param.QuestionDB {
+				if !seen[item.SubmissionID] {
+					item.CreatedAt = submission.CreatedAt
+					result = append(result, item)
+					seen[item.SubmissionID] = true
+				}
 			}
 		}
 	}
