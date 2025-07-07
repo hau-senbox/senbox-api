@@ -3,6 +3,7 @@ package value
 import (
 	"errors"
 	"strings"
+	"time"
 )
 
 type QuestionType int
@@ -1146,3 +1147,8 @@ const (
 	TimeShortLatest TimeSort = "latest"
 	TimeShortOldest TimeSort = "oldest"
 )
+
+type TimeRange struct {
+	Start time.Time
+	End   time.Time
+}

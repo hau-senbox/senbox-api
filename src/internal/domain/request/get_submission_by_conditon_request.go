@@ -8,7 +8,8 @@ type GetSubmissionByConditionRequest struct {
 
 type AtrValueString struct {
 	UserID      string
-	QuestionKey string
-	QuestionDB  string
+	QuestionKey *string
+	QuestionDB  *string
 	TimeSort    value.TimeSort
+	Duration    *value.TimeRange
 }

@@ -34,8 +34,8 @@ func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUs
 type GetSubmissionByConditionInput struct {
 	FormID      uint64         `json:"form_id"`
 	UserID      string         `json:"user_id"`
-	QuestionKey string         `json:"question_key"`
-	QuestionDB  string         `json:"question_db"`
+	QuestionKey *string        `json:"question_key"`
+	QuestionDB  *string        `json:"question_db"`
 	TimeSort    value.TimeSort `json:"time_sort"`
 }
 
