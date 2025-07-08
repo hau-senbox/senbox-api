@@ -132,7 +132,7 @@ func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.Ra
 		value.QuestionDateTime,
 		value.QuestionDurationForward,
 		value.QuestionQRCode,
-		value.QuestionText,
+		value.QuestionInText,
 		value.QuestionCount,
 		value.QuestionNumber:
 		return "{}", nil
