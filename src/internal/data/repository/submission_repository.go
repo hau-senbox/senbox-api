@@ -2,9 +2,11 @@ package repository
 
 import (
 	"encoding/json"
+	"fmt"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+
 	"sort"
 	"strconv"
 	"time"
@@ -29,6 +31,7 @@ type SubmissionDataItem struct {
 type SubmissionData struct {
 	Items []SubmissionDataItem `json:"items" binding:"required"`
 }
+
 type CreateSubmissionParams struct {
 	FormID         uint64
 	UserID         string
@@ -43,6 +46,11 @@ type GetSubmissionByConditionParam struct {
 	QuestionDB  *string
 	TimeSort    value.TimeSort
 	Duration    *value.TimeRange
+}
+
+type GetSubmissionChildProfileParam struct {
+	FormID uint64
+	UserId string
 }
 
 func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
@@ -239,4 +247,65 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 	return &response.GetSubmissionTotalNrResponse{
 		Total: strconv.FormatFloat(total, 'f', -1, 64),
 	}, nil
+}
+
+func (receiver *SubmissionRepository) GetSubmissionChildProfile(param GetSubmissionChildProfileParam) ([]SubmissionDataItem, error) {
+	var submission entity.SSubmission
+
+	err := receiver.DBConn.
+		Where("user_id = ?", param.UserId).
+		Where("form_id = ?", param.FormID).
+		Order("created_at DESC").
+		First(&submission).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse JSON
+	var data SubmissionData
+	if err := json.Unmarshal(submission.SubmissionData, &data); err != nil {
+		return nil, fmt.Errorf("failed to parse submission data: %v", err)
+	}
+
+	// Gắn SubmissionID và CreatedAt
+	for i := range data.Items {
+		data.Items[i].SubmissionID = submission.ID
+		data.Items[i].CreatedAt = submission.CreatedAt
+	}
+
+	// Lấy toàn bộ câu hỏi trong form
+
+	// questions, err := receiver.GetQuestionsByFormID(param.FormID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to get questions: %v", err)
+	// }
+
+	// // Tạo map các question đã có trong submission (để dễ so sánh)
+	// existingMap := make(map[string]bool)
+	// for _, item := range data.Items {
+	// 	existingMap[item.QuestionID] = true
+	// }
+
+	// // Thêm các câu hỏi chưa có trong SubmissionData
+	// for _, q := range questions {
+	// 	if _, exists := existingMap[q.ID]; !exists {
+	// 		data.Items = append(data.Items, SubmissionDataItem{
+	// 			SubmissionID: submission.ID,
+	// 			QuestionID:   q.ID,
+	// 			QuestionKey:  q.QuestionKey,
+	// 			QuestionDB:   q.QuestionDB,
+	// 			Question:     q.Question,
+	// 			Answer:       "",
+	// 			CreatedAt:    submission.CreatedAt,
+	// 		})
+	// 	}
+	// }
+
+	// // Tuỳ ý: Sắp xếp theo QuestionKey nếu cần
+	// sort.Slice(data.Items, func(i, j int) bool {
+	// 	return data.Items[i].QuestionKey < data.Items[j].QuestionKey
+	// })
+
+	return data.Items, nil
 }
