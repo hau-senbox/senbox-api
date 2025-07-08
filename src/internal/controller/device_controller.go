@@ -4,11 +4,13 @@ import (
 	"net/http"
 	"os"
 	"sen-global-api/helper"
+	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -42,6 +44,7 @@ type DeviceController struct {
 	*usecase.GetSubmissionByConditionUseCase
 	*usecase.GetTotalNrSubmissionByConditionUseCase
 	*usecase.GetUserEntityUseCase
+	*usecase.GetSubmissionChildProfileUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1286,6 +1289,58 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+// GetSubmissionChildProfile get the latest submission for a form and user
+// @Summary      Get Child Submission Profile
+// @Description  Get the latest submission profile for a given form and user
+// @Tags         Form
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "Bearer {token}"
+// @Param        id path int true "Form ID"
+// @Success      200 {object} response.SucceedResponse{data=[]response.SubmissionDataItem}
+// @Failure      400 {object} response.FailedResponse
+// @Failure      500 {object} response.FailedResponse
+// @Router       /v1/form/get-submission-child-profile/{id} [get]
+func (receiver *DeviceController) GetSubmissionChildProfile(c *gin.Context) {
+	// Lấy form ID từ path
+	formIDParam := c.Param("id")
+	formID, err := strconv.ParseUint(formIDParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid form ID",
+		})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized: user_id not found",
+		})
+		return
+	}
+
+	// Gọi use case hoặc repository
+	res, err := receiver.GetSubmissionChildProfileUseCase.Execute(repository.GetSubmissionChildProfileParam{
+		FormID: formID,
+		UserId: userID.(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: res,
 	})
