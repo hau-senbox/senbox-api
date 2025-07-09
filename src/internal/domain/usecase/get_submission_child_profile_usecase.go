@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -94,5 +95,14 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 		}
 	}
 
-	return items, nil
+	// loc key, db == ""
+	filteredItems := make([]repository.SubmissionDataItem, 0, len(items))
+	for _, item := range items {
+		if strings.TrimSpace(item.QuestionKey) == "" && strings.TrimSpace(item.QuestionDB) == "" {
+			continue
+		}
+		filteredItems = append(filteredItems, item)
+	}
+
+	return filteredItems, nil
 }
