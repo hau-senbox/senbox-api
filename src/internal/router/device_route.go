@@ -202,7 +202,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
 		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
 		form.POST("/get-total-nr-submission-by-condition", deviceController.GetTotalNrSubmissionByCondition)
-		form.GET("/get-submission-child-profile/:id", deviceController.GetSubmissionChildProfile)
+		form.GET("/get-memory-form/:id", deviceController.GetSubmissionChildProfile)
 		// form.GET("/submission/get-for-memories", deviceController.GetSubmissionChildProfile)
 	}
 
