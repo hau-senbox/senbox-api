@@ -1194,24 +1194,26 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	// user, err := receiver.GetUserFromToken(context)
-	// if err != nil {
-	// 	context.JSON(http.StatusForbidden, response.FailedResponse{
-	// 		Code:  http.StatusForbidden,
-	// 		Error: err.Error(),
-	// 	})
-	// 	return
-	// }
+	userIDRaw, exists := context.Get("user_id")
+	if !exists {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized: user_id not found",
+		})
+		return
+	}
+	userID := userIDRaw.(string)
 
 	// Parse atr_value_string
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		UserID:      attr.UserID,
+		UserID:      userID,
 		QuestionKey: attr.QuestionKey,
 		QuestionDB:  attr.QuestionDB,
 		TimeSort:    attr.TimeSort,
+		Quantity:    attr.Quantity,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1345,3 +1347,23 @@ func (receiver *DeviceController) GetSubmissionChildProfile(c *gin.Context) {
 		Data: res,
 	})
 }
+
+// func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
+// 	var req request.GetSubmission4MemmoriesRequest
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Code:  http.StatusBadRequest,
+// 			Error: err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	userID, exists := c.Get("user_id")
+// 	if !exists {
+// 		c.JSON(http.StatusUnauthorized, response.FailedResponse{
+// 			Code:  http.StatusUnauthorized,
+// 			Error: "Unauthorized: user_id not found",
+// 		})
+// 		return
+// 	}
+// }

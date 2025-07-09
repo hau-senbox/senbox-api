@@ -12,4 +12,5 @@ type AtrValueString struct {
 	QuestionDB  *string
 	TimeSort    value.TimeSort
 	Duration    *value.TimeRange
+	Quantity    int
 }

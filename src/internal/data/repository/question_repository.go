@@ -185,6 +185,8 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 		return receiver.unmarshalDocumentQuestion(param)
 	case value.QuestionQRCodeGenerator:
 		return receiver.unmarshalQRCodeGeneratorQuestion(param)
+	case value.MemoryText:
+		return receiver.unmarshalMemoryTextQuestion(param)
 	default:
 		return receiver.unmarshalUserQuestion(param)
 	}
@@ -1111,6 +1113,26 @@ func (receiver *QuestionRepository) unmarshalQRCodeGeneratorQuestion(param Creat
 		Attributes:     datatypes.JSON(param.Attributes),
 		Status:         status,
 		EnableOnMobile: param.EnableOnMobile,
+	}
+
+	return &question, nil
+}
+
+func (receiver *QuestionRepository) unmarshalMemoryTextQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
+	status, err := value.GetStatusFromString(param.Status)
+	if err != nil {
+		return nil, err
+	}
+	var question = entity.SQuestion{
+		ID:               uuid.MustParse(param.ID),
+		Question:         param.Question,
+		QuestionType:     param.QuestionType,
+		Attributes:       datatypes.JSON(param.Attributes),
+		Status:           status,
+		EnableOnMobile:   param.EnableOnMobile,
+		QuestionUniqueID: param.QuestionUniqueID,
+		QuestionKey:      param.QuestionKey,
+		QuestionDB:       param.QuestionDB,
 	}
 
 	return &question, nil
