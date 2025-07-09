@@ -113,6 +113,7 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 			QuestionListData: result,
 			DecryptPassword:  form.Password,
 			FormName:         form.Name,
+			FormId:           form.ID,
 		},
 	}, nil
 }

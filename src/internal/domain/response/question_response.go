@@ -28,11 +28,11 @@ type QuestionListResponseData struct {
 	QuestionListData []QuestionListData `json:"questions" binding:"required"`
 	DecryptPassword  string             `json:"decrypt_password"`
 	FormName         string             `json:"form_name" binding:"required"`
+	FormId           uint64             `json:"form_id"`
 }
 
 type QuestionListResponse struct {
-	Data   QuestionListResponseData `json:"data"`
-	FormId uint64                   `json:"form_id"`
+	Data QuestionListResponseData `json:"data"`
 }
 
 type AllQuestionsResponseData struct {

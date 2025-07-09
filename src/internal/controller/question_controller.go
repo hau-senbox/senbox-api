@@ -59,7 +59,6 @@ func (receiver *QuestionController) GetFormQRCode(context *gin.Context) {
 	}
 
 	succeedRes, failedRes := receiver.GetQuestionByFormUseCase.GetQuestionByForm(*form)
-	succeedRes.FormId = form.ID
 	if failedRes != nil {
 		context.JSON(http.StatusBadRequest, failedRes)
 		return
