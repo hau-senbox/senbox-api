@@ -37,21 +37,23 @@ type GetSubmissionByConditionInput struct {
 	QuestionKey *string        `json:"question_key"`
 	QuestionDB  *string        `json:"question_db"`
 	TimeSort    value.TimeSort `json:"time_sort"`
+	Quantity    int            `json:"quantity"`
 }
 
-func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (*repository.SubmissionDataItem, error) {
+func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (*[]repository.SubmissionDataItem, error) {
 	param := repository.GetSubmissionByConditionParam{
 		FormID:      input.FormID,
 		UserID:      input.UserID,
 		QuestionKey: input.QuestionKey,
 		QuestionDB:  input.QuestionDB,
 		TimeSort:    value.TimeSort(input.TimeSort),
+		Quantity:    input.Quantity,
 	}
 
-	item, err := uc.submissionRepository.GetSubmissionByCondition(param)
+	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
 	if err != nil {
 		return nil, err
 	}
 
-	return item, nil
+	return items, nil
 }

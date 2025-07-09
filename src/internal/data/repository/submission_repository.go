@@ -46,6 +46,7 @@ type GetSubmissionByConditionParam struct {
 	QuestionDB  *string
 	TimeSort    value.TimeSort
 	Duration    *value.TimeRange
+	Quantity    int
 }
 
 type GetSubmissionChildProfileParam struct {
@@ -123,7 +124,7 @@ func (receiver *SubmissionRepository) DuplicateSubmissions(params CreateSubmissi
 	return receiver.DBConn.Create(&submission).Error
 }
 
-func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) (*SubmissionDataItem, error) {
+func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissionByConditionParam) (*[]SubmissionDataItem, error) {
 	var submissions []entity.SSubmission
 
 	query := receiver.DBConn.Where("user_id = ?", param.UserID)
@@ -191,7 +192,19 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		return nil, nil
 	}
 
-	return &result[0], nil
+	//neu khong co quantiy retrun all
+	if param.Quantity == 0 {
+		return &result, nil
+	}
+	// Giới hạn số lượng kết quả trả về theo Quantity
+	limit := param.Quantity
+	if limit <= 0 || limit > len(result) {
+		limit = len(result)
+	}
+
+	trimmed := result[:limit]
+	return &trimmed, nil
+
 }
 
 func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetSubmissionByConditionParam) (*response.GetSubmissionTotalNrResponse, error) {
