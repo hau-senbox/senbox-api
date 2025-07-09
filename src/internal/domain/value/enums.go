@@ -115,6 +115,7 @@ const (
 	WaterCup
 
 	OutNrTotal
+	MemoryText
 )
 
 type DeviceStatus int
@@ -397,6 +398,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "water_cup"
 	case OutNrTotal:
 		return "out_nr_total"
+	case MemoryText:
+		return "memory_text"
 	}
 
 	return ""
@@ -561,7 +564,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "water_cup"
 	case OutNrTotal:
 		return "out_nr_total"
-
+	case MemoryText:
+		return "memory_text"
 	default:
 		return ""
 	}
@@ -771,6 +775,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return WaterCup, nil
 	case "out_nr_total":
 		return OutNrTotal, nil
+	case "memory_text":
+		return MemoryText, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -861,7 +867,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OrganizationName,
 		ApplicationContent,
 		WaterCup,
-		OutNrTotal:
+		OutNrTotal,
+		MemoryText:
 		return true
 	default:
 		return false
