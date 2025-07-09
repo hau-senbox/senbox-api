@@ -50,7 +50,7 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 			continue
 		}
 
-		if question.QuestionKey == "" && question.QuestionDB == "" {
+		if question.Key == "" && question.DB == "" {
 			continue
 		}
 		q := response.QuestionListData{
@@ -62,8 +62,8 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 			AnswerRequired: question.AnswerRequired,
 			AnswerRemember: question.AnswerRemember,
 			Enabled:        question.EnableOnMobile == value.QuestionForMobile_Enabled,
-			QuestionKey:    question.QuestionKey,
-			QuestionDB:     question.QuestionDB,
+			Key:            question.Key,
+			DB:             question.DB,
 		}
 
 		rawQuestions = append(rawQuestions, q)
@@ -77,17 +77,17 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 	// Tạo map để tra cứu item theo QuestionID
 	existingMap := make(map[string]bool)
 	for _, item := range items {
-		existingMap[item.QuestionKey] = true
+		existingMap[item.Key] = true
 	}
 
 	// Thêm các câu hỏi chưa có trong submission (tức là chưa trả lời)
 	for _, q := range rawQuestions {
-		if !existingMap[q.QuestionKey] {
+		if !existingMap[q.Key] {
 			items = append(items, repository.SubmissionDataItem{
 				SubmissionID: 0,
 				QuestionID:   q.QuestionID,
-				QuestionKey:  q.QuestionKey,
-				QuestionDB:   q.QuestionDB,
+				Key:          q.Key,
+				DB:           q.DB,
 				Question:     q.Question,
 				Answer:       "",
 			})

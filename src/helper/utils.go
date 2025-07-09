@@ -45,10 +45,10 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 		valueStr := strings.TrimSpace(parts[1])
 
 		switch key {
-		case "question_key":
-			result.QuestionKey = &valueStr
-		case "question_db":
-			result.QuestionDB = &valueStr
+		case "key":
+			result.Key = &valueStr
+		case "db":
+			result.DB = &valueStr
 		case "time_sort":
 			result.TimeSort = value.TimeSort(valueStr)
 		case "user_id":

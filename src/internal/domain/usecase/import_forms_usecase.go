@@ -538,8 +538,8 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 				Status:            "1",
 				RowNumber:         index + 1,
 				EnableOnMobile:    enabled,
-				QuestionKey:       row[1].(string),
-				QuestionDB:        row[2].(string),
+				Key:               row[1].(string),
+				DB:                row[2].(string),
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
@@ -631,8 +631,8 @@ func (receiver *ImportFormsUseCase) saveQuestions(rawQuestions []parameters.RawQ
 			Set:              rawQuestion.Attributes,
 			EnableOnMobile:   rawQuestion.EnableOnMobile,
 			QuestionUniqueID: rawQuestion.QuestionUniqueID,
-			QuestionKey:      rawQuestion.QuestionKey,
-			QuestionDB:       rawQuestion.QuestionDB,
+			Key:              rawQuestion.Key,
+			DB:               rawQuestion.DB,
 		}
 		params = append(params, param)
 	}
