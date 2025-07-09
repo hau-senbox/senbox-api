@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -64,6 +65,13 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 					}
 				}
 			}
+		case "quantity":
+			qty, err := strconv.Atoi(valueStr)
+			if err == nil {
+				result.Quantity = qty
+			} else {
+				result.Quantity = 1 // fallback nếu lỗi parse
+			}
 		}
 
 	}
@@ -74,4 +82,24 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 func parseDate(s string) (time.Time, error) {
 	// "2/3/2025-00:00" → layout: "2/1/2006-15:04"
 	return time.Parse("2/1/2006-15:04", strings.TrimSpace(s))
+}
+
+func ParseAtrValueListStringToStructs(s string, userID string) []request.AtrValueString {
+	// Làm sạch chuỗi: remove đầu/cuối []
+	s = strings.TrimPrefix(s, "['")
+	s = strings.TrimSuffix(s, "']")
+	items := strings.Split(s, "','")
+
+	var results []request.AtrValueString
+
+	for _, item := range items {
+		parsed := ParseAtrValueStringToStruct(item)
+		parsed.UserID = userID // inject userID từ context
+		if parsed.Quantity == 0 {
+			parsed.Quantity = 1 // fallback nếu không có hoặc lỗi
+		}
+		results = append(results, parsed)
+	}
+
+	return results
 }
