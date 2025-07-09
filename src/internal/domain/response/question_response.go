@@ -31,7 +31,8 @@ type QuestionListResponseData struct {
 }
 
 type QuestionListResponse struct {
-	Data QuestionListResponseData `json:"data"`
+	Data   QuestionListResponseData `json:"data"`
+	FormId uint64                   `json:"form_id"`
 }
 
 type AllQuestionsResponseData struct {
