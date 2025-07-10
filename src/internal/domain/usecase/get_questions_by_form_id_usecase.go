@@ -53,8 +53,8 @@ func (receiver *GetQuestionsByFormUseCase) GetQuestionByForm(form entity.SForm) 
 			AnswerRequired: question.AnswerRequired,
 			AnswerRemember: question.AnswerRemember,
 			Enabled:        question.EnableOnMobile == value.QuestionForMobile_Enabled,
-			QuestionKey:    question.QuestionKey,
-			QuestionDB:     question.QuestionDB,
+			Key:            question.Key,
+			DB:             question.DB,
 		}
 
 		rawQuestions = append(rawQuestions, q)

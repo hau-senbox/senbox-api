@@ -20,6 +20,6 @@ type FormQuestionItem struct {
 	QuestionUniqueID *string                 `gorm:"type:varchar(255);default:null"`
 	CreatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt        time.Time               `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	QuestionKey      string                  `gorm:"type:varchar(255);not null;default:''"`
-	QuestionDB       string                  `gorm:"type:varchar(255);not null;default:''"`
+	Key              string                  `gorm:"type:varchar(255);not null;default:''"`
+	DB               string                  `gorm:"type:varchar(255);not null;default:''"`
 }

@@ -51,7 +51,7 @@ func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmiss
 			continue
 		}
 
-		if question.QuestionKey == "" && question.QuestionDB == "" {
+		if question.Key == "" && question.DB == "" {
 			continue
 		}
 		q := response.QuestionListData{
@@ -63,8 +63,8 @@ func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmiss
 			AnswerRequired: question.AnswerRequired,
 			AnswerRemember: question.AnswerRemember,
 			Enabled:        question.EnableOnMobile == value.QuestionForMobile_Enabled,
-			QuestionKey:    question.QuestionKey,
-			QuestionDB:     question.QuestionDB,
+			Key:            question.Key,
+			DB:             question.DB,
 		}
 
 		rawQuestions = append(rawQuestions, q)
@@ -78,17 +78,17 @@ func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmiss
 	// Tạo map để tra cứu item theo QuestionID
 	existingMap := make(map[string]bool)
 	for _, item := range items {
-		existingMap[item.QuestionKey] = true
+		existingMap[item.DB] = true
 	}
 
 	// Thêm các câu hỏi chưa có trong submission (tức là chưa trả lời)
 	for _, q := range rawQuestions {
-		if !existingMap[q.QuestionKey] {
+		if !existingMap[q.DB] {
 			items = append(items, repository.SubmissionDataItem{
 				SubmissionID: 0,
 				QuestionID:   q.QuestionID,
-				QuestionKey:  q.QuestionKey,
-				QuestionDB:   q.QuestionDB,
+				Key:          q.Key,
+				DB:           q.DB,
 				Question:     q.Question,
 				Answer:       "",
 			})
@@ -98,7 +98,7 @@ func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmiss
 	// loc key, db == ""
 	filteredItems := make([]repository.SubmissionDataItem, 0, len(items))
 	for _, item := range items {
-		if strings.TrimSpace(item.QuestionKey) == "" && strings.TrimSpace(item.QuestionDB) == "" {
+		if strings.TrimSpace(item.Key) == "" && strings.TrimSpace(item.DB) == "" {
 			continue
 		}
 		filteredItems = append(filteredItems, item)
