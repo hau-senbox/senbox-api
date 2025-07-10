@@ -77,6 +77,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			SubmissionRepository:   &repository.SubmissionRepository{DBConn: dbConn},
 			SettingRepository:      &repository.SettingRepository{DBConn: dbConn},
 			FormQuestionRepository: &repository.FormQuestionRepository{DBConn: dbConn},
+			AnswerRepository:       &repository.AnswerRepository{DBConn: dbConn},
 			DeviceRepository:       deviceRepository,
 			UserEntityRepository:   &userEntityRepository,
 			CodeCountingRepository: repository.NewCodeCountingRepository(),

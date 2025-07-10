@@ -48,7 +48,7 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 			result.Key = &valueStr
 		case "db":
 			result.DB = &valueStr
-		case "time_sort":
+		case "sort":
 			result.TimeSort = value.TimeSort(valueStr)
 		case "user_id":
 			result.UserID = valueStr

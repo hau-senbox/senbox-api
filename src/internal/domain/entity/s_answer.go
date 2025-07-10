@@ -9,7 +9,8 @@ import (
 
 type SAnswer struct {
 	ID           uuid.UUID       `gorm:"type:char(36);primary_key"`
-	SubmissionID string          `gorm:"type:varchar(255);not null;default:''"`
+	UserID       string          `gorm:"type:varchar(255);not null;default:''"`
+	SubmissionID uint64          `gorm:"not null"`
 	Response     json.RawMessage `gorm:"type:json" json:"response"`
 	Key          string          `gorm:"type:varchar(255);not null;default:''"`
 	DB           string          `gorm:"type:varchar(255);not null;default:''"`
