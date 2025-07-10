@@ -51,3 +51,22 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 
 	return items, nil
 }
+
+func (uc *GetSubmissionByConditionUseCase) ExGetSubmission4ListRes(input GetSubmissionByConditionInput) (*[]repository.SubmissionDataItem, error) {
+	param := repository.GetSubmissionByConditionParam{
+		FormID:   input.FormID,
+		UserID:   input.UserID,
+		Key:      input.Key,
+		DB:       input.DB,
+		TimeSort: value.TimeSort(input.TimeSort),
+		Quantity: input.Quantity,
+	}
+
+	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
