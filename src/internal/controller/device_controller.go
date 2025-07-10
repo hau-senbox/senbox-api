@@ -1194,22 +1194,33 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	userIDRaw, exists := context.Get("user_id")
-	if !exists {
-		context.JSON(http.StatusUnauthorized, response.FailedResponse{
-			Code:  http.StatusUnauthorized,
-			Error: "Unauthorized: user_id not found",
-		})
-		return
-	}
-	userID := userIDRaw.(string)
-
 	// Parse atr_value_string
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
+	// neu request ko co user id thi lay tu context
+	if attr.UserID == "" {
+		userIDRaw, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, response.FailedResponse{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized: user_id not found",
+			})
+			return
+		}
+		userID, ok := userIDRaw.(string)
+		if !ok {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: "Invalid user_id type in context",
+			})
+			return
+		}
+		attr.UserID = userID
+	}
+
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		UserID:   userID,
+		UserID:   attr.UserID,
 		Key:      attr.Key,
 		DB:       attr.DB,
 		TimeSort: attr.TimeSort,
