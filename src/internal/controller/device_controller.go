@@ -44,7 +44,7 @@ type DeviceController struct {
 	*usecase.GetSubmissionByConditionUseCase
 	*usecase.GetTotalNrSubmissionByConditionUseCase
 	*usecase.GetUserEntityUseCase
-	*usecase.GetSubmissionChildProfileUseCase
+	*usecase.GetSubmission4MemoriesFormUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1308,7 +1308,7 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 // @Failure      400 {object} response.FailedResponse
 // @Failure      500 {object} response.FailedResponse
 // @Router       /v1/form/get-submission-child-profile/{id} [get]
-func (receiver *DeviceController) GetSubmissionChildProfile(c *gin.Context) {
+func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
 	// Lấy form ID từ path
 	formIDParam := c.Param("id")
 	formID, err := strconv.ParseUint(formIDParam, 10, 64)
@@ -1330,7 +1330,7 @@ func (receiver *DeviceController) GetSubmissionChildProfile(c *gin.Context) {
 	}
 
 	// Gọi use case hoặc repository
-	res, err := receiver.GetSubmissionChildProfileUseCase.Execute(repository.GetSubmissionChildProfileParam{
+	res, err := receiver.GetSubmission4MemoriesFormUseCase.Execute(repository.GetSubmission4MemoriesFormParam{
 		FormID: formID,
 		UserId: userID.(string),
 	})

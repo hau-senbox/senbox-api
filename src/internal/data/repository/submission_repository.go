@@ -49,7 +49,7 @@ type GetSubmissionByConditionParam struct {
 	Quantity    int
 }
 
-type GetSubmissionChildProfileParam struct {
+type GetSubmission4MemoriesFormParam struct {
 	FormID uint64
 	UserId string
 }
@@ -262,7 +262,7 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 	}, nil
 }
 
-func (receiver *SubmissionRepository) GetSubmissionChildProfile(param GetSubmissionChildProfileParam) ([]SubmissionDataItem, error) {
+func (receiver *SubmissionRepository) GetSubmission4MemoriesForm(param GetSubmission4MemoriesFormParam) ([]SubmissionDataItem, error) {
 	var submission entity.SSubmission
 
 	err := receiver.DBConn.
