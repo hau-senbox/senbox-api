@@ -342,3 +342,7 @@ func (receiver *SubmissionRepository) GetSubmission4MemoriesForm(param GetSubmis
 
 	return data.Items, nil
 }
+
+// func (receiver *SubmissionRepository) GetSubmission4ListRes(param GetSubmissionByConditionParam) (*SubmissionData, error) {
+
+// }
