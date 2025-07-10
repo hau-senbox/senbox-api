@@ -131,6 +131,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
+	answerRepo := repository.AnswerRepository{DBConn: dbConn}
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo)
+	answerController := controller.NewAnswerController(answerUseCase)
+
 	provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
 		config.S3.SenboxFormSubmitBucket.SecretKey,
@@ -236,5 +240,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
+	}
+
+	answer := engine.Group("v1/answer", secureMiddleware.Secured())
+	{
+		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
 	}
 }
