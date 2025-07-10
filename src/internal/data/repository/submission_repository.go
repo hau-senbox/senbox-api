@@ -21,8 +21,8 @@ type SubmissionRepository struct {
 type SubmissionDataItem struct {
 	SubmissionID uint64    `json:"id"`
 	QuestionID   string    `json:"question_id" binding:"required"`
-	QuestionKey  string    `json:"question_key"`
-	QuestionDB   string    `json:"question_db"`
+	Key          string    `json:"key"`
+	DB           string    `json:"db"`
 	Question     string    `json:"question" binding:"required"`
 	Answer       string    `json:"answer" binding:"required"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -40,13 +40,13 @@ type CreateSubmissionParams struct {
 }
 
 type GetSubmissionByConditionParam struct {
-	FormID      uint64
-	UserID      string
-	QuestionKey *string
-	QuestionDB  *string
-	TimeSort    value.TimeSort
-	Duration    *value.TimeRange
-	Quantity    int
+	FormID   uint64
+	UserID   string
+	Key      *string
+	DB       *string
+	TimeSort value.TimeSort
+	Duration *value.TimeRange
+	Quantity int
 }
 
 type GetSubmission4MemoriesFormParam struct {
@@ -58,11 +58,11 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 	items := make([]entity.SubmissionDataItem, 0)
 	for _, item := range params.SubmissionData.Items {
 		items = append(items, entity.SubmissionDataItem{
-			QuestionID:  item.QuestionID,
-			QuestionKey: item.QuestionKey,
-			QuestionDB:  item.QuestionDB,
-			Question:    item.Question,
-			Answer:      item.Answer,
+			QuestionID: item.QuestionID,
+			Key:        item.Key,
+			DB:         item.DB,
+			Question:   item.Question,
+			Answer:     item.Answer,
 		})
 	}
 
@@ -157,8 +157,8 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 
 		for _, item := range data.Items {
 			item.SubmissionID = submission.ID
-			// Ưu tiên lọc theo QuestionKey nếu có
-			if param.QuestionKey != nil && item.QuestionKey == *param.QuestionKey {
+			// Ưu tiên lọc theo Key nếu có
+			if param.Key != nil && item.Key == *param.Key {
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -166,8 +166,8 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 				}
 			}
 
-			// Nếu có truyền thêm QuestionDB, vẫn lọc, nhưng không thêm trùng
-			if param.QuestionDB != nil && item.QuestionDB == *param.QuestionDB {
+			// Nếu có truyền thêm DB, vẫn lọc, nhưng không thêm trùng
+			if param.DB != nil && item.DB == *param.DB {
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -238,9 +238,9 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 			item.SubmissionID = submission.ID
 
 			matched := false
-			if param.QuestionKey != nil && item.QuestionKey == *param.QuestionKey {
+			if param.Key != nil && item.Key == *param.Key {
 				matched = true
-			} else if param.QuestionDB != nil && item.QuestionDB == *param.QuestionDB {
+			} else if param.DB != nil && item.DB == *param.DB {
 				matched = true
 			}
 
