@@ -13,6 +13,7 @@ import (
 	"sen-global-api/pkg/sheet"
 
 	firebase "firebase.google.com/go/v4"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"gorm.io/gorm"
@@ -28,6 +29,7 @@ type SubmitFormUseCase struct {
 	*repository.MobileDeviceRepository
 	*repository.FormQuestionRepository
 	*repository.CodeCountingRepository
+	*repository.AnswerRepository
 	*sheet.Writer
 	*sheet.Reader
 	DriveService        *drive.Service
@@ -91,7 +93,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		SubmissionData: submissionData,
 		OpenedAt:       req.OpenedAt,
 	}
-	err = receiver.CreateSubmission(createSubmissionParams)
+	submissionID, err := receiver.CreateSubmission(createSubmissionParams)
 	if err != nil {
 		log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
 		return errors.New("system cannot handle the submission")
@@ -102,6 +104,30 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		if err != nil {
 			log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet", err)
 			return errors.New("system cannot handle the submission memory component values")
+		}
+	}
+
+	// tao anwser
+	for _, item := range submissionItems {
+
+		if item.Key == "" && item.DB == "" {
+			continue
+		}
+
+		ansJSON, _ := json.Marshal(item.Answer)
+
+		answer := &entity.SAnswer{
+			ID:           uuid.New(),
+			UserID:       req.UserID,
+			SubmissionID: submissionID,
+			Key:          item.Key,
+			DB:           item.DB,
+			Response:     json.RawMessage(ansJSON),
+		}
+
+		err := receiver.AnswerRepository.Create(answer)
+		if err != nil {
+			log.Error("SubmitFormUseCase.answerFormSaveToFormOutputSheet: create answer", err)
 		}
 	}
 

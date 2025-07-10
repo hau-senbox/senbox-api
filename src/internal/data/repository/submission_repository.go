@@ -54,7 +54,7 @@ type GetSubmission4MemoriesFormParam struct {
 	UserId string
 }
 
-func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
+func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) (uint64, error) {
 	items := make([]entity.SubmissionDataItem, 0)
 	for _, item := range params.SubmissionData.Items {
 		items = append(items, entity.SubmissionDataItem{
@@ -72,7 +72,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 
 	dataInJSON, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	submission := entity.SSubmission{
@@ -82,7 +82,11 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 		OpenedAt:       params.OpenedAt,
 	}
 
-	return receiver.DBConn.Create(&submission).Error
+	if err := receiver.DBConn.Create(&submission).Error; err != nil {
+		return 0, err
+	}
+
+	return submission.ID, nil
 }
 
 func (receiver *SubmissionRepository) FindRecentByFormID(formID uint64, userID string) (entity.SSubmission, error) {
