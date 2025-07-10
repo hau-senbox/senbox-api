@@ -12,5 +12,5 @@ type AtrValueString struct {
 	DB       *string
 	TimeSort value.TimeSort
 	Duration *value.TimeRange
-	Quantity int
+	Quantity *string
 }

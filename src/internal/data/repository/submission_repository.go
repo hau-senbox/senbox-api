@@ -46,7 +46,7 @@ type GetSubmissionByConditionParam struct {
 	DB       *string
 	TimeSort value.TimeSort
 	Duration *value.TimeRange
-	Quantity int
+	Quantity *string
 }
 
 type GetSubmission4MemoriesFormParam struct {
@@ -158,7 +158,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		for _, item := range data.Items {
 			item.SubmissionID = submission.ID
 			// Ưu tiên lọc theo Key nếu có
-			if param.Key != nil && item.Key == *param.Key {
+			if item.Key == *param.Key && item.DB == *param.DB {
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -166,14 +166,23 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 				}
 			}
 
-			// Nếu có truyền thêm DB, vẫn lọc, nhưng không thêm trùng
-			if param.DB != nil && item.DB == *param.DB {
-				if !seen[item.SubmissionID] {
-					item.CreatedAt = submission.CreatedAt
-					result = append(result, item)
-					seen[item.SubmissionID] = true
-				}
-			}
+			// Ưu tiên lọc theo Key nếu có
+			// if param.Key != nil && item.Key == *param.Key {
+			// 	if !seen[item.SubmissionID] {
+			// 		item.CreatedAt = submission.CreatedAt
+			// 		result = append(result, item)
+			// 		seen[item.SubmissionID] = true
+			// 	}
+			// }
+
+			// // Nếu có truyền thêm DB, vẫn lọc, nhưng không thêm trùng
+			// if param.DB != nil && item.DB == *param.DB {
+			// 	if !seen[item.SubmissionID] {
+			// 		item.CreatedAt = submission.CreatedAt
+			// 		result = append(result, item)
+			// 		seen[item.SubmissionID] = true
+			// 	}
+			// }
 		}
 	}
 
@@ -192,13 +201,24 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		return nil, nil
 	}
 
-	//neu khong co quantiy retrun all
-	if param.Quantity == 0 {
-		return &result, nil
+	//neu khong co quantiy retrun gia tri dau tien
+	if param.Quantity == nil {
+		first := result[:1]
+		return &first, nil
 	}
+
 	// Giới hạn số lượng kết quả trả về theo Quantity
-	limit := param.Quantity
-	if limit <= 0 || limit > len(result) {
+	limit := 1
+	if param.Quantity != nil {
+		if *param.Quantity == "all" {
+			return &result, nil
+		}
+		if qty, err := strconv.Atoi(*param.Quantity); err == nil {
+			limit = qty
+		}
+	}
+
+	if limit > len(result) {
 		limit = len(result)
 	}
 
