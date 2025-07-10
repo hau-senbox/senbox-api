@@ -11,14 +11,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type GetSubmissionChildProfileUseCase struct {
+type GetSubmission4MemoriesFormUseCase struct {
 	formRepository       *repository.FormRepository
 	submissionRepository *repository.SubmissionRepository
 	questionRepository   *repository.QuestionRepository
 }
 
-func NewGetSubmissionChildProfileUseCase(db *gorm.DB) *GetSubmissionChildProfileUseCase {
-	return &GetSubmissionChildProfileUseCase{
+func NewGetSubmission4MemoriesFormUseCase(db *gorm.DB) *GetSubmission4MemoriesFormUseCase {
+	return &GetSubmission4MemoriesFormUseCase{
 		formRepository: &repository.FormRepository{
 			DBConn:                 db,
 			DefaultRequestPageSize: 0,
@@ -32,7 +32,7 @@ func NewGetSubmissionChildProfileUseCase(db *gorm.DB) *GetSubmissionChildProfile
 	}
 }
 
-func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissionChildProfileParam) ([]repository.SubmissionDataItem, error) {
+func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmission4MemoriesFormParam) ([]repository.SubmissionDataItem, error) {
 
 	questions, err := uc.questionRepository.GetQuestionsByFormID(input.FormID)
 	if err != nil {
@@ -70,7 +70,7 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 		rawQuestions = append(rawQuestions, q)
 	}
 
-	items, err := uc.submissionRepository.GetSubmissionChildProfile(input)
+	items, err := uc.submissionRepository.GetSubmission4MemoriesForm(input)
 	if err != nil {
 		return nil, err
 	}
