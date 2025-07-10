@@ -32,22 +32,22 @@ func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUs
 // )
 
 type GetSubmissionByConditionInput struct {
-	FormID      uint64         `json:"form_id"`
-	UserID      string         `json:"user_id"`
-	QuestionKey *string        `json:"question_key"`
-	QuestionDB  *string        `json:"question_db"`
-	TimeSort    value.TimeSort `json:"time_sort"`
-	Quantity    int            `json:"quantity"`
+	FormID   uint64         `json:"form_id"`
+	UserID   string         `json:"user_id"`
+	Key      *string        `json:"key"`
+	DB       *string        `json:"db"`
+	TimeSort value.TimeSort `json:"time_sort"`
+	Quantity int            `json:"quantity"`
 }
 
 func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (*[]repository.SubmissionDataItem, error) {
 	param := repository.GetSubmissionByConditionParam{
-		FormID:      input.FormID,
-		UserID:      input.UserID,
-		QuestionKey: input.QuestionKey,
-		QuestionDB:  input.QuestionDB,
-		TimeSort:    value.TimeSort(input.TimeSort),
-		Quantity:    input.Quantity,
+		FormID:   input.FormID,
+		UserID:   input.UserID,
+		Key:      input.Key,
+		DB:       input.DB,
+		TimeSort: value.TimeSort(input.TimeSort),
+		Quantity: input.Quantity,
 	}
 
 	items, err := uc.submissionRepository.GetSubmissionByCondition(param)

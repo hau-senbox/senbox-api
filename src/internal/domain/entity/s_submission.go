@@ -7,11 +7,11 @@ import (
 )
 
 type SubmissionDataItem struct {
-	QuestionID  string `json:"question_id" binding:"required"`
-	QuestionKey string `json:"question_key"`
-	QuestionDB  string `json:"question_db"`
-	Question    string `json:"question" binding:"required"`
-	Answer      string `json:"answer" binding:"required"`
+	QuestionID string `json:"question_id" binding:"required"`
+	Key        string `json:"key"`
+	DB         string `json:"db"`
+	Question   string `json:"question" binding:"required"`
+	Answer     string `json:"answer" binding:"required"`
 }
 
 type SubmissionData struct {
