@@ -778,7 +778,8 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.PdfPicker,
 		value.SubmitText,
 		value.OutNrTotal,
-		value.MemoryText:
+		value.MemoryText,
+		value.OutListEntryHistory:
 		message := strings.ReplaceAll(rawQuestion.Attributes, "\n", "\\n")
 		jsonMsg := `{"value": "` + message + `"}`
 		return jsonMsg, nil
