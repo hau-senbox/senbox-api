@@ -2,6 +2,7 @@ package repository
 
 import (
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -48,9 +49,22 @@ func (r *AnswerRepository) Delete(id uuid.UUID) error {
 }
 
 // FindByKeyAndDB: lấy danh sách câu trả lời theo Key và DB
-func (r *AnswerRepository) FindByKeyAndDB(key string, db string) ([]entity.SAnswer, error) {
+func (r *AnswerRepository) FindByKeyAndDB(param GetSubmissionByConditionParam) ([]entity.SAnswer, error) {
 	var answers []entity.SAnswer
-	err := r.DBConn.Where("`key` = ? AND `db` = ?", key, db).Find(&answers).Error
+	query := r.DBConn.Where("`key` = ? AND `db` = ?", param.Key, param.DB)
+
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
+	}
+
+	switch param.TimeSort {
+	case value.TimeShortOldest:
+		query = query.Order("created_at ASC")
+	default:
+		query = query.Order("created_at DESC")
+	}
+
+	err := query.Find(&answers).Error
 	if err != nil {
 		return nil, err
 	}

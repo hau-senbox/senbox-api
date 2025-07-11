@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"encoding/json"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
 )
@@ -43,6 +45,34 @@ func (uc *AnswerUseCase) DeleteAnswer(id uuid.UUID) error {
 }
 
 // Lấy danh sách câu trả lời theo key và db
-func (uc *AnswerUseCase) GetAnswersByKeyAndDB(key, db string) ([]entity.SAnswer, error) {
-	return uc.answerRepo.FindByKeyAndDB(key, db)
+func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByConditionParam) ([]response.GetAnswerByKeyAndDbResponse, error) {
+	answers, err := uc.answerRepo.FindByKeyAndDB(input)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []response.GetAnswerByKeyAndDbResponse
+	seenUserIDs := make(map[string]bool)
+	for _, a := range answers {
+		//bo qua neu trung user_id
+		if seenUserIDs[a.UserID] {
+			continue
+		}
+		seenUserIDs[a.UserID] = true
+
+		var answerStr string
+		_ = json.Unmarshal(a.Response, &answerStr)
+		res := response.GetAnswerByKeyAndDbResponse{
+			ID:           a.ID.String(),
+			SubmissionID: a.SubmissionID,
+			UserID:       a.UserID,
+			Key:          a.Key,
+			DB:           a.DB,
+			Answer:       answerStr,
+			CreatedAt:    a.CreatedAt,
+		}
+		result = append(result, res)
+	}
+
+	return result, nil
 }

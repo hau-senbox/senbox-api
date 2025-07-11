@@ -1,6 +1,5 @@
 package request
 
 type GetAnswerByKeyAndDB struct {
-	Key string `json:"key" binding:"required"`
-	DB  string `json:"db" binding:"required"`
+	AtrValueString string `json:"atr_value_string" binding:"required"`
 }
