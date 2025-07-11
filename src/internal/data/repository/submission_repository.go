@@ -40,6 +40,7 @@ type CreateSubmissionParams struct {
 }
 
 type GetSubmissionByConditionParam struct {
+<<<<<<< HEAD
 	FormID   uint64
 	UserID   string
 	Key      *string
@@ -47,14 +48,23 @@ type GetSubmissionByConditionParam struct {
 	TimeSort value.TimeSort
 	Duration *value.TimeRange
 	Quantity int
+=======
+	FormID       uint64
+	UserID       string
+	Key          *string
+	DB           *string
+	TimeSort     value.TimeSort
+	DateDuration *value.TimeRange
+	Quantity     *string
+>>>>>>> develop
 }
 
-type GetSubmissionChildProfileParam struct {
+type GetSubmission4MemoriesFormParam struct {
 	FormID uint64
 	UserId string
 }
 
-func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) error {
+func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionParams) (uint64, error) {
 	items := make([]entity.SubmissionDataItem, 0)
 	for _, item := range params.SubmissionData.Items {
 		items = append(items, entity.SubmissionDataItem{
@@ -72,7 +82,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 
 	dataInJSON, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	submission := entity.SSubmission{
@@ -82,7 +92,11 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 		OpenedAt:       params.OpenedAt,
 	}
 
-	return receiver.DBConn.Create(&submission).Error
+	if err := receiver.DBConn.Create(&submission).Error; err != nil {
+		return 0, err
+	}
+
+	return submission.ID, nil
 }
 
 func (receiver *SubmissionRepository) FindRecentByFormID(formID uint64, userID string) (entity.SSubmission, error) {
@@ -133,6 +147,10 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		query = query.Where("form_id = ?", param.FormID)
 	}
 
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
+	}
+
 	switch param.TimeSort {
 	case value.TimeShortOldest:
 		query = query.Order("created_at ASC")
@@ -158,7 +176,11 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		for _, item := range data.Items {
 			item.SubmissionID = submission.ID
 			// Ưu tiên lọc theo Key nếu có
+<<<<<<< HEAD
 			if param.Key != nil && item.Key == *param.DB {
+=======
+			if item.Key == *param.Key && item.DB == *param.DB {
+>>>>>>> develop
 				if !seen[item.SubmissionID] {
 					item.CreatedAt = submission.CreatedAt
 					result = append(result, item)
@@ -166,6 +188,7 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 				}
 			}
 
+<<<<<<< HEAD
 			// Nếu có truyền thêm db, vẫn lọc, nhưng không thêm trùng
 			if param.Key != nil && item.DB == *param.DB {
 				if !seen[item.SubmissionID] {
@@ -174,6 +197,25 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 					seen[item.SubmissionID] = true
 				}
 			}
+=======
+			// Ưu tiên lọc theo Key nếu có
+			// if param.Key != nil && item.Key == *param.Key {
+			// 	if !seen[item.SubmissionID] {
+			// 		item.CreatedAt = submission.CreatedAt
+			// 		result = append(result, item)
+			// 		seen[item.SubmissionID] = true
+			// 	}
+			// }
+
+			// // Nếu có truyền thêm DB, vẫn lọc, nhưng không thêm trùng
+			// if param.DB != nil && item.DB == *param.DB {
+			// 	if !seen[item.SubmissionID] {
+			// 		item.CreatedAt = submission.CreatedAt
+			// 		result = append(result, item)
+			// 		seen[item.SubmissionID] = true
+			// 	}
+			// }
+>>>>>>> develop
 		}
 	}
 
@@ -192,13 +234,24 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 		return nil, nil
 	}
 
-	//neu khong co quantiy retrun all
-	if param.Quantity == 0 {
-		return &result, nil
+	//neu khong co quantiy retrun gia tri dau tien
+	if param.Quantity == nil {
+		first := result[:1]
+		return &first, nil
 	}
+
 	// Giới hạn số lượng kết quả trả về theo Quantity
-	limit := param.Quantity
-	if limit <= 0 || limit > len(result) {
+	limit := 1
+	if param.Quantity != nil {
+		if *param.Quantity == "all" {
+			return &result, nil
+		}
+		if qty, err := strconv.Atoi(*param.Quantity); err == nil {
+			limit = qty
+		}
+	}
+
+	if limit > len(result) {
 		limit = len(result)
 	}
 
@@ -215,8 +268,8 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 		query = query.Where("form_id = ?", param.FormID)
 	}
 
-	if param.Duration != nil {
-		query = query.Where("created_at BETWEEN ? AND ?", param.Duration.Start, param.Duration.End)
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
 	}
 
 	err := query.Find(&submissions).Error
@@ -240,7 +293,11 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 			matched := false
 			if param.Key != nil && item.Key == *param.Key {
 				matched = true
+<<<<<<< HEAD
 			} else if param.DB != nil && item.Key == *param.DB {
+=======
+			} else if param.DB != nil && item.DB == *param.DB {
+>>>>>>> develop
 				matched = true
 			}
 
@@ -262,7 +319,7 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 	}, nil
 }
 
-func (receiver *SubmissionRepository) GetSubmissionChildProfile(param GetSubmissionChildProfileParam) ([]SubmissionDataItem, error) {
+func (receiver *SubmissionRepository) GetSubmission4MemoriesForm(param GetSubmission4MemoriesFormParam) ([]SubmissionDataItem, error) {
 	var submission entity.SSubmission
 
 	err := receiver.DBConn.
@@ -322,3 +379,7 @@ func (receiver *SubmissionRepository) GetSubmissionChildProfile(param GetSubmiss
 
 	return data.Items, nil
 }
+
+// func (receiver *SubmissionRepository) GetSubmission4ListRes(param GetSubmissionByConditionParam) (*SubmissionData, error) {
+
+// }

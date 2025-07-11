@@ -6,18 +6,19 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"gorm.io/gorm"
 )
 
-type GetSubmissionChildProfileUseCase struct {
+type GetSubmission4MemoriesFormUseCase struct {
 	formRepository       *repository.FormRepository
 	submissionRepository *repository.SubmissionRepository
 	questionRepository   *repository.QuestionRepository
 }
 
-func NewGetSubmissionChildProfileUseCase(db *gorm.DB) *GetSubmissionChildProfileUseCase {
-	return &GetSubmissionChildProfileUseCase{
+func NewGetSubmission4MemoriesFormUseCase(db *gorm.DB) *GetSubmission4MemoriesFormUseCase {
+	return &GetSubmission4MemoriesFormUseCase{
 		formRepository: &repository.FormRepository{
 			DBConn:                 db,
 			DefaultRequestPageSize: 0,
@@ -31,7 +32,7 @@ func NewGetSubmissionChildProfileUseCase(db *gorm.DB) *GetSubmissionChildProfile
 	}
 }
 
-func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissionChildProfileParam) ([]repository.SubmissionDataItem, error) {
+func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmission4MemoriesFormParam) ([]repository.SubmissionDataItem, error) {
 
 	questions, err := uc.questionRepository.GetQuestionsByFormID(input.FormID)
 	if err != nil {
@@ -69,7 +70,7 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 		rawQuestions = append(rawQuestions, q)
 	}
 
-	items, err := uc.submissionRepository.GetSubmissionChildProfile(input)
+	items, err := uc.submissionRepository.GetSubmission4MemoriesForm(input)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +78,20 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 	// Tạo map để tra cứu item theo QuestionID
 	existingMap := make(map[string]bool)
 	for _, item := range items {
+<<<<<<< HEAD
 		existingMap[item.Key] = true
+=======
+		existingMap[item.DB] = true
+>>>>>>> develop
 	}
 
 	// Thêm các câu hỏi chưa có trong submission (tức là chưa trả lời)
 	for _, q := range rawQuestions {
+<<<<<<< HEAD
 		if !existingMap[q.Key] {
+=======
+		if !existingMap[q.DB] {
+>>>>>>> develop
 			items = append(items, repository.SubmissionDataItem{
 				SubmissionID: 0,
 				QuestionID:   q.QuestionID,
@@ -94,5 +103,14 @@ func (uc *GetSubmissionChildProfileUseCase) Execute(input repository.GetSubmissi
 		}
 	}
 
-	return items, nil
+	// loc key, db == ""
+	filteredItems := make([]repository.SubmissionDataItem, 0, len(items))
+	for _, item := range items {
+		if strings.TrimSpace(item.Key) == "" && strings.TrimSpace(item.DB) == "" {
+			continue
+		}
+		filteredItems = append(filteredItems, item)
+	}
+
+	return filteredItems, nil
 }

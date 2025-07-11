@@ -634,7 +634,11 @@ func (receiver *QuestionRepository) GetQuestionsByFormID(id uint64) ([]model.For
 		"s_question.created_at as created_at, s_question.updated_at as updated_at, s_form_question.order as `order`, "+
 		"s_form_question.answer_required as answer_required, s_form_question.answer_remember as answer_remember, s_question.question as question,"+
 		"s_question.enable_on_mobile as enable_on_mobile, s_question.question_unique_id as question_unique_id, "+
+<<<<<<< HEAD
 		"s_question.key as key, s_question.db as db "+
+=======
+		"`s_question`.`key` as `key`, s_question.db as db "+
+>>>>>>> develop
 		"FROM s_question RIGHT JOIN s_form_question ON s_form_question.question_id = s_question.id WHERE s_form_question.form_id = ? AND s_question.status = ? ORDER BY `order` ASC", id, value.Active).Rows()
 
 	if err != nil {

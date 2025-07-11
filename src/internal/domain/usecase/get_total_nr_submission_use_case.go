@@ -21,22 +21,40 @@ func NewGetTotalNrSubmissionByConditionUseCase(db *gorm.DB) *GetTotalNrSubmissio
 }
 
 type GetTotalNrSubmissionByConditionInput struct {
+<<<<<<< HEAD
 	FormID   uint64         `json:"form_id"`
 	UserID   string         `json:"user_id"`
 	Key      *string        `json:"key"`
 	DB       *string        `json:"db"`
 	TimeSort value.TimeSort `json:"time_sort"`
 	Duration *value.TimeRange
+=======
+	FormID       uint64         `json:"form_id"`
+	UserID       string         `json:"user_id"`
+	Key          *string        `json:"key"`
+	DB           *string        `json:"db"`
+	TimeSort     value.TimeSort `json:"time_sort"`
+	DateDuration *value.TimeRange
+>>>>>>> develop
 }
 
 func (uc *GetTotalNrSubmissionByConditionUseCase) Execute(input GetTotalNrSubmissionByConditionInput) (*response.GetSubmissionTotalNrResponse, error) {
 	param := repository.GetSubmissionByConditionParam{
+<<<<<<< HEAD
 		FormID:   input.FormID,
 		UserID:   input.UserID,
 		Key:      input.Key,
 		DB:       input.DB,
 		TimeSort: input.TimeSort,
 		Duration: input.Duration,
+=======
+		FormID:       input.FormID,
+		UserID:       input.UserID,
+		Key:          input.Key,
+		DB:           input.DB,
+		TimeSort:     input.TimeSort,
+		DateDuration: input.DateDuration,
+>>>>>>> develop
 	}
 
 	return uc.submissionRepository.GetTotalNrSubmissionByCondition(param)

@@ -7,10 +7,19 @@ type GetSubmissionByConditionRequest struct {
 }
 
 type AtrValueString struct {
+<<<<<<< HEAD
 	UserID   string
 	Key      *string
 	DB       *string
 	TimeSort value.TimeSort
 	Duration *value.TimeRange
 	Quantity int
+=======
+	UserID       string
+	Key          *string
+	DB           *string
+	TimeSort     value.TimeSort
+	DateDuration *value.TimeRange
+	Quantity     *string
+>>>>>>> develop
 }

@@ -77,6 +77,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			SubmissionRepository:   &repository.SubmissionRepository{DBConn: dbConn},
 			SettingRepository:      &repository.SettingRepository{DBConn: dbConn},
 			FormQuestionRepository: &repository.FormQuestionRepository{DBConn: dbConn},
+			AnswerRepository:       &repository.AnswerRepository{DBConn: dbConn},
 			DeviceRepository:       deviceRepository,
 			UserEntityRepository:   &userEntityRepository,
 			CodeCountingRepository: repository.NewCodeCountingRepository(),
@@ -106,7 +107,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		GetRecentSubmissionByFormIDUseCase:     usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
 		GetSubmissionByConditionUseCase:        usecase.NewGetSubmissionByConditionUseCase(dbConn),
 		GetTotalNrSubmissionByConditionUseCase: usecase.NewGetTotalNrSubmissionByConditionUseCase(dbConn),
-		GetSubmissionChildProfileUseCase:       usecase.NewGetSubmissionChildProfileUseCase(dbConn),
+		GetSubmission4MemoriesFormUseCase:      usecase.NewGetSubmission4MemoriesFormUseCase(dbConn),
 		RegisterFcmDeviceUseCase:               usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
 		SendNotificationUseCase:                usecase.NewSendNotificationUseCase(dbConn, fcm),
 		ResetCodeCountingUseCase:               usecase.NewResetCodeCountingUseCase(dbConn),
@@ -129,6 +130,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
+
+	answerRepo := repository.AnswerRepository{DBConn: dbConn}
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
+	answerController := controller.NewAnswerController(answerUseCase)
 
 	provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -202,7 +207,11 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
 		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
 		form.POST("/get-total-nr-submission-by-condition", deviceController.GetTotalNrSubmissionByCondition)
+<<<<<<< HEAD
 		form.GET("/get-memory-form/:id", deviceController.GetSubmissionChildProfile)
+=======
+		form.POST("/get-memory-form", deviceController.GetSubmission4Memories)
+>>>>>>> develop
 		// form.GET("/submission/get-for-memories", deviceController.GetSubmissionChildProfile)
 	}
 
@@ -235,5 +244,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
+	}
+
+	answer := engine.Group("v1/answer", secureMiddleware.Secured())
+	{
+		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
 	}
 }

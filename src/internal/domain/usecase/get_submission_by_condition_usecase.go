@@ -24,23 +24,55 @@ func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUs
 	}
 }
 
-// type TimeShort string
-
-// const (
-// 	TimeShortLatest TimeShort = "latest"
-// 	TimeShortOldest TimeShort = "oldest"
-// )
-
 type GetSubmissionByConditionInput struct {
+<<<<<<< HEAD
 	FormID   uint64         `json:"form_id"`
 	UserID   string         `json:"user_id"`
 	Key      *string        `json:"key"`
 	DB       *string        `json:"db"`
 	TimeSort value.TimeSort `json:"time_sort"`
 	Quantity int            `json:"quantity"`
+=======
+	FormID       uint64           `json:"form_id"`
+	UserID       string           `json:"user_id"`
+	Key          *string          `json:"key"`
+	DB           *string          `json:"db"`
+	TimeSort     value.TimeSort   `json:"time_sort"`
+	Quantity     *string          `json:"quantity"`
+	DateDuration *value.TimeRange `json:"date_duration"`
+>>>>>>> develop
 }
 
 func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditionInput) (*[]repository.SubmissionDataItem, error) {
+	param := repository.GetSubmissionByConditionParam{
+<<<<<<< HEAD
+		FormID:   input.FormID,
+		UserID:   input.UserID,
+		Key:      input.Key,
+		DB:       input.DB,
+		TimeSort: value.TimeSort(input.TimeSort),
+		Quantity: input.Quantity,
+=======
+		FormID:       input.FormID,
+		UserID:       input.UserID,
+		Key:          input.Key,
+		DB:           input.DB,
+		TimeSort:     value.TimeSort(input.TimeSort),
+		Quantity:     input.Quantity,
+		DateDuration: input.DateDuration,
+>>>>>>> develop
+	}
+
+	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (uc *GetSubmissionByConditionUseCase) ExGetSubmission4ListRes(input GetSubmissionByConditionInput) (*[]repository.SubmissionDataItem, error) {
 	param := repository.GetSubmissionByConditionParam{
 		FormID:   input.FormID,
 		UserID:   input.UserID,
@@ -51,6 +83,7 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 	}
 
 	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
+
 	if err != nil {
 		return nil, err
 	}
