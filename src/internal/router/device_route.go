@@ -132,7 +132,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	}
 
 	answerRepo := repository.AnswerRepository{DBConn: dbConn}
-	answerUseCase := usecase.NewAnswerUseCase(answerRepo)
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
 	answerController := controller.NewAnswerController(answerUseCase)
 
 	provider := uploader.NewS3Provider(

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
@@ -11,11 +12,16 @@ import (
 
 type AnswerUseCase struct {
 	answerRepo repository.AnswerRepository
+	userRepo   repository.UserEntityRepository
 }
 
-func NewAnswerUseCase(answerRepo repository.AnswerRepository) *AnswerUseCase {
+func NewAnswerUseCase(
+	answerRepo repository.AnswerRepository,
+	userRepo repository.UserEntityRepository,
+) *AnswerUseCase {
 	return &AnswerUseCase{
 		answerRepo: answerRepo,
+		userRepo:   userRepo,
 	}
 }
 
@@ -62,10 +68,17 @@ func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByCo
 
 		var answerStr string
 		_ = json.Unmarshal(a.Response, &answerStr)
+		var UserNickName string
+		user, err := uc.userRepo.GetByID(request.GetUserEntityByIDRequest{ID: a.UserID})
+		if err != nil {
+			continue
+		}
+		UserNickName = user.Nickname
 		res := response.GetAnswerByKeyAndDbResponse{
 			ID:           a.ID.String(),
 			SubmissionID: a.SubmissionID,
 			UserID:       a.UserID,
+			UserNickName: UserNickName,
 			Key:          a.Key,
 			DB:           a.DB,
 			Answer:       answerStr,
