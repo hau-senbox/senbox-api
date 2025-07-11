@@ -1220,11 +1220,12 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		UserID:   attr.UserID,
-		Key:      attr.Key,
-		DB:       attr.DB,
-		TimeSort: attr.TimeSort,
-		Quantity: attr.Quantity,
+		UserID:       attr.UserID,
+		Key:          attr.Key,
+		DB:           attr.DB,
+		TimeSort:     attr.TimeSort,
+		Quantity:     attr.Quantity,
+		DateDuration: attr.DateDuration,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1287,11 +1288,11 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 
 	// Gọi use case trả về tổng
 	res, err := receiver.GetTotalNrSubmissionByConditionUseCase.Execute(usecase.GetTotalNrSubmissionByConditionInput{
-		UserID:   attr.UserID,
-		Key:      attr.Key,
-		DB:       attr.DB,
-		TimeSort: attr.TimeSort,
-		Duration: attr.Duration,
+		UserID:       attr.UserID,
+		Key:          attr.Key,
+		DB:           attr.DB,
+		TimeSort:     attr.TimeSort,
+		DateDuration: attr.DateDuration,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{

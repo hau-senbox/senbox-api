@@ -52,13 +52,13 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 			result.TimeSort = value.TimeSort(valueStr)
 		case "user_id":
 			result.UserID = valueStr
-		case "duration":
+		case "date_duration":
 			dates := strings.Split(valueStr, ",")
 			if len(dates) == 2 {
 				start, err1 := parseDate(dates[0])
 				end, err2 := parseDate(dates[1])
 				if err1 == nil && err2 == nil {
-					result.Duration = &value.TimeRange{
+					result.DateDuration = &value.TimeRange{
 						Start: start,
 						End:   end,
 					}
