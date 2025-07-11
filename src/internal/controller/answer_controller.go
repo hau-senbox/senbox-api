@@ -3,6 +3,8 @@ package controller
 import (
 	"net/http"
 
+	"sen-global-api/helper"
+	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -127,7 +129,10 @@ func (ctrl *AnswerController) GetByKeyAndDB(c *gin.Context) {
 		})
 		return
 	}
-	if req.Key == "" || req.DB == "" {
+
+	// Parse atr_value_string
+	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
+	if attr.Key == nil || attr.DB == nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
 				Code:  http.StatusInternalServerError,
@@ -137,7 +142,12 @@ func (ctrl *AnswerController) GetByKeyAndDB(c *gin.Context) {
 		return
 	}
 
-	answers, err := ctrl.answerUseCase.GetAnswersByKeyAndDB(req.Key, req.DB)
+	res, err := ctrl.answerUseCase.GetAnswersByKeyAndDB(repository.GetSubmissionByConditionParam{
+		Key:          attr.Key,
+		DB:           attr.DB,
+		DateDuration: attr.DateDuration,
+		TimeSort:     attr.TimeSort,
+	})
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -149,6 +159,6 @@ func (ctrl *AnswerController) GetByKeyAndDB(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: answers,
+		Data: res,
 	})
 }
