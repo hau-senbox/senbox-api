@@ -40,13 +40,13 @@ type CreateSubmissionParams struct {
 }
 
 type GetSubmissionByConditionParam struct {
-	FormID   uint64
-	UserID   string
-	Key      *string
-	DB       *string
-	TimeSort value.TimeSort
-	Duration *value.TimeRange
-	Quantity *string
+	FormID       uint64
+	UserID       string
+	Key          *string
+	DB           *string
+	TimeSort     value.TimeSort
+	DateDuration *value.TimeRange
+	Quantity     *string
 }
 
 type GetSubmission4MemoriesFormParam struct {
@@ -135,6 +135,10 @@ func (receiver *SubmissionRepository) GetSubmissionByCondition(param GetSubmissi
 
 	if param.FormID != 0 {
 		query = query.Where("form_id = ?", param.FormID)
+	}
+
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
 	}
 
 	switch param.TimeSort {
@@ -239,8 +243,8 @@ func (receiver *SubmissionRepository) GetTotalNrSubmissionByCondition(param GetS
 		query = query.Where("form_id = ?", param.FormID)
 	}
 
-	if param.Duration != nil {
-		query = query.Where("created_at BETWEEN ? AND ?", param.Duration.Start, param.Duration.End)
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
 	}
 
 	err := query.Find(&submissions).Error
