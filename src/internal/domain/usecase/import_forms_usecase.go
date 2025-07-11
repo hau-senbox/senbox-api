@@ -667,7 +667,7 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.QuestionDurationForward,
 		value.QuestionQRCode,
 		value.QuestionInText,
-		value.QuestionCount,
+		value.QuestionInCount,
 		value.QuestionNumber,
 		value.QuestionQRCodeFront,
 		value.UserInformationValue1,
