@@ -116,6 +116,7 @@ const (
 
 	OutNrTotal
 	MemoryText
+	OutListEntryHistory
 )
 
 type DeviceStatus int
@@ -400,6 +401,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "out_nr_total"
 	case MemoryText:
 		return "memory_text"
+	case OutListEntryHistory:
+		return "out_list_entry_history"
 	}
 
 	return ""
@@ -566,6 +569,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "out_nr_total"
 	case MemoryText:
 		return "memory_text"
+	case OutListEntryHistory:
+		return "out_list_entry_history"
 	default:
 		return ""
 	}
@@ -777,6 +782,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OutNrTotal, nil
 	case "memory_text":
 		return MemoryText, nil
+	case "out_list_entry_history":
+		return OutListEntryHistory, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -868,7 +875,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		ApplicationContent,
 		WaterCup,
 		OutNrTotal,
-		MemoryText:
+		MemoryText,
+		OutListEntryHistory:
 		return true
 	default:
 		return false
