@@ -780,7 +780,9 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.OutNrTotal,
 		value.MemoryText,
 		value.OutListEntryHistory,
-		value.OutListResponse:
+		value.OutListResponse,
+		value.OutNrAverageAll,
+		value.OutNrLineGraph:
 		message := strings.ReplaceAll(rawQuestion.Attributes, "\n", "\\n")
 		jsonMsg := `{"value": "` + message + `"}`
 		return jsonMsg, nil

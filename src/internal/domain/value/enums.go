@@ -118,6 +118,8 @@ const (
 	MemoryText
 	OutListEntryHistory
 	OutListResponse
+	OutNrAverageAll
+	OutNrLineGraph
 )
 
 type DeviceStatus int
@@ -406,6 +408,10 @@ func GetRawValue(questionType QuestionType) string {
 		return "out_list_entry_history"
 	case OutListResponse:
 		return "out_list_response"
+	case OutNrAverageAll:
+		return "out_nr_average_all"
+	case OutNrLineGraph:
+		return "out_nr_line_graph"
 	}
 
 	return ""
@@ -576,6 +582,10 @@ func GetStringValue(questionType QuestionType) string {
 		return "out_list_entry_history"
 	case OutListResponse:
 		return "out_list_response"
+	case OutNrAverageAll:
+		return "out_nr_average_all"
+	case OutNrLineGraph:
+		return "out_nr_line_graph"
 	default:
 		return ""
 	}
@@ -791,6 +801,10 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OutListEntryHistory, nil
 	case "out_list_response":
 		return OutListResponse, nil
+	case "out_nr_average_all":
+		return OutNrAverageAll, nil
+	case "out_nr_line_graph":
+		return OutNrLineGraph, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -884,7 +898,9 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OutNrTotal,
 		MemoryText,
 		OutListEntryHistory,
-		OutListResponse:
+		OutListResponse,
+		OutNrAverageAll,
+		OutNrLineGraph:
 		return true
 	default:
 		return false
