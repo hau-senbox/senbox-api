@@ -85,3 +85,21 @@ func (r *AnswerRepository) GetTotalByKeyAndDb(param GetSubmissionByConditionPara
 	}
 	return answers, nil
 }
+
+func (r *AnswerRepository) GetChartTotalByKeyAndDb(param GetSubmissionByConditionParam) ([]entity.SAnswer, error) {
+	var answers []entity.SAnswer
+
+	query := r.DBConn.Where("`key` = ? AND `db` = ?", param.Key, param.DB)
+
+	if param.DateDuration != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", param.DateDuration.Start, param.DateDuration.End)
+	}
+
+	err := query.Order("created_at ASC").Find(&answers).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return answers, nil
+}
