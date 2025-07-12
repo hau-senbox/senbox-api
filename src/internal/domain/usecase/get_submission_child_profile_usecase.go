@@ -104,5 +104,13 @@ func (uc *GetSubmission4MemoriesFormUseCase) Execute(input repository.GetSubmiss
 		filteredItems = append(filteredItems, item)
 	}
 
+	for i := range filteredItems {
+		filteredItems[i].QuestionData = response.QuestionListData{
+			QuestionType: "memory_text",
+			Attributes:   response.QuestionAttributes{},
+			Order:        i,
+		}
+	}
+
 	return filteredItems, nil
 }
