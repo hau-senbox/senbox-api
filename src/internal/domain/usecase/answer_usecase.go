@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -99,12 +100,14 @@ func (uc *AnswerUseCase) GetTotalNrByKeyAndDb(input repository.GetSubmissionByCo
 	var total float32
 
 	for _, ans := range answers {
-		var value float32
-		if err := json.Unmarshal(ans.Response, &value); err != nil {
-			// Nếu không parse được thì bỏ qua
+		var strValue string
+		if err := json.Unmarshal(ans.Response, &strValue); err != nil {
 			continue
 		}
-		total += value
+
+		if value, err := strconv.ParseFloat(strValue, 32); err == nil {
+			total += float32(value)
+		}
 	}
 
 	return response.GetTotalNrByKeyAndDbResponse{
