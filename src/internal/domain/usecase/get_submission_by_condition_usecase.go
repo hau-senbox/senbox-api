@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"sen-global-api/internal/data/repository"
-	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
@@ -49,17 +48,6 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 	}
 
 	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
-
-	for i := range *items {
-		(*items)[i].QuestionData = response.QuestionListData{
-			QuestionType: "out_text",
-			Question:     (*items)[i].Question,
-			Attributes:   response.QuestionAttributes{},
-			Order:        i,
-			Key:          (*items)[i].Key,
-			DB:           (*items)[i].DB,
-		}
-	}
 
 	if err != nil {
 		return nil, err
