@@ -19,14 +19,13 @@ type SubmissionRepository struct {
 }
 
 type SubmissionDataItem struct {
-	SubmissionID uint64                    `json:"id"`
-	QuestionID   string                    `json:"question_id" binding:"required"`
-	Key          string                    `json:"key"`
-	DB           string                    `json:"db"`
-	Question     string                    `json:"question" binding:"required"`
-	Answer       string                    `json:"answer" binding:"required"`
-	CreatedAt    time.Time                 `json:"created_at"`
-	QuestionData response.QuestionListData `json:"question_data"`
+	SubmissionID uint64    `json:"id"`
+	QuestionID   string    `json:"question_id" binding:"required"`
+	Key          string    `json:"key"`
+	DB           string    `json:"db"`
+	Question     string    `json:"question" binding:"required"`
+	Answer       string    `json:"answer" binding:"required"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type SubmissionData struct {
