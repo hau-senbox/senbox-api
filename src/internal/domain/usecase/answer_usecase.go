@@ -89,3 +89,25 @@ func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByCo
 
 	return result, nil
 }
+
+func (uc *AnswerUseCase) GetTotalNrByKeyAndDb(input repository.GetSubmissionByConditionParam) (response.GetTotalNrByKeyAndDbResponse, error) {
+	answers, err := uc.answerRepo.GetTotalByKeyAndDb(input)
+	if err != nil {
+		return response.GetTotalNrByKeyAndDbResponse{}, err
+	}
+
+	var total float32
+
+	for _, ans := range answers {
+		var value float32
+		if err := json.Unmarshal(ans.Response, &value); err != nil {
+			// Nếu không parse được thì bỏ qua
+			continue
+		}
+		total += value
+	}
+
+	return response.GetTotalNrByKeyAndDbResponse{
+		Total: total,
+	}, nil
+}
