@@ -53,8 +53,11 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 	for i := range *items {
 		(*items)[i].QuestionData = response.QuestionListData{
 			QuestionType: "out_text",
+			Question:     (*items)[i].Question,
 			Attributes:   response.QuestionAttributes{},
 			Order:        i,
+			Key:          (*items)[i].Key,
+			DB:           (*items)[i].DB,
 		}
 	}
 
