@@ -26,6 +26,7 @@ type SubmissionDataItem struct {
 	Question     string    `json:"question" binding:"required"`
 	Answer       string    `json:"answer" binding:"required"`
 	CreatedAt    time.Time `json:"created_at"`
+	QuestionData response.QuestionListData
 }
 
 type SubmissionData struct {

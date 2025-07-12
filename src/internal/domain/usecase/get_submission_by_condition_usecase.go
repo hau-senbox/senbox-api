@@ -2,14 +2,17 @@ package usecase
 
 import (
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
 )
 
 type GetSubmissionByConditionUseCase struct {
-	formRepository       *repository.FormRepository
-	submissionRepository *repository.SubmissionRepository
+	formRepository           *repository.FormRepository
+	submissionRepository     *repository.SubmissionRepository
+	GetQuestionByFormUseCase GetQuestionsByFormUseCase
+	GetFormByIDUseCase       GetFormByIDUseCase
 }
 
 func NewGetSubmissionByConditionUseCase(db *gorm.DB) *GetSubmissionByConditionUseCase {
@@ -46,6 +49,14 @@ func (uc *GetSubmissionByConditionUseCase) Execute(input GetSubmissionByConditio
 	}
 
 	items, err := uc.submissionRepository.GetSubmissionByCondition(param)
+
+	for i := range *items {
+		(*items)[i].QuestionData = response.QuestionListData{
+			QuestionType: "out_text",
+			Attributes:   response.QuestionAttributes{},
+			Order:        i,
+		}
+	}
 
 	if err != nil {
 		return nil, err
