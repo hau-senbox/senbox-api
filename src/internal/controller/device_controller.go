@@ -10,7 +10,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -1321,13 +1320,21 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 // @Failure      500 {object} response.FailedResponse
 // @Router       /v1/form/get-submission-child-profile/{id} [get]
 func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
-	// Lấy form ID từ path
-	formIDParam := c.Param("id")
-	formID, err := strconv.ParseUint(formIDParam, 10, 64)
+
+	var req request.GetSubmission4MemmoriesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	form, err := receiver.GetFormByIDUseCase.GetFormByQRCode(req.QrCode)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "Invalid form ID",
+			Error: err.Error(),
 		})
 		return
 	}
@@ -1343,7 +1350,7 @@ func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
 
 	// Gọi use case hoặc repository
 	res, err := receiver.GetSubmission4MemoriesFormUseCase.Execute(repository.GetSubmission4MemoriesFormParam{
-		FormID: formID,
+		FormID: form.ID,
 		UserId: userID.(string),
 	})
 	if err != nil {
