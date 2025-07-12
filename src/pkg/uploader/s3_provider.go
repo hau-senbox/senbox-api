@@ -124,6 +124,9 @@ func (p *s3Provider) GetFileUploaded(ctx context.Context, dest string, duration 
 	switch block.Type {
 	case "RSA PRIVATE KEY":
 		privKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse PKCS#1 private key: %w", err)
+		}
 	case "PRIVATE KEY":
 		var parsedKey any
 		parsedKey, err = x509.ParsePKCS8PrivateKey(block.Bytes)

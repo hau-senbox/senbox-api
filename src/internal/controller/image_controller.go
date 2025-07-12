@@ -231,3 +231,4 @@ func (receiver *ImageController) DeleteImage(context *gin.Context) {
 		Message: "image deleted successfully",
 	})
 }
+
