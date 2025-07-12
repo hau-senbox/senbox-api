@@ -245,5 +245,6 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	answer := engine.Group("v1/answer", secureMiddleware.Secured())
 	{
 		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
+		answer.POST("/get-total-by-key-db", answerController.GetTotalNrByKeyAndDb)
 	}
 }

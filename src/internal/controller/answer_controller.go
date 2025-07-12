@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strings"
 
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
@@ -157,6 +158,53 @@ func (ctrl *AnswerController) GetByKeyAndDB(c *gin.Context) {
 		)
 		return
 	}
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (ctrl *AnswerController) GetTotalNrByKeyAndDb(c *gin.Context) {
+	var req request.GetTotalNrByKeyAndDbRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+	}
+
+	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
+
+	// check question key, question db NR
+	if attr.Key != nil && !strings.Contains(*attr.Key, "NR") {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request condition: the question key must contain NR!",
+		})
+		return
+	}
+
+	if attr.DB != nil && !strings.Contains(*attr.DB, "NR") {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid request condition: the question db must contain NR!",
+		})
+		return
+	}
+
+	res, err := ctrl.answerUseCase.GetTotalNrByKeyAndDb(repository.GetSubmissionByConditionParam{
+		Key:          attr.Key,
+		DB:           attr.DB,
+		DateDuration: attr.DateDuration,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+	}
+
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: res,
