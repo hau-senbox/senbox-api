@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"encoding/json"
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sort"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -113,4 +115,43 @@ func (uc *AnswerUseCase) GetTotalNrByKeyAndDb(input repository.GetSubmissionByCo
 	return response.GetTotalNrByKeyAndDbResponse{
 		Total: total,
 	}, nil
+}
+
+func (uc *AnswerUseCase) GetChartTotalByDay(input repository.GetSubmissionByConditionParam) ([]response.ChartDataResponse, error) {
+	answers, err := uc.answerRepo.GetChartTotalByKeyAndDb(input)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]float32)
+
+	for _, ans := range answers {
+		// Parse ngày yyyy-MM-dd
+		day := ans.CreatedAt.Format("2006-01-02")
+
+		// Parse từ RawMessage
+		var strValue string
+		if err := json.Unmarshal(ans.Response, &strValue); err != nil {
+			continue
+		}
+		if value, err := strconv.ParseFloat(strValue, 32); err == nil {
+			result[day] += float32(value)
+		}
+	}
+
+	// Convert map to slice, đảm bảo có thứ tự
+	var chartData []response.ChartDataResponse
+	for day, total := range result {
+		chartData = append(chartData, response.ChartDataResponse{
+			X: day,
+			Y: fmt.Sprintf("%.2f", total),
+		})
+	}
+
+	// Sắp xếp theo ngày tăng dần (nếu cần)
+	sort.Slice(chartData, func(i, j int) bool {
+		return chartData[i].X < chartData[j].X
+	})
+
+	return chartData, nil
 }
