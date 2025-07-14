@@ -30,7 +30,7 @@ func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfNa
 	finalFileName := fmt.Sprintf("%s_%d%s", pdfName, timestamp, fileExt)
 
 	if strings.TrimSpace(folder) == "" {
-		folder = "img"
+		folder = "pdf"
 	}
 
 	// Determine dimensions only for raster images

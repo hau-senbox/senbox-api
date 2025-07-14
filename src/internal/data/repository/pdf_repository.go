@@ -28,7 +28,7 @@ func (receiver *PdfRepository) GetByKey(key string) (*entity.SPdf, error) {
 	err := receiver.DBConn.Model(&entity.SPdf{}).Where("`key` = ?", key).First(&pdf).Error
 	if err != nil {
 		log.Error("PdfRepository.GetByKey: " + err.Error())
-		return nil, errors.New("failed to get image")
+		return nil, errors.New("failed to get pdf")
 	}
 
 	return &pdf, nil
