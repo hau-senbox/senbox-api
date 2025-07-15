@@ -17,7 +17,7 @@ type PdfController struct {
 }
 
 type getAllKeyByOrgIDRequest struct {
-	OrgID int64 `json:"org_id"`
+	OrgID string `json:"org_id"`
 }
 
 func (receiver *PdfController) CreatePDF(context *gin.Context) {
@@ -118,7 +118,7 @@ func (recervier *PdfController) GetUrlByKey(context *gin.Context) {
 		return
 	}
 
-	url, err := recervier.GetPdfByKey(req.Key, mode)
+	res, err := recervier.GetPdfByKey(req.Key, mode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -130,7 +130,7 @@ func (recervier *PdfController) GetUrlByKey(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "pdf was get successfully",
-		Data:    *url,
+		Data:    *res,
 	})
 }
 
