@@ -41,6 +41,7 @@ type ImportFormsUseCase struct {
 	SpreadsheetReader               *sheet.Reader
 	SpreadsheetWriter               *sheet.Writer
 	SettingRepository               *repository.SettingRepository
+	RoleOrgSignUpRepo               *repository.RoleOrgSignUpRepository
 	DefaultCronJobIntervalInMinutes uint8
 	TimeMachine                     *job.TimeMachine
 	config.AppConfig
@@ -384,6 +385,16 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 			continue
 		}
 
+		// luu vao bang RoleOrgSignUp
+		if row[3].(string) != "" {
+			err = receiver.RoleOrgSignUpRepo.UpdateOrCreate(&entity.SRoleOrgSignUp{
+				RoleName: row[3].(string),
+				OrgCode:  code,
+			})
+			if err != nil {
+				return fmt.Errorf("error importing sign up forms step save into RoleOrgSignUp: %s", err.Error())
+			}
+		}
 		url := row[1].(string)
 		//validate spreadsheet url
 		if !strings.Contains(url, "https://docs.google.com/spreadsheets/d/") {

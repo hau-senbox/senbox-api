@@ -67,6 +67,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.MemoryComponentValue{},
 		&entity.SUserParentChild{},
 		&entity.SAnswer{},
+		&entity.SRoleOrgSignUp{},
 	)
 
 	// Seed
