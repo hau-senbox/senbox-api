@@ -160,6 +160,17 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
+	pdfController := &controller.PdfController{
+		UploadPDFUseCase: &usecase.UploadPDFUseCase{
+			PdfRepository: &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+		GetPdfByKeyUseCase: &usecase.GetPdfByKeyUseCase{
+			PdfRepository: &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+	}
+
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
 	v1 := engine.Group("v1/device")
@@ -242,10 +253,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/delete", imageController.DeleteImage)
 	}
 
-	answer := engine.Group("v1/answer", secureMiddleware.Secured())
+	pdf := engine.Group("v1/pdfs", secureMiddleware.Secured())
 	{
-		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
-		answer.POST("/get-total-by-key-db", answerController.GetTotalNrByKeyAndDb)
-		answer.POST("/get-chart-nr", answerController.GetChartNrByKeyAndDb)
+		pdf.POST("upload", pdfController.CreatePDF)
+		pdf.POST("", pdfController.GetUrlByKey)
 	}
 }
