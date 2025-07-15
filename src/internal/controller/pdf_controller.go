@@ -7,7 +7,6 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,14 +41,6 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		})
 		return
 	}
-	orgID, err := strconv.ParseInt(orgIDString, 10, 64)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Code:  http.StatusBadRequest,
-			Error: "Invalid org_id: must be an integer",
-		})
-		return
-	}
 	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -78,7 +69,7 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		return
 	}
 
-	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode, orgID)
+	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode, orgIDString)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -143,8 +134,10 @@ func (recervier *PdfController) GetUrlByKey(context *gin.Context) {
 	})
 }
 
-func ( recervier *PdfController) GetAllKeyByOrgID(context *gin.Context) {
+func (recervier *PdfController) GetAllKeyByOrgID(context *gin.Context) {
+
 	var req getAllKeyByOrgIDRequest
+
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
