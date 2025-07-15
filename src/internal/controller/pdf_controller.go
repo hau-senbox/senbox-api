@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,10 @@ import (
 type PdfController struct {
 	*usecase.UploadPDFUseCase
 	*usecase.GetPdfByKeyUseCase
+}
+
+type getAllKeyByOrgIDRequest struct {
+	OrgID int64 `json:"org_id"`
 }
 
 func (receiver *PdfController) CreatePDF(context *gin.Context) {
@@ -29,6 +34,22 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 
 	folder := context.DefaultPostForm("folder", "pdf")
 	fileName := context.DefaultPostForm("file_name", randx.GenString(10))
+	orgIDString := context.DefaultPostForm("org_id", "")
+	if orgIDString == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Missing org_id",
+		})
+		return
+	}
+	orgID, err := strconv.ParseInt(orgIDString, 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid org_id: must be an integer",
+		})
+		return
+	}
 	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -57,7 +78,7 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		return
 	}
 
-	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode)
+	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode, orgID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -78,10 +99,11 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "pdf was create successfully",
 		Data: response.PdfResponse{
-			PdfName:   pdf.PdfName,
-			Key:       pdf.Key,
-			Extension: pdf.Extension,
-			Url:       *url,
+			PdfName:        pdf.PdfName,
+			Key:            pdf.Key,
+			OrganizationID: pdf.OrganizationID,
+			Extension:      pdf.Extension,
+			Url:            *url,
 		},
 	})
 }
@@ -118,5 +140,31 @@ func (recervier *PdfController) GetUrlByKey(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "pdf was get successfully",
 		Data:    *url,
+	})
+}
+
+func ( recervier *PdfController) GetAllKeyByOrgID(context *gin.Context) {
+	var req getAllKeyByOrgIDRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	pdfs, err := recervier.GetPdfByKeyUseCase.GetAllKeyByOrgID(req.OrgID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "pdfs were get successfully",
+		Data:    pdfs,
 	})
 }
