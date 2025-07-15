@@ -53,6 +53,21 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 	}
 }
 
-func (u *GetPdfByKeyUseCase) GetAllKeyByOrgID(orgID string) ([]string, error) {
-	return u.PdfRepository.GetAllKeyByOrgID(orgID)
+func (u *GetPdfByKeyUseCase) GetAllKeyByOrgID(orgID string) ([]*response.PdfResponse, error) {
+
+	keyPdf, err := u.PdfRepository.GetAllKeyByOrgID(orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pdfs []*response.PdfResponse
+	for _, key := range keyPdf {
+		pdf, err := u.GetPdfByKey(key, uploader.UploadPublic)
+		if err != nil {
+			return nil, err
+		}
+		pdfs = append(pdfs, pdf)
+	}
+
+	return pdfs, nil
 }
