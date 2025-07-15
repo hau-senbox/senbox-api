@@ -34,7 +34,7 @@ func (receiver *PdfRepository) GetByKey(key string) (*entity.SPdf, error) {
 	return &pdf, nil
 }
 
-func (receiver *PdfRepository) GetAllKeyByOrgID(orgID int64) ([]string, error) {
+func (receiver *PdfRepository) GetAllKeyByOrgID(orgID string) ([]string, error) {
 	var pdfs []entity.SPdf
 	err := receiver.DBConn.Model(&entity.SPdf{}).Where("`organization_id` = ?", orgID).Find(&pdfs).Error
 	if err != nil {
