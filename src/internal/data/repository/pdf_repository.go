@@ -49,3 +49,10 @@ func (receiver *PdfRepository) GetAllKeyByOrgID(orgID string) ([]string, error) 
 
 	return keys, nil
 }
+
+func (receiver *PdfRepository) DeletePDF(key string) (error) {
+	if err := receiver.DBConn.Model(&entity.SPdf{}).Where("`key` = ?", key).Delete(&entity.SPdf{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
