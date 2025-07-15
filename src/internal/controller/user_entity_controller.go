@@ -1490,5 +1490,8 @@ func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) 
 		})
 		return
 	}
-	context.JSON(http.StatusOK, roles)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: roles,
+	})
 }

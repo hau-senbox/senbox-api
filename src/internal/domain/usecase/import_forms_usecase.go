@@ -468,6 +468,8 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 				Status:            "1",
 				RowNumber:         index + 1,
 				QuestionUniqueID:  uniqueID,
+				Key:               row[0].(string),
+				DB:                row[1].(string),
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
