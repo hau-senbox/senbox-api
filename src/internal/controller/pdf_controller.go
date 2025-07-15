@@ -14,10 +14,11 @@ import (
 type PdfController struct {
 	*usecase.UploadPDFUseCase
 	*usecase.GetPdfByKeyUseCase
+	*usecase.DeletePDFUseCase
 }
 
-type getAllKeyByOrgIDRequest struct {
-	OrgID string `json:"org_id"`
+type deletePDFByKeyRequest struct {
+	Key string `json:"key"`
 }
 
 func (receiver *PdfController) CreatePDF(context *gin.Context) {
@@ -136,17 +137,16 @@ func (recervier *PdfController) GetUrlByKey(context *gin.Context) {
 
 func (recervier *PdfController) GetAllKeyByOrgID(context *gin.Context) {
 
-	var req getAllKeyByOrgIDRequest
-
-	if err := context.ShouldBindJSON(&req); err != nil {
+	orgID := context.Query("org_id")
+	if orgID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: err.Error(),
+			Error: "org_id is required",
 		})
 		return
 	}
 
-	pdfs, err := recervier.GetPdfByKeyUseCase.GetAllKeyByOrgID(req.OrgID)
+	pdfs, err := recervier.GetPdfByKeyUseCase.GetAllKeyByOrgID(orgID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -159,5 +159,30 @@ func (recervier *PdfController) GetAllKeyByOrgID(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "pdfs were get successfully",
 		Data:    pdfs,
+	})
+}
+
+func (recervier *PdfController) DeletePDF(context *gin.Context) {
+	var req deletePDFByKeyRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := recervier.DeletePDFUseCase.DeletePDF(req.Key)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "pdf deleted successfully",
 	})
 }
