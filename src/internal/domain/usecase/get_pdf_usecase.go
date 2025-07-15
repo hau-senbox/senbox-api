@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/uploader"
 	"time"
 )
@@ -13,7 +14,7 @@ type GetPdfByKeyUseCase struct {
 	*repository.PdfRepository
 }
 
-func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (*string, error) {
+func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (*response.PdfResponse, error) {
 
 	pdf, err := u.PdfRepository.GetByKey(key)
 	if err != nil {
@@ -22,15 +23,36 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 
 	switch mode {
 	case uploader.UploadPrivate:
-		return u.GetFileUploaded(context.Background(), pdf.Key, nil)
+		url, err := u.GetFileUploaded(context.Background(), pdf.Key, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return &response.PdfResponse{
+			Url:            *url,
+			PdfName:        pdf.PdfName,
+			OrganizationID: pdf.OrganizationID,
+			Key:            pdf.Key,
+			Extension:      pdf.Extension,
+		}, nil
 	case uploader.UploadPublic:
 		duration := time.Now().AddDate(10, 0, 0).Sub(time.Now())
-		return u.GetFileUploaded(context.Background(), pdf.Key, &duration)
+		url, err := u.GetFileUploaded(context.Background(), pdf.Key, &duration)
+		if err != nil {
+			return nil, err
+		}
+		return &response.PdfResponse{
+			Url:            *url,
+			PdfName:        pdf.PdfName,
+			OrganizationID: pdf.OrganizationID,
+			Key:            pdf.Key,
+			Extension:      pdf.Extension,
+		}, nil
 	default:
 		return nil, errors.New("invalid upload mode")
 	}
 }
 
-func (u *GetPdfByKeyUseCase) GetAllKeyByOrgID(orgID int64) ([]string, error) {
+func (u *GetPdfByKeyUseCase) GetAllKeyByOrgID(orgID string) ([]string, error) {
 	return u.PdfRepository.GetAllKeyByOrgID(orgID)
 }
