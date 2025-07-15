@@ -131,9 +131,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
-	// answerRepo := repository.AnswerRepository{DBConn: dbConn}
-	// answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
-	// answerController := controller.NewAnswerController(answerUseCase)
+	answerRepo := repository.AnswerRepository{DBConn: dbConn}
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
+	answerController := controller.NewAnswerController(answerUseCase)
 
 	provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -263,5 +263,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		pdf.POST("", pdfController.GetUrlByKey)
 		pdf.GET("", pdfController.GetAllKeyByOrgID)
 		pdf.DELETE("", pdfController.DeletePDF)
+	}
+
+	answer := engine.Group("v1/answer", secureMiddleware.Secured())
+	{
+		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
 	}
 }
