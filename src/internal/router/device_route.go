@@ -131,9 +131,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
-	answerRepo := repository.AnswerRepository{DBConn: dbConn}
-	answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
-	answerController := controller.NewAnswerController(answerUseCase)
+	// answerRepo := repository.AnswerRepository{DBConn: dbConn}
+	// answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository)
+	// answerController := controller.NewAnswerController(answerUseCase)
 
 	provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -162,12 +162,12 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	pdfController := &controller.PdfController{
 		UploadPDFUseCase: &usecase.UploadPDFUseCase{
-			PdfRepository: &repository.PdfRepository{DBConn: dbConn},
-			UploadProvider:  provider,
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
 		},
 		GetPdfByKeyUseCase: &usecase.GetPdfByKeyUseCase{
-			PdfRepository: &repository.PdfRepository{DBConn: dbConn},
-			UploadProvider:  provider,
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
 		},
 	}
 
@@ -257,5 +257,6 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	{
 		pdf.POST("upload", pdfController.CreatePDF)
 		pdf.POST("", pdfController.GetUrlByKey)
+		pdf.GET("", pdfController.GetAllKeyByOrgID)
 	}
 }

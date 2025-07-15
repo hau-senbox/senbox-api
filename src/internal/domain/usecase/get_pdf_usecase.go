@@ -30,3 +30,7 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 		return nil, errors.New("invalid upload mode")
 	}
 }
+
+func (u *GetPdfByKeyUseCase) GetAllKeyByOrgID(orgID int64) ([]string, error) {
+	return u.PdfRepository.GetAllKeyByOrgID(orgID)
+}

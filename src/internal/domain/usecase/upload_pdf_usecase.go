@@ -18,7 +18,7 @@ type UploadPDFUseCase struct {
 	*repository.PdfRepository
 }
 
-func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfName string, mode uploader.UploadMode) (*string, *entity.SPdf, error) {
+func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfName string, mode uploader.UploadMode, ogrID int64) (*string, *entity.SPdf, error) {
 	fileExt := strings.ToLower(path.Ext(fileName))
 
 	if !isValidHandler(fileExt) {
@@ -43,10 +43,11 @@ func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfNa
 	}
 
 	pdf := &entity.SPdf{
-		PdfName:   pdfName,
-		Folder:    folder,
-		Key:       uploadPath,
-		Extension: fileExt,
+		PdfName:        pdfName,
+		Folder:         folder,
+		OrganizationID: uint64(ogrID),
+		Key:            uploadPath,
+		Extension:      fileExt,
 	}
 
 	err = receiver.PdfRepository.Save(pdf)

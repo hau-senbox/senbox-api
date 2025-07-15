@@ -33,3 +33,19 @@ func (receiver *PdfRepository) GetByKey(key string) (*entity.SPdf, error) {
 
 	return &pdf, nil
 }
+
+func (receiver *PdfRepository) GetAllKeyByOrgID(orgID int64) ([]string, error) {
+	var pdfs []entity.SPdf
+	err := receiver.DBConn.Model(&entity.SPdf{}).Where("`organization_id` = ?", orgID).Find(&pdfs).Error
+	if err != nil {
+		log.Error("PdfRepository.GetAllKeyByOrgID: " + err.Error())
+		return nil, errors.New("failed to get pdf")
+	}
+
+	var keys []string
+	for _, pdf := range pdfs {
+		keys = append(keys, pdf.Key)
+	}
+
+	return keys, nil
+}
