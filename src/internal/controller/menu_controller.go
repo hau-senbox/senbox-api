@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/samber/lo"
 	"net/http"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/menu"
@@ -10,6 +8,9 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sort"
+
+	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 )
 
 type MenuController struct {
@@ -569,4 +570,8 @@ func (receiver *MenuController) UploadDeviceMenu(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "menu was upload successfully",
 	})
+}
+
+func (reciver *MenuController) GetCommonMenu(context *gin.Context) {
+
 }

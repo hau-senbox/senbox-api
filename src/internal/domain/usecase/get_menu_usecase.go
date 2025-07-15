@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"errors"
-	"github.com/samber/lo"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
+
+	"github.com/samber/lo"
 )
 
 type GetMenuUseCase struct {
@@ -81,4 +82,8 @@ func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMen
 
 func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]menu.DeviceMenu, error) {
 	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
+}
+
+func (receiver *GetMenuUseCase) GetCommonMenu() ([]menu.UserMenu, error) {
+
 }
