@@ -139,6 +139,6 @@ func buildComponent(id, name, key, formQR string) response.ComponentResponse {
 		Name:  name,
 		Type:  "button_form",
 		Key:   key,
-		Value: string(valueBytes),
+		Value: json.RawMessage(valueBytes),
 	}
 }
