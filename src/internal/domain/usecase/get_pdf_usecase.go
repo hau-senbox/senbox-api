@@ -45,7 +45,7 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 			Url:            *url,
 			PdfName:        pdf.PdfName,
 			OrganizationID: pdf.OrganizationID,
-			Key:            pdf.Key,
+			Key:            pdf.Key,	
 			Extension:      pdf.Extension,
 		}, nil
 	default:

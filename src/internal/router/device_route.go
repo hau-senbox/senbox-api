@@ -169,6 +169,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
 			UploadProvider: provider,
 		},
+		DeletePDFUseCase: &usecase.DeletePDFUseCase{
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
+		},
 	}
 
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
@@ -258,5 +262,6 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		pdf.POST("upload", pdfController.CreatePDF)
 		pdf.POST("", pdfController.GetUrlByKey)
 		pdf.GET("", pdfController.GetAllKeyByOrgID)
+		pdf.DELETE("", pdfController.DeletePDF)
 	}
 }
