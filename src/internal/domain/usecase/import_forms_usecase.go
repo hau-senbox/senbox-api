@@ -366,7 +366,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetID: signUpFormsSpreadsheetID,
-		ReadRange:     "Forms" + `!K11:M`,
+		ReadRange:     "Forms" + `!K11:N`,
 	})
 	if err != nil || values == nil {
 		log.Error(err)
@@ -386,7 +386,8 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 		}
 
 		// luu vao bang RoleOrgSignUp
-		if row[3].(string) != "" {
+		// Đảm bảo có đủ ít nhất 4 phần tử
+		if len(row) > 3 && row[3] != nil && row[3].(string) != "" {
 			err = receiver.RoleOrgSignUpRepo.UpdateOrCreate(&entity.SRoleOrgSignUp{
 				RoleName: row[3].(string),
 				OrgCode:  code,
@@ -395,6 +396,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 				return fmt.Errorf("error importing sign up forms step save into RoleOrgSignUp: %s", err.Error())
 			}
 		}
+
 		url := row[1].(string)
 		//validate spreadsheet url
 		if !strings.Contains(url, "https://docs.google.com/spreadsheets/d/") {

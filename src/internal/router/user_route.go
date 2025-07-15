@@ -97,6 +97,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
 		},
+		RoleOrgSignUpUseCase: &usecase.RoleOrgSignUpUseCase{
+			Repo: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		},
 	}
 
 	userRoleController := &controller.RoleController{
@@ -215,6 +218,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
 		user.POST("/pre-register/", userEntityController.CreatePreRegister)
+		user.GET("/role-sign-up", userEntityController.GetAllRoleOrgSignUp)
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")

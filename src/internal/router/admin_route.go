@@ -42,6 +42,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		SpreadsheetReader:               uploaderSpreadsheet.Reader,
 		SpreadsheetWriter:               uploaderSpreadsheet.Writer,
 		SettingRepository:               settingRepository,
+		RoleOrgSignUpRepo:               &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 		DefaultCronJobIntervalInMinutes: config.DefaultCronJobIntervalInMinutes,
 		TimeMachine:                     usecase.TheTimeMachine,
 		AppConfig:                       config,

@@ -34,3 +34,9 @@ func (r *RoleOrgSignUpRepository) UpdateOrCreate(role *entity.SRoleOrgSignUp) er
 	role.ID = existing.ID // giữ nguyên ID
 	return r.DBConn.Model(&existing).Updates(role).Error
 }
+
+func (r *RoleOrgSignUpRepository) GetAll() ([]entity.SRoleOrgSignUp, error) {
+	var roles []entity.SRoleOrgSignUp
+	err := r.DBConn.Find(&roles).Error
+	return roles, err
+}

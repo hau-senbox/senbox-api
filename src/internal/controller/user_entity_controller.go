@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bufio"
-	"github.com/samber/lo"
 	"net/http"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -10,6 +9,8 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"strconv"
 	"strings"
+
+	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +35,7 @@ type UserEntityController struct {
 	*usecase.ApproveUserFormApplicationUseCase
 	*usecase.BlockUserFormApplicationUseCase
 	*usecase.UploadUserAvatarUseCase
+	*usecase.RoleOrgSignUpUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1477,4 +1479,16 @@ func (receiver *UserEntityController) UploadAvatar(context *gin.Context) {
 			Height:    img.Height,
 		},
 	})
+}
+
+func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) {
+	roles, err := receiver.RoleOrgSignUpUseCase.GetAll()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, roles)
 }
