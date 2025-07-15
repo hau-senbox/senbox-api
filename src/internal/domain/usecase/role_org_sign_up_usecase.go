@@ -25,3 +25,8 @@ func (uc *RoleOrgSignUpUseCase) UpdateOrCreateExecute(role *entity.SRoleOrgSignU
 func (uc *RoleOrgSignUpUseCase) GetAll() ([]entity.SRoleOrgSignUp, error) {
 	return uc.Repo.GetAll()
 }
+
+// GetByRoleName: Gọi GetByRoleName từ repository
+func (uc *RoleOrgSignUpUseCase) GetByRoleName(roleName string) (*entity.SRoleOrgSignUp, error) {
+	return uc.Repo.GetByRoleName(roleName)
+}

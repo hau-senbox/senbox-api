@@ -153,10 +153,13 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			SessionRepository:    sessionRepository,
 		},
 		GetMenuUseCase: &usecase.GetMenuUseCase{
-			MenuRepository:         &repository.MenuRepository{DBConn: dbConn},
-			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
-			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
-			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
+			MenuRepository:          &repository.MenuRepository{DBConn: dbConn},
+			UserEntityRepository:    &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository:  &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:        &repository.DeviceRepository{DBConn: dbConn},
+			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			FormRepository:          &repository.FormRepository{DBConn: dbConn},
+			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},

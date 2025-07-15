@@ -351,6 +351,15 @@ func (receiver *SubmissionRepository) GetSubmission4MemoriesForm(param GetSubmis
 	return data.Items, nil
 }
 
-// func (receiver *SubmissionRepository) GetSubmission4ListRes(param GetSubmissionByConditionParam) (*SubmissionData, error) {
+func (r *SubmissionRepository) GetByUserIdAndFormId(userID string, formID uint64) (*entity.SSubmission, error) {
+	var submission entity.SSubmission
 
-// }
+	err := r.DBConn.Where("user_id = ? AND form_id = ?", userID, formID).
+		First(&submission).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &submission, nil
+}

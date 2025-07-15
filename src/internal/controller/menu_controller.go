@@ -572,6 +572,10 @@ func (receiver *MenuController) UploadDeviceMenu(context *gin.Context) {
 	})
 }
 
-func (reciver *MenuController) GetCommonMenu(context *gin.Context) {
-
+func (receiver *MenuController) GetCommonMenu(context *gin.Context) {
+	result := receiver.GetMenuUseCase.GetCommonMenu(context)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: result,
+	})
 }

@@ -40,3 +40,12 @@ func (r *RoleOrgSignUpRepository) GetAll() ([]entity.SRoleOrgSignUp, error) {
 	err := r.DBConn.Find(&roles).Error
 	return roles, err
 }
+
+func (r *RoleOrgSignUpRepository) GetByRoleName(roleName string) (*entity.SRoleOrgSignUp, error) {
+	var role entity.SRoleOrgSignUp
+	err := r.DBConn.Where("role_name = ?", roleName).First(&role).Error
+	if err != nil {
+		return nil, err
+	}
+	return &role, nil
+}

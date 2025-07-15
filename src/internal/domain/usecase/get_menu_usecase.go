@@ -4,17 +4,25 @@ import (
 	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
+	"gorm.io/datatypes"
 )
 
 type GetMenuUseCase struct {
-	MenuRepository         *repository.MenuRepository
-	UserEntityRepository   *repository.UserEntityRepository
-	OrganizationRepository *repository.OrganizationRepository
-	DeviceRepository       *repository.DeviceRepository
+	MenuRepository          *repository.MenuRepository
+	UserEntityRepository    *repository.UserEntityRepository
+	OrganizationRepository  *repository.OrganizationRepository
+	DeviceRepository        *repository.DeviceRepository
+	RoleOrgSignUpRepository *repository.RoleOrgSignUpRepository
+	FormRepository          *repository.FormRepository
+	SubmissionRepository    *repository.SubmissionRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -84,6 +92,70 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
 }
 
-func (receiver *GetMenuUseCase) GetCommonMenu() ([]menu.UserMenu, error) {
+func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
+	componentsList := []components.Component{
+		{
+			ID:   uuid.New(),
+			Name: "My Account",
+			Type: "button_form",
+			Key:  "account_profile",
+			Value: datatypes.JSON([]byte(`{
+				"visible": true,
+				"icon": "",
+				"color": "#86DEFF",
+				"form_qr": "SENBOX.ORG/ACCOUNT-PROFILE"
+			}`)),
+		},
+		{
+			ID:   uuid.New(),
+			Name: "Add Roles",
+			Type: "button_form",
+			Key:  "add_roles",
+			Value: datatypes.JSON([]byte(`{
+				"visible": true,
+				"icon": "",
+				"color": "#86DEFF",
+				"form_qr": "SENBOX.ORG/ADD-ROLES"
+			}`)),
+		},
+	}
 
+	// 1. Get role "Child"
+	var childOrgCode string
+	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+	if err == nil && roleSignUp != nil && roleSignUp.OrgCode != "" {
+		childOrgCode = roleSignUp.OrgCode
+	}
+
+	// 2. Get form by QRCode (childOrgCode)
+	form, _ := receiver.FormRepository.GetFormByQRCode(childOrgCode)
+
+	var formChildId uint64
+	if form != nil {
+		formChildId = form.ID
+	}
+
+	userID := ctx.GetString("user_id")
+
+	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
+	if err == nil && submission != nil {
+		childComponent := components.Component{
+			ID:   uuid.New(),
+			Name: "Child Profile",
+			Type: "button_form",
+			Key:  "child_profile",
+			Value: datatypes.JSON([]byte(`{
+			"visible": true,
+			"icon": "",
+			"color": "#86DEFF",
+			"form_qr": "SENBOX.ORG/CHILD-PROFILE"
+		}`)),
+		}
+		componentsList = append(componentsList, childComponent)
+	}
+
+	// Trả về danh sách component
+	return response.GetCommonMenuResponse{
+		Component: componentsList,
+	}
 }
