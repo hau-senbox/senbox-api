@@ -1,7 +1,14 @@
 package response
 
-import "sen-global-api/internal/domain/entity/components"
-
 type GetCommonMenuResponse struct {
-	Component []components.Component `json:"components"`
+	Component []ComponentResponse `json:"components"`
+}
+
+type ComponentResponse struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	Order int    `json:"order"`
 }

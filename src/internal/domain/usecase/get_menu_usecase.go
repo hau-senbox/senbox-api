@@ -1,10 +1,10 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
-	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -12,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"gorm.io/datatypes"
 )
 
 type GetMenuUseCase struct {
@@ -93,31 +92,9 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 }
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
-	componentsList := []components.Component{
-		{
-			ID:   uuid.New(),
-			Name: "My Account",
-			Type: "button_form",
-			Key:  "account_profile",
-			Value: datatypes.JSON([]byte(`{
-				"visible": true,
-				"icon": "",
-				"color": "#86DEFF",
-				"form_qr": "SENBOX.ORG/ACCOUNT-PROFILE"
-			}`)),
-		},
-		{
-			ID:   uuid.New(),
-			Name: "Add Roles",
-			Type: "button_form",
-			Key:  "add_roles",
-			Value: datatypes.JSON([]byte(`{
-				"visible": true,
-				"icon": "",
-				"color": "#86DEFF",
-				"form_qr": "SENBOX.ORG/ADD-ROLES"
-			}`)),
-		},
+	componentsList := []response.ComponentResponse{
+		buildComponent(uuid.NewString(), "My Account", "account_profile", "SENBOX.ORG/ACCOUNT-PROFILE"),
+		buildComponent(uuid.NewString(), "Add Roles", "add_roles", "SENBOX.ORG/ADD-ROLES"),
 	}
 
 	// 1. Get role "Child"
@@ -136,26 +113,32 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 	}
 
 	userID := ctx.GetString("user_id")
-
 	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
+
 	if err == nil && submission != nil {
-		childComponent := components.Component{
-			ID:   uuid.New(),
-			Name: "Child Profile",
-			Type: "button_form",
-			Key:  "child_profile",
-			Value: datatypes.JSON([]byte(`{
-			"visible": true,
-			"icon": "",
-			"color": "#86DEFF",
-			"form_qr": "SENBOX.ORG/CHILD-PROFILE"
-		}`)),
-		}
+		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "SENBOX.ORG/CHILD-PROFILE")
 		componentsList = append(componentsList, childComponent)
 	}
 
-	// Trả về danh sách component
 	return response.GetCommonMenuResponse{
 		Component: componentsList,
+	}
+}
+
+func buildComponent(id, name, key, formQR string) response.ComponentResponse {
+	valueObject := map[string]interface{}{
+		"visible": true,
+		"icon":    "",
+		"color":   "#86DEFF",
+		"form_qr": formQR,
+	}
+	valueBytes, _ := json.Marshal(valueObject)
+
+	return response.ComponentResponse{
+		ID:    id,
+		Name:  name,
+		Type:  "button_form",
+		Key:   key,
+		Value: string(valueBytes),
 	}
 }

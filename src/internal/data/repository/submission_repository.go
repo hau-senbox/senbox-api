@@ -355,6 +355,7 @@ func (r *SubmissionRepository) GetByUserIdAndFormId(userID string, formID uint64
 	var submission entity.SSubmission
 
 	err := r.DBConn.Where("user_id = ? AND form_id = ?", userID, formID).
+		Order("created_at DESC").
 		First(&submission).Error
 
 	if err != nil {
