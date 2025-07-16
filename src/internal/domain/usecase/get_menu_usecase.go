@@ -163,7 +163,19 @@ func buildComponent(id, name, key, icon, typeName, formQR string) response.Compo
 		Value: string(valueBytes),
 	}
 }
-func (receiver *GetMenuUseCase) GetSectionMenu() ([]components.Component, error) {
 
-	return receiver.ComponentRepository.GetAllByKey("section-menu")
+func (receiver *GetMenuUseCase) GetSectionMenu() (map[string][]components.Component, error) {
+	componentsList, err := receiver.ComponentRepository.GetAllByKey("section-menu")
+	if err != nil {
+		return nil, err
+	}
+
+	// Group by section_id
+	grouped := make(map[string][]components.Component)
+	for _, c := range componentsList {
+		sectionID := c.SectionID
+		grouped[sectionID] = append(grouped[sectionID], c)
+	}
+
+	return grouped, nil
 }
