@@ -134,11 +134,22 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 
 func buildComponent(id, name, key, icon, formQR string) response.ComponentResponse {
 	valueObject := map[string]interface{}{
+		"id":   "",
+		"name": "",
+		"type": "",
+		"key":  "",
+		"value": map[string]interface{}{
+			"visible": true,
+			"icon":    icon,
+			"color":   "#86DEFF",
+			"form_qr": formQR,
+		},
 		"visible": true,
 		"icon":    icon,
 		"color":   "#86DEFF",
 		"form_qr": formQR,
 	}
+
 	valueBytes, _ := json.Marshal(valueObject)
 
 	return response.ComponentResponse{
