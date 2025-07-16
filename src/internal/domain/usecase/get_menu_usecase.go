@@ -93,7 +93,7 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{
-		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "icon/accident_and_injury_report_1745206766342940327.png", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
+		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
 	}
 
 	return response.GetCommonMenuResponse{
@@ -123,7 +123,7 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
 
 	if err == nil && submission != nil {
-		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "icon/accident_and_injury_report_1745206766342940327.png", "SENBOX.ORG/CHILD-PROFILE")
+		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/CHILD-PROFILE")
 		componentsList = append(componentsList, childComponent)
 	}
 
@@ -132,11 +132,11 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	}
 }
 
-func buildComponent(id, name, key, icon, formQR string) response.ComponentResponse {
+func buildComponent(id, name, key, icon, typeName, formQR string) response.ComponentResponse {
 	valueObject := map[string]interface{}{
-		"id":   "",
-		"name": "",
-		"type": "",
+		"id":   id,
+		"name": name,
+		"type": typeName,
 		"key":  "",
 		"value": map[string]interface{}{
 			"visible": true,
@@ -155,7 +155,7 @@ func buildComponent(id, name, key, icon, formQR string) response.ComponentRespon
 	return response.ComponentResponse{
 		ID:    id,
 		Name:  name,
-		Type:  "button_form",
+		Type:  typeName,
 		Key:   key,
 		Value: string(valueBytes),
 	}
