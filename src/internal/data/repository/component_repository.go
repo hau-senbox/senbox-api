@@ -245,22 +245,19 @@ func (receiver *ComponentRepository) DeleteBySectionID(sectionID string, tx *gor
 	return nil
 }
 
-func (receiver *ComponentRepository) GetByKey(key string) (*components.Component, error) {
-	var component components.Component
+func (receiver *ComponentRepository) GetAllByKey(key string) ([]components.Component, error) {
+	var componentsList []components.Component
 
 	err := receiver.DBConn.
 		Where("`key` = ?", key).
-		First(&component).Error
+		Find(&componentsList).Error
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		log.Error("ComponentRepository.GetByKey: " + err.Error())
-		return nil, errors.New("failed to get component by key")
+		log.Error("ComponentRepository.GetAllByKey: " + err.Error())
+		return nil, errors.New("failed to get components by key")
 	}
 
-	return &component, nil
+	return componentsList, nil
 }
 
 func (receiver *ComponentRepository) GetBySectionID(sectionID string) (*components.Component, error) {

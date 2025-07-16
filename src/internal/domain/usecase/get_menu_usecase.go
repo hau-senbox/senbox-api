@@ -163,7 +163,7 @@ func buildComponent(id, name, key, icon, typeName, formQR string) response.Compo
 		Value: string(valueBytes),
 	}
 }
-func (receiver *GetMenuUseCase) GetSectionMenu(sectionID string) (*components.Component, error) {
+func (receiver *GetMenuUseCase) GetSectionMenu() ([]components.Component, error) {
 
-	return receiver.ComponentRepository.GetBySectionID(sectionID)
+	return receiver.ComponentRepository.GetAllByKey("section-menu")
 }

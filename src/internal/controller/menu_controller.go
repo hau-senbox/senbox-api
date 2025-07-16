@@ -615,18 +615,8 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
-	sectionId := context.Param("id")
-	if sectionId == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "Section id is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
 
-	menus, err := receiver.GetMenuUseCase.GetSectionMenu(sectionId)
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
