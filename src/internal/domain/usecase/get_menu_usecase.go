@@ -104,20 +104,7 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{}
 
-	// 1. Get role "Child"
-	var childOrgCode string
-	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
-	if err == nil && roleSignUp != nil && roleSignUp.OrgCode != "" {
-		childOrgCode = roleSignUp.OrgCode
-	}
-
-	// 2. Get form by QRCode (childOrgCode)
-	form, _ := receiver.FormRepository.GetFormByQRCode(childOrgCode)
-
-	var formChildId uint64
-	if form != nil {
-		formChildId = form.ID
-	}
+	formChildId := receiver.getFormIDByRoleName("Child")
 
 	userID := ctx.GetString("user_id")
 	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
@@ -130,6 +117,20 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	return response.GetCommonMenuResponse{
 		Component: componentsList,
 	}
+}
+
+func (receiver *GetMenuUseCase) getFormIDByRoleName(roleName string) uint64 {
+	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+	if err != nil || roleSignUp == nil || roleSignUp.OrgCode == "" {
+		return 0
+	}
+
+	form, _ := receiver.FormRepository.GetFormByQRCode(roleSignUp.OrgCode)
+	if form != nil {
+		return form.ID
+	}
+
+	return 0
 }
 
 func buildComponent(id, name, key, icon, typeName, formQR string) response.ComponentResponse {
