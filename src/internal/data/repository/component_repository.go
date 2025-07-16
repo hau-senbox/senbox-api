@@ -2,11 +2,12 @@ package repository
 
 import (
 	"errors"
+	"sen-global-api/internal/domain/entity/components"
+	"sen-global-api/internal/domain/request"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
-	"sen-global-api/internal/domain/entity/components"
-	"sen-global-api/internal/domain/request"
 )
 
 type ComponentRepository struct {
@@ -61,6 +62,7 @@ func componentFromRequest(req request.CreateMenuComponentRequest) (*components.C
 	component.SetName(req.Name)
 	component.SetKey(req.Key)
 	component.SetValue(datatypes.JSON(req.Value))
+	component.SetSectionID(req.SectionId)
 
 	if err = component.NormalizeValue(); err != nil {
 		return nil, err
@@ -216,4 +218,65 @@ func (receiver *ComponentRepository) DeleteComponent(componentID string, tx *gor
 	}
 
 	return nil
+}
+
+func (receiver *ComponentRepository) DeleteBySectionID(sectionID string, tx *gorm.DB) error {
+	if tx == nil {
+		err := receiver.DBConn.
+			Where("section_id = ?", sectionID).
+			Delete(&components.Component{}).Error
+
+		if err != nil {
+			log.Error("ComponentRepository.DeleteBySectionID: " + err.Error())
+			return errors.New("failed to delete components by section_id")
+		}
+		return nil
+	}
+
+	err := tx.
+		Where("section_id = ?", sectionID).
+		Delete(&components.Component{}).Error
+
+	if err != nil {
+		_ = tx.Rollback()
+		log.Error("ComponentRepository.DeleteBySectionID: " + err.Error())
+		return errors.New("failed to delete components by section_id")
+	}
+	return nil
+}
+
+func (receiver *ComponentRepository) GetByKey(key string) (*components.Component, error) {
+	var component components.Component
+
+	err := receiver.DBConn.
+		Where("`key` = ?", key).
+		First(&component).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		log.Error("ComponentRepository.GetByKey: " + err.Error())
+		return nil, errors.New("failed to get component by key")
+	}
+
+	return &component, nil
+}
+
+func (receiver *ComponentRepository) GetBySectionID(sectionID string) (*components.Component, error) {
+	var component components.Component
+
+	err := receiver.DBConn.
+		Where("`section_id` = ?", sectionID).
+		First(&component).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		log.Error("ComponentRepository.GetByKey: " + err.Error())
+		return nil, errors.New("failed to get component by sectionID")
+	}
+
+	return &component, nil
 }

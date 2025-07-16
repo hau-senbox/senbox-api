@@ -79,9 +79,14 @@ func (receiver *UploadUserMenuUseCase) UploadSectionMenu(req request.UploadSecti
 			return err
 		}
 
-		if err := receiver.MenuRepository.DeleteSectionMenu(component.GetSectionID(), tx); err != nil {
+		if err := receiver.ComponentRepository.DeleteBySectionID(component.GetSectionID(), tx); err != nil {
 			return err
 		}
+	}
+
+	err := receiver.ComponentRepository.CreateComponents(&req.Components, tx)
+	if err != nil {
+		return err
 	}
 
 	if err := tx.Commit().Error; err != nil {

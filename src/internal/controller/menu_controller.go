@@ -23,12 +23,13 @@ type MenuController struct {
 }
 
 type componentResponse struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Type  string `json:"type"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-	Order int    `json:"order"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	Order     int    `json:"order"`
+	SectionID string `json:"section_id"`
 }
 
 type menuResponse struct {
@@ -610,5 +611,49 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Section menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
+	sectionId := context.Param("id")
+	if sectionId == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "Section id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu(sectionId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	// res := make([]componentResponse, 0)
+	// for _, m := range menus {
+	// 	res = append(res, componentResponse{
+	// 		ID:    m.Component.ID.String(),
+	// 		Name:  m.Component.Name,
+	// 		Type:  m.Component.Type.String(),
+	// 		Key:   m.Component.Key,
+	// 		Value: string(m.Component.Value),
+	// 		Order: m.Order,
+	// 	})
+	// }
+
+	// sort.Slice(res, func(i, j int) bool {
+	// 	return res[i].Order < res[j].Order
+	// })
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
 	})
 }

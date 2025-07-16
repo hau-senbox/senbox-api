@@ -296,13 +296,3 @@ func (receiver *MenuRepository) DeleteDeviceMenu(organizationID string, tx *gorm
 
 	return nil
 }
-
-func (receiver *MenuRepository) DeleteSectionMenu(sectionId string, tx *gorm.DB) error {
-	if err := tx.Exec("DELETE FROM component WHERE section_id = ?", sectionId).Error; err != nil {
-		_ = tx.Rollback()
-		log.Error("MenuRepository.DeleteSectionMenu: " + err.Error())
-		return errors.New("failed to delete section menu")
-	}
-
-	return nil
-}

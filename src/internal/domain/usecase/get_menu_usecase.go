@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -22,6 +23,7 @@ type GetMenuUseCase struct {
 	RoleOrgSignUpRepository *repository.RoleOrgSignUpRepository
 	FormRepository          *repository.FormRepository
 	SubmissionRepository    *repository.SubmissionRepository
+	ComponentRepository     *repository.ComponentRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -160,4 +162,8 @@ func buildComponent(id, name, key, icon, typeName, formQR string) response.Compo
 		Key:   key,
 		Value: string(valueBytes),
 	}
+}
+func (receiver *GetMenuUseCase) GetSectionMenu(sectionID string) (*components.Component, error) {
+
+	return receiver.ComponentRepository.GetBySectionID(sectionID)
 }

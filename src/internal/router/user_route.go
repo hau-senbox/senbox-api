@@ -299,6 +299,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)
+		userMenu.GET("/section/:id", menuController.GetSectionMenu)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)
