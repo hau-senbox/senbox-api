@@ -587,3 +587,28 @@ func (receiver *MenuController) GetCommonMenuByUser(context *gin.Context) {
 		Data: result,
 	})
 }
+
+func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
+	var req request.UploadSectionMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadUserMenuUseCase.UploadSectionMenu(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
