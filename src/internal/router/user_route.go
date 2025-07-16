@@ -305,6 +305,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.POST("/user", menuController.UploadUserMenu)
 		userMenu.POST("/device", menuController.UploadDeviceMenu)
 		userMenu.GET("/common", menuController.GetCommonMenu)
+		userMenu.GET("/common-by-user", menuController.GetCommonMenuByUser)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())

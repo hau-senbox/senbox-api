@@ -93,9 +93,39 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{
-		buildComponent(uuid.NewString(), "My Account", "account_profile", "SENBOX.ORG/ACCOUNT-PROFILE"),
-		buildComponent(uuid.NewString(), "Add Roles", "add_roles", "SENBOX.ORG/ADD-ROLES"),
+		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
 	}
+
+	// 1. Get role "Child"
+	var childOrgCode string
+	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+	if err == nil && roleSignUp != nil && roleSignUp.OrgCode != "" {
+		childOrgCode = roleSignUp.OrgCode
+	}
+
+	// 2. Get form by QRCode (childOrgCode)
+	form, _ := receiver.FormRepository.GetFormByQRCode(childOrgCode)
+
+	var formChildId uint64
+	if form != nil {
+		formChildId = form.ID
+	}
+
+	userID := ctx.GetString("user_id")
+	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
+
+	if err == nil && submission != nil {
+		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "SENBOX.ORG/CHILD-PROFILE")
+		componentsList = append(componentsList, childComponent)
+	}
+
+	return response.GetCommonMenuResponse{
+		Component: componentsList,
+	}
+}
+
+func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
+	componentsList := []response.ComponentResponse{}
 
 	// 1. Get role "Child"
 	var childOrgCode string
@@ -139,6 +169,6 @@ func buildComponent(id, name, key, formQR string) response.ComponentResponse {
 		Name:  name,
 		Type:  "button_form",
 		Key:   key,
-		Value: json.RawMessage(valueBytes),
+		Value: string(valueBytes),
 	}
 }

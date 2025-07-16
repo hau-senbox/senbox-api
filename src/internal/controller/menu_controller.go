@@ -579,3 +579,11 @@ func (receiver *MenuController) GetCommonMenu(context *gin.Context) {
 		Data: result,
 	})
 }
+
+func (receiver *MenuController) GetCommonMenuByUser(context *gin.Context) {
+	result := receiver.GetMenuUseCase.GetCommonMenuByUser(context)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: result,
+	})
+}
