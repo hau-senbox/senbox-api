@@ -160,6 +160,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 			FormRepository:          &repository.FormRepository{DBConn: dbConn},
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
