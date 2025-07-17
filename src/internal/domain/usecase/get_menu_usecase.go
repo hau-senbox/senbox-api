@@ -108,9 +108,7 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 		),
 	}
 
-	// Gói vào ComponentCommonMenu (vì định nghĩa như vậy)
 	componentCommon := response.ComponentCommonMenu{
-		ChildID:    "", // Hoặc bạn có thể gán userID nếu cần
 		Components: componentsList,
 	}
 
@@ -119,8 +117,8 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 	}
 }
 
-func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
-	var componentMenus []response.ComponentCommonMenu
+func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuByUserResponse {
+	var componentMenus []response.ComponentCommonMenuByUser
 
 	userID := ctx.GetString("user_id")
 	children, err := receiver.ChildRepository.GetByParentID(userID)
@@ -135,14 +133,14 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 				"SENBOX.ORG/CHILD-PROFILE",
 			)
 
-			componentMenus = append(componentMenus, response.ComponentCommonMenu{
-				ChildID:    child.ID.String(),
-				Components: []response.ComponentResponse{childComponent},
+			componentMenus = append(componentMenus, response.ComponentCommonMenuByUser{
+				ChildID:   child.ID.String(),
+				Component: childComponent,
 			})
 		}
 	}
 
-	return response.GetCommonMenuResponse{
+	return response.GetCommonMenuByUserResponse{
 		Components: componentMenus,
 	}
 }
