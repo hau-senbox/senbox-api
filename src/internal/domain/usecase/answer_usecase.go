@@ -14,8 +14,9 @@ import (
 )
 
 type AnswerUseCase struct {
-	answerRepo repository.AnswerRepository
-	userRepo   repository.UserEntityRepository
+	answerRepo   repository.AnswerRepository
+	userRepo     repository.UserEntityRepository
+	questionRepo repository.QuestionRepository
 }
 
 func NewAnswerUseCase(
@@ -77,6 +78,11 @@ func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByCo
 			continue
 		}
 		UserNickName = user.Nickname
+		question, err := uc.questionRepo.GetByKeyAndDB(a.Key, a.DB)
+		var questionName = ""
+		if question != nil && err != nil {
+			questionName = question.Question
+		}
 		res := response.GetAnswerByKeyAndDbResponse{
 			ID:           a.ID.String(),
 			SubmissionID: a.SubmissionID,
@@ -86,6 +92,7 @@ func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByCo
 			DB:           a.DB,
 			Answer:       answerStr,
 			CreatedAt:    a.CreatedAt,
+			Question:     questionName,
 		}
 		result = append(result, res)
 	}
