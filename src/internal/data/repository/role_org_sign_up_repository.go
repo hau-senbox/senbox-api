@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"sen-global-api/internal/domain/entity"
 
 	"gorm.io/gorm"
@@ -47,5 +48,22 @@ func (r *RoleOrgSignUpRepository) GetByRoleName(roleName string) (*entity.SRoleO
 	if err != nil {
 		return nil, err
 	}
+	return &role, nil
+}
+
+func (r *RoleOrgSignUpRepository) GetByID(id string) (*entity.SRoleOrgSignUp, error) {
+	var role entity.SRoleOrgSignUp
+
+	err := r.DBConn.
+		Where("id = ?", id).
+		First(&role).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
 	return &role, nil
 }

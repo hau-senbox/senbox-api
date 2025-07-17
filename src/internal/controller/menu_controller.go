@@ -23,12 +23,13 @@ type MenuController struct {
 }
 
 type componentResponse struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Type  string `json:"type"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-	Order int    `json:"order"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	Order     int    `json:"order"`
+	SectionID string `json:"section_id"`
 }
 
 type menuResponse struct {
@@ -585,5 +586,64 @@ func (receiver *MenuController) GetCommonMenuByUser(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: result,
+	})
+}
+
+func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
+	var req request.UploadSectionMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadUserMenuUseCase.UploadSectionMenu(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
+
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	// res := make([]componentResponse, 0)
+	// for _, m := range menus {
+	// 	res = append(res, componentResponse{
+	// 		ID:    m.Component.ID.String(),
+	// 		Name:  m.Component.Name,
+	// 		Type:  m.Component.Type.String(),
+	// 		Key:   m.Component.Key,
+	// 		Value: string(m.Component.Value),
+	// 		Order: m.Order,
+	// 	})
+	// }
+
+	// sort.Slice(res, func(i, j int) bool {
+	// 	return res[i].Order < res[j].Order
+	// })
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
 	})
 }

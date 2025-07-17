@@ -14,6 +14,8 @@ type IComponent interface {
 	SetKey(key string)
 	GetValue() datatypes.JSON
 	SetValue(value datatypes.JSON)
+	GetSectionID() string
+	SetSectionID(SectionID string)
 
 	GetComponent() *Component
 	NormalizeValue() error
@@ -27,6 +29,7 @@ type Component struct {
 	Type       ComponentType  `gorm:"type:varchar(255);not null" json:"type"`
 	Key        string         `gorm:"type:varchar(255);not null;default:''" json:"key"`
 	Value      datatypes.JSON `gorm:"type:json;not null;default:'{}'" json:"value"`
+	SectionID  string         `gorm:"type:varchar(255);not null;default:''" json:"section_id"`
 }
 
 func (component *Component) GetID() uuid.UUID {
@@ -63,4 +66,12 @@ func (component *Component) SetValue(value datatypes.JSON) {
 
 func (component *Component) GetComponent() *Component {
 	return component
+}
+
+func (component *Component) GetSectionID() string {
+	return component.SectionID
+}
+
+func (component *Component) SetSectionID(SectionID string) {
+	component.SectionID = SectionID
 }

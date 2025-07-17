@@ -160,6 +160,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 			FormRepository:          &repository.FormRepository{DBConn: dbConn},
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
@@ -308,6 +309,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)
+		userMenu.GET("/section", menuController.GetSectionMenu)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)
@@ -315,6 +317,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.POST("/device", menuController.UploadDeviceMenu)
 		userMenu.GET("/common", menuController.GetCommonMenu)
 		userMenu.GET("/common-by-user", menuController.GetCommonMenuByUser)
+		userMenu.POST("/section", menuController.UploadSectionMenu)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())

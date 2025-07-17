@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -22,6 +23,7 @@ type GetMenuUseCase struct {
 	RoleOrgSignUpRepository *repository.RoleOrgSignUpRepository
 	FormRepository          *repository.FormRepository
 	SubmissionRepository    *repository.SubmissionRepository
+	ComponentRepository     *repository.ComponentRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -93,7 +95,7 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{
-		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "icon/accident_and_injury_report_1745206766342940327.png", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
+		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
 	}
 
 	return response.GetCommonMenuResponse{
@@ -104,26 +106,13 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{}
 
-	// 1. Get role "Child"
-	var childOrgCode string
-	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
-	if err == nil && roleSignUp != nil && roleSignUp.OrgCode != "" {
-		childOrgCode = roleSignUp.OrgCode
-	}
-
-	// 2. Get form by QRCode (childOrgCode)
-	form, _ := receiver.FormRepository.GetFormByQRCode(childOrgCode)
-
-	var formChildId uint64
-	if form != nil {
-		formChildId = form.ID
-	}
+	formChildId := receiver.getFormIDByRoleName("Child")
 
 	userID := ctx.GetString("user_id")
 	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
 
 	if err == nil && submission != nil {
-		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "icon/accident_and_injury_report_1745206766342940327.png", "SENBOX.ORG/CHILD-PROFILE")
+		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/CHILD-PROFILE")
 		componentsList = append(componentsList, childComponent)
 	}
 
@@ -132,20 +121,89 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	}
 }
 
-func buildComponent(id, name, key, icon, formQR string) response.ComponentResponse {
+func (receiver *GetMenuUseCase) getFormIDByRoleName(roleName string) uint64 {
+	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+	if err != nil || roleSignUp == nil || roleSignUp.OrgCode == "" {
+		return 0
+	}
+
+	form, _ := receiver.FormRepository.GetFormByQRCode(roleSignUp.OrgCode)
+	if form != nil {
+		return form.ID
+	}
+
+	return 0
+}
+
+func buildComponent(id, name, key, icon, typeName, formQR string) response.ComponentResponse {
 	valueObject := map[string]interface{}{
+		"id":   id,
+		"name": name,
+		"type": typeName,
+		"key":  "",
+		"value": map[string]interface{}{
+			"visible": true,
+			"icon":    icon,
+			"color":   "#86DEFF",
+			"form_qr": formQR,
+		},
 		"visible": true,
 		"icon":    icon,
 		"color":   "#86DEFF",
 		"form_qr": formQR,
 	}
+
 	valueBytes, _ := json.Marshal(valueObject)
 
 	return response.ComponentResponse{
 		ID:    id,
 		Name:  name,
-		Type:  "button_form",
+		Type:  typeName,
 		Key:   key,
 		Value: string(valueBytes),
 	}
+}
+
+func (receiver *GetMenuUseCase) GetSectionMenu() ([]response.GetMenuSectionResponse, error) {
+	componentsList, err := receiver.ComponentRepository.GetAllByKey("section-menu")
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make(map[string][]components.Component)
+	for _, c := range componentsList {
+		grouped[c.SectionID] = append(grouped[c.SectionID], c)
+	}
+
+	var result []response.GetMenuSectionResponse
+	for sectionID, comps := range grouped {
+		var componentResponses []response.ComponentResponse
+		for i, c := range comps {
+			componentResponses = append(componentResponses, response.ComponentResponse{
+				ID:    c.ID.String(),
+				Name:  c.Name,
+				Type:  string(c.Type),
+				Key:   c.Key,
+				Value: string(c.Value),
+				Order: i,
+			})
+		}
+
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(sectionID)
+		if err != nil {
+			return nil, err
+		}
+		sectionName := ""
+		if roleOrg != nil {
+			sectionName = roleOrg.RoleName
+		}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionID:   sectionID,
+			SectionName: sectionName,
+			Components:  componentResponses,
+		})
+	}
+
+	return result, nil
 }
