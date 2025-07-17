@@ -39,10 +39,10 @@ func (r *ChildRepository) Create(child *entity.SChild) error {
 	return r.DB.Create(child).Error
 }
 
-// Get all children by user ID
-func (r *ChildRepository) GetByUserID(userID string) ([]entity.SChild, error) {
+// Get all children by parent ID
+func (r *ChildRepository) GetByParentID(userID string) ([]entity.SChild, error) {
 	var children []entity.SChild
-	err := r.DB.Where("user_id = ?", userID).Find(&children).Error
+	err := r.DB.Where("parent_id = ?", userID).Find(&children).Error
 	return children, err
 }
 

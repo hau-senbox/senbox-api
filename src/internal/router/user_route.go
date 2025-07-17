@@ -165,6 +165,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			FormRepository:          &repository.FormRepository{DBConn: dbConn},
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
 			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+			ChildRepository:         &childRepo,
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},

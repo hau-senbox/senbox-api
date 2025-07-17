@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/components"
@@ -24,6 +25,7 @@ type GetMenuUseCase struct {
 	FormRepository          *repository.FormRepository
 	SubmissionRepository    *repository.SubmissionRepository
 	ComponentRepository     *repository.ComponentRepository
+	ChildRepository         *repository.ChildRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -106,33 +108,25 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
 	componentsList := []response.ComponentResponse{}
 
-	formChildId := receiver.getFormIDByRoleName("Child")
-
 	userID := ctx.GetString("user_id")
-	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, formChildId)
-
-	if err == nil && submission != nil {
-		childComponent := buildComponent(uuid.NewString(), "Child Profile", "child_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/CHILD-PROFILE")
-		componentsList = append(componentsList, childComponent)
+	children, err := receiver.ChildRepository.GetByParentID(userID)
+	if err == nil && children != nil {
+		for _, child := range children {
+			childComponent := buildComponent(
+				uuid.NewString(),
+				fmt.Sprintf("Child Profile: %s", child.ChildName),
+				"child_profile",
+				"icon/accident_and_injury_report_1745206766342940327.png",
+				"button_form",
+				"SENBOX.ORG/CHILD-PROFILE",
+			)
+			componentsList = append(componentsList, childComponent)
+		}
 	}
 
 	return response.GetCommonMenuResponse{
 		Component: componentsList,
 	}
-}
-
-func (receiver *GetMenuUseCase) getFormIDByRoleName(roleName string) uint64 {
-	roleSignUp, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
-	if err != nil || roleSignUp == nil || roleSignUp.OrgCode == "" {
-		return 0
-	}
-
-	form, _ := receiver.FormRepository.GetFormByQRCode(roleSignUp.OrgCode)
-	if form != nil {
-		return form.ID
-	}
-
-	return 0
 }
 
 func buildComponent(id, name, key, icon, typeName, formQR string) response.ComponentResponse {
