@@ -50,6 +50,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SUserDevices{},
 		&entity.SImage{},
 		&entity.SPdf{},
+		&entity.SUserFCMToken{},
 		&entity.SUserFunctionAuthorize{},
 		&entity.SUserOrg{},
 		&entity.SOrgFormApplication{},

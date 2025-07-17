@@ -185,6 +185,15 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 	}
 
+	userTokenFCMController := &controller.UserTokenFCMController{
+		CreateUserTokenFCMUseCase: &usecase.CreateUserTokenFCMUseCase{
+			UserTokenFCMRepository: &repository.UserTokenFCMRepository{DBConn: dbConn},
+		},
+		GetUserTokenFCMUseCase: &usecase.GetUserTokenFCMUseCase{
+			UserTokenFCMRepository: &repository.UserTokenFCMRepository{DBConn: dbConn},
+		},
+	}
+
 	userAccess := engine.Group("v1/")
 	{
 		loginController := &controller.LoginController{DBConn: dbConn,
@@ -311,5 +320,11 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	component := engine.Group("v1/component", secureMiddleware.Secured())
 	{
 		component.GET("/keys", componentController.GetAllComponentKey)
+	}
+
+	userTokenFCM := engine.Group("v1/user-token-fcm", secureMiddleware.Secured())
+	{
+		userTokenFCM.POST("/register", userTokenFCMController.CreateFCMToken)
+		userTokenFCM.GET("/all/:user_id", userTokenFCMController.GetAllFCMToken)
 	}
 }
