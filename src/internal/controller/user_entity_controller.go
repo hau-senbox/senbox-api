@@ -1524,3 +1524,57 @@ func (receiver *UserEntityController) CreateChild(context *gin.Context) {
 		Message: "Child created successfully",
 	})
 }
+
+func (receiver *UserEntityController) GetChildByID(context *gin.Context) {
+	// Lấy childID từ URL param (giả sử endpoint là /children/:id)
+	childID := context.Param("id")
+	if childID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	child, err := receiver.ChildUseCase.GetByID(childID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: child,
+	})
+}
+
+func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
+	var req request.UpdateChildRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := ctl.ChildUseCase.UpdateChild(req, c); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to update child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Child updated successfully",
+	})
+}

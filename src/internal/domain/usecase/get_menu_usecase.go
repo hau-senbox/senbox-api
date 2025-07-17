@@ -96,17 +96,32 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 }
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
+	// Tạo component dạng ComponentResponse
 	componentsList := []response.ComponentResponse{
-		buildComponent(uuid.NewString(), "My Account Profiles", "my_account_profile", "icon/accident_and_injury_report_1745206766342940327.png", "button_form", "SENBOX.ORG/MY-ACCOUNT-PROFILES"),
+		buildComponent(
+			uuid.NewString(),
+			"My Account Profiles",
+			"my_account_profile",
+			"icon/accident_and_injury_report_1745206766342940327.png",
+			"button_form",
+			"SENBOX.ORG/MY-ACCOUNT-PROFILES",
+		),
+	}
+
+	// Gói vào ComponentCommonMenu (vì định nghĩa như vậy)
+	componentCommon := response.ComponentCommonMenu{
+		ChildID:    "", // Hoặc bạn có thể gán userID nếu cần
+		Components: componentsList,
 	}
 
 	return response.GetCommonMenuResponse{
-		Component: componentsList,
+		ChildID:    "", // Đây có thể là userID nếu muốn
+		Components: []response.ComponentCommonMenu{componentCommon},
 	}
 }
 
 func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuResponse {
-	componentsList := []response.ComponentResponse{}
+	var componentMenus []response.ComponentCommonMenu
 
 	userID := ctx.GetString("user_id")
 	children, err := receiver.ChildRepository.GetByParentID(userID)
@@ -120,12 +135,16 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 				"button_form",
 				"SENBOX.ORG/CHILD-PROFILE",
 			)
-			componentsList = append(componentsList, childComponent)
+
+			componentMenus = append(componentMenus, response.ComponentCommonMenu{
+				ChildID:    child.ID.String(),
+				Components: []response.ComponentResponse{childComponent},
+			})
 		}
 	}
 
 	return response.GetCommonMenuResponse{
-		Component: componentsList,
+		Components: componentMenus,
 	}
 }
 

@@ -238,6 +238,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
 		user.POST("/pre-register/", userEntityController.CreatePreRegister)
 		user.GET("/role-sign-up", userEntityController.GetAllRoleOrgSignUp)
+		user.GET("/child/:id", secureMiddleware.Secured(), userEntityController.GetChildByID)
+		user.PUT("/child", secureMiddleware.Secured(), userEntityController.UpdateChild)
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")

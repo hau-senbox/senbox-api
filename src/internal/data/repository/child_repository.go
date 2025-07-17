@@ -47,9 +47,15 @@ func (r *ChildRepository) GetByParentID(userID string) ([]entity.SChild, error) 
 }
 
 // Get child by ID
-func (r *ChildRepository) GetByID(id int64) (*entity.SChild, error) {
+func (r *ChildRepository) GetByID(id string) (*entity.SChild, error) {
 	var child entity.SChild
-	err := r.DB.First(&child, id).Error
+
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid UUID format")
+	}
+
+	err = r.DB.Where("id = ?", parsedID).First(&child).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

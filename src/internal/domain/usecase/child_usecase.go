@@ -51,6 +51,41 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	return uc.childRepo.Create(child)
 }
 
-func (uc *ChildUseCase) UpdateChild(child *entity.SChild) error {
+func (uc *ChildUseCase) UpdateChild(req request.UpdateChildRequest, ctx *gin.Context) error {
+	userIDRaw, exists := ctx.Get("user_id")
+	if !exists {
+		return errors.New("unauthorized: user_id not found in context")
+	}
+
+	var userID uuid.UUID
+	switch v := userIDRaw.(type) {
+	case uuid.UUID:
+		userID = v
+	case string:
+		parsed, err := uuid.Parse(v)
+		if err != nil {
+			return errors.New("invalid user_id format")
+		}
+		userID = parsed
+	default:
+		return errors.New("invalid user_id type in context")
+	}
+
+	childID, err := uuid.Parse(req.ID)
+	if err != nil {
+		return errors.New("invalid child_id format")
+	}
+
+	child := &entity.SChild{
+		ID:        childID,
+		ChildName: req.ChildName,
+		Age:       req.Age,
+		ParentID:  userID,
+	}
+
 	return uc.childRepo.Update(child)
+}
+
+func (uc *ChildUseCase) GetByID(childID string) (*entity.SChild, error) {
+	return uc.childRepo.GetByID(childID)
 }
