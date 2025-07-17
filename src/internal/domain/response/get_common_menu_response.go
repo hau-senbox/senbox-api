@@ -1,7 +1,6 @@
 package response
 
 type GetCommonMenuResponse struct {
-	ChildID    string                `json:"child_id"`
 	Components []ComponentCommonMenu `json:"components"`
 }
 
