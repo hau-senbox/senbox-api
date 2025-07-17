@@ -115,7 +115,6 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 	}
 
 	return response.GetCommonMenuResponse{
-		ChildID:    "", // Đây có thể là userID nếu muốn
 		Components: []response.ComponentCommonMenu{componentCommon},
 	}
 }
