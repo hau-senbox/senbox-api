@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -263,4 +264,11 @@ func (receiver *ComponentRepository) GetBySectionID(sectionID string) (*componen
 	}
 
 	return &component, nil
+}
+
+func (r *ComponentRepository) CreateWithTx(tx *gorm.DB, component *components.Component) error {
+	if component.ID == uuid.Nil {
+		component.ID = uuid.New()
+	}
+	return tx.Create(component).Error
 }

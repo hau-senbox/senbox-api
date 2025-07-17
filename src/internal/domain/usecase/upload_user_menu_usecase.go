@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"errors"
 	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 
+	"github.com/google/uuid"
 	"gorm.io/datatypes"
 )
 
@@ -42,53 +42,37 @@ func (receiver *UploadUserMenuUseCase) Upload(req request.UploadUserMenuRequest)
 	return nil
 }
 
-func componentFromRequest(req request.CreateMenuComponentRequest) (*components.Component, error) {
-	var component components.IComponent
-	componentType, err := components.GetComponentTypeFromString(req.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	switch componentType {
-	case components.ButtonURL:
-		component = components.NewButtonURLComponent()
-	case components.ButtonForm:
-		component = components.NewButtonFormComponent()
-	default:
-		return nil, errors.New("invalid component type")
-	}
-
-	component.SetName(req.Name)
-	component.SetKey(req.Key)
-	component.SetValue(datatypes.JSON(req.Value))
-	component.SetSectionID(req.SectionId)
-
-	if err = component.NormalizeValue(); err != nil {
-		return nil, err
-	}
-
-	return component.GetComponent(), nil
-}
-
 func (receiver *UploadUserMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
-
 	tx := receiver.MenuRepository.DBConn.Begin()
-	for _, item := range req.Components {
-		component, err := componentFromRequest(item)
-		if err != nil {
-			return err
-		}
 
-		if err := receiver.ComponentRepository.DeleteBySectionID(component.GetSectionID(), tx); err != nil {
-			return err
+	// Xoá tất cả components theo section_id
+	for _, item := range req {
+		if err := receiver.ComponentRepository.DeleteBySectionID(item.SectionID, tx); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to delete components by section: %w", err)
 		}
 	}
 
-	err := receiver.ComponentRepository.CreateComponents(&req.Components, tx)
-	if err != nil {
-		return err
+	// Thêm mới components
+	for _, item := range req {
+		for _, compReq := range item.Components {
+			component := &components.Component{
+				ID:        uuid.New(),
+				Name:      compReq.Name,
+				Type:      components.ComponentType(compReq.Type),
+				Key:       compReq.Key,
+				Value:     datatypes.JSON([]byte(compReq.Value)),
+				SectionID: item.SectionID,
+			}
+
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to create component: %w", err)
+			}
+		}
 	}
 
+	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
