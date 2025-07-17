@@ -96,7 +96,6 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 }
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
-	// Tạo component dạng ComponentResponse
 	componentsList := []response.ComponentResponse{
 		buildComponent(
 			uuid.NewString(),
@@ -108,12 +107,8 @@ func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetComm
 		),
 	}
 
-	componentCommon := response.ComponentCommonMenu{
-		Components: componentsList,
-	}
-
 	return response.GetCommonMenuResponse{
-		Components: []response.ComponentCommonMenu{componentCommon},
+		Components: componentsList,
 	}
 }
 
