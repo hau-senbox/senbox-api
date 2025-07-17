@@ -28,9 +28,18 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		return errors.New("unauthorized: user_id not found in context")
 	}
 
-	userID, ok := userIDRaw.(uuid.UUID)
-	if !ok {
-		return errors.New("invalid user_id format")
+	var userID uuid.UUID
+	switch v := userIDRaw.(type) {
+	case uuid.UUID:
+		userID = v
+	case string:
+		parsed, err := uuid.Parse(v)
+		if err != nil {
+			return errors.New("invalid user_id format")
+		}
+		userID = parsed
+	default:
+		return errors.New("invalid user_id type in context")
 	}
 
 	child := &entity.SChild{

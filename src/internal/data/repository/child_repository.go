@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,7 @@ func (r *ChildRepository) Create(child *entity.SChild) error {
 
 	// Kiểm tra tên trùng trong cùng 1 user
 	err := r.DB.
-		Where("student_name = ? AND user_id = ?", child.ChildName, child.ParentID).
+		Where("child_name = ? AND parent_id = ?", child.ChildName, child.ParentID).
 		First(&existing).Error
 
 	if err == nil {
@@ -34,6 +35,7 @@ func (r *ChildRepository) Create(child *entity.SChild) error {
 	}
 
 	// Nếu chưa có thì tạo mới
+	child.ID = uuid.New()
 	return r.DB.Create(child).Error
 }
 

@@ -32,6 +32,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
+	childRepo := repository.ChildRepository{DB: dbConn}
+	childUsecase := usecase.NewChildUseCase(childRepo)
+
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
@@ -100,6 +103,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		RoleOrgSignUpUseCase: &usecase.RoleOrgSignUpUseCase{
 			Repo: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 		},
+		ChildUseCase: childUsecase,
 	}
 
 	userRoleController := &controller.RoleController{
@@ -216,7 +220,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/child/init", userEntityController.CreateChildForParent)
-		user.POST("/child/create", userEntityController.CreateChild)
+		user.POST("/child/create", secureMiddleware.Secured(), userEntityController.CreateChild)
 		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
 		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
 		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)
