@@ -164,18 +164,46 @@ func buildComponent(id, name, key, icon, typeName, formQR string) response.Compo
 	}
 }
 
-func (receiver *GetMenuUseCase) GetSectionMenu() (map[string][]components.Component, error) {
+func (receiver *GetMenuUseCase) GetSectionMenu() ([]response.GetMenuSectionResponse, error) {
 	componentsList, err := receiver.ComponentRepository.GetAllByKey("section-menu")
 	if err != nil {
 		return nil, err
 	}
 
-	// Group by section_id
 	grouped := make(map[string][]components.Component)
 	for _, c := range componentsList {
-		sectionID := c.SectionID
-		grouped[sectionID] = append(grouped[sectionID], c)
+		grouped[c.SectionID] = append(grouped[c.SectionID], c)
 	}
 
-	return grouped, nil
+	var result []response.GetMenuSectionResponse
+	for sectionID, comps := range grouped {
+		var componentResponses []response.ComponentResponse
+		for i, c := range comps {
+			componentResponses = append(componentResponses, response.ComponentResponse{
+				ID:    c.ID.String(),
+				Name:  c.Name,
+				Type:  string(c.Type),
+				Key:   c.Key,
+				Value: string(c.Value),
+				Order: i,
+			})
+		}
+
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(sectionID)
+		if err != nil {
+			return nil, err
+		}
+		sectionName := ""
+		if roleOrg != nil {
+			sectionName = roleOrg.RoleName
+		}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionID:   sectionID,
+			SectionName: sectionName,
+			Components:  componentResponses,
+		})
+	}
+
+	return result, nil
 }
