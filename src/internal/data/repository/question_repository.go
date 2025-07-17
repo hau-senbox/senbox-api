@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/model"
 	"sen-global-api/internal/domain/value"
@@ -1133,6 +1134,24 @@ func (receiver *QuestionRepository) unmarshalMemoryTextQuestion(param CreateQues
 		QuestionUniqueID: param.QuestionUniqueID,
 		Key:              param.Key,
 		DB:               param.DB,
+	}
+
+	return &question, nil
+}
+
+func (r *QuestionRepository) GetByKeyAndDB(key string, db string) (*entity.SQuestion, error) {
+	var question entity.SQuestion
+
+	err := r.DBConn.
+		Where("`key` = ? AND `db` = ?", key, db).
+		First(&question).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Không tìm thấy thì trả nil
+		}
+		log.Error("QuestionRepository.GetByKeyAndDB: " + err.Error())
+		return nil, errors.New("failed to get question by key and db")
 	}
 
 	return &question, nil
