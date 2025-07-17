@@ -216,6 +216,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/child/init", userEntityController.CreateChildForParent)
+		user.POST("/child/create", userEntityController.CreateChild)
 		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
 		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
 		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)

@@ -36,6 +36,7 @@ type UserEntityController struct {
 	*usecase.BlockUserFormApplicationUseCase
 	*usecase.UploadUserAvatarUseCase
 	*usecase.RoleOrgSignUpUseCase
+	*usecase.ChildUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1493,5 +1494,33 @@ func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: roles,
+	})
+}
+
+func (receiver *UserEntityController) CreateChild(context *gin.Context) {
+	var req request.CreateChildRequest
+
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid input: " + err.Error(),
+		})
+		return
+	}
+
+	// Gọi UseCase để tạo child
+	err := receiver.ChildUseCase.CreateChild(req, context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Child created successfully",
 	})
 }

@@ -221,24 +221,11 @@ func (receiver *ComponentRepository) DeleteComponent(componentID string, tx *gor
 }
 
 func (receiver *ComponentRepository) DeleteBySectionID(sectionID string, tx *gorm.DB) error {
-	if tx == nil {
-		err := receiver.DBConn.
-			Where("section_id = ?", sectionID).
-			Delete(&components.Component{}).Error
-
-		if err != nil {
-			log.Error("ComponentRepository.DeleteBySectionID: " + err.Error())
-			return errors.New("failed to delete components by section_id")
-		}
-		return nil
-	}
-
 	err := tx.
 		Where("section_id = ?", sectionID).
 		Delete(&components.Component{}).Error
 
 	if err != nil {
-		_ = tx.Rollback()
 		log.Error("ComponentRepository.DeleteBySectionID: " + err.Error())
 		return errors.New("failed to delete components by section_id")
 	}
