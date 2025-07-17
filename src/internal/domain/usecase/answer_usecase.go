@@ -22,10 +22,12 @@ type AnswerUseCase struct {
 func NewAnswerUseCase(
 	answerRepo repository.AnswerRepository,
 	userRepo repository.UserEntityRepository,
+	questionRepo repository.QuestionRepository,
 ) *AnswerUseCase {
 	return &AnswerUseCase{
-		answerRepo: answerRepo,
-		userRepo:   userRepo,
+		answerRepo:   answerRepo,
+		userRepo:     userRepo,
+		questionRepo: questionRepo,
 	}
 }
 
@@ -80,7 +82,7 @@ func (uc *AnswerUseCase) GetAnswersByKeyAndDB(input repository.GetSubmissionByCo
 		UserNickName = user.Nickname
 		question, err := uc.questionRepo.GetByKeyAndDB(a.Key, a.DB)
 		var questionName = ""
-		if question != nil && err != nil {
+		if question != nil && err == nil {
 			questionName = question.Question
 		}
 		res := response.GetAnswerByKeyAndDbResponse{
