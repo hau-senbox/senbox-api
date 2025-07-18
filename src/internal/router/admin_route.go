@@ -289,6 +289,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		codeCounter.PUT("/update", controller.UpdateCodeCounter)
 	}
 
+	roleUseCase := usecase.NewRoleOrgSignUpUseCase(&repository.RoleOrgSignUpRepository{
+		DBConn: dbConn,
+	})
+	roleOrgSignUpController := controller.NewRoleOrgSignUpController(roleUseCase)
+
+	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.ValidateSuperAdminRole())
+	{
+		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
+	}
+
 	executor := &TimeMachineSubscriber{
 		ImportFormsUseCase:        importFormsUseCase,
 		ImportRedirectUrlsUseCase: importUrlsUseCase,

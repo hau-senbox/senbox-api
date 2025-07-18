@@ -74,3 +74,10 @@ func (r *ChildRepository) Update(child *entity.SChild) error {
 func (r *ChildRepository) Delete(id int64) error {
 	return r.DB.Delete(&entity.SChild{}, id).Error
 }
+
+// GetAllIDs returns a list of all child IDs
+func (r *ChildRepository) GetAllIDs() ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+	err := r.DB.Model(&entity.SChild{}).Select("id").Find(&ids).Error
+	return ids, err
+}
