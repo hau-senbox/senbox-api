@@ -647,3 +647,21 @@ func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
 		Data: menus,
 	})
 }
+
+func (receiver *MenuController) GetSectionMenu4WebAdmin(context *gin.Context) {
+
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu4WebAdmin()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}

@@ -292,11 +292,28 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	roleUseCase := usecase.NewRoleOrgSignUpUseCase(&repository.RoleOrgSignUpRepository{
 		DBConn: dbConn,
 	})
-	roleOrgSignUpController := controller.NewRoleOrgSignUpController(roleUseCase)
 
+	roleOrgSignUpController := controller.NewRoleOrgSignUpController(roleUseCase)
 	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.ValidateSuperAdminRole())
 	{
 		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
+	}
+
+	menuController := &controller.MenuController{
+		GetMenuUseCase: &usecase.GetMenuUseCase{
+			MenuRepository:          &repository.MenuRepository{DBConn: dbConn},
+			UserEntityRepository:    &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository:  &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:        &repository.DeviceRepository{DBConn: dbConn},
+			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			FormRepository:          &repository.FormRepository{DBConn: dbConn},
+			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+	menu := engine.Group("/v1/admin/menu", secureMiddleware.ValidateSuperAdminRole())
+	{
+		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 	}
 
 	executor := &TimeMachineSubscriber{

@@ -248,12 +248,12 @@ func (receiver *ComponentRepository) GetAllByKey(key string) ([]components.Compo
 	return componentsList, nil
 }
 
-func (receiver *ComponentRepository) GetBySectionID(sectionID string) (*components.Component, error) {
-	var component components.Component
+func (receiver *ComponentRepository) GetBySectionID(sectionID string) ([]components.Component, error) {
+	var componentList []components.Component
 
 	err := receiver.DBConn.
 		Where("`section_id` = ?", sectionID).
-		First(&component).Error
+		Find(&componentList).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -263,7 +263,7 @@ func (receiver *ComponentRepository) GetBySectionID(sectionID string) (*componen
 		return nil, errors.New("failed to get component by sectionID")
 	}
 
-	return &component, nil
+	return componentList, nil
 }
 
 func (r *ComponentRepository) CreateWithTx(tx *gorm.DB, component *components.Component) error {

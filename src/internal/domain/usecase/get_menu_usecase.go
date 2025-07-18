@@ -329,3 +329,52 @@ func (receiver *GetMenuUseCase) buildSectionValueMenu(oldValue string, comp comp
 
 	return string(jsonBytes)
 }
+
+func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin() ([]response.GetMenuSectionResponse, error) {
+	var roleOrgChildId string
+	roleOrgChild, _ := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+	if roleOrgChild != nil {
+		roleOrgChildId = roleOrgChild.ID.String()
+	}
+	componentsList, err := receiver.ComponentRepository.GetBySectionID(roleOrgChildId)
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make(map[string][]components.Component)
+	for _, c := range componentsList {
+		grouped[c.SectionID] = append(grouped[c.SectionID], c)
+	}
+
+	var result []response.GetMenuSectionResponse
+	for sectionID, comps := range grouped {
+		var componentResponses []response.ComponentResponse
+		for i, c := range comps {
+			componentResponses = append(componentResponses, response.ComponentResponse{
+				ID:    c.ID.String(),
+				Name:  c.Name,
+				Type:  string(c.Type),
+				Key:   c.Key,
+				Value: receiver.buildSectionValueMenu(string(c.Value), c),
+				Order: i,
+			})
+		}
+
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(sectionID)
+		if err != nil {
+			return nil, err
+		}
+		sectionName := ""
+		if roleOrg != nil {
+			sectionName = roleOrg.RoleName
+		}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionID:   sectionID,
+			SectionName: sectionName,
+			Components:  componentResponses,
+		})
+	}
+
+	return result, nil
+}
