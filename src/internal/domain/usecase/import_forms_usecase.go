@@ -366,7 +366,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetID: signUpFormsSpreadsheetID,
-		ReadRange:     "Forms" + `!K11:N`,
+		ReadRange:     "Forms" + `!K11:P`,
 	})
 	if err != nil || values == nil {
 		log.Error(err)
@@ -388,9 +388,14 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 		// luu vao bang RoleOrgSignUp
 		// Đảm bảo có đủ ít nhất 4 phần tử
 		if len(row) > 3 && row[3] != nil && row[3].(string) != "" {
+			var orgProfile string
+			if len(row) > 5 && row[5] != nil && row[5].(string) != "" {
+				orgProfile = row[5].(string)
+			}
 			err = receiver.RoleOrgSignUpRepo.UpdateOrCreate(&entity.SRoleOrgSignUp{
-				RoleName: row[3].(string),
-				OrgCode:  code,
+				RoleName:   row[3].(string),
+				OrgCode:    code,
+				OrgProfile: orgProfile,
 			})
 			if err != nil {
 				return fmt.Errorf("error importing sign up forms step save into RoleOrgSignUp: %s", err.Error())
