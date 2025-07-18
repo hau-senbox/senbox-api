@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -135,6 +136,26 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 		}
 	}
 
+	// check teacher menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Teacher", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//checck student menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Student", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//check staff menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Staff", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//check org menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Sign up ORganise", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
 	return response.GetCommonMenuByUserResponse{
 		Components: componentMenus,
 	}
@@ -211,4 +232,38 @@ func (receiver *GetMenuUseCase) GetSectionMenu() ([]response.GetMenuSectionRespo
 	}
 
 	return result, nil
+}
+
+func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID string) (*response.ComponentCommonMenuByUser, error) {
+	// Lấy thông tin role theo tên
+	roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+	if err != nil || roleOrg == nil {
+		return nil, nil
+	}
+
+	// Lấy form theo OrgCode của role
+	form, err := receiver.FormRepository.GetFormByQRCode(roleOrg.OrgCode)
+	if err != nil || form == nil {
+		return nil, nil
+	}
+
+	// Kiểm tra xem user đã nộp form hay chưa
+	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, form.ID)
+	if err != nil || submission == nil {
+		return nil, nil
+	}
+
+	// Tạo component
+	component := buildComponent(
+		uuid.NewString(),
+		fmt.Sprintf("%s Profile", roleName),
+		fmt.Sprintf("%s_profile", strings.ToLower(roleName)),
+		"icon/accident_and_injury_report_1745206766342940327.png",
+		"button_form",
+		roleOrg.OrgProfile,
+	)
+
+	return &response.ComponentCommonMenuByUser{
+		Component: component,
+	}, nil
 }
