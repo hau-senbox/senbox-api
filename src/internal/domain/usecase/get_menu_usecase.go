@@ -118,7 +118,13 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 
 	userID := ctx.GetString("user_id")
 	children, err := receiver.ChildRepository.GetByParentID(userID)
+
 	if err == nil && children != nil {
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+		var childOrg = ""
+		if err == nil || roleOrg != nil {
+			childOrg = roleOrg.OrgProfile
+		}
 		for _, child := range children {
 			childComponent := buildComponent(
 				uuid.NewString(),
@@ -126,7 +132,7 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 				"child_profile",
 				"icon/accident_and_injury_report_1745206766342940327.png",
 				"button_form",
-				"SENBOX.ORG/CHILD-PROFILE",
+				childOrg,
 			)
 
 			componentMenus = append(componentMenus, response.ComponentCommonMenuByUser{
