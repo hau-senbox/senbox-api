@@ -279,7 +279,7 @@ func (receiver *GetMenuUseCase) buildSectionValueMenu(oldValue string, comp comp
 		Visible bool   `json:"visible"`
 		Icon    string `json:"icon"`
 		Color   string `json:"color"`
-		URL     string `json:"url"`
+		URL     string `json:"url"` // Dùng chung cho cả url hoặc form_qr
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
@@ -288,14 +288,22 @@ func (receiver *GetMenuUseCase) buildSectionValueMenu(oldValue string, comp comp
 		return oldValue
 	}
 
-	// Build object dạng mới
+	// Xác định field chính là "form_qr" hay "url"
+	isButtonForm := comp.Type == "button_form"
+
+	// Build value nội
 	newVal := map[string]interface{}{
 		"color":   old.Color,
-		"form_qr": old.URL,
 		"icon":    old.Icon,
 		"visible": old.Visible,
 	}
+	if isButtonForm {
+		newVal["form_qr"] = old.URL
+	} else {
+		newVal["url"] = old.URL
+	}
 
+	// Build object ngoài
 	wrapped := map[string]interface{}{
 		"id":      comp.ID.String(),
 		"name":    comp.Name,
@@ -303,9 +311,15 @@ func (receiver *GetMenuUseCase) buildSectionValueMenu(oldValue string, comp comp
 		"key":     comp.Key,
 		"color":   old.Color,
 		"icon":    old.Icon,
-		"form_qr": old.URL,
 		"visible": old.Visible,
 		"value":   newVal,
+	}
+
+	// field chính ở ngoài: form_qr hoặc url
+	if isButtonForm {
+		wrapped["form_qr"] = old.URL
+	} else {
+		wrapped["url"] = old.URL
 	}
 
 	jsonBytes, err := json.Marshal(wrapped)
