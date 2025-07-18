@@ -216,7 +216,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu() ([]response.GetMenuSectionRespo
 				Name:  c.Name,
 				Type:  string(c.Type),
 				Key:   c.Key,
-				Value: string(c.Value),
+				Value: receiver.buildSectionValueMenu(string(c.Value), c),
 				Order: i,
 			})
 		}
@@ -272,4 +272,46 @@ func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID strin
 	return &response.ComponentCommonMenuByUser{
 		Component: component,
 	}, nil
+}
+
+func (receiver *GetMenuUseCase) buildSectionValueMenu(oldValue string, comp components.Component) string {
+	var old struct {
+		Visible bool   `json:"visible"`
+		Icon    string `json:"icon"`
+		Color   string `json:"color"`
+		URL     string `json:"url"`
+	}
+
+	err := json.Unmarshal([]byte(oldValue), &old)
+	if err != nil {
+		// fallback nếu lỗi unmarshal
+		return oldValue
+	}
+
+	// Build object dạng mới
+	newVal := map[string]interface{}{
+		"color":   old.Color,
+		"form_qr": old.URL,
+		"icon":    old.Icon,
+		"visible": old.Visible,
+	}
+
+	wrapped := map[string]interface{}{
+		"id":      comp.ID.String(),
+		"name":    comp.Name,
+		"type":    string(comp.Type),
+		"key":     comp.Key,
+		"color":   old.Color,
+		"icon":    old.Icon,
+		"form_qr": old.URL,
+		"visible": old.Visible,
+		"value":   newVal,
+	}
+
+	jsonBytes, err := json.Marshal(wrapped)
+	if err != nil {
+		return oldValue
+	}
+
+	return string(jsonBytes)
 }
