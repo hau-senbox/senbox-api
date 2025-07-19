@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 
 	"github.com/gin-gonic/gin"
@@ -74,5 +75,16 @@ func (ctrl *RoleOrgSignUpController) Get4AdminWeb(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Role 'Child' not found"})
 		return
 	}
-	c.JSON(http.StatusOK, role)
+	res := make([]entity.SRoleOrgSignUp, 0)
+	res = append(res, entity.SRoleOrgSignUp{
+		ID:        role.ID,
+		RoleName:  role.RoleName,
+		OrgCode:   role.OrgCode,
+		CreatedAt: role.CreatedAt,
+		UpdatedAt: role.UpdatedAt,
+	})
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
 }
