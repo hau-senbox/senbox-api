@@ -20,6 +20,7 @@ type MenuController struct {
 	*usecase.UploadOrgMenuUseCase
 	*usecase.UploadUserMenuUseCase
 	*usecase.UploadDeviceMenuUseCase
+	*usecase.UploadSectionMenuUseCase
 }
 
 type componentResponse struct {
@@ -599,7 +600,7 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 		return
 	}
 
-	err := receiver.UploadUserMenuUseCase.UploadSectionMenu(req)
+	err := receiver.UploadSectionMenuUseCase.UploadSectionMenu(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

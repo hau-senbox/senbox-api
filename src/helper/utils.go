@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
@@ -97,3 +99,17 @@ func parseDate(s string) (time.Time, error) {
 
 // 	return results
 // }
+
+func GetVisibleToValueComponent(value string) (bool, error) {
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(value), &parsed); err != nil {
+		return true, fmt.Errorf("failed to parse component value JSON: %w", err)
+	}
+
+	// Default visible to true
+	visible := true
+	if v, ok := parsed["visible"].(bool); ok {
+		visible = v
+	}
+	return visible, nil
+}
