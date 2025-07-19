@@ -1499,6 +1499,7 @@ func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) 
 	})
 }
 
+// child
 func (receiver *UserEntityController) CreateChild(context *gin.Context) {
 	var req request.CreateChildRequest
 
@@ -1684,4 +1685,32 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			Students: students,
 		},
 	})
+}
+
+func (receiver *UserEntityController) GetChild4WebAdmin(context *gin.Context) {
+	childID := context.Param("id")
+	if childID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	child, err := receiver.ChildUseCase.GetByID4WebAdmin(childID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: child,
+	})
+
 }

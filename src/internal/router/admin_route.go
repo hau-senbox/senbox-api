@@ -331,10 +331,19 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	}
 
 	// user
-	childRepo := repository.NewChildRepository(dbConn)
 	studentAppRepo := repository.NewStudentApplicationRepository(dbConn)
-	childUseCase := usecase.NewChildUseCase(*childRepo)
 	studentAppUseCase := usecase.NewStudentApplicationUseCase(studentAppRepo)
+
+	childRepo := repository.ChildRepository{DB: dbConn}
+	userRepo := repository.UserEntityRepository{DBConn: dbConn}
+	componentRepo := repository.ComponentRepository{DBConn: dbConn}
+	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
+	childUseCase := usecase.NewChildUseCase(
+		childRepo,
+		userRepo,
+		componentRepo,
+		childMenuRepo,
+	)
 
 	userEntityController := &controller.UserEntityController{
 		ChildUseCase:              childUseCase,
@@ -347,6 +356,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	user := engine.Group("/v1/admin/user", secureMiddleware.ValidateSuperAdminRole())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
+		user.GET("child/:id", userEntityController.GetChild4WebAdmin)
 	}
 
 	executor := &TimeMachineSubscriber{

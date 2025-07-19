@@ -33,7 +33,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	)
 
 	childRepo := repository.ChildRepository{DB: dbConn}
-	childUsecase := usecase.NewChildUseCase(childRepo)
+	userRepo := repository.UserEntityRepository{DBConn: dbConn}
+	componentRepo := repository.ComponentRepository{DBConn: dbConn}
+	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
+	childUsecase := usecase.NewChildUseCase(childRepo, userRepo, componentRepo, childMenuRepo)
 
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
