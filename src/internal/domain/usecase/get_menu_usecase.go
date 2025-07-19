@@ -28,6 +28,7 @@ type GetMenuUseCase struct {
 	SubmissionRepository    *repository.SubmissionRepository
 	ComponentRepository     *repository.ComponentRepository
 	ChildRepository         *repository.ChildRepository
+	ChildMenuUseCase        ChildMenuUseCase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -197,7 +198,37 @@ func buildComponent(id, name, key, icon, typeName, formQR string) response.Compo
 	}
 }
 
-func (receiver *GetMenuUseCase) GetSectionMenu() ([]response.GetMenuSectionResponse, error) {
+func (receiver *GetMenuUseCase) GetSectionMenu(context *gin.Context) ([]response.GetMenuSectionResponse, error) {
+
+	// userID, exists := context.MustGet("user_id").(uuid.UUID)
+	// var result []response.GetMenuSectionResponse
+	// if !exists {
+	// 	return nil, errors.New("user_id not found in context")
+	// }
+	// // lay danh sach child tu userID
+	// children, err := receiver.ChildRepository.GetByParentID(userID.String())
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// var childrenMenus []response.GetChildMenuResponse
+	// for _, child := range children {
+	// 	childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
+	// 	if err != nil {
+	// 		// Có thể bỏ qua child lỗi hoặc dừng toàn bộ tùy yêu cầu
+	// 		continue // hoặc return nil, err
+	// 	}
+
+	// 	childrenMenus = append(childrenMenus, response.GetChildMenuResponse{
+	// 		ChildID:    child.ID.String(),
+	// 		ChildName:  child.ChildName,
+	// 		Components: childMenu.Components,
+	// 	})
+	// 	result = append(result, response.GetMenuSectionResponse{
+	// 		SectionName: child.ChildName,
+	// 		Components:  childMenu.Components,
+	// 	})
+	// }
+	// lay danh sach student tu userID
 	componentsList, err := receiver.ComponentRepository.GetAllByKey("section-menu")
 	if err != nil {
 		return nil, err
