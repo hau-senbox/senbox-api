@@ -1,15 +1,17 @@
 package entity
 
 import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SStudentFormApplication struct {
 	ID             int64                       `gorm:"column:id;primary_key;AUTO_INCREMENT"`
 	StudentName    string                      `gorm:"column:student_name;type:varchar(255);not null"`
+	ChildID        uuid.UUID                   `gorm:"column:child_id;not null"`
 	UserID         uuid.UUID                   `gorm:"column:user_id;primary_key"`
 	User           SUserEntity                 `gorm:"foreignKey:UserID;references:id;constraint:OnDelete:CASCADE;"`
 	OrganizationID uuid.UUID                   `gorm:"column:organization_id;primary_key"`

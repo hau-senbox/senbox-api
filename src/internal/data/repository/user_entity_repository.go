@@ -1140,6 +1140,7 @@ func (receiver *UserEntityRepository) CreateStudentFormApplication(req request.C
 		StudentName:    req.StudentName,
 		UserID:         uuid.MustParse(req.UserID),
 		OrganizationID: uuid.MustParse(req.OrganizationID),
+		ChildID:        uuid.MustParse(req.ChildID),
 	})
 
 	if result.Error != nil {
