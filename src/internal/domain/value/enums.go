@@ -1191,3 +1191,23 @@ type TimeRange struct {
 	Start time.Time
 	End   time.Time
 }
+
+type RoleSignUp string
+
+const (
+	Users            RoleSignUp = "Users"
+	RoleTeacher      RoleSignUp = "Teacher"
+	RoleChild        RoleSignUp = "Child"
+	RoleStaff        RoleSignUp = "Staff"
+	RoleStudent      RoleSignUp = "Student"
+	RoleOrganization RoleSignUp = "Organization"
+)
+
+func IsValidRoleSignUp(role string) bool {
+	switch RoleSignUp(role) {
+	case RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
+		return true
+	default:
+		return false
+	}
+}

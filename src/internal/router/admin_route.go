@@ -299,6 +299,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
 	}
 
+	//menu
 	menuController := &controller.MenuController{
 		GetMenuUseCase: &usecase.GetMenuUseCase{
 			MenuRepository:          &repository.MenuRepository{DBConn: dbConn},
@@ -321,6 +322,25 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
+	}
+
+	// user
+	childRepo := repository.NewChildRepository(dbConn)
+	studentAppRepo := repository.NewStudentApplicationRepository(dbConn)
+	childUseCase := usecase.NewChildUseCase(*childRepo)
+	studentAppUseCase := usecase.NewStudentApplicationUseCase(studentAppRepo)
+
+	userEntityController := &controller.UserEntityController{
+		ChildUseCase:              childUseCase,
+		StudentApplicationUseCase: studentAppUseCase,
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+	}
+	user := engine.Group("/v1/admin/user", secureMiddleware.ValidateSuperAdminRole())
+	{
+		user.GET("/search", userEntityController.SearchUser4WebAdmin)
 	}
 
 	executor := &TimeMachineSubscriber{

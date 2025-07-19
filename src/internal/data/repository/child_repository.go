@@ -81,3 +81,10 @@ func (r *ChildRepository) GetAllIDs() ([]uuid.UUID, error) {
 	err := r.DB.Model(&entity.SChild{}).Select("id").Find(&ids).Error
 	return ids, err
 }
+
+// GetAll returns all children
+func (r *ChildRepository) GetAll() ([]entity.SChild, error) {
+	var children []entity.SChild
+	err := r.DB.Find(&children).Error
+	return children, err
+}

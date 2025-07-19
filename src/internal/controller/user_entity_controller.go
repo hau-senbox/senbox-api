@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 	"strconv"
 	"strings"
 
@@ -37,6 +38,7 @@ type UserEntityController struct {
 	*usecase.UploadUserAvatarUseCase
 	*usecase.RoleOrgSignUpUseCase
 	*usecase.ChildUseCase
+	*usecase.StudentApplicationUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1576,5 +1578,82 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: "Child updated successfully",
+	})
+}
+
+func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
+	role := c.Request.URL.Query().Get("role")
+
+	// Nếu không có role hoặc role không hợp lệ → gọi tất cả
+	callAll := role == "" || !value.IsValidRoleSignUp(role)
+	var (
+		users    []response.UserResponse
+		children []response.ChildrenResponse
+		students []response.StudentResponse
+	)
+
+	if callAll {
+		users, _ := receiver.GetAllUsers()
+		children, _ := receiver.ChildUseCase.GetAll()
+		students, _ := receiver.StudentApplicationUseCase.GetAllStudents()
+
+		userResponse := make([]response.UserResponse, 0, len(users))
+		for _, u := range users {
+			userResponse = append(userResponse, response.UserResponse{
+				ID:        u.ID.String(),
+				Username:  u.Username,
+				Nickname:  u.Nickname,
+				Avatar:    u.Avatar,
+				AvatarURL: u.AvatarURL,
+			})
+		}
+
+		childrenResponse := make([]response.ChildrenResponse, 0, len(children))
+		for _, c := range children {
+			childrenResponse = append(childrenResponse, response.ChildrenResponse{
+				ChildID:   c.ID.String(),
+				ChildName: c.ChildName,
+			})
+		}
+
+		studentResponse := make([]response.StudentResponse, 0, len(students))
+		for _, s := range students {
+			studentResponse = append(studentResponse, response.StudentResponse{
+				StudentID:   s.StudentID,
+				StudentName: s.StudentName,
+			})
+		}
+
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.SearchUserResponse{
+				Users:    userResponse,
+				Children: childrenResponse,
+				Students: studentResponse,
+			},
+		})
+
+		return
+	}
+
+	// Nếu role hợp lệ, ép kiểu và xử lý từng trường hợp
+	roleSignUp := value.RoleSignUp(role)
+
+	switch roleSignUp {
+	case value.RoleTeacher, value.RoleStaff, value.RoleOrganization:
+		users = nil
+	case value.RoleChild:
+		children = nil
+	case value.RoleStudent:
+		students = nil
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: response.SearchUserResponse{
+			Users:    users,
+			Children: children,
+			Students: students,
+		},
 	})
 }

@@ -89,3 +89,7 @@ func (uc *ChildUseCase) UpdateChild(req request.UpdateChildRequest, ctx *gin.Con
 func (uc *ChildUseCase) GetByID(childID string) (*entity.SChild, error) {
 	return uc.childRepo.GetByID(childID)
 }
+
+func (uc *ChildUseCase) GetAll() ([]entity.SChild, error) {
+	return uc.childRepo.GetAll()
+}
