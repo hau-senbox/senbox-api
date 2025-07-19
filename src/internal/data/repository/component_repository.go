@@ -272,3 +272,22 @@ func (r *ComponentRepository) CreateWithTx(tx *gorm.DB, component *components.Co
 	}
 	return tx.Create(component).Error
 }
+
+func (receiver *ComponentRepository) GetByIDs(componentIDs []uuid.UUID) ([]components.Component, error) {
+	var components []components.Component
+
+	if len(componentIDs) == 0 {
+		return components, nil
+	}
+
+	err := receiver.DBConn.
+		Where("id IN ?", componentIDs).
+		Find(&components).Error
+
+	if err != nil {
+		log.Error("ComponentRepository.GetByIDs: " + err.Error())
+		return nil, errors.New("failed to get components by IDs")
+	}
+
+	return components, nil
+}

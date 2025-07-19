@@ -1,12 +1,18 @@
 package usecase
 
 import (
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
+
+	"github.com/google/uuid"
 )
 
 type ChildMenuUseCase struct {
-	Repo *repository.ChildMenuRepository
+	Repo          *repository.ChildMenuRepository
+	ComponentRepo *repository.ComponentRepository
+	ChildRepo     *repository.ChildRepository
 }
 
 func NewChildMenuUseCase(repo *repository.ChildMenuRepository) *ChildMenuUseCase {
@@ -25,6 +31,50 @@ func (uc *ChildMenuUseCase) DeleteByChildID(childID string) error {
 	return uc.Repo.DeleteByChildID(childID)
 }
 
-func (uc *ChildMenuUseCase) GetByChildID(childID string) ([]entity.ChildMenu, error) {
-	return uc.Repo.GetByChildID(childID)
+func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuResponse, error) {
+	child, err := uc.ChildRepo.GetByID(childID)
+	if child == nil || err != nil {
+		return response.GetChildMenuResponse{}, err
+	}
+	childMenus, err := uc.Repo.GetByChildID(childID)
+	if err != nil {
+		return response.GetChildMenuResponse{}, err
+	}
+
+	// B1: Lấy tất cả ComponentID từ childMenus
+	componentIDs := make([]uuid.UUID, 0, len(childMenus))
+	componentOrderMap := make(map[uuid.UUID]int)   // lưu order theo ComponentID
+	componentIsShowMap := make(map[uuid.UUID]bool) // lưu is_show theo ComponentID
+
+	for _, cm := range childMenus {
+		componentIDs = append(componentIDs, cm.ComponentID)
+		componentOrderMap[cm.ComponentID] = cm.Order
+		componentIsShowMap[cm.ComponentID] = cm.IsShow
+	}
+
+	// B2: Lấy danh sách Component theo IDs
+	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	if err != nil {
+		return response.GetChildMenuResponse{}, err
+	}
+
+	// B3: Map sang ComponentChildResponse
+	componentResponses := make([]response.ComponentChildResponse, 0, len(components))
+	for _, comp := range components {
+		componentResponses = append(componentResponses, response.ComponentChildResponse{
+			ID:    comp.ID.String(),
+			Name:  comp.Name,
+			Type:  comp.Type.String(),
+			Key:   comp.Key,
+			Value: helper.BuildSectionValueMenu(string(comp.Value), comp),
+			Order: componentOrderMap[comp.ID],
+			Ishow: componentIsShowMap[comp.ID],
+		})
+	}
+
+	return response.GetChildMenuResponse{
+		ChildID:    childID,
+		ChildName:  child.ChildName,
+		Components: componentResponses,
+	}, nil
 }

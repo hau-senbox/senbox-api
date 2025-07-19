@@ -317,11 +317,17 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ChildMenuRepository: &repository.ChildMenuRepository{DBConn: dbConn},
 			ChildRepository:     &repository.ChildRepository{DB: dbConn},
 		},
+		ChildMenuUseCase: &usecase.ChildMenuUseCase{
+			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
+			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+			ChildRepo:     &repository.ChildRepository{DB: dbConn},
+		},
 	}
 	menu := engine.Group("/v1/admin/menu", secureMiddleware.ValidateSuperAdminRole())
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
+		menu.GET("child/:id", menuController.GetChildMenuByChildID)
 	}
 
 	// user

@@ -21,6 +21,7 @@ type MenuController struct {
 	*usecase.UploadUserMenuUseCase
 	*usecase.UploadDeviceMenuUseCase
 	*usecase.UploadSectionMenuUseCase
+	*usecase.ChildMenuUseCase
 }
 
 type componentResponse struct {
@@ -658,6 +659,32 @@ func (receiver *MenuController) GetSectionMenu4WebAdmin(context *gin.Context) {
 			Error: err.Error(),
 		})
 
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
+func (receiver *MenuController) GetChildMenuByChildID(context *gin.Context) {
+	childID := context.Param("id")
+
+	if childID == "" {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: "Id is required",
+		})
+		return
+	}
+
+	menus, err := receiver.ChildMenuUseCase.GetByChildID(childID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
 		return
 	}
 

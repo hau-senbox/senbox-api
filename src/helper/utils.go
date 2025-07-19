@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"strings"
@@ -112,4 +113,60 @@ func GetVisibleToValueComponent(value string) (bool, error) {
 		visible = v
 	}
 	return visible, nil
+}
+
+func BuildSectionValueMenu(oldValue string, comp components.Component) string {
+	var old struct {
+		Visible bool   `json:"visible"`
+		Icon    string `json:"icon"`
+		Color   string `json:"color"`
+		URL     string `json:"url"`
+	}
+
+	err := json.Unmarshal([]byte(oldValue), &old)
+	if err != nil {
+		// fallback nếu lỗi unmarshal
+		return oldValue
+	}
+
+	// Xác định field chính là "form_qr" hay "url"
+	isButtonForm := comp.Type == "button_form"
+
+	// Build value nội
+	newVal := map[string]interface{}{
+		"color":   old.Color,
+		"icon":    old.Icon,
+		"visible": old.Visible,
+	}
+	if isButtonForm {
+		newVal["form_qr"] = old.URL
+	} else {
+		newVal["url"] = old.URL
+	}
+
+	// Build object ngoài
+	wrapped := map[string]interface{}{
+		"id":      comp.ID.String(),
+		"name":    comp.Name,
+		"type":    string(comp.Type),
+		"key":     comp.Key,
+		"color":   old.Color,
+		"icon":    old.Icon,
+		"visible": old.Visible,
+		"value":   newVal,
+	}
+
+	// field chính ở ngoài: form_qr hoặc url
+	if isButtonForm {
+		wrapped["form_qr"] = old.URL
+	} else {
+		wrapped["url"] = old.URL
+	}
+
+	jsonBytes, err := json.Marshal(wrapped)
+	if err != nil {
+		return oldValue
+	}
+
+	return string(jsonBytes)
 }
