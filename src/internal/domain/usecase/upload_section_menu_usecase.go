@@ -47,7 +47,11 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 	}
 
 	// Lay danh sach student
-	//students , err := receiver.StudentApplicationRepository.GetAll()
+	studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to get student IDs: %w", err)
+	}
 
 	// Tạo mới component và gắn vào child nếu cần
 	for _, item := range req {
@@ -76,7 +80,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
 			if err != nil {
 				tx.Rollback()
-				return err
+				return fmt.Errorf("failed to get visible value: %w", err)
 			}
 
 			// Nếu là role "Child" thì gắn vào bảng ChildMenu
@@ -97,10 +101,23 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 				}
 			}
 
-			// Neu Student thi
-			// if roleOrg != nil && roleOrg.RoleName == string(value.RoleStudent) {
-			// 	for _, stidentID :=
-			// }
+			// Nếu là role "Student" thì gắn vào bảng StudentMenu
+			if roleOrg != nil && roleOrg.RoleName == string(value.RoleStudent) {
+				for _, studentID := range studentIDs {
+					studentMenu := &entity.StudentMenu{
+						ID:          uuid.New(),
+						StudentID:   studentID,
+						ComponentID: component.ID,
+						Order:       index,
+						IsShow:      true,
+						Visible:     visible,
+					}
+					if err := receiver.StudentMenuRepository.CreateWithTx(tx, studentMenu); err != nil {
+						tx.Rollback()
+						return fmt.Errorf("failed to create student menu: %w", err)
+					}
+				}
+			}
 		}
 	}
 
@@ -110,4 +127,5 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 	}
 
 	return nil
+
 }

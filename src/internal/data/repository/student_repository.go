@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -59,4 +60,19 @@ func (r *StudentApplicationRepository) GetByOrganizationID(orgID string) ([]enti
 	var apps []entity.SStudentFormApplication
 	err := r.DB.Where("organization_id = ?", orgID).Find(&apps).Error
 	return apps, err
+}
+
+// GetAllStudentIDs returns a list of all student application IDs
+func (r *StudentApplicationRepository) GetAllStudentIDs() ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+
+	err := r.DB.
+		Model(&entity.SStudentFormApplication{}).
+		Pluck("id", &ids).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ids, nil
 }
