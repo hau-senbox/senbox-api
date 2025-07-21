@@ -307,18 +307,33 @@ func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID strin
 }
 
 func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin() ([]response.GetMenuSectionResponse, error) {
-	var roleOrgChildId string
-	roleOrgChild, _ := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
-	if roleOrgChild != nil {
-		roleOrgChildId = roleOrgChild.ID.String()
-	}
-	componentsList, err := receiver.ComponentRepository.GetBySectionID(roleOrgChildId)
-	if err != nil {
-		return nil, err
+	roleNames := []string{"Child", "Student"}
+	roleIDs := make([]string, 0)
+
+	// Lấy danh sách RoleID theo RoleName
+	for _, roleName := range roleNames {
+		role, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+		if err != nil {
+			return nil, err
+		}
+		if role != nil {
+			roleIDs = append(roleIDs, role.ID.String())
+		}
 	}
 
+	// Lấy tất cả components theo RoleID (SectionID)
+	var allComponents []components.Component
+	for _, roleID := range roleIDs {
+		comps, err := receiver.ComponentRepository.GetBySectionID(roleID)
+		if err != nil {
+			return nil, err
+		}
+		allComponents = append(allComponents, comps...)
+	}
+
+	// Gom nhóm theo SectionID
 	grouped := make(map[string][]components.Component)
-	for _, c := range componentsList {
+	for _, c := range allComponents {
 		grouped[c.SectionID] = append(grouped[c.SectionID], c)
 	}
 

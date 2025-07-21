@@ -1137,6 +1137,7 @@ func (receiver *UserEntityRepository) BlockStudentFormApplication(applicationID 
 
 func (receiver *UserEntityRepository) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
 	result := receiver.DBConn.Create(&entity.SStudentFormApplication{
+		ID:             uuid.New(),
 		StudentName:    req.StudentName,
 		UserID:         uuid.MustParse(req.UserID),
 		OrganizationID: uuid.MustParse(req.OrganizationID),

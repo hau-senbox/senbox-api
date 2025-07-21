@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
@@ -17,6 +18,9 @@ type UploadSectionMenuUseCase struct {
 	*repository.ComponentRepository
 	*repository.ChildMenuRepository
 	*repository.ChildRepository
+	*repository.RoleOrgSignUpRepository
+	*repository.StudentMenuRepository
+	*repository.StudentApplicationRepository
 }
 
 func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
@@ -28,8 +32,9 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 			tx.Rollback()
 			return fmt.Errorf("failed to delete components by section: %w", err)
 		}
-		// Xoa trong child_menu
+		// Xoá toàn bộ child_menu (nếu muốn giới hạn theo section_id thì cần chỉnh lại repository)
 		if err := receiver.ChildMenuRepository.DeleteAll(); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("failed to delete child menu: %w", err)
 		}
 	}
@@ -41,8 +46,18 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 		return fmt.Errorf("failed to get child IDs: %w", err)
 	}
 
-	// Thêm mới components
+	// Lay danh sach student
+	//students , err := receiver.StudentApplicationRepository.GetAll()
+
+	// Tạo mới component và gắn vào child nếu cần
 	for _, item := range req {
+		// Lấy role theo SectionID
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(item.SectionID)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to get role org by ID: %w", err)
+		}
+
 		for index, compReq := range item.Components {
 			component := &components.Component{
 				ID:        uuid.New(),
@@ -64,21 +79,28 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 				return err
 			}
 
-			// Gắn component với từng child_id
-			for _, childID := range childIDs {
-				childMenu := &entity.ChildMenu{
-					ID:          uuid.New(),
-					ChildID:     childID,
-					ComponentID: component.ID,
-					Order:       index,
-					IsShow:      true,
-					Visible:     visible,
-				}
-				if err := receiver.ChildMenuRepository.CreateWithTx(tx, childMenu); err != nil {
-					tx.Rollback()
-					return fmt.Errorf("failed to create child menu: %w", err)
+			// Nếu là role "Child" thì gắn vào bảng ChildMenu
+			if roleOrg != nil && roleOrg.RoleName == string(value.RoleChild) {
+				for _, childID := range childIDs {
+					childMenu := &entity.ChildMenu{
+						ID:          uuid.New(),
+						ChildID:     childID,
+						ComponentID: component.ID,
+						Order:       index,
+						IsShow:      true,
+						Visible:     visible,
+					}
+					if err := receiver.ChildMenuRepository.CreateWithTx(tx, childMenu); err != nil {
+						tx.Rollback()
+						return fmt.Errorf("failed to create child menu: %w", err)
+					}
 				}
 			}
+
+			// Neu Student thi
+			// if roleOrg != nil && roleOrg.RoleName == string(value.RoleStudent) {
+			// 	for _, stidentID :=
+			// }
 		}
 	}
 

@@ -618,7 +618,7 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 
 func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
 
-	menus, err := receiver.GetMenuUseCase.GetSectionMenu()
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
