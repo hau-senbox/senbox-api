@@ -10,7 +10,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -1194,26 +1193,38 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 		return
 	}
 
-	userIDRaw, exists := context.Get("user_id")
-	if !exists {
-		context.JSON(http.StatusUnauthorized, response.FailedResponse{
-			Code:  http.StatusUnauthorized,
-			Error: "Unauthorized: user_id not found",
-		})
-		return
-	}
-	userID := userIDRaw.(string)
-
 	// Parse atr_value_string
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
+	// neu request ko co user id thi lay tu context
+	if attr.UserID == "" {
+		userIDRaw, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, response.FailedResponse{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized: user_id not found",
+			})
+			return
+		}
+		userID, ok := userIDRaw.(string)
+		if !ok {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: "Invalid user_id type in context",
+			})
+			return
+		}
+		attr.UserID = userID
+	}
+
 	// Gọi usecase trả về list
 	res, err := receiver.GetSubmissionByConditionUseCase.Execute(usecase.GetSubmissionByConditionInput{
-		UserID:   userID,
-		Key:      attr.Key,
-		DB:       attr.DB,
-		TimeSort: attr.TimeSort,
-		Quantity: attr.Quantity,
+		UserID:       attr.UserID,
+		Key:          attr.Key,
+		DB:           attr.DB,
+		TimeSort:     attr.TimeSort,
+		Quantity:     attr.Quantity,
+		DateDuration: attr.DateDuration,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1276,11 +1287,11 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 
 	// Gọi use case trả về tổng
 	res, err := receiver.GetTotalNrSubmissionByConditionUseCase.Execute(usecase.GetTotalNrSubmissionByConditionInput{
-		UserID:   attr.UserID,
-		Key:      attr.Key,
-		DB:       attr.DB,
-		TimeSort: attr.TimeSort,
-		Duration: attr.Duration,
+		UserID:       attr.UserID,
+		Key:          attr.Key,
+		DB:           attr.DB,
+		TimeSort:     attr.TimeSort,
+		DateDuration: attr.DateDuration,
 	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1309,13 +1320,21 @@ func (receiver *DeviceController) GetTotalNrSubmissionByCondition(context *gin.C
 // @Failure      500 {object} response.FailedResponse
 // @Router       /v1/form/get-submission-child-profile/{id} [get]
 func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
-	// Lấy form ID từ path
-	formIDParam := c.Param("id")
-	formID, err := strconv.ParseUint(formIDParam, 10, 64)
+
+	var req request.GetSubmission4MemmoriesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	form, err := receiver.GetFormByIDUseCase.GetFormByQRCode(req.QrCode)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "Invalid form ID",
+			Error: err.Error(),
 		})
 		return
 	}
@@ -1331,7 +1350,7 @@ func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
 
 	// Gọi use case hoặc repository
 	res, err := receiver.GetSubmission4MemoriesFormUseCase.Execute(repository.GetSubmission4MemoriesFormParam{
-		FormID: formID,
+		FormID: form.ID,
 		UserId: userID.(string),
 	})
 	if err != nil {

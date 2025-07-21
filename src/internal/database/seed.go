@@ -49,6 +49,8 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SFunctionClaimPermission{},
 		&entity.SUserDevices{},
 		&entity.SImage{},
+		&entity.SPdf{},
+		&entity.SUserFCMToken{},
 		&entity.SUserFunctionAuthorize{},
 		&entity.SUserOrg{},
 		&entity.SOrgFormApplication{},
@@ -65,6 +67,11 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SOrgDevices{},
 		&entity.MemoryComponentValue{},
 		&entity.SUserParentChild{},
+		&entity.SAnswer{},
+		&entity.SRoleOrgSignUp{},
+		&entity.SChild{},
+		&entity.ChildMenu{},
+		&entity.StudentMenu{},
 	)
 
 	// Seed

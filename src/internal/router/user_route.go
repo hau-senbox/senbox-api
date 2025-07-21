@@ -32,6 +32,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
+	childRepo := repository.ChildRepository{DB: dbConn}
+	userRepo := repository.UserEntityRepository{DBConn: dbConn}
+	componentRepo := repository.ComponentRepository{DBConn: dbConn}
+	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
+	childUsecase := usecase.NewChildUseCase(childRepo, userRepo, componentRepo, childMenuRepo)
+
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
@@ -97,6 +103,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
 		},
+		RoleOrgSignUpUseCase: &usecase.RoleOrgSignUpUseCase{
+			Repo: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		},
+		ChildUseCase: childUsecase,
 	}
 
 	userRoleController := &controller.RoleController{
@@ -150,10 +160,15 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			SessionRepository:    sessionRepository,
 		},
 		GetMenuUseCase: &usecase.GetMenuUseCase{
-			MenuRepository:         &repository.MenuRepository{DBConn: dbConn},
-			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
-			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
-			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
+			MenuRepository:          &repository.MenuRepository{DBConn: dbConn},
+			UserEntityRepository:    &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository:  &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:        &repository.DeviceRepository{DBConn: dbConn},
+			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			FormRepository:          &repository.FormRepository{DBConn: dbConn},
+			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+			ChildRepository:         &childRepo,
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
@@ -179,6 +194,15 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 	}
 
+	userTokenFCMController := &controller.UserTokenFCMController{
+		CreateUserTokenFCMUseCase: &usecase.CreateUserTokenFCMUseCase{
+			UserTokenFCMRepository: &repository.UserTokenFCMRepository{DBConn: dbConn},
+		},
+		GetUserTokenFCMUseCase: &usecase.GetUserTokenFCMUseCase{
+			UserTokenFCMRepository: &repository.UserTokenFCMRepository{DBConn: dbConn},
+		},
+	}
+
 	userAccess := engine.Group("v1/")
 	{
 		loginController := &controller.LoginController{DBConn: dbConn,
@@ -200,6 +224,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.POST("/init", userEntityController.CreateUserEntity)
 		user.POST("/child/init", userEntityController.CreateChildForParent)
+		user.POST("/child/create", secureMiddleware.Secured(), userEntityController.CreateChild)
 		user.POST("/update", secureMiddleware.Secured(), userEntityController.UpdateUserEntity)
 		user.POST("/block/:id", secureMiddleware.Secured(), userEntityController.BlockUser)
 		user.POST("/role/update", secureMiddleware.Secured(), userEntityController.UpdateUserRole)
@@ -215,6 +240,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
 		user.POST("/pre-register/", userEntityController.CreatePreRegister)
+		user.GET("/role-sign-up", userEntityController.GetAllRoleOrgSignUp)
+		user.GET("/child/:id", secureMiddleware.Secured(), userEntityController.GetChildByID)
+		user.PUT("/child", secureMiddleware.Secured(), userEntityController.UpdateChild)
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")
@@ -239,8 +267,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	studentApplication := engine.Group("/v1/user/student/application")
 	{
-		studentApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllStudentFormApplication)
-		studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudentFormApplicationByID)
+		// studentApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllStudentFormApplication)
+		// studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudentFormApplicationByID)
 
 		studentApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateStudentFormApplication)
 		studentApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveStudentFormApplication)
@@ -292,15 +320,24 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)
+		userMenu.GET("/section", menuController.GetSectionMenu)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)
 		userMenu.POST("/user", menuController.UploadUserMenu)
 		userMenu.POST("/device", menuController.UploadDeviceMenu)
+		userMenu.GET("/common", menuController.GetCommonMenu)
+		userMenu.GET("/common-by-user", menuController.GetCommonMenuByUser)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())
 	{
 		component.GET("/keys", componentController.GetAllComponentKey)
+	}
+
+	userTokenFCM := engine.Group("v1/user-token-fcm", secureMiddleware.Secured())
+	{
+		userTokenFCM.POST("/register", userTokenFCMController.CreateFCMToken)
+		userTokenFCM.GET("/all/:user_id", userTokenFCMController.GetAllFCMToken)
 	}
 }

@@ -18,7 +18,7 @@ const (
 	QuestionQRCode
 	QuestionSelection
 	QuestionInText
-	QuestionCount
+	QuestionInCount
 	QuestionNumber
 	QuestionPhoto
 	QuestionMultipleChoice
@@ -116,6 +116,10 @@ const (
 
 	OutNrTotal
 	MemoryText
+	OutListEntryHistory
+	OutListResponse
+	OutNrAverageAll
+	OutNrLineGraph
 )
 
 type DeviceStatus int
@@ -215,8 +219,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "selection"
 	case QuestionInText:
 		return "in_text"
-	case QuestionCount:
-		return "count"
+	case QuestionInCount:
+		return "in_count"
 	case QuestionNumber:
 		return "number"
 	case QuestionPhoto:
@@ -400,6 +404,14 @@ func GetRawValue(questionType QuestionType) string {
 		return "out_nr_total"
 	case MemoryText:
 		return "memory_text"
+	case OutListEntryHistory:
+		return "out_list_entry_history"
+	case OutListResponse:
+		return "out_list_response"
+	case OutNrAverageAll:
+		return "out_nr_average_all"
+	case OutNrLineGraph:
+		return "out_nr_line_graph"
 	}
 
 	return ""
@@ -425,8 +437,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "selection"
 	case QuestionInText:
 		return "in_text"
-	case QuestionCount:
-		return "count"
+	case QuestionInCount:
+		return "in_count"
 	case QuestionNumber:
 		return "number"
 	case QuestionPhoto:
@@ -566,6 +578,14 @@ func GetStringValue(questionType QuestionType) string {
 		return "out_nr_total"
 	case MemoryText:
 		return "memory_text"
+	case OutListEntryHistory:
+		return "out_list_entry_history"
+	case OutListResponse:
+		return "out_list_response"
+	case OutNrAverageAll:
+		return "out_nr_average_all"
+	case OutNrLineGraph:
+		return "out_nr_line_graph"
 	default:
 		return ""
 	}
@@ -592,8 +612,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return QuestionSelection, nil
 	case "in_text":
 		return QuestionInText, nil
-	case "count":
-		return QuestionCount, nil
+	case "in_count":
+		return QuestionInCount, nil
 	case "number":
 		return QuestionNumber, nil
 	case "photo":
@@ -777,6 +797,14 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OutNrTotal, nil
 	case "memory_text":
 		return MemoryText, nil
+	case "out_list_entry_history":
+		return OutListEntryHistory, nil
+	case "out_list_response":
+		return OutListResponse, nil
+	case "out_nr_average_all":
+		return OutNrAverageAll, nil
+	case "out_nr_line_graph":
+		return OutNrLineGraph, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -794,7 +822,7 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionQRCode,
 		QuestionSelection,
 		QuestionInText,
-		QuestionCount,
+		QuestionInCount,
 		QuestionNumber,
 		QuestionPhoto,
 		QuestionMultipleChoice,
@@ -868,7 +896,11 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		ApplicationContent,
 		WaterCup,
 		OutNrTotal,
-		MemoryText:
+		MemoryText,
+		OutListEntryHistory,
+		OutListResponse,
+		OutNrAverageAll,
+		OutNrLineGraph:
 		return true
 	default:
 		return false
@@ -1158,4 +1190,24 @@ const (
 type TimeRange struct {
 	Start time.Time
 	End   time.Time
+}
+
+type RoleSignUp string
+
+const (
+	Users            RoleSignUp = "Users"
+	RoleTeacher      RoleSignUp = "Teacher"
+	RoleChild        RoleSignUp = "Child"
+	RoleStaff        RoleSignUp = "Staff"
+	RoleStudent      RoleSignUp = "Student"
+	RoleOrganization RoleSignUp = "Organization"
+)
+
+func IsValidRoleSignUp(role string) bool {
+	switch RoleSignUp(role) {
+	case RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
+		return true
+	default:
+		return false
+	}
 }

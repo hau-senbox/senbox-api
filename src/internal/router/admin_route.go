@@ -42,6 +42,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		SpreadsheetReader:               uploaderSpreadsheet.Reader,
 		SpreadsheetWriter:               uploaderSpreadsheet.Writer,
 		SettingRepository:               settingRepository,
+		RoleOrgSignUpRepo:               &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 		DefaultCronJobIntervalInMinutes: config.DefaultCronJobIntervalInMinutes,
 		TimeMachine:                     usecase.TheTimeMachine,
 		AppConfig:                       config,
@@ -286,6 +287,79 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		codeCounter.GET("/list", controller.GetCodeCounterList)
 		codeCounter.PUT("/update", controller.UpdateCodeCounter)
+	}
+
+	roleUseCase := usecase.NewRoleOrgSignUpUseCase(&repository.RoleOrgSignUpRepository{
+		DBConn: dbConn,
+	})
+
+	roleOrgSignUpController := controller.NewRoleOrgSignUpController(roleUseCase)
+	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.ValidateSuperAdminRole())
+	{
+		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
+	}
+
+	//menu
+	menuController := &controller.MenuController{
+		GetMenuUseCase: &usecase.GetMenuUseCase{
+			MenuRepository:          &repository.MenuRepository{DBConn: dbConn},
+			UserEntityRepository:    &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository:  &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:        &repository.DeviceRepository{DBConn: dbConn},
+			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			FormRepository:          &repository.FormRepository{DBConn: dbConn},
+			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+		},
+		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
+			MenuRepository:               &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository:          &repository.ComponentRepository{DBConn: dbConn},
+			ChildMenuRepository:          &repository.ChildMenuRepository{DBConn: dbConn},
+			ChildRepository:              &repository.ChildRepository{DB: dbConn},
+			RoleOrgSignUpRepository:      &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			StudentMenuRepository:        &repository.StudentMenuRepository{DBConn: dbConn},
+			StudentApplicationRepository: &repository.StudentApplicationRepository{DB: dbConn},
+		},
+		ChildMenuUseCase: &usecase.ChildMenuUseCase{
+			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
+			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+			ChildRepo:     &repository.ChildRepository{DB: dbConn},
+		},
+	}
+	menu := engine.Group("/v1/admin/menu", secureMiddleware.ValidateSuperAdminRole())
+	{
+		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
+		menu.POST("/section", menuController.UploadSectionMenu)
+		menu.GET("child/:id", menuController.GetChildMenuByChildID)
+	}
+
+	// user
+	studentAppRepo := repository.NewStudentApplicationRepository(dbConn)
+	studentAppUseCase := usecase.NewStudentApplicationUseCase(studentAppRepo)
+
+	childRepo := repository.ChildRepository{DB: dbConn}
+	userRepo := repository.UserEntityRepository{DBConn: dbConn}
+	componentRepo := repository.ComponentRepository{DBConn: dbConn}
+	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
+	childUseCase := usecase.NewChildUseCase(
+		childRepo,
+		userRepo,
+		componentRepo,
+		childMenuRepo,
+	)
+
+	userEntityController := &controller.UserEntityController{
+		ChildUseCase:              childUseCase,
+		StudentApplicationUseCase: studentAppUseCase,
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+	}
+	user := engine.Group("/v1/admin/user", secureMiddleware.ValidateSuperAdminRole())
+	{
+		user.GET("/search", userEntityController.SearchUser4WebAdmin)
+		user.GET("child/:id", userEntityController.GetChild4WebAdmin)
 	}
 
 	executor := &TimeMachineSubscriber{

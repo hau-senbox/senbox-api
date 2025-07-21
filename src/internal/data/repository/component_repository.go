@@ -2,11 +2,13 @@ package repository
 
 import (
 	"errors"
+	"sen-global-api/internal/domain/entity/components"
+	"sen-global-api/internal/domain/request"
+
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
-	"sen-global-api/internal/domain/entity/components"
-	"sen-global-api/internal/domain/request"
 )
 
 type ComponentRepository struct {
@@ -61,6 +63,7 @@ func componentFromRequest(req request.CreateMenuComponentRequest) (*components.C
 	component.SetName(req.Name)
 	component.SetKey(req.Key)
 	component.SetValue(datatypes.JSON(req.Value))
+	component.SetSectionID(req.SectionId)
 
 	if err = component.NormalizeValue(); err != nil {
 		return nil, err
@@ -216,4 +219,75 @@ func (receiver *ComponentRepository) DeleteComponent(componentID string, tx *gor
 	}
 
 	return nil
+}
+
+func (receiver *ComponentRepository) DeleteBySectionID(sectionID string, tx *gorm.DB) error {
+	err := tx.
+		Where("section_id = ?", sectionID).
+		Delete(&components.Component{}).Error
+
+	if err != nil {
+		log.Error("ComponentRepository.DeleteBySectionID: " + err.Error())
+		return errors.New("failed to delete components by section_id")
+	}
+	return nil
+}
+
+func (receiver *ComponentRepository) GetAllByKey(key string) ([]components.Component, error) {
+	var componentsList []components.Component
+
+	err := receiver.DBConn.
+		Where("`key` = ?", key).
+		Find(&componentsList).Error
+
+	if err != nil {
+		log.Error("ComponentRepository.GetAllByKey: " + err.Error())
+		return nil, errors.New("failed to get components by key")
+	}
+
+	return componentsList, nil
+}
+
+func (receiver *ComponentRepository) GetBySectionID(sectionID string) ([]components.Component, error) {
+	var componentList []components.Component
+
+	err := receiver.DBConn.
+		Where("`section_id` = ?", sectionID).
+		Find(&componentList).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		log.Error("ComponentRepository.GetByKey: " + err.Error())
+		return nil, errors.New("failed to get component by sectionID")
+	}
+
+	return componentList, nil
+}
+
+func (r *ComponentRepository) CreateWithTx(tx *gorm.DB, component *components.Component) error {
+	if component.ID == uuid.Nil {
+		component.ID = uuid.New()
+	}
+	return tx.Create(component).Error
+}
+
+func (receiver *ComponentRepository) GetByIDs(componentIDs []uuid.UUID) ([]components.Component, error) {
+	var components []components.Component
+
+	if len(componentIDs) == 0 {
+		return components, nil
+	}
+
+	err := receiver.DBConn.
+		Where("id IN ?", componentIDs).
+		Find(&components).Error
+
+	if err != nil {
+		log.Error("ComponentRepository.GetByIDs: " + err.Error())
+		return nil, errors.New("failed to get components by IDs")
+	}
+
+	return components, nil
 }

@@ -2,14 +2,16 @@ package controller
 
 import (
 	"bufio"
-	"github.com/samber/lo"
 	"net/http"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 	"strconv"
 	"strings"
+
+	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +36,9 @@ type UserEntityController struct {
 	*usecase.ApproveUserFormApplicationUseCase
 	*usecase.BlockUserFormApplicationUseCase
 	*usecase.UploadUserAvatarUseCase
+	*usecase.RoleOrgSignUpUseCase
+	*usecase.ChildUseCase
+	*usecase.StudentApplicationUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1216,88 +1221,88 @@ func (receiver *UserEntityController) CreateStaffFormApplication(context *gin.Co
 
 // Student
 
-func (receiver *UserEntityController) GetAllStudentFormApplication(context *gin.Context) {
-	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStudentFormApplication()
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// func (receiver *UserEntityController) GetAllStudentFormApplication(context *gin.Context) {
+// 	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStudentFormApplication()
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	var applicationResponse []response.StudentFormApplicationResponse
-	if len(applications) > 0 {
-		applicationResponse = make([]response.StudentFormApplicationResponse, 0)
-		for _, application := range applications {
-			res := response.StudentFormApplicationResponse{
-				ID:         application.ID,
-				Status:     application.Status.String(),
-				ApprovedAt: "",
-				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-				UserID:     application.UserID.String(),
-			}
-			if application.ApprovedAt != defaultTime {
-				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-			}
-			applicationResponse = append(applicationResponse, res)
-		}
-	}
+// 	var applicationResponse []response.StudentFormApplicationResponse
+// 	if len(applications) > 0 {
+// 		applicationResponse = make([]response.StudentFormApplicationResponse, 0)
+// 		for _, application := range applications {
+// 			res := response.StudentFormApplicationResponse{
+// 				ID:         application.ID,
+// 				Status:     application.Status.String(),
+// 				ApprovedAt: "",
+// 				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 				UserID:     application.UserID.String(),
+// 			}
+// 			if application.ApprovedAt != defaultTime {
+// 				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 			}
+// 			applicationResponse = append(applicationResponse, res)
+// 		}
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: applicationResponse,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: applicationResponse,
+// 	})
+// }
 
-func (receiver *UserEntityController) GetStudentFormApplicationByID(context *gin.Context) {
-	applicationID := context.Param("id")
-	if applicationID == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "id is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+// func (receiver *UserEntityController) GetStudentFormApplicationByID(context *gin.Context) {
+// 	applicationID := context.Param("id")
+// 	if applicationID == "" {
+// 		context.JSON(
+// 			http.StatusBadRequest, response.FailedResponse{
+// 				Error: "id is required",
+// 				Code:  http.StatusBadRequest,
+// 			},
+// 		)
+// 		return
+// 	}
 
-	id, err := strconv.Atoi(applicationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
+// 	id, err := strconv.Atoi(applicationID)
+// 	if err != nil {
+// 		context.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Error: "invalid id",
+// 			Code:  http.StatusBadRequest,
+// 		})
+// 		return
+// 	}
 
-	application, err := receiver.GetUserFormApplicationUseCase.GetStudentFormApplicationByID(int64(id))
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// 	application, err := receiver.GetUserFormApplicationUseCase.GetStudentFormApplicationByID(int64(id))
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	res := response.StudentFormApplicationResponse{
-		ID:         application.ID,
-		Status:     application.Status.String(),
-		ApprovedAt: "",
-		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-		UserID:     application.UserID.String(),
-	}
-	if application.ApprovedAt != defaultTime {
-		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-	}
+// 	res := response.StudentFormApplicationResponse{
+// 		ID:         application.ID,
+// 		Status:     application.Status.String(),
+// 		ApprovedAt: "",
+// 		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 		UserID:     application.UserID.String(),
+// 	}
+// 	if application.ApprovedAt != defaultTime {
+// 		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: res,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: res,
+// 	})
+// }
 
 func (receiver *UserEntityController) ApproveStudentFormApplication(context *gin.Context) {
 	applicationID := context.Param("id")
@@ -1477,4 +1482,235 @@ func (receiver *UserEntityController) UploadAvatar(context *gin.Context) {
 			Height:    img.Height,
 		},
 	})
+}
+
+func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) {
+	roles, err := receiver.RoleOrgSignUpUseCase.GetAll()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: roles,
+	})
+}
+
+// child
+func (receiver *UserEntityController) CreateChild(context *gin.Context) {
+	var req request.CreateChildRequest
+
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid input: " + err.Error(),
+		})
+		return
+	}
+
+	// Gọi UseCase để tạo child
+	err := receiver.ChildUseCase.CreateChild(req, context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Child created successfully",
+	})
+}
+
+func (receiver *UserEntityController) GetChildByID(context *gin.Context) {
+	// Lấy childID từ URL param (giả sử endpoint là /children/:id)
+	childID := context.Param("id")
+	if childID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	child, err := receiver.ChildUseCase.GetByID(childID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: child,
+	})
+}
+
+func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
+	var req request.UpdateChildRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := ctl.ChildUseCase.UpdateChild(req, c); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to update child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Child updated successfully",
+	})
+}
+
+func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
+	role := c.Request.URL.Query().Get("role")
+
+	// Nếu không có role hoặc role không hợp lệ → gọi tất cả
+	callAll := role == "all"
+	var (
+		users    = make([]response.UserResponse, 0)
+		children = make([]response.ChildrenResponse, 0)
+		students = make([]response.StudentResponse, 0)
+	)
+
+	if callAll {
+		users, _ := receiver.GetAllUsers()
+		children, _ := receiver.ChildUseCase.GetAll()
+		students, _ := receiver.StudentApplicationUseCase.GetAllStudents()
+
+		userResponse := make([]response.UserResponse, 0, len(users))
+		for _, u := range users {
+			userResponse = append(userResponse, response.UserResponse{
+				ID:        u.ID.String(),
+				Username:  u.Username,
+				Nickname:  u.Nickname,
+				Avatar:    u.Avatar,
+				AvatarURL: u.AvatarURL,
+			})
+		}
+
+		childrenResponse := make([]response.ChildrenResponse, 0, len(children))
+		for _, c := range children {
+			childrenResponse = append(childrenResponse, response.ChildrenResponse{
+				ChildID:   c.ID.String(),
+				ChildName: c.ChildName,
+			})
+		}
+
+		studentResponse := make([]response.StudentResponse, 0, len(students))
+		for _, s := range students {
+			studentResponse = append(studentResponse, response.StudentResponse{
+				StudentID:   s.StudentID,
+				StudentName: s.StudentName,
+			})
+		}
+
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.SearchUserResponse{
+				Users:    userResponse,
+				Children: childrenResponse,
+				Students: studentResponse,
+			},
+		})
+
+		return
+	}
+
+	if !value.IsValidRoleSignUp(role) {
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.SearchUserResponse{
+				Users:    users,
+				Children: children,
+				Students: students,
+			},
+		})
+
+		return
+	}
+
+	// Nếu role hợp lệ, ép kiểu và xử lý từng trường hợp
+	roleSignUp := value.RoleSignUp(role)
+
+	switch roleSignUp {
+	case value.RoleTeacher, value.RoleStaff, value.RoleOrganization:
+		users = nil
+	case value.RoleChild:
+		// get from childrepo
+		childrenDataRepo, _ := receiver.ChildUseCase.GetAll()
+		for _, c := range childrenDataRepo {
+			children = append(children, response.ChildrenResponse{
+				ChildID:   c.ID.String(),
+				ChildName: c.ChildName,
+			})
+		}
+
+	case value.RoleStudent:
+		//getbfrom student repo
+		studentsDataRepo, _ := receiver.StudentApplicationUseCase.GetAllStudents()
+		for _, s := range studentsDataRepo {
+			students = append(students, response.StudentResponse{
+				StudentID:   s.StudentID,
+				StudentName: s.StudentName,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: response.SearchUserResponse{
+			Users:    users,
+			Children: children,
+			Students: students,
+		},
+	})
+}
+
+func (receiver *UserEntityController) GetChild4WebAdmin(context *gin.Context) {
+	childID := context.Param("id")
+	if childID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	child, err := receiver.ChildUseCase.GetByID4WebAdmin(childID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get child",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: child,
+	})
+
 }

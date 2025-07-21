@@ -77,6 +77,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			SubmissionRepository:   &repository.SubmissionRepository{DBConn: dbConn},
 			SettingRepository:      &repository.SettingRepository{DBConn: dbConn},
 			FormQuestionRepository: &repository.FormQuestionRepository{DBConn: dbConn},
+			AnswerRepository:       &repository.AnswerRepository{DBConn: dbConn},
 			DeviceRepository:       deviceRepository,
 			UserEntityRepository:   &userEntityRepository,
 			CodeCountingRepository: repository.NewCodeCountingRepository(),
@@ -130,6 +131,11 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
+	answerRepo := repository.AnswerRepository{DBConn: dbConn}
+	questionRepo := repository.QuestionRepository{DBConn: dbConn}
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo, userEntityRepository, questionRepo)
+	answerController := controller.NewAnswerController(answerUseCase)
+
 	provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
 		config.S3.SenboxFormSubmitBucket.SecretKey,
@@ -152,6 +158,21 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		DeleteImageUseCase: &usecase.DeleteImageUseCase{
 			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			UploadProvider:  provider,
+		},
+	}
+
+	pdfController := &controller.PdfController{
+		UploadPDFUseCase: &usecase.UploadPDFUseCase{
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
+		},
+		GetPdfByKeyUseCase: &usecase.GetPdfByKeyUseCase{
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
+		},
+		DeletePDFUseCase: &usecase.DeletePDFUseCase{
+			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+			UploadProvider: provider,
 		},
 	}
 
@@ -202,7 +223,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
 		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
 		form.POST("/get-total-nr-submission-by-condition", deviceController.GetTotalNrSubmissionByCondition)
-		form.GET("/get-memory-form/:id", deviceController.GetSubmission4Memories)
+		form.POST("/get-memory-form", deviceController.GetSubmission4Memories)
 		// form.GET("/submission/get-for-memories", deviceController.GetSubmissionChildProfile)
 	}
 
@@ -235,5 +256,18 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
+	}
+
+	pdf := engine.Group("v1/pdfs", secureMiddleware.Secured())
+	{
+		pdf.POST("upload", pdfController.CreatePDF)
+		pdf.POST("", pdfController.GetUrlByKey)
+		pdf.GET("", pdfController.GetAllKeyByOrgID)
+		pdf.DELETE("", pdfController.DeletePDF)
+	}
+
+	answer := engine.Group("v1/answer", secureMiddleware.Secured())
+	{
+		answer.POST("/get-by-key-db", answerController.GetByKeyAndDB)
 	}
 }

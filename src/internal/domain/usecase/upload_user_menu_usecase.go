@@ -9,6 +9,8 @@ import (
 type UploadUserMenuUseCase struct {
 	*repository.MenuRepository
 	*repository.ComponentRepository
+	*repository.ChildMenuRepository
+	*repository.ChildRepository
 }
 
 func (receiver *UploadUserMenuUseCase) Upload(req request.UploadUserMenuRequest) error {

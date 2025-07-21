@@ -41,6 +41,7 @@ type ImportFormsUseCase struct {
 	SpreadsheetReader               *sheet.Reader
 	SpreadsheetWriter               *sheet.Writer
 	SettingRepository               *repository.SettingRepository
+	RoleOrgSignUpRepo               *repository.RoleOrgSignUpRepository
 	DefaultCronJobIntervalInMinutes uint8
 	TimeMachine                     *job.TimeMachine
 	config.AppConfig
@@ -365,7 +366,7 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 	values, err := receiver.SpreadsheetReader.Get(sheet.ReadSpecificRangeParams{
 		SpreadsheetID: signUpFormsSpreadsheetID,
-		ReadRange:     "Forms" + `!K11:M`,
+		ReadRange:     "Forms" + `!K11:P`,
 	})
 	if err != nil || values == nil {
 		log.Error(err)
@@ -382,6 +383,23 @@ func (receiver *ImportFormsUseCase) importSignUpForms(req request.ImportFormRequ
 
 		if sheetName == "" || code == "" {
 			continue
+		}
+
+		// luu vao bang RoleOrgSignUp
+		// Đảm bảo có đủ ít nhất 4 phần tử
+		if len(row) > 3 && row[3] != nil && row[3].(string) != "" {
+			var orgProfile string
+			if len(row) > 5 && row[5] != nil && row[5].(string) != "" {
+				orgProfile = row[5].(string)
+			}
+			err = receiver.RoleOrgSignUpRepo.UpdateOrCreate(&entity.SRoleOrgSignUp{
+				RoleName:   row[3].(string),
+				OrgCode:    code,
+				OrgProfile: orgProfile,
+			})
+			if err != nil {
+				return fmt.Errorf("error importing sign up forms step save into RoleOrgSignUp: %s", err.Error())
+			}
 		}
 
 		url := row[1].(string)
@@ -455,6 +473,8 @@ func (receiver *ImportFormsUseCase) importSignUpForm(spreadsheetUrl, note, sheet
 				Status:            "1",
 				RowNumber:         index + 1,
 				QuestionUniqueID:  uniqueID,
+				Key:               row[0].(string),
+				DB:                row[1].(string),
 			}
 			rawQuestions = append(rawQuestions, item)
 		}
@@ -667,7 +687,7 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.QuestionDurationForward,
 		value.QuestionQRCode,
 		value.QuestionInText,
-		value.QuestionCount,
+		value.QuestionInCount,
 		value.QuestionNumber,
 		value.QuestionQRCodeFront,
 		value.UserInformationValue1,
@@ -778,7 +798,11 @@ func UnmarshalAttributes(rawQuestion parameters.RawQuestion, questionType value.
 		value.PdfPicker,
 		value.SubmitText,
 		value.OutNrTotal,
-		value.MemoryText:
+		value.MemoryText,
+		value.OutListEntryHistory,
+		value.OutListResponse,
+		value.OutNrAverageAll,
+		value.OutNrLineGraph:
 		message := strings.ReplaceAll(rawQuestion.Attributes, "\n", "\\n")
 		jsonMsg := `{"value": "` + message + `"}`
 		return jsonMsg, nil

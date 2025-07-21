@@ -1,10 +1,12 @@
 package helper
 
 import (
+	"encoding/json"
+	"fmt"
 	"regexp"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -49,29 +51,24 @@ func ParseAtrValueStringToStruct(s string) request.AtrValueString {
 			result.Key = &valueStr
 		case "db":
 			result.DB = &valueStr
-		case "time_sort":
+		case "sort":
 			result.TimeSort = value.TimeSort(valueStr)
 		case "user_id":
 			result.UserID = valueStr
-		case "duration":
+		case "date_duration":
 			dates := strings.Split(valueStr, ",")
 			if len(dates) == 2 {
 				start, err1 := parseDate(dates[0])
 				end, err2 := parseDate(dates[1])
 				if err1 == nil && err2 == nil {
-					result.Duration = &value.TimeRange{
+					result.DateDuration = &value.TimeRange{
 						Start: start,
 						End:   end,
 					}
 				}
 			}
 		case "quantity":
-			qty, err := strconv.Atoi(valueStr)
-			if err == nil {
-				result.Quantity = qty
-			} else {
-				result.Quantity = 1 // fallback nếu lỗi parse
-			}
+			result.Quantity = &valueStr
 		}
 
 	}
@@ -84,22 +81,92 @@ func parseDate(s string) (time.Time, error) {
 	return time.Parse("2/1/2006-15:04", strings.TrimSpace(s))
 }
 
-func ParseAtrValueListStringToStructs(s string, userID string) []request.AtrValueString {
-	// Làm sạch chuỗi: remove đầu/cuối []
-	s = strings.TrimPrefix(s, "['")
-	s = strings.TrimSuffix(s, "']")
-	items := strings.Split(s, "','")
+// func ParseAtrValueListStringToStructs(s string, userID string) []request.AtrValueString {
+// 	// Làm sạch chuỗi: remove đầu/cuối []
+// 	s = strings.TrimPrefix(s, "['")
+// 	s = strings.TrimSuffix(s, "']")
+// 	items := strings.Split(s, "','")
 
-	var results []request.AtrValueString
+// 	var results []request.AtrValueString
 
-	for _, item := range items {
-		parsed := ParseAtrValueStringToStruct(item)
-		parsed.UserID = userID // inject userID từ context
-		if parsed.Quantity == 0 {
-			parsed.Quantity = 1 // fallback nếu không có hoặc lỗi
-		}
-		results = append(results, parsed)
+// 	for _, item := range items {
+// 		parsed := ParseAtrValueStringToStruct(item)
+// 		parsed.UserID = userID // inject userID từ context
+// 		if parsed.Quantity == 0 {
+// 			parsed.Quantity = 1 // fallback nếu không có hoặc lỗi
+// 		}
+// 		results = append(results, parsed)
+// 	}
+
+// 	return results
+// }
+
+func GetVisibleToValueComponent(value string) (bool, error) {
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(value), &parsed); err != nil {
+		return true, fmt.Errorf("failed to parse component value JSON: %w", err)
 	}
 
-	return results
+	// Default visible to true
+	visible := true
+	if v, ok := parsed["visible"].(bool); ok {
+		visible = v
+	}
+	return visible, nil
+}
+
+func BuildSectionValueMenu(oldValue string, comp components.Component) string {
+	var old struct {
+		Visible bool   `json:"visible"`
+		Icon    string `json:"icon"`
+		Color   string `json:"color"`
+		URL     string `json:"url"`
+	}
+
+	err := json.Unmarshal([]byte(oldValue), &old)
+	if err != nil {
+		// fallback nếu lỗi unmarshal
+		return oldValue
+	}
+
+	// Xác định field chính là "form_qr" hay "url"
+	isButtonForm := comp.Type == "button_form"
+
+	// Build value nội
+	newVal := map[string]interface{}{
+		"color":   old.Color,
+		"icon":    old.Icon,
+		"visible": old.Visible,
+	}
+	if isButtonForm {
+		newVal["form_qr"] = old.URL
+	} else {
+		newVal["url"] = old.URL
+	}
+
+	// Build object ngoài
+	wrapped := map[string]interface{}{
+		"id":      comp.ID.String(),
+		"name":    comp.Name,
+		"type":    string(comp.Type),
+		"key":     comp.Key,
+		"color":   old.Color,
+		"icon":    old.Icon,
+		"visible": old.Visible,
+		"value":   newVal,
+	}
+
+	// field chính ở ngoài: form_qr hoặc url
+	if isButtonForm {
+		wrapped["form_qr"] = old.URL
+	} else {
+		wrapped["url"] = old.URL
+	}
+
+	jsonBytes, err := json.Marshal(wrapped)
+	if err != nil {
+		return oldValue
+	}
+
+	return string(jsonBytes)
 }

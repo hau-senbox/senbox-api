@@ -2,11 +2,12 @@ package repository
 
 import (
 	"errors"
+	"sen-global-api/internal/domain/entity/menu"
+	"sen-global-api/internal/domain/request"
+
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"sen-global-api/internal/domain/entity/menu"
-	"sen-global-api/internal/domain/request"
 )
 
 type MenuRepository struct {

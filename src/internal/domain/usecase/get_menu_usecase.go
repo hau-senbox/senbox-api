@@ -1,19 +1,34 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
-	"github.com/samber/lo"
+	"fmt"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
 
 type GetMenuUseCase struct {
-	MenuRepository         *repository.MenuRepository
-	UserEntityRepository   *repository.UserEntityRepository
-	OrganizationRepository *repository.OrganizationRepository
-	DeviceRepository       *repository.DeviceRepository
+	MenuRepository          *repository.MenuRepository
+	UserEntityRepository    *repository.UserEntityRepository
+	OrganizationRepository  *repository.OrganizationRepository
+	DeviceRepository        *repository.DeviceRepository
+	RoleOrgSignUpRepository *repository.RoleOrgSignUpRepository
+	FormRepository          *repository.FormRepository
+	SubmissionRepository    *repository.SubmissionRepository
+	ComponentRepository     *repository.ComponentRepository
+	ChildRepository         *repository.ChildRepository
+	ChildMenuUseCase        ChildMenuUseCase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -81,4 +96,276 @@ func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMen
 
 func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]menu.DeviceMenu, error) {
 	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
+}
+
+func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {
+	componentsList := []response.ComponentResponse{
+		buildComponent(
+			uuid.NewString(),
+			"My Account Profiles",
+			"my_account_profile",
+			"icon/accident_and_injury_report_1745206766342940327.png",
+			"button_form",
+			"SENBOX.ORG/MY-ACCOUNT-PROFILES",
+		),
+	}
+
+	return response.GetCommonMenuResponse{
+		Components: componentsList,
+	}
+}
+
+func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.GetCommonMenuByUserResponse {
+	var componentMenus []response.ComponentCommonMenuByUser
+
+	userID := ctx.GetString("user_id")
+	children, err := receiver.ChildRepository.GetByParentID(userID)
+
+	if err == nil && children != nil {
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+		var childOrg = ""
+		if err == nil || roleOrg != nil {
+			childOrg = roleOrg.OrgProfile
+		}
+		for _, child := range children {
+			childComponent := buildComponent(
+				uuid.NewString(),
+				fmt.Sprintf("Child Profile: %s", child.ChildName),
+				"child_profile",
+				"icon/accident_and_injury_report_1745206766342940327.png",
+				"button_form",
+				childOrg,
+			)
+
+			componentMenus = append(componentMenus, response.ComponentCommonMenuByUser{
+				ChildID:   child.ID.String(),
+				Component: childComponent,
+			})
+		}
+	}
+
+	// check teacher menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Teacher", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//checck student menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Student", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//check staff menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Staff", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	//check org menu
+	if teacherComponent, _ := receiver.getProfileComponentByRole("Sign up ORganise", userID); teacherComponent != nil {
+		componentMenus = append(componentMenus, *teacherComponent)
+	}
+
+	return response.GetCommonMenuByUserResponse{
+		Components: componentMenus,
+	}
+}
+
+func buildComponent(id, name, key, icon, typeName, formQR string) response.ComponentResponse {
+	valueObject := map[string]interface{}{
+		"id":   id,
+		"name": name,
+		"type": typeName,
+		"key":  "",
+		"value": map[string]interface{}{
+			"visible": true,
+			"icon":    icon,
+			"color":   "#86DEFF",
+			"form_qr": formQR,
+		},
+		"visible": true,
+		"icon":    icon,
+		"color":   "#86DEFF",
+		"form_qr": formQR,
+	}
+
+	valueBytes, _ := json.Marshal(valueObject)
+
+	return response.ComponentResponse{
+		ID:    id,
+		Name:  name,
+		Type:  typeName,
+		Key:   key,
+		Value: string(valueBytes),
+	}
+}
+
+func (receiver *GetMenuUseCase) GetSectionMenu(context *gin.Context) ([]response.GetMenuSectionResponse, error) {
+
+	// userID, exists := context.MustGet("user_id").(uuid.UUID)
+	// var result []response.GetMenuSectionResponse
+	// if !exists {
+	// 	return nil, errors.New("user_id not found in context")
+	// }
+	// // lay danh sach child tu userID
+	// children, err := receiver.ChildRepository.GetByParentID(userID.String())
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// var childrenMenus []response.GetChildMenuResponse
+	// for _, child := range children {
+	// 	childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
+	// 	if err != nil {
+	// 		// Có thể bỏ qua child lỗi hoặc dừng toàn bộ tùy yêu cầu
+	// 		continue // hoặc return nil, err
+	// 	}
+
+	// 	childrenMenus = append(childrenMenus, response.GetChildMenuResponse{
+	// 		ChildID:    child.ID.String(),
+	// 		ChildName:  child.ChildName,
+	// 		Components: childMenu.Components,
+	// 	})
+	// 	result = append(result, response.GetMenuSectionResponse{
+	// 		SectionName: child.ChildName,
+	// 		Components:  childMenu.Components,
+	// 	})
+	// }
+	// lay danh sach student tu userID
+	componentsList, err := receiver.ComponentRepository.GetAllByKey("section-menu")
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make(map[string][]components.Component)
+	for _, c := range componentsList {
+		grouped[c.SectionID] = append(grouped[c.SectionID], c)
+	}
+
+	var result []response.GetMenuSectionResponse
+	for sectionID, comps := range grouped {
+		var componentResponses []response.ComponentResponse
+		for i, c := range comps {
+			componentResponses = append(componentResponses, response.ComponentResponse{
+				ID:    c.ID.String(),
+				Name:  c.Name,
+				Type:  string(c.Type),
+				Key:   c.Key,
+				Value: helper.BuildSectionValueMenu(string(c.Value), c),
+				Order: i,
+			})
+		}
+
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(sectionID)
+		if err != nil {
+			return nil, err
+		}
+		sectionName := ""
+		if roleOrg != nil {
+			sectionName = roleOrg.RoleName
+		}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionID:   sectionID,
+			SectionName: sectionName,
+			Components:  componentResponses,
+		})
+	}
+
+	return result, nil
+}
+
+func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID string) (*response.ComponentCommonMenuByUser, error) {
+	// Lấy thông tin role theo tên
+	roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+	if err != nil || roleOrg == nil {
+		return nil, nil
+	}
+
+	// Lấy form theo OrgCode của role
+	form, err := receiver.FormRepository.GetFormByQRCode(roleOrg.OrgCode)
+	if err != nil || form == nil {
+		return nil, nil
+	}
+
+	// Kiểm tra xem user đã nộp form hay chưa
+	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, form.ID)
+	if err != nil || submission == nil {
+		return nil, nil
+	}
+
+	// Tạo component
+	component := buildComponent(
+		uuid.NewString(),
+		fmt.Sprintf("%s Profile", roleName),
+		fmt.Sprintf("%s_profile", strings.ToLower(roleName)),
+		"icon/accident_and_injury_report_1745206766342940327.png",
+		"button_form",
+		roleOrg.OrgProfile,
+	)
+
+	return &response.ComponentCommonMenuByUser{
+		Component: component,
+	}, nil
+}
+
+func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin() ([]response.GetMenuSectionResponse, error) {
+	roleNames := []string{"Child", "Student"}
+	roleIDs := make([]string, 0)
+
+	// Lấy danh sách RoleID theo RoleName
+	for _, roleName := range roleNames {
+		role, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
+		if err != nil {
+			return nil, err
+		}
+		if role != nil {
+			roleIDs = append(roleIDs, role.ID.String())
+		}
+	}
+
+	// Lấy tất cả components theo RoleID (SectionID)
+	var allComponents []components.Component
+	for _, roleID := range roleIDs {
+		comps, err := receiver.ComponentRepository.GetBySectionID(roleID)
+		if err != nil {
+			return nil, err
+		}
+		allComponents = append(allComponents, comps...)
+	}
+
+	// Gom nhóm theo SectionID
+	grouped := make(map[string][]components.Component)
+	for _, c := range allComponents {
+		grouped[c.SectionID] = append(grouped[c.SectionID], c)
+	}
+
+	var result []response.GetMenuSectionResponse
+	for sectionID, comps := range grouped {
+		var componentResponses []response.ComponentResponse
+		for i, c := range comps {
+			componentResponses = append(componentResponses, response.ComponentResponse{
+				ID:    c.ID.String(),
+				Name:  c.Name,
+				Type:  string(c.Type),
+				Key:   c.Key,
+				Value: helper.BuildSectionValueMenu(string(c.Value), c),
+				Order: i,
+			})
+		}
+
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(sectionID)
+		if err != nil {
+			return nil, err
+		}
+		sectionName := ""
+		if roleOrg != nil {
+			sectionName = roleOrg.RoleName
+		}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionID:   sectionID,
+			SectionName: sectionName,
+			Components:  componentResponses,
+		})
+	}
+
+	return result, nil
 }
