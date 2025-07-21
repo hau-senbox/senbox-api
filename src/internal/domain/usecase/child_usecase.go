@@ -146,9 +146,9 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	}
 
 	// Build danh sách ComponentChildResponse
-	menus := make([]response.ComponentChildResponse, 0)
+	menus := make([]response.ComponentResponse, 0)
 	for _, comp := range components {
-		menu := response.ComponentChildResponse{
+		menu := response.ComponentResponse{
 			ID:    comp.ID.String(),
 			Name:  comp.Name,
 			Type:  comp.Type.String(),

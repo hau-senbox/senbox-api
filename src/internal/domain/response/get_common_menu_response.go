@@ -13,6 +13,7 @@ type ComponentResponse struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 	Order int    `json:"order"`
+	Ishow bool   `json:"is_show"`
 }
 
 type ComponentCommonMenu struct {

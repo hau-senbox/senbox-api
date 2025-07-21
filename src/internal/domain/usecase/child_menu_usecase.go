@@ -59,9 +59,9 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuR
 	}
 
 	// B3: Map sang ComponentChildResponse
-	componentResponses := make([]response.ComponentChildResponse, 0, len(components))
+	componentResponses := make([]response.ComponentResponse, 0, len(components))
 	for _, comp := range components {
-		componentResponses = append(componentResponses, response.ComponentChildResponse{
+		componentResponses = append(componentResponses, response.ComponentResponse{
 			ID:    comp.ID.String(),
 			Name:  comp.Name,
 			Type:  comp.Type.String(),
