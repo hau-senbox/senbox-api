@@ -35,3 +35,7 @@ func (r *StudentMenuRepository) GetByStudentID(studentID string) ([]entity.Stude
 func (r *StudentMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.StudentMenu) error {
 	return tx.Create(menu).Error
 }
+
+func (r *StudentMenuRepository) DeleteAll() error {
+	return r.DBConn.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&entity.StudentMenu{}).Error
+}

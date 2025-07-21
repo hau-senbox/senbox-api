@@ -312,10 +312,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
-			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
-			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
-			ChildMenuRepository: &repository.ChildMenuRepository{DBConn: dbConn},
-			ChildRepository:     &repository.ChildRepository{DB: dbConn},
+			MenuRepository:               &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository:          &repository.ComponentRepository{DBConn: dbConn},
+			ChildMenuRepository:          &repository.ChildMenuRepository{DBConn: dbConn},
+			ChildRepository:              &repository.ChildRepository{DB: dbConn},
+			RoleOrgSignUpRepository:      &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			StudentMenuRepository:        &repository.StudentMenuRepository{DBConn: dbConn},
+			StudentApplicationRepository: &repository.StudentApplicationRepository{DB: dbConn},
 		},
 		ChildMenuUseCase: &usecase.ChildMenuUseCase{
 			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},

@@ -65,26 +65,18 @@ func (ctrl *RoleOrgSignUpController) GetByRoleName(c *gin.Context) {
 	c.JSON(http.StatusOK, role)
 }
 
-func (ctrl *RoleOrgSignUpController) Get4AdminWeb(c *gin.Context) {
-	role, err := ctrl.UseCase.GetByRoleName("Child")
+func (ctrl *RoleOrgSignUpController) Get4AdminWeb(context *gin.Context) {
+	roles, err := ctrl.UseCase.GetAll()
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
 		return
 	}
-	if role == nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Role 'Child' not found"})
-		return
-	}
-	res := make([]entity.SRoleOrgSignUp, 0)
-	res = append(res, entity.SRoleOrgSignUp{
-		ID:        role.ID,
-		RoleName:  role.RoleName,
-		OrgCode:   role.OrgCode,
-		CreatedAt: role.CreatedAt,
-		UpdatedAt: role.UpdatedAt,
-	})
-	c.JSON(http.StatusOK, response.SucceedResponse{
+	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: roles,
 	})
 }

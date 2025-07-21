@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type UploadSectionMenuUseCase struct {
@@ -26,43 +27,47 @@ type UploadSectionMenuUseCase struct {
 func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 
+	// 1. Xoá dữ liệu cũ: Component, ChildMenu, StudentMenu
 	for _, item := range req {
-		// Xoá tất cả components theo section_id
 		if err := receiver.ComponentRepository.DeleteBySectionID(item.SectionID, tx); err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to delete components by section: %w", err)
-		}
-		// Xoá toàn bộ child_menu (nếu muốn giới hạn theo section_id thì cần chỉnh lại repository)
-		if err := receiver.ChildMenuRepository.DeleteAll(); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to delete child menu: %w", err)
+			return fmt.Errorf("xóa components theo section_id thất bại: %w", err)
 		}
 	}
+	if err := receiver.ChildMenuRepository.DeleteAll(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("xóa child_menu thất bại: %w", err)
+	}
+	if err := receiver.StudentMenuRepository.DeleteAll(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("xóa student_menu thất bại: %w", err)
+	}
 
-	// Lấy danh sách tất cả child_id
+	// 2. Lấy danh sách child_id và student_id
 	childIDs, err := receiver.ChildRepository.GetAllIDs()
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to get child IDs: %w", err)
+		return fmt.Errorf("lấy danh sách child_id thất bại: %w", err)
 	}
 
-	// Lay danh sach student
 	studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to get student IDs: %w", err)
+		return fmt.Errorf("lấy danh sách student_id thất bại: %w", err)
 	}
 
-	// Tạo mới component và gắn vào child nếu cần
+	// 3. Tạo component và gắn vào menu tương ứng
 	for _, item := range req {
-		// Lấy role theo SectionID
 		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(item.SectionID)
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to get role org by ID: %w", err)
+			return fmt.Errorf("lấy role theo section_id thất bại: %w", err)
+		}
+		if roleOrg == nil {
+			continue // không có role -> bỏ qua
 		}
 
-		for index, compReq := range item.Components {
+		for idx, compReq := range item.Components {
 			component := &components.Component{
 				ID:        uuid.New(),
 				Name:      compReq.Name,
@@ -74,58 +79,69 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 
 			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
 				tx.Rollback()
-				return fmt.Errorf("failed to create component: %w", err)
+				return fmt.Errorf("tạo component thất bại: %w", err)
 			}
 
 			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
 			if err != nil {
 				tx.Rollback()
-				return fmt.Errorf("failed to get visible value: %w", err)
+				return fmt.Errorf("phân tích Visible thất bại: %w", err)
 			}
 
-			// Nếu là role "Child" thì gắn vào bảng ChildMenu
-			if roleOrg != nil && roleOrg.RoleName == string(value.RoleChild) {
-				for _, childID := range childIDs {
-					childMenu := &entity.ChildMenu{
-						ID:          uuid.New(),
-						ChildID:     childID,
-						ComponentID: component.ID,
-						Order:       index,
-						IsShow:      true,
-						Visible:     visible,
-					}
-					if err := receiver.ChildMenuRepository.CreateWithTx(tx, childMenu); err != nil {
-						tx.Rollback()
-						return fmt.Errorf("failed to create child menu: %w", err)
-					}
+			switch roleOrg.RoleName {
+			case string(value.RoleChild):
+				if err := receiver.createChildMenus(tx, component.ID, visible, idx, childIDs); err != nil {
+					tx.Rollback()
+					return err
 				}
-			}
 
-			// Nếu là role "Student" thì gắn vào bảng StudentMenu
-			if roleOrg != nil && roleOrg.RoleName == string(value.RoleStudent) {
-				for _, studentID := range studentIDs {
-					studentMenu := &entity.StudentMenu{
-						ID:          uuid.New(),
-						StudentID:   studentID,
-						ComponentID: component.ID,
-						Order:       index,
-						IsShow:      true,
-						Visible:     visible,
-					}
-					if err := receiver.StudentMenuRepository.CreateWithTx(tx, studentMenu); err != nil {
-						tx.Rollback()
-						return fmt.Errorf("failed to create student menu: %w", err)
-					}
+			case string(value.RoleStudent):
+				if err := receiver.createStudentMenus(tx, component.ID, visible, idx, studentIDs); err != nil {
+					tx.Rollback()
+					return err
 				}
 			}
 		}
 	}
 
-	// Commit transaction
+	// 4. Commit transaction
 	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return fmt.Errorf("commit transaction thất bại: %w", err)
 	}
 
 	return nil
+}
 
+func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, childIDs []uuid.UUID) error {
+	for _, childID := range childIDs {
+		menu := &entity.ChildMenu{
+			ID:          uuid.New(),
+			ChildID:     childID,
+			ComponentID: componentID,
+			Order:       order,
+			IsShow:      true,
+			Visible:     visible,
+		}
+		if err := receiver.ChildMenuRepository.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("tạo child menu thất bại: %w", err)
+		}
+	}
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createStudentMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, studentIDs []uuid.UUID) error {
+	for _, studentID := range studentIDs {
+		menu := &entity.StudentMenu{
+			ID:          uuid.New(),
+			StudentID:   studentID,
+			ComponentID: componentID,
+			Order:       order,
+			IsShow:      true,
+			Visible:     visible,
+		}
+		if err := receiver.StudentMenuRepository.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("tạo student menu thất bại: %w", err)
+		}
+	}
+	return nil
 }
