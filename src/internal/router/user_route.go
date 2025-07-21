@@ -170,6 +170,17 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
 			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
 			ChildRepository:         &repository.ChildRepository{DB: dbConn},
+			StudentAppRepo:          &repository.StudentApplicationRepository{DB: dbConn},
+			ChildMenuUseCase: &usecase.ChildMenuUseCase{
+				Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
+				ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+				ChildRepo:     &repository.ChildRepository{DB: dbConn},
+			},
+			StudentMenuUseCase: &usecase.StudentMenuUseCase{
+				StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
+				ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
+				StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
+			},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
@@ -321,7 +332,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)
-		userMenu.GET("/section", menuController.GetSectionMenu)
+		userMenu.GET("/section", menuController.GetSectionMenu4App)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)

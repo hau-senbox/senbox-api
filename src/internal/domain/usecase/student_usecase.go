@@ -77,16 +77,16 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	}
 
 	// Build danh sách ComponentChildResponse
-	menus := make([]response.ComponentStudentResponse, 0)
+	menus := make([]response.ComponentResponse, 0)
 	for _, comp := range components {
-		menu := response.ComponentStudentResponse{
-			ID:    comp.ID.String(),
-			Name:  comp.Name,
-			Type:  comp.Type.String(),
-			Key:   comp.Key,
-			Value: string(comp.Value),
-			Order: componentOrderMap[comp.ID],
-			Ishow: componentIsShowMap[comp.ID],
+		menu := response.ComponentResponse{
+			ID:     comp.ID.String(),
+			Name:   comp.Name,
+			Type:   comp.Type.String(),
+			Key:    comp.Key,
+			Value:  string(comp.Value),
+			Order:  componentOrderMap[comp.ID],
+			IsShow: componentIsShowMap[comp.ID],
 		}
 		menus = append(menus, menu)
 	}

@@ -668,6 +668,24 @@ func (receiver *MenuController) GetSectionMenu4WebAdmin(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetSectionMenu4App(context *gin.Context) {
+
+	menus, err := receiver.GetMenuUseCase.GetSectionMenu4App(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
 func (receiver *MenuController) GetChildMenuByChildID(context *gin.Context) {
 	childID := context.Param("id")
 
