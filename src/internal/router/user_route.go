@@ -32,11 +32,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
-	childRepo := repository.ChildRepository{DB: dbConn}
-	userRepo := repository.UserEntityRepository{DBConn: dbConn}
-	componentRepo := repository.ComponentRepository{DBConn: dbConn}
-	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
-	childUsecase := usecase.NewChildUseCase(childRepo, userRepo, componentRepo, childMenuRepo)
+	childUsecase := usecase.NewChildUseCase(
+		&repository.ChildRepository{DB: dbConn},
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.ChildMenuRepository{DBConn: dbConn},
+	)
 
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
@@ -168,7 +169,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			FormRepository:          &repository.FormRepository{DBConn: dbConn},
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
 			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
-			ChildRepository:         &childRepo,
+			ChildRepository:         &repository.ChildRepository{DB: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},

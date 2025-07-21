@@ -7,6 +7,6 @@ type ChildResponse struct {
 	ChildName string                   `json:"child_name"`
 	Avatar    string                   `json:"avatar"`
 	AvatarURL string                   `json:"avatar_url"`
-	Parent    entity.SUserEntity       `json:"Parent"`
-	Menus     []ComponentChildResponse `json:"menus"`
+	Parent    *entity.SUserEntity      `json:"parent,omitempty"`
+	Menus     []ComponentChildResponse `json:"components"`
 }

@@ -12,17 +12,17 @@ import (
 )
 
 type ChildUseCase struct {
-	childRepo     repository.ChildRepository
-	userRepo      repository.UserEntityRepository
-	componentRepo repository.ComponentRepository
-	childMenuRepo repository.ChildMenuRepository
+	childRepo     *repository.ChildRepository
+	userRepo      *repository.UserEntityRepository
+	componentRepo *repository.ComponentRepository
+	childMenuRepo *repository.ChildMenuRepository
 }
 
 func NewChildUseCase(
-	childRepo repository.ChildRepository,
-	userRepo repository.UserEntityRepository,
-	componentRepo repository.ComponentRepository,
-	childMenuRepo repository.ChildMenuRepository,
+	childRepo *repository.ChildRepository,
+	userRepo *repository.UserEntityRepository,
+	componentRepo *repository.ComponentRepository,
+	childMenuRepo *repository.ChildMenuRepository,
 ) *ChildUseCase {
 	return &ChildUseCase{
 		childRepo:     childRepo,
@@ -115,12 +115,12 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	}
 
 	// Lấy thông tin parent
-	parent, err := uc.userRepo.GetByID(request.GetUserEntityByIDRequest{
-		ID: child.ParentID.String(),
-	})
-	if err != nil {
-		return nil, err
-	}
+	// parent, err := uc.userRepo.GetByID(request.GetUserEntityByIDRequest{
+	// 	ID: child.ParentID.String(),
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Lấy danh sách ChildMenu
 	childMenus, err := uc.childMenuRepo.GetByChildID(childID)
@@ -166,7 +166,7 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		ChildName: child.ChildName,
 		Avatar:    "", // Nếu bạn có trường Avatar trong DB thì lấy thêm ở đây
 		AvatarURL: "", // Có thể generate từ link
-		Parent:    *parent,
-		Menus:     menus,
+		// Parent:    *parent,
+		Menus: menus,
 	}, nil
 }

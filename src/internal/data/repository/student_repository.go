@@ -22,13 +22,17 @@ func (r *StudentApplicationRepository) Create(app *entity.SStudentFormApplicatio
 }
 
 // Get by ID
-func (r *StudentApplicationRepository) GetByID(id int64) (*entity.SStudentFormApplication, error) {
+func (r *StudentApplicationRepository) GetByID(id uuid.UUID) (*entity.SStudentFormApplication, error) {
 	var app entity.SStudentFormApplication
-	err := r.DB.First(&app, id).Error
+
+	err := r.DB.Where("id = ?", id).First(&app).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-	return &app, err
+	if err != nil {
+		return nil, err
+	}
+	return &app, nil
 }
 
 // Get all applications

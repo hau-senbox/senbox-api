@@ -11,6 +11,7 @@ import (
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -122,7 +123,7 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	children, err := receiver.ChildRepository.GetByParentID(userID)
 
 	if err == nil && children != nil {
-		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName("Child")
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleChild))
 		var childOrg = ""
 		if err == nil || roleOrg != nil {
 			childOrg = roleOrg.OrgProfile
