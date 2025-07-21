@@ -5,5 +5,5 @@ type StudentResponseBase struct {
 	StudentName string                     `json:"student_name"`
 	Avatar      string                     `json:"avatar"`
 	AvatarURL   string                     `json:"avatar_url"`
-	Menus       []ComponentStudentResponse `json:"menus"`
+	Menus       []ComponentStudentResponse `json:"components"`
 }

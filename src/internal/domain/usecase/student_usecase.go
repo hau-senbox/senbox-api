@@ -15,9 +15,15 @@ type StudentApplicationUseCase struct {
 	ComponentRepo   *repository.ComponentRepository
 }
 
-func NewStudentApplicationUseCase(repo *repository.StudentApplicationRepository) *StudentApplicationUseCase {
+func NewStudentApplicationUseCase(
+	studentRepo *repository.StudentApplicationRepository,
+	menuRepo *repository.StudentMenuRepository,
+	componentRepo *repository.ComponentRepository,
+) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
-		StudentAppRepo: repo,
+		StudentAppRepo:  studentRepo,
+		StudentMenuRepo: menuRepo,
+		ComponentRepo:   componentRepo,
 	}
 }
 

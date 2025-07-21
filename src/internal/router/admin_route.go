@@ -334,23 +334,22 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	}
 
 	// user
-	studentAppRepo := repository.NewStudentApplicationRepository(dbConn)
-	studentAppUseCase := usecase.NewStudentApplicationUseCase(studentAppRepo)
+	studentUseCase := usecase.NewStudentApplicationUseCase(
+		&repository.StudentApplicationRepository{DB: dbConn},
+		&repository.StudentMenuRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+	)
 
-	childRepo := repository.ChildRepository{DB: dbConn}
-	userRepo := repository.UserEntityRepository{DBConn: dbConn}
-	componentRepo := repository.ComponentRepository{DBConn: dbConn}
-	childMenuRepo := repository.ChildMenuRepository{DBConn: dbConn}
 	childUseCase := usecase.NewChildUseCase(
-		childRepo,
-		userRepo,
-		componentRepo,
-		childMenuRepo,
+		&repository.ChildRepository{DB: dbConn},
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.ChildMenuRepository{DBConn: dbConn},
 	)
 
 	userEntityController := &controller.UserEntityController{
 		ChildUseCase:              childUseCase,
-		StudentApplicationUseCase: studentAppUseCase,
+		StudentApplicationUseCase: studentUseCase,
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
