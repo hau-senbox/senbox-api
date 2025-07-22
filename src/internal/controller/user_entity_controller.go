@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
@@ -1739,6 +1740,78 @@ func (receiver *UserEntityController) GetStudent4WebAdmin(context *gin.Context) 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: student,
+	})
+
+}
+
+func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
+	studentID := context.Param("id")
+	if studentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	if _, err := uuid.Parse(studentID); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid student ID format (must be UUID)",
+		})
+		return
+	}
+
+	student, err := receiver.StudentApplicationUseCase.GetStudentByID4App(studentID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: student,
+	})
+
+}
+
+func (receiver *UserEntityController) UpdateStudent4App(context *gin.Context) {
+	var req request.UpdateStudentRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		// validate UUID lỗi
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	err := receiver.StudentApplicationUseCase.UpdateStudentName(req)
+	if err != nil {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: err.Error(),
+		})
+		return
+	}
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Updated",
 	})
 
 }

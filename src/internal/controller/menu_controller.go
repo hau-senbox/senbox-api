@@ -711,3 +711,55 @@ func (receiver *MenuController) GetChildMenuByChildID(context *gin.Context) {
 		Data: menus,
 	})
 }
+
+func (receiver *MenuController) UpdateIsShowChildMenu(context *gin.Context) {
+	var req request.UpdateChildMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.ChildMenuUseCase.UpdateIsShowByChildAndComponentID(req)
+
+	if err != nil {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Updated",
+	})
+}
+
+func (receiver *MenuController) UpdateIsShowStudentMenu(context *gin.Context) {
+	var req request.UpdateStudentMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.StudentMenuUseCase.UpdateIsShowByStudentAndComponentID(req)
+
+	if err != nil {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Updated",
+	})
+}
