@@ -68,7 +68,11 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	// if childRoleOrg != nil {
 	// 	components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
 	// 	for _, component := range components {
+	// 		err = uc.childMenuRepo.Create(&entity.ChildMenu{
+	// 			ID: uuid.New(),
+	// 			ComponentID: component.ID,
 
+	// 		})
 	// 	}
 
 	// }
