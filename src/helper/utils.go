@@ -170,3 +170,13 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 
 	return string(jsonBytes)
 }
+
+func FormatProfileLink(rawURL string, id string) string {
+	parts := strings.Split(rawURL, "/")
+	if len(parts) > 1 {
+		lastPart := parts[len(parts)-1]
+		parts[len(parts)-1] = "[" + lastPart + "]:" + id
+		return strings.Join(parts, "/")
+	}
+	return rawURL
+}

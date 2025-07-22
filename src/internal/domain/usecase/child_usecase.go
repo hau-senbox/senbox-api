@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,6 +17,7 @@ type ChildUseCase struct {
 	userRepo      *repository.UserEntityRepository
 	componentRepo *repository.ComponentRepository
 	childMenuRepo *repository.ChildMenuRepository
+	roleOrgRepo   *repository.RoleOrgSignUpRepository
 }
 
 func NewChildUseCase(
@@ -23,12 +25,14 @@ func NewChildUseCase(
 	userRepo *repository.UserEntityRepository,
 	componentRepo *repository.ComponentRepository,
 	childMenuRepo *repository.ChildMenuRepository,
+	roleOrgRepo *repository.RoleOrgSignUpRepository,
 ) *ChildUseCase {
 	return &ChildUseCase{
 		childRepo:     childRepo,
 		userRepo:      userRepo,
 		componentRepo: componentRepo,
 		childMenuRepo: childMenuRepo,
+		roleOrgRepo:   roleOrgRepo,
 	}
 }
 
@@ -160,12 +164,19 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		menus = append(menus, menu)
 	}
 
+	// lay qr profile form
+	childRoleOrg, err := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
+	if err != nil {
+		return nil, err
+	}
+	formProfile := childRoleOrg.OrgProfile + ":" + child.ID.String()
 	// Trả về kết quả
 	return &response.ChildResponse{
-		ChildID:   child.ID.String(),
-		ChildName: child.ChildName,
-		Avatar:    "", // Nếu bạn có trường Avatar trong DB thì lấy thêm ở đây
-		AvatarURL: "", // Có thể generate từ link
+		ChildID:       child.ID.String(),
+		ChildName:     child.ChildName,
+		Avatar:        "", // Nếu bạn có trường Avatar trong DB thì lấy thêm ở đây
+		AvatarURL:     "", // Có thể generate từ link
+		QrFormProfile: formProfile,
 		// Parent:    *parent,
 		Menus: menus,
 	}, nil

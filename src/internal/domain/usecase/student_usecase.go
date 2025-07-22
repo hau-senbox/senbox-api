@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 )
@@ -13,17 +14,20 @@ type StudentApplicationUseCase struct {
 	StudentAppRepo  *repository.StudentApplicationRepository
 	StudentMenuRepo *repository.StudentMenuRepository
 	ComponentRepo   *repository.ComponentRepository
+	RoleOrgRepo     *repository.RoleOrgSignUpRepository
 }
 
 func NewStudentApplicationUseCase(
 	studentRepo *repository.StudentApplicationRepository,
 	menuRepo *repository.StudentMenuRepository,
 	componentRepo *repository.ComponentRepository,
+	roleOrgRepo *repository.RoleOrgSignUpRepository,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:  studentRepo,
 		StudentMenuRepo: menuRepo,
 		ComponentRepo:   componentRepo,
+		RoleOrgRepo:     roleOrgRepo,
 	}
 }
 
@@ -90,12 +94,19 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		}
 		menus = append(menus, menu)
 	}
+	// lay qr profile form
+	studentRoleOrg, err := uc.RoleOrgRepo.GetByRoleName(string(value.RoleStudent))
+	if err != nil {
+		return nil, err
+	}
+	formProfile := studentRoleOrg.OrgProfile + ":" + studentApp.ID.String()
 
 	return &response.StudentResponseBase{
-		StudentID:   studentID,
-		StudentName: studentApp.StudentName,
-		Avatar:      "", // Nếu bạn có trường Avatar trong DB thì lấy thêm ở đây
-		AvatarURL:   "", // Có thể generate từ link
-		Menus:       menus,
+		StudentID:     studentID,
+		StudentName:   studentApp.StudentName,
+		Avatar:        "",
+		AvatarURL:     "",
+		QrFormProfile: formProfile,
+		Menus:         menus,
 	}, nil
 }
