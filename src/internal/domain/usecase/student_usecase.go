@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -43,7 +42,7 @@ func (uc *StudentApplicationUseCase) GetAllStudents() ([]response.StudentRespons
 	res := make([]response.StudentResponse, 0, len(apps))
 	for _, a := range apps {
 		res = append(res, response.StudentResponse{
-			StudentID:   fmt.Sprintf("%d", a.ID),
+			StudentID:   a.ID.String(),
 			StudentName: a.StudentName,
 		})
 	}
