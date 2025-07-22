@@ -37,6 +37,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.UserEntityRepository{DBConn: dbConn},
 		&repository.ComponentRepository{DBConn: dbConn},
 		&repository.ChildMenuRepository{DBConn: dbConn},
+		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
 	)
 
 	userEntityController := &controller.UserEntityController{
