@@ -4,6 +4,7 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
@@ -80,4 +81,8 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStud
 		StudentName: student.StudentName,
 		Components:  componentResponses,
 	}, nil
+}
+
+func (uc *StudentMenuUseCase) UpdateIsShowByStudentAndComponentID(req request.UpdateStudentMenuRequest) error {
+	return uc.StudentMenuRepo.UpdateIsShowByStudentAndComponentID(req.StudentID, req.ComponentID, *req.IsShow)
 }

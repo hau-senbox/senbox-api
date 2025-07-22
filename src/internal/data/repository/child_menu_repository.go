@@ -39,3 +39,15 @@ func (r *ChildMenuRepository) DeleteAll() error {
 func (r *ChildMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.ChildMenu) error {
 	return tx.Create(menu).Error
 }
+
+func (r *ChildMenuRepository) Update(menu *entity.ChildMenu) error {
+	return r.DBConn.Model(&entity.ChildMenu{}).
+		Where("id = ?", menu.ID).
+		Updates(menu).Error
+}
+
+func (r *ChildMenuRepository) UpdateIsShowByChildAndComponentID(childID, componentID string, isShow bool) error {
+	return r.DBConn.Model(&entity.ChildMenu{}).
+		Where("child_id = ? AND component_id = ?", childID, componentID).
+		Update("is_show", isShow).Error
+}

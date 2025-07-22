@@ -4,6 +4,7 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
@@ -77,4 +78,8 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuR
 		ChildName:  child.ChildName,
 		Components: componentResponses,
 	}, nil
+}
+
+func (uc *ChildMenuUseCase) UpdateIsShowByChildAndComponentID(req request.UpdateChildMenuRequest) error {
+	return uc.Repo.UpdateIsShowByChildAndComponentID(req.ChildID, req.ComponentID, *req.IsShow)
 }
