@@ -57,10 +57,21 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	}
 
 	child := &entity.SChild{
+		ID:        uuid.New(),
 		ChildName: req.ChildName,
 		Age:       req.Age,
 		ParentID:  userID,
 	}
+
+	// sau khi tao child thanh cong thi tao child menu
+	// childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
+	// if childRoleOrg != nil {
+	// 	components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
+	// 	for _, component := range components {
+
+	// 	}
+
+	// }
 
 	return uc.childRepo.Create(child)
 }
