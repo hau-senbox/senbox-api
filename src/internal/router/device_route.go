@@ -161,6 +161,36 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 	}
 
+	videoController := &controller.VideoController{
+		GetVideoUseCase: &usecase.GetVideoUseCase{
+			VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+		UploadVideoUseCase: &usecase.UploadVideoUseCase{
+			VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+		DeleteVideoUseCase: &usecase.DeleteVideoUseCase{
+			VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+	}
+
+	audioController := &controller.AudioController{
+		GetAudioUseCase: &usecase.GetAudioUseCase{
+			AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+		UploadAudioUseCase: &usecase.UploadAudioUseCase{
+			AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+		DeleteAudioUseCase: &usecase.DeleteAudioUseCase{
+			AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
+	}
+
 	pdfController := &controller.PdfController{
 		UploadPDFUseCase: &usecase.UploadPDFUseCase{
 			PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
@@ -256,6 +286,20 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
+	}
+
+	video := engine.Group("v1/videos", secureMiddleware.Secured())
+	{
+		video.POST("/", videoController.GetUrlByKey)
+		video.POST("/upload", videoController.CreateVideo)
+		video.POST("/delete", videoController.DeleteVideo)
+	}
+
+	audio := engine.Group("v1/audios", secureMiddleware.Secured())
+	{
+		audio.POST("/", audioController.GetUrlByKey)
+		audio.POST("/upload", audioController.CreateAudio)
+		audio.POST("/delete", audioController.DeleteAudio)
 	}
 
 	pdf := engine.Group("v1/pdfs", secureMiddleware.Secured())

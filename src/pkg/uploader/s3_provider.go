@@ -61,7 +61,7 @@ func NewS3Provider(accessKey, secretKey, bucketName, region, domain, cloudFrontK
 	return provider
 }
 
-func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dest string, mode UploadMode) (*string, error) {
+func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, key string, mode UploadMode) (*string, error) {
 
 	fileBytes := bytes.NewReader(data)
 	fileType := http.DetectContentType(data)
@@ -71,7 +71,7 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dest str
 
 	_, err := client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(p.bucketName),
-		Key:         aws.String(dest),
+		Key:         aws.String(key),
 		Body:        fileBytes,
 		ContentType: aws.String(fileType),
 		ACL:         types.ObjectCannedACLPrivate,
@@ -87,23 +87,23 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dest str
 	//// Pre-sign the request
 	//presignedURL, err := presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 	//	Bucket: aws.String(p.bucketName),
-	//	Key:    aws.String(dest),
+	//	Key:    aws.String(key),
 	//}, s3.WithPresignExpires(15*time.Minute)) // URL expires in 15 minutes
 	//url := presignedURL.URL
 
 	// Return either signed URL or public URL
 	switch mode {
 	case UploadPrivate:
-		return p.GetFileUploaded(ctx, dest, nil)
+		return p.GetFileUploaded(ctx, key, nil)
 	case UploadPublic:
 		duration := time.Now().AddDate(10, 0, 0).Sub(time.Now())
-		return p.GetFileUploaded(ctx, dest, &duration)
+		return p.GetFileUploaded(ctx, key, &duration)
 	default:
 		return nil, errors.New("invalid upload mode")
 	}
 }
 
-func (p *s3Provider) GetFileUploaded(ctx context.Context, dest string, duration *time.Duration) (*string, error) {
+func (p *s3Provider) GetFileUploaded(ctx context.Context, key string, duration *time.Duration) (*string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		return nil, errors.New("failed to get current directory")
@@ -144,7 +144,7 @@ func (p *s3Provider) GetFileUploaded(ctx context.Context, dest string, duration 
 
 	// Sign the URL
 	signer := sign.NewURLSigner(p.cloudFrontKeyGroupID, privKey)
-	url := fmt.Sprintf("%s/%s", p.domain, dest)
+	url := fmt.Sprintf("%s/%s", p.domain, key)
 
 	if duration == nil {
 		duration = aws.Duration(24 * time.Hour)
