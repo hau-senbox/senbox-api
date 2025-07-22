@@ -153,8 +153,8 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	}
 
 	//checck student menu
-	if teacherComponent, _ := receiver.getProfileComponentByRole("Student", userID); teacherComponent != nil {
-		componentMenus = append(componentMenus, *teacherComponent)
+	if studentComponent, _ := receiver.getProfileComponentByRole("Student", userID); studentComponent != nil {
+		componentMenus = append(componentMenus, *studentComponent)
 	}
 
 	//check staff menu
