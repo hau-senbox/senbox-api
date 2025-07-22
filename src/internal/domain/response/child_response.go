@@ -3,8 +3,8 @@ package response
 import "sen-global-api/internal/domain/entity"
 
 type ChildResponse struct {
-	ChildID       string              `json:"child_id"`
-	ChildName     string              `json:"child_name"`
+	ChildID       string              `json:"id"`
+	ChildName     string              `json:"name"`
 	Avatar        string              `json:"avatar"`
 	AvatarURL     string              `json:"avatar_url"`
 	Parent        *entity.SUserEntity `json:"parent,omitempty"`
