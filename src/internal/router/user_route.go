@@ -109,6 +109,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			Repo: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 		},
 		ChildUseCase: childUsecase,
+		StudentApplicationUseCase: &usecase.StudentApplicationUseCase{
+			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
+			StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
+			ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:     &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		},
 	}
 
 	userRoleController := &controller.RoleController{
