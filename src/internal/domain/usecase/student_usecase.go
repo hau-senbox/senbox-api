@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"fmt"
-	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
@@ -100,7 +99,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	if err != nil {
 		return nil, err
 	}
-	formProfile := helper.FormatProfileLink(studentRoleOrg.OrgProfile, studentApp.ID.String())
+	formProfile := studentRoleOrg.OrgProfile + ":" + studentApp.ID.String()
 
 	return &response.StudentResponseBase{
 		StudentID:     studentID,

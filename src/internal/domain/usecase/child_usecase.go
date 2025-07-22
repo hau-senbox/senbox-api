@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -170,7 +169,7 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	if err != nil {
 		return nil, err
 	}
-	formProfile := helper.FormatProfileLink(childRoleOrg.OrgProfile, child.ID.String())
+	formProfile := childRoleOrg.OrgProfile + ":" + child.ID.String()
 	// Trả về kết quả
 	return &response.ChildResponse{
 		ChildID:       child.ID.String(),
