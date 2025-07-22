@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
@@ -109,4 +111,37 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		QrFormProfile: formProfile,
 		Menus:         menus,
 	}, nil
+}
+
+func (uc *StudentApplicationUseCase) GetStudentByID4App(studentID string) (*response.StudentResponseBase, error) {
+	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
+	if err != nil {
+		return nil, err
+	}
+	if studentApp == nil {
+		return nil, errors.New("student not found")
+	}
+
+	return &response.StudentResponseBase{
+		StudentID:   studentID,
+		StudentName: studentApp.StudentName,
+	}, nil
+}
+
+// usecase/student_application_usecase.go
+func (uc *StudentApplicationUseCase) UpdateStudentName(req request.UpdateStudentRequest) error {
+	// Tìm bản ghi hiện tại theo ID
+	student := &entity.SStudentFormApplication{}
+	err := uc.StudentAppRepo.DB.
+		Where("id = ?", req.StudentID).
+		First(student).Error
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật tên
+	student.StudentName = req.StudentName
+
+	// Lưu lại
+	return uc.StudentAppRepo.Update(student)
 }

@@ -39,3 +39,9 @@ func (r *StudentMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.StudentMe
 func (r *StudentMenuRepository) DeleteAll() error {
 	return r.DBConn.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&entity.StudentMenu{}).Error
 }
+
+func (r *StudentMenuRepository) UpdateIsShowByStudentAndComponentID(studentID, componentID string, isShow bool) error {
+	return r.DBConn.Model(&entity.StudentMenu{}).
+		Where("student_id = ? AND component_id = ?", studentID, componentID).
+		Update("is_show", isShow).Error
+}

@@ -35,7 +35,6 @@ func (r *ChildRepository) Create(child *entity.SChild) error {
 	}
 
 	// Nếu chưa có thì tạo mới
-	child.ID = uuid.New()
 	return r.DB.Create(child).Error
 }
 
