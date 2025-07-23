@@ -97,7 +97,7 @@ func (receiver *MenuRepository) CreateSuperAdminMenu(req request.CreateSuperAdmi
 	for _, component := range req.Components {
 		menus = append(menus, menu.SuperAdminMenu{
 			Direction:   req.Direction,
-			ComponentID: component.ID,
+			ComponentID: *component.ID,
 			Order:       component.Order,
 		})
 	}
@@ -149,7 +149,7 @@ func (receiver *MenuRepository) CreateOrgMenu(req request.CreateOrgMenuRequest, 
 		menus = append(menus, menu.OrgMenu{
 			OrganizationID: uuid.MustParse(req.OrganizationID),
 			Direction:      req.Direction,
-			ComponentID:    component.ID,
+			ComponentID:    *component.ID,
 			Order:          component.Order,
 		})
 	}
@@ -200,7 +200,7 @@ func (receiver *MenuRepository) CreateUserMenu(req request.CreateUserMenuRequest
 	for _, component := range req.Components {
 		menus = append(menus, menu.UserMenu{
 			UserID:      uuid.MustParse(req.UserID),
-			ComponentID: component.ID,
+			ComponentID: *component.ID,
 			Order:       component.Order,
 		})
 	}
@@ -230,7 +230,7 @@ func (receiver *MenuRepository) CreateDeviceMenu(req request.CreateDeviceMenuReq
 	for _, component := range req.Components {
 		menus = append(menus, menu.DeviceMenu{
 			OrganizationID: uuid.MustParse(req.OrganizationID),
-			ComponentID:    component.ID,
+			ComponentID:    *component.ID,
 			Order:          component.Order,
 		})
 	}

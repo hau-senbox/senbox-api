@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"errors"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -50,4 +52,28 @@ func (r *ChildMenuRepository) UpdateIsShowByChildAndComponentID(childID, compone
 	return r.DBConn.Model(&entity.ChildMenu{}).
 		Where("child_id = ? AND component_id = ?", childID, componentID).
 		Update("is_show", isShow).Error
+}
+
+func (r *ChildMenuRepository) GetByChildIDAndComponentID(tx *gorm.DB, childID, componentID uuid.UUID) (*entity.ChildMenu, error) {
+	var menu entity.ChildMenu
+	err := tx.
+		Where("child_id = ? AND component_id = ?", childID, componentID).
+		First(&menu).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+	return &menu, nil
+}
+
+func (r *ChildMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.ChildMenu) error {
+	return tx.Model(&entity.ChildMenu{}).
+		Where("id = ?", menu.ID).
+		Updates(map[string]interface{}{
+			"order":   menu.Order,
+			"visible": menu.Visible,
+			"is_show": menu.IsShow,
+		}).Error
 }

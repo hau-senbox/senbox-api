@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -54,4 +56,28 @@ func (r *StudentMenuRepository) DeleteAllTx(tx *gorm.DB) error {
 		return fmt.Errorf("Delete all student_menu fail: %w", err)
 	}
 	return nil
+}
+
+func (r *StudentMenuRepository) GetByStudentIDAndComponentID(tx *gorm.DB, studentID, componentID uuid.UUID) (*entity.StudentMenu, error) {
+	var menu entity.StudentMenu
+	err := tx.
+		Where("student_id = ? AND component_id = ?", studentID, componentID).
+		First(&menu).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+	return &menu, nil
+}
+
+func (r *StudentMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.StudentMenu) error {
+	return tx.Model(&entity.StudentMenu{}).
+		Where("id = ?", menu.ID).
+		Updates(map[string]interface{}{
+			"order":   menu.Order,
+			"visible": menu.Visible,
+			"is_show": menu.IsShow,
+		}).Error
 }
