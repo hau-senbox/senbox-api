@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -57,13 +58,14 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 			components, _ := receiver.ComponentRepository.GetBySectionID(studentRoleOrg.ID.String())
 
 			for index, component := range components {
+				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 				err := receiver.StudentMenuRepository.Create(&entity.StudentMenu{
 					ID:          uuid.New(),
 					StudentID:   studentID,
 					ComponentID: component.ID,
 					Order:       index,
 					IsShow:      true,
-					Visible:     true,
+					Visible:     visible,
 				})
 				if err != nil {
 					continue

@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"fmt"
 	"sen-global-api/internal/domain/entity"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -44,4 +46,12 @@ func (r *StudentMenuRepository) UpdateIsShowByStudentAndComponentID(studentID, c
 	return r.DBConn.Model(&entity.StudentMenu{}).
 		Where("student_id = ? AND component_id = ?", studentID, componentID).
 		Update("is_show", isShow).Error
+}
+
+func (r *StudentMenuRepository) DeleteAllTx(tx *gorm.DB) error {
+	if err := tx.Exec("DELETE FROM student_menu").Error; err != nil {
+		log.Error("StudentMenuRepository.DeleteAllTx: " + err.Error())
+		return fmt.Errorf("xóa tất cả student_menu thất bại: %w", err)
+	}
+	return nil
 }

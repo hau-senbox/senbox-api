@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -66,20 +67,21 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 
 	err := uc.childRepo.Create(child)
 
-	if err != nil {
+	if err == nil {
 		//tao child menu
 		childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
 		if childRoleOrg != nil {
 			components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
 
 			for index, component := range components {
+				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 				err := uc.childMenuRepo.Create(&entity.ChildMenu{
 					ID:          uuid.New(),
 					ChildID:     childID,
 					ComponentID: component.ID,
 					Order:       index,
 					IsShow:      true,
-					Visible:     true,
+					Visible:     visible,
 				})
 				if err != nil {
 					continue
