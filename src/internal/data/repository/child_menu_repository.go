@@ -77,3 +77,9 @@ func (r *ChildMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.ChildMenu) 
 			"is_show": menu.IsShow,
 		}).Error
 }
+
+func (r *ChildMenuRepository) GetByChildIDActive(childID string) ([]entity.ChildMenu, error) {
+	var result []entity.ChildMenu
+	err := r.DBConn.Where("child_id = ? AND is_show = ?", childID, true).Find(&result).Error
+	return result, err
+}
