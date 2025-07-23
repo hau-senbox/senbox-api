@@ -601,7 +601,7 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 		return
 	}
 
-	err := receiver.UploadSectionMenuUseCase.UploadSectionMenu(req)
+	err := receiver.UploadSectionMenuUseCase.UploadSectionMenuV2(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

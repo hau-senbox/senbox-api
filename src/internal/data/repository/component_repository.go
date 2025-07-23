@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 
@@ -91,7 +92,9 @@ func (receiver *ComponentRepository) CreateComponent(req *request.CreateMenuComp
 			return errors.New("failed to create component")
 		}
 
-		req.ID = component.GetID()
+		id := component.GetID()
+		req.ID = &id
+
 		return nil
 	}
 
@@ -108,7 +111,9 @@ func (receiver *ComponentRepository) CreateComponent(req *request.CreateMenuComp
 		return errors.New("failed to create component")
 	}
 
-	req.ID = component.GetID()
+	id := component.GetID()
+	req.ID = &id
+
 	return nil
 }
 
@@ -132,7 +137,9 @@ func (receiver *ComponentRepository) CreateComponents(request *[]request.CreateM
 		}
 
 		for i, component := range componentList {
-			(*request)[i].ID = component.GetID()
+			id := component.GetID()
+
+			(*request)[i].ID = &id
 		}
 
 		return nil
@@ -146,7 +153,8 @@ func (receiver *ComponentRepository) CreateComponents(request *[]request.CreateM
 	}
 
 	for i, component := range componentList {
-		(*request)[i].ID = component.GetID()
+		id := component.GetID()
+		(*request)[i].ID = &id
 	}
 
 	return nil
@@ -290,4 +298,35 @@ func (receiver *ComponentRepository) GetByIDs(componentIDs []uuid.UUID) ([]compo
 	}
 
 	return components, nil
+}
+
+func (r *ComponentRepository) GetByKeyAndSectionID(key, sectionID string) (*components.Component, error) {
+	var component components.Component
+	err := r.DBConn.
+		Where("`key` = ? AND `section_id` = ?", key, sectionID).
+		First(&component).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &component, nil
+}
+
+func (r *ComponentRepository) UpdateWithTx(tx *gorm.DB, component *components.Component) error {
+	err := tx.Model(&components.Component{}).
+		Where("id = ?", component.ID).
+		Updates(map[string]interface{}{
+			"name":       component.Name,
+			"type":       component.Type,
+			"key":        component.Key,
+			"value":      component.Value,
+			"section_id": component.SectionID,
+		}).Error
+	if err != nil {
+		return fmt.Errorf("update component failed: %w", err)
+	}
+	return nil
 }
