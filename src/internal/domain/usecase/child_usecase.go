@@ -56,28 +56,39 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		return errors.New("invalid user_id type in context")
 	}
 
+	childID := uuid.New()
 	child := &entity.SChild{
-		ID:        uuid.New(),
+		ID:        childID,
 		ChildName: req.ChildName,
 		Age:       req.Age,
 		ParentID:  userID,
 	}
 
-	// sau khi tao child thanh cong thi tao child menu
-	// childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
-	// if childRoleOrg != nil {
-	// 	components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
-	// 	for _, component := range components {
-	// 		err = uc.childMenuRepo.Create(&entity.ChildMenu{
-	// 			ID: uuid.New(),
-	// 			ComponentID: component.ID,
+	err := uc.childRepo.Create(child)
 
-	// 		})
-	// 	}
+	if err != nil {
+		//tao child menu
+		childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
+		if childRoleOrg != nil {
+			components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
 
-	// }
+			for index, component := range components {
+				err := uc.childMenuRepo.Create(&entity.ChildMenu{
+					ID:          uuid.New(),
+					ChildID:     childID,
+					ComponentID: component.ID,
+					Order:       index,
+					IsShow:      true,
+					Visible:     true,
+				})
+				if err != nil {
+					continue
+				}
+			}
+		}
+	}
 
-	return uc.childRepo.Create(child)
+	return err
 }
 
 func (uc *ChildUseCase) UpdateChild(req request.UpdateChildRequest, ctx *gin.Context) error {
