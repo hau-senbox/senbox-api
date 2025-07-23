@@ -2,9 +2,11 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/domain/entity"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -86,4 +88,12 @@ func (r *ChildRepository) GetAll() ([]entity.SChild, error) {
 	var children []entity.SChild
 	err := r.DB.Find(&children).Error
 	return children, err
+}
+
+func (r *ChildMenuRepository) DeleteAllTx(tx *gorm.DB) error {
+	if err := tx.Exec("DELETE FROM child_menu").Error; err != nil {
+		log.Error("ChildMenuRepository.DeleteAllTx: " + err.Error())
+		return fmt.Errorf("Delete all child_menu fail: %w", err)
+	}
+	return nil
 }

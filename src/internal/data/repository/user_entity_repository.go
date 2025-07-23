@@ -1135,19 +1135,6 @@ func (receiver *UserEntityRepository) BlockStudentFormApplication(applicationID 
 	return nil
 }
 
-func (receiver *UserEntityRepository) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
-	result := receiver.DBConn.Create(&entity.SStudentFormApplication{
-		ID:             uuid.New(),
-		StudentName:    req.StudentName,
-		UserID:         uuid.MustParse(req.UserID),
-		OrganizationID: uuid.MustParse(req.OrganizationID),
-		ChildID:        uuid.MustParse(req.ChildID),
-	})
-
-	if result.Error != nil {
-		log.Error("UserEntityRepository.CreateStudentFormApplication: " + result.Error.Error())
-		return errors.New("failed to create student form application")
-	}
-
-	return nil
+func (receiver *UserEntityRepository) CreateStudentFormApplication(entity *entity.SStudentFormApplication) error {
+	return receiver.DBConn.Create(entity).Error
 }

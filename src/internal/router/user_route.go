@@ -83,7 +83,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 
 		CreateUserFormApplicationUseCase: &usecase.CreateUserFormApplicationUseCase{
-			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			UserEntityRepository:    &repository.UserEntityRepository{DBConn: dbConn},
+			RoleOrgSignUpRepository: &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+			StudentMenuRepository:   &repository.StudentMenuRepository{DBConn: dbConn},
 		},
 		ApproveUserFormApplicationUseCase: &usecase.ApproveUserFormApplicationUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
