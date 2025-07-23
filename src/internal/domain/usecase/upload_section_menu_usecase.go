@@ -28,7 +28,7 @@ type UploadSectionMenuUseCase struct {
 func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("khởi tạo transaction thất bại: %w", tx.Error)
+		return fmt.Errorf("Failt create transaction: %w", tx.Error.Error())
 	}
 
 	// Đảm bảo rollback nếu có lỗi
@@ -42,40 +42,40 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 	// 1. Xoá dữ liệu cũ
 	for _, item := range req {
 		if err := receiver.ComponentRepository.DeleteBySectionID(item.SectionID, tx); err != nil {
-			logrus.Error("Rollback do lỗi xóa components section_id:", item.SectionID)
+			logrus.Error("Rollback error components section_id:", item.SectionID)
 			tx.Rollback()
 			rolledBack = true
-			return fmt.Errorf("xóa components theo section_id thất bại: %w", err)
+			return fmt.Errorf("Delete components by section_id fail: %w", err)
 		}
 	}
 	if err := receiver.ChildMenuRepository.DeleteAllTx(tx); err != nil {
-		logrus.Error("Rollback do lỗi xóa child_menu:", err)
+		logrus.Error("Rollback error by delete child_menu:", err)
 		tx.Rollback()
 		rolledBack = true
-		return fmt.Errorf("xóa child_menu thất bại: %w", err)
+		return fmt.Errorf("Delete child_menu fail: %w", err)
 	}
 	if err := receiver.StudentMenuRepository.DeleteAllTx(tx); err != nil {
-		logrus.Error("Rollback do lỗi xóa student_menu:", err)
+		logrus.Error("Rollback error by delete student_menu:", err)
 		tx.Rollback()
 		rolledBack = true
-		return fmt.Errorf("xóa student_menu thất bại: %w", err)
+		return fmt.Errorf("Delete student_menu fail: %w", err)
 	}
 
 	// 2. Lấy danh sách child_id và student_id
 	childIDs, err := receiver.ChildRepository.GetAllIDs()
 	if err != nil {
-		logrus.Error("Rollback do lỗi lấy child_ids:", err)
+		logrus.Error("Rollback error by get child_ids:", err)
 		tx.Rollback()
 		rolledBack = true
-		return fmt.Errorf("lấy danh sách child_id thất bại: %w", err)
+		return fmt.Errorf("Get list child_id fail: %w", err)
 	}
 
 	studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
 	if err != nil {
-		logrus.Error("Rollback do lỗi lấy student_ids:", err)
+		logrus.Error("Rollback error by get student_ids:", err)
 		tx.Rollback()
 		rolledBack = true
-		return fmt.Errorf("lấy danh sách student_id thất bại: %w", err)
+		return fmt.Errorf("Get list student_id fail: %w", err)
 	}
 
 	// 3. Tạo component và gán menu theo Role
@@ -87,10 +87,10 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 
 		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByID(item.SectionID)
 		if err != nil {
-			logrus.Error("Rollback do lỗi lấy role theo section_id :", err)
+			logrus.Error("Rollback error get role by section_id :", err)
 			tx.Rollback()
 			rolledBack = true
-			return fmt.Errorf("lấy role theo section_id thất bại: %w", err)
+			return fmt.Errorf("Get role by section_id fail: %w", err)
 		}
 		if roleOrg == nil {
 			continue
@@ -107,31 +107,31 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 			}
 
 			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-				logrus.Error("Rollback do lỗi tạo component:", err)
+				logrus.Error("Rollback by error create component:", err)
 				tx.Rollback()
 				rolledBack = true
-				return fmt.Errorf("tạo component thất bại: %w", err)
+				return fmt.Errorf("Create component fail: %w", err)
 			}
 
 			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
 			if err != nil {
-				logrus.Error("Rollback do lỗi phân tích visible:", err)
+				logrus.Error("Rollback by error get visible:", err)
 				tx.Rollback()
 				rolledBack = true
-				return fmt.Errorf("phân tích Visible thất bại: %w", err)
+				return fmt.Errorf("Get Visible fail: %w", err)
 			}
 
 			switch roleOrg.RoleName {
 			case string(value.RoleChild):
 				if err := receiver.createChildMenus(tx, component.ID, visible, idx, childIDs); err != nil {
-					logrus.Error("Rollback do lỗi tạo child menu:", err)
+					logrus.Error("Rollback by error create child menu:", err)
 					tx.Rollback()
 					rolledBack = true
 					return err
 				}
 			case string(value.RoleStudent):
 				if err := receiver.createStudentMenus(tx, component.ID, visible, idx, studentIDs); err != nil {
-					logrus.Error("Rollback do lỗi tạo student menu:", err)
+					logrus.Error("Rollback by error create student menu:", err)
 					tx.Rollback()
 					rolledBack = true
 					return err
@@ -142,9 +142,9 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 
 	// 4. Commit transaction
 	if err := tx.Commit().Error; err != nil {
-		logrus.Error("Lỗi commit transaction:", err)
+		logrus.Error("Error commit transaction:", err)
 		rolledBack = true
-		return fmt.Errorf("commit transaction thất bại: %w", err)
+		return fmt.Errorf("commit transaction fail: %w", err)
 	}
 
 	rolledBack = true // Commit thành công, không rollback
