@@ -93,7 +93,7 @@ func (r *ChildRepository) GetAll() ([]entity.SChild, error) {
 func (r *ChildMenuRepository) DeleteAllTx(tx *gorm.DB) error {
 	if err := tx.Exec("DELETE FROM child_menu").Error; err != nil {
 		log.Error("ChildMenuRepository.DeleteAllTx: " + err.Error())
-		return fmt.Errorf("xóa tất cả child_menu thất bại: %w", err)
+		return fmt.Errorf("Delete all child_menu fail: %w", err)
 	}
 	return nil
 }

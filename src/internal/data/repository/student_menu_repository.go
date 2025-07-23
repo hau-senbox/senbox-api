@@ -51,7 +51,7 @@ func (r *StudentMenuRepository) UpdateIsShowByStudentAndComponentID(studentID, c
 func (r *StudentMenuRepository) DeleteAllTx(tx *gorm.DB) error {
 	if err := tx.Exec("DELETE FROM student_menu").Error; err != nil {
 		log.Error("StudentMenuRepository.DeleteAllTx: " + err.Error())
-		return fmt.Errorf("xóa tất cả student_menu thất bại: %w", err)
+		return fmt.Errorf("Delete all student_menu fail: %w", err)
 	}
 	return nil
 }

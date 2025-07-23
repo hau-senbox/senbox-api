@@ -28,7 +28,7 @@ type UploadSectionMenuUseCase struct {
 func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("Failt create transaction: %w", tx.Error.Error())
+		return fmt.Errorf("Failt create transaction: %s", tx.Error.Error())
 	}
 
 	// Đảm bảo rollback nếu có lỗi
