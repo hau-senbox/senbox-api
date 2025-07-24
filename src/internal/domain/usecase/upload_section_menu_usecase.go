@@ -193,7 +193,7 @@ func (receiver *UploadSectionMenuUseCase) createStudentMenus(tx *gorm.DB, compon
 		}
 
 		if existing != nil {
-			// ✅ Đã tồn tại → update
+			// Đã tồn tại → update
 			existing.Order = order
 			existing.Visible = visible
 			existing.IsShow = true
@@ -201,7 +201,7 @@ func (receiver *UploadSectionMenuUseCase) createStudentMenus(tx *gorm.DB, compon
 				return fmt.Errorf("cập nhật student menu thất bại: %w", err)
 			}
 		} else {
-			// ✅ Không tồn tại → create
+			// Không tồn tại → create
 			menu := &entity.StudentMenu{
 				ID:          uuid.New(),
 				StudentID:   studentID,
@@ -356,5 +356,24 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(req request.Upload
 	}
 
 	rolledBack = true
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) error {
+	// Xóa component
+	if err := receiver.ComponentRepository.DeleteComponent(componentID, nil); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete component failed: %w", err)
+	}
+
+	// Xóa child menu
+	if err := receiver.ChildMenuRepository.DeleteByComponentID(componentID); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete child menu failed: %w", err)
+	}
+
+	// Xóa student menu
+	if err := receiver.StudentMenuRepository.DeleteByComponentID(componentID); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete student menu failed: %w", err)
+	}
+
 	return nil
 }

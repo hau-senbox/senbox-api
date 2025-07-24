@@ -208,7 +208,7 @@ func (receiver *ComponentRepository) UpdateComponent(req request.UpdateComponent
 
 func (receiver *ComponentRepository) DeleteComponent(componentID string, tx *gorm.DB) error {
 	if tx == nil {
-		err := receiver.DBConn.Delete(&components.Component{}, componentID).Error
+		err := receiver.DBConn.Where("id = ?", componentID).Delete(&components.Component{}).Error
 
 		if err != nil {
 			log.Error("ComponentRepository.DeleteComponent: " + err.Error())
