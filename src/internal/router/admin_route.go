@@ -294,7 +294,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	})
 
 	roleOrgSignUpController := controller.NewRoleOrgSignUpController(roleUseCase)
-	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.ValidateSuperAdminRole())
+	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.Secured())
 	{
 		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
 	}
@@ -326,7 +326,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ChildRepo:     &repository.ChildRepository{DB: dbConn},
 		},
 	}
-	menu := engine.Group("/v1/admin/menu", secureMiddleware.ValidateSuperAdminRole())
+	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
