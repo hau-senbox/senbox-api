@@ -360,7 +360,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
-	user := engine.Group("/v1/admin/user", secureMiddleware.ValidateSuperAdminRole())
+	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
 		user.GET("/child/:id", userEntityController.GetChild4WebAdmin)
