@@ -763,3 +763,29 @@ func (receiver *MenuController) UpdateIsShowStudentMenu(context *gin.Context) {
 		Data: "Updated",
 	})
 }
+
+func (receiver *MenuController) DeleteSectionMenu(context *gin.Context) {
+	componentID := context.Param("id")
+
+	if componentID == "" {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: "Id is required",
+		})
+		return
+	}
+
+	err := receiver.UploadSectionMenuUseCase.DeleteSectionMenu(componentID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.SucceedResponse{
+			Code: http.StatusBadRequest,
+			Data: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Deleted",
+	})
+}

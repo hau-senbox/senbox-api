@@ -37,7 +37,7 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuR
 	if child == nil || err != nil {
 		return response.GetChildMenuResponse{}, err
 	}
-	childMenus, err := uc.Repo.GetByChildID(childID)
+	childMenus, err := uc.Repo.GetByChildIDActive(childID)
 	if err != nil {
 		return response.GetChildMenuResponse{}, err
 	}

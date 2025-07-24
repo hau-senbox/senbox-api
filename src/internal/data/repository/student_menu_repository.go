@@ -81,3 +81,12 @@ func (r *StudentMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.StudentMe
 			"is_show": menu.IsShow,
 		}).Error
 }
+
+func (r *StudentMenuRepository) DeleteByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&entity.StudentMenu{}).Error
+	if err != nil {
+		log.Error("StudentMenuRepository.DeleteByComponentID: " + err.Error())
+		return errors.New("failed to delete student menu by component ID")
+	}
+	return nil
+}

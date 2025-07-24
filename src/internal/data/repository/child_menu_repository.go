@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -76,4 +77,19 @@ func (r *ChildMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.ChildMenu) 
 			"visible": menu.Visible,
 			"is_show": menu.IsShow,
 		}).Error
+}
+
+func (r *ChildMenuRepository) GetByChildIDActive(childID string) ([]entity.ChildMenu, error) {
+	var result []entity.ChildMenu
+	err := r.DBConn.Where("child_id = ? AND is_show = ?", childID, true).Find(&result).Error
+	return result, err
+}
+
+func (r *ChildMenuRepository) DeleteByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&entity.ChildMenu{}).Error
+	if err != nil {
+		log.Error("ChildMenuRepository.DeleteByComponentID: " + err.Error())
+		return errors.New("failed to delete child menu by component ID")
+	}
+	return nil
 }
