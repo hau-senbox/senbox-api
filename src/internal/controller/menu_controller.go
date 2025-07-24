@@ -601,6 +601,17 @@ func (receiver *MenuController) UploadSectionMenu(context *gin.Context) {
 		return
 	}
 
+	// Validate DeleteComponentIDs for each item
+	for _, item := range req {
+		if err := item.Validate(); err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: err.Error(),
+			})
+			return
+		}
+	}
+
 	err := receiver.UploadSectionMenuUseCase.UploadSectionMenuV2(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{

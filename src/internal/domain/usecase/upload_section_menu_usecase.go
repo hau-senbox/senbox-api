@@ -250,6 +250,18 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(req request.Upload
 
 	// 2. Upsert component và tạo menu theo role
 	for _, item := range req {
+
+		// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
+		if len(item.DeleteComponentIDs) > 0 {
+			for _, compID := range item.DeleteComponentIDs {
+				if err := receiver.DeleteSectionMenu(compID); err != nil {
+					logrus.Error("Rollback by error deleting section menu:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("Delete section menu failed: %w", err)
+				}
+			}
+		}
 		parsedUUID, err := uuid.Parse(item.SectionID)
 		if err != nil || parsedUUID == uuid.Nil {
 			continue
