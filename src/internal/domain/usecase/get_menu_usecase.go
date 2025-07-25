@@ -32,6 +32,7 @@ type GetMenuUseCase struct {
 	StudentAppRepo          *repository.StudentApplicationRepository
 	ChildMenuUseCase        *ChildMenuUseCase
 	StudentMenuUseCase      *StudentMenuUseCase
+	GetUserEntityUseCase    *GetUserEntityUseCase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -279,11 +280,28 @@ func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID strin
 	}, nil
 }
 
-func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin() ([]response.GetMenuSectionResponse, error) {
-	roleNames := []string{"Child", "Student"}
-	roleIDs := make([]string, 0)
+func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]response.GetMenuSectionResponse, error) {
+	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	// Lấy danh sách RoleID theo RoleName
+	var roleNames []string
+	if user.IsSuperAdmin() {
+		// SuperAdmin: lấy tất cả roles (Child, Student, Teacher, ...)
+		allRoles, err := receiver.RoleOrgSignUpRepository.GetAll()
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range allRoles {
+			roleNames = append(roleNames, r.RoleName)
+		}
+	} else {
+		// Không phải SuperAdmin: chỉ lấy role Student và Teacher
+		roleNames = []string{string(value.RoleStudent), string(value.RoleTeacher)}
+	}
+
+	roleIDs := make([]string, 0)
 	for _, roleName := range roleNames {
 		role, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
 		if err != nil {

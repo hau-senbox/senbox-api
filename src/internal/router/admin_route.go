@@ -310,6 +310,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			FormRepository:          &repository.FormRepository{DBConn: dbConn},
 			SubmissionRepository:    &repository.SubmissionRepository{DBConn: dbConn},
 			ComponentRepository:     &repository.ComponentRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
 			MenuRepository:               &repository.MenuRepository{DBConn: dbConn},
