@@ -7,4 +7,5 @@ type SubmitFormRequest struct {
 	Answers  []Answer  `json:"answers" binding:"required"`
 	OpenedAt time.Time `json:"opened_at" binding:"required"`
 	UserID   string
+	ChildID  *string `json:"child_id"`
 }

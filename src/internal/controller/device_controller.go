@@ -588,16 +588,47 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		return
 	}
 
+	// Lấy user từ token
 	user, err := receiver.GetUserFromToken(context)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+		context.JSON(http.StatusForbidden, response.FailedResponse{
 			Code:  http.StatusForbidden,
 			Error: err.Error(),
 		})
 		return
 	}
 
-	req.UserID = user.ID.String()
+	// Nếu có childID → ưu tiên lấy parentID làm userID
+	if req.ChildID != nil && *req.ChildID != "" {
+		parentID, err := receiver.GetParentIDByChildID(*req.ChildID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: "Failed to get parent ID: " + err.Error(),
+			})
+			return
+		}
+
+		// Nếu user hiện tại KHÔNG phải parent và cũng KHÔNG phải super admin → cấm
+		isSuperAdmin := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
+			return role.Role == entity.SuperAdmin
+		})
+
+		if !isSuperAdmin && user.ID.String() != parentID {
+			context.JSON(http.StatusUnauthorized, response.FailedResponse{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized: only parent or super admin can submit form for child",
+			})
+			return
+		}
+
+		req.UserID = parentID // Ưu tiên parentID
+	} else {
+		// Không có childID → lấy user từ token
+		req.UserID = user.ID.String()
+	}
+
+	// Gửi câu trả lời form
 	err = receiver.AnswerForm(form.ID, req)
 	if err != nil {
 		context.JSON(http.StatusNotAcceptable, response.FailedResponse{
@@ -606,8 +637,6 @@ func (receiver *DeviceController) SubmitForm(context *gin.Context) {
 		})
 		return
 	}
-
-	// defer receiver.SyncSubmissionUseCase.Execute()
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
