@@ -1744,6 +1744,7 @@ func (receiver *UserEntityController) GetStudent4WebAdmin(context *gin.Context) 
 }
 
 func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
+
 	studentID := context.Param("id")
 	if studentID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -1761,7 +1762,7 @@ func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
 		return
 	}
 
-	student, err := receiver.StudentApplicationUseCase.GetStudentByID4App(studentID)
+	student, err := receiver.StudentApplicationUseCase.GetStudentByID4App(context, studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

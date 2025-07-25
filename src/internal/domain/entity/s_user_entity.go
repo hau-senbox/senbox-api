@@ -83,3 +83,11 @@ func (user *SUserEntity) GetManagedOrganizationIDs(db *gorm.DB) ([]string, error
 
 	return orgIDs, nil
 }
+
+func (user *SUserEntity) GetOrganizationIDsFromPreloaded() []string {
+	orgIDs := make([]string, 0, len(user.Organizations))
+	for _, org := range user.Organizations {
+		orgIDs = append(orgIDs, org.ID.String())
+	}
+	return orgIDs
+}

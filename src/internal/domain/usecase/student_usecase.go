@@ -116,13 +116,34 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	}, nil
 }
 
-func (uc *StudentApplicationUseCase) GetStudentByID4App(studentID string) (*response.StudentResponseBase, error) {
+func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string) (*response.StudentResponseBase, error) {
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	orgIDs := user.GetOrganizationIDsFromPreloaded()
+
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if err != nil {
 		return nil, err
 	}
 	if studentApp == nil {
 		return nil, errors.New("student not found")
+	}
+
+	// Kiểm tra student có thuộc 1 trong các tổ chức mà user quản lý không
+	studentOrgID := studentApp.OrganizationID.String()
+	isBelong := false
+	for _, orgID := range orgIDs {
+		if orgID == studentOrgID {
+			isBelong = true
+			break
+		}
+	}
+
+	if !isBelong {
+		return nil, errors.New("student is not under your management scope")
 	}
 
 	return &response.StudentResponseBase{

@@ -121,6 +121,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
 			ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
 			RoleOrgRepo:     &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
 		},
 	}
 
