@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/tiendc/gofn"
 	"gorm.io/gorm"
@@ -1199,25 +1200,22 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 
 	// Ưu tiên lấy userID từ parentID nếu có childID
 	if req.ChildID != nil && *req.ChildID != "" {
-		// neu request co childID thi check token co phai super admin khong
+		// Lấy user từ token
 		user, err := receiver.GetUserFromToken(context)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			context.JSON(http.StatusForbidden, response.FailedResponse{
 				Code:  http.StatusForbidden,
-				Error: err.Error(),
+				Error: "Failed to get user from token: " + err.Error(),
 			})
 			return
 		}
+
+		// Kiểm tra nếu là SuperAdmin
 		isSuperAdmin := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
 			return role.Role == entity.SuperAdmin
 		})
-		if !isSuperAdmin {
-			context.JSON(http.StatusUnauthorized, response.FailedResponse{
-				Code:  http.StatusUnauthorized,
-				Error: "Unauthorized: only super admin can access child profile",
-			})
-			return
-		}
+
+		// Lấy ParentID từ ChildID
 		parentID, err := receiver.GetParentIDByChildID(*req.ChildID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1226,6 +1224,17 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 			})
 			return
 		}
+
+		// Nếu không phải super admin và cũng không phải chính parent thì từ chối
+		if !isSuperAdmin && user.ID != uuid.MustParse(parentID) {
+			context.JSON(http.StatusUnauthorized, response.FailedResponse{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized: only super admin or child's parent can access",
+			})
+			return
+		}
+
+		// Gán parentID làm userID thực thi
 		attr.UserID = parentID
 	}
 
