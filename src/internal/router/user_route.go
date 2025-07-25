@@ -277,8 +277,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")
 	{
-		teacherApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllTeacherFormApplication)
-		teacherApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetTeacherFormApplicationByID)
+		// teacherApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllTeacherFormApplication)
+		// teacherApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetTeacherFormApplicationByID)
 
 		teacherApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateTeacherFormApplication)
 		teacherApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveTeacherFormApplication)

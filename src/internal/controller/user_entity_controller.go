@@ -832,88 +832,88 @@ func (receiver *UserEntityController) CreatePreRegister(context *gin.Context) {
 
 // Teacher
 
-func (receiver *UserEntityController) GetAllTeacherFormApplication(context *gin.Context) {
-	applications, err := receiver.GetUserFormApplicationUseCase.GetAllTeacherFormApplication()
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// func (receiver *UserEntityController) GetAllTeacherFormApplication(context *gin.Context) {
+// 	applications, err := receiver.GetUserFormApplicationUseCase.GetAllTeacherFormApplication()
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	var applicationResponse []response.TeacherFormApplicationResponse
-	if len(applications) > 0 {
-		applicationResponse = make([]response.TeacherFormApplicationResponse, 0)
-		for _, application := range applications {
-			res := response.TeacherFormApplicationResponse{
-				ID:         application.ID,
-				Status:     application.Status.String(),
-				ApprovedAt: "",
-				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-				UserID:     application.UserID.String(),
-			}
-			if application.ApprovedAt != defaultTime {
-				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-			}
-			applicationResponse = append(applicationResponse, res)
-		}
-	}
+// 	var applicationResponse []response.TeacherFormApplicationResponse
+// 	if len(applications) > 0 {
+// 		applicationResponse = make([]response.TeacherFormApplicationResponse, 0)
+// 		for _, application := range applications {
+// 			res := response.TeacherFormApplicationResponse{
+// 				ID:         application.ID,
+// 				Status:     application.Status.String(),
+// 				ApprovedAt: "",
+// 				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 				UserID:     application.UserID.String(),
+// 			}
+// 			if application.ApprovedAt != defaultTime {
+// 				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 			}
+// 			applicationResponse = append(applicationResponse, res)
+// 		}
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: applicationResponse,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: applicationResponse,
+// 	})
+// }
 
-func (receiver *UserEntityController) GetTeacherFormApplicationByID(context *gin.Context) {
-	applicationID := context.Param("id")
-	if applicationID == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "id is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+// func (receiver *UserEntityController) GetTeacherFormApplicationByID(context *gin.Context) {
+// 	applicationID := context.Param("id")
+// 	if applicationID == "" {
+// 		context.JSON(
+// 			http.StatusBadRequest, response.FailedResponse{
+// 				Error: "id is required",
+// 				Code:  http.StatusBadRequest,
+// 			},
+// 		)
+// 		return
+// 	}
 
-	id, err := strconv.Atoi(applicationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
+// 	id, err := strconv.Atoi(applicationID)
+// 	if err != nil {
+// 		context.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Error: "invalid id",
+// 			Code:  http.StatusBadRequest,
+// 		})
+// 		return
+// 	}
 
-	application, err := receiver.GetUserFormApplicationUseCase.GetTeacherFormApplicationByID(int64(id))
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// 	application, err := receiver.GetUserFormApplicationUseCase.GetTeacherFormApplicationByID(int64(id))
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	res := response.TeacherFormApplicationResponse{
-		ID:         application.ID,
-		Status:     application.Status.String(),
-		ApprovedAt: "",
-		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-		UserID:     application.UserID.String(),
-	}
-	if application.ApprovedAt != defaultTime {
-		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-	}
+// 	res := response.TeacherFormApplicationResponse{
+// 		ID:         application.ID,
+// 		Status:     application.Status.String(),
+// 		ApprovedAt: "",
+// 		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 		UserID:     application.UserID.String(),
+// 	}
+// 	if application.ApprovedAt != defaultTime {
+// 		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: res,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: res,
+// 	})
+// }
 
 func (receiver *UserEntityController) ApproveTeacherFormApplication(context *gin.Context) {
 	applicationID := context.Param("id")
