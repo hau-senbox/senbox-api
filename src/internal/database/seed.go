@@ -74,6 +74,8 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SChild{},
 		&entity.ChildMenu{},
 		&entity.StudentMenu{},
+		&entity.TeacherMenu{},
+		&entity.OrganizationMenuTemplate{},
 	)
 
 	// Seed
