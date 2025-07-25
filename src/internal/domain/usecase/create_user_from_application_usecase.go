@@ -15,6 +15,7 @@ type CreateUserFormApplicationUseCase struct {
 	*repository.RoleOrgSignUpRepository
 	*repository.ComponentRepository
 	*repository.StudentMenuRepository
+	*repository.TeacherMenuRepository
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
@@ -22,8 +23,38 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 	if err != nil {
 		return err
 	}
+	teacherID := uuid.New()
 
-	return receiver.UserEntityRepository.CreateTeacherFormApplication(req)
+	err = receiver.UserEntityRepository.CreateTeacherFormApplication(&entity.STeacherFormApplication{
+		ID:             teacherID,
+		UserID:         uuid.MustParse(req.UserID),
+		OrganizationID: uuid.MustParse(req.OrganizationID),
+	})
+
+	if err == nil {
+		// tao teacher menu
+		teacherRoleOrg, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+		if teacherRoleOrg != nil {
+			components, _ := receiver.ComponentRepository.GetBySectionID(teacherRoleOrg.ID.String())
+
+			for index, component := range components {
+				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+				err := receiver.TeacherMenuRepository.Create(&entity.TeacherMenu{
+					ID:          uuid.New(),
+					TeacherID:   teacherID,
+					ComponentID: component.ID,
+					Order:       index,
+					IsShow:      true,
+					Visible:     visible,
+				})
+				if err != nil {
+					continue
+				}
+			}
+		}
+	}
+
+	return err
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req request.CreateStaffFormApplicationRequest) error {

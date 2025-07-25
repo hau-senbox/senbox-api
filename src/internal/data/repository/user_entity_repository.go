@@ -819,18 +819,8 @@ func (receiver *UserEntityRepository) BlockTeacherFormApplication(applicationID 
 	return nil
 }
 
-func (receiver *UserEntityRepository) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
-	result := receiver.DBConn.Create(&entity.STeacherFormApplication{
-		UserID:         uuid.MustParse(req.UserID),
-		OrganizationID: uuid.MustParse(req.OrganizationID),
-	})
-
-	if result.Error != nil {
-		log.Error("UserEntityRepository.CreateTeacherFormApplication: " + result.Error.Error())
-		return errors.New("failed to create teacher form application")
-	}
-
-	return nil
+func (receiver *UserEntityRepository) CreateTeacherFormApplication(entity *entity.STeacherFormApplication) error {
+	return receiver.DBConn.Create(entity).Error
 }
 
 // Staff
