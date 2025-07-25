@@ -66,7 +66,7 @@ func (ctrl *RoleOrgSignUpController) GetByRoleName(c *gin.Context) {
 }
 
 func (ctrl *RoleOrgSignUpController) Get4AdminWeb(context *gin.Context) {
-	roles, err := ctrl.UseCase.GetAll()
+	roles, err := ctrl.UseCase.Get4WebAdmin(context)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
