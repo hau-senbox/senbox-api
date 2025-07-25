@@ -40,6 +40,17 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	formRepo := &repository.FormRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize}
 	deviceRepository := &repository.DeviceRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl}
 	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
+	childUseCase := usecase.NewChildUseCase(
+		&repository.ChildRepository{DB: dbConn},
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.ChildMenuRepository{DBConn: dbConn},
+		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		&usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,
 		UpdateDeviceSheetUseCase: &usecase.UpdateDeviceSheetUseCase{
@@ -129,6 +140,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			UserEntityRepository:   &userEntityRepository,
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		ChildUseCase: childUseCase,
 	}
 
 	answerRepo := repository.AnswerRepository{DBConn: dbConn}

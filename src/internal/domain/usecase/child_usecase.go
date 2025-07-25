@@ -227,3 +227,7 @@ func (receiver *ChildUseCase) GetAll4Search(ctx *gin.Context) ([]entity.SChild, 
 	// Nếu không phải SuperAdmin → return nil
 	return nil, nil
 }
+
+func (uc *ChildUseCase) GetParentIDByChildID(childID string) (string, error) {
+	return uc.childRepo.GetParentIDByChildID(childID)
+}

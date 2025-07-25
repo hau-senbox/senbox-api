@@ -44,6 +44,7 @@ type DeviceController struct {
 	*usecase.GetTotalNrSubmissionByConditionUseCase
 	*usecase.GetUserEntityUseCase
 	*usecase.GetSubmission4MemoriesFormUseCase
+	*usecase.ChildUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1196,16 +1197,49 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 	// Parse atr_value_string
 	attr := helper.ParseAtrValueStringToStruct(req.AtrValueString)
 
-	// neu request ko co user id thi lay tu context
+	// Ưu tiên lấy userID từ parentID nếu có childID
+	if req.ChildID != nil && *req.ChildID != "" {
+		// neu request co childID thi check token co phai super admin khong
+		user, err := receiver.GetUserFromToken(context)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusForbidden,
+				Error: err.Error(),
+			})
+			return
+		}
+		isSuperAdmin := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
+			return role.Role == entity.SuperAdmin
+		})
+		if !isSuperAdmin {
+			context.JSON(http.StatusUnauthorized, response.FailedResponse{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized: only super admin can access child profile",
+			})
+			return
+		}
+		parentID, err := receiver.GetParentIDByChildID(*req.ChildID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: "Failed to get parent ID: " + err.Error(),
+			})
+			return
+		}
+		attr.UserID = parentID
+	}
+
+	// Nếu sau bước trên vẫn chưa có UserID thì lấy từ context
 	if attr.UserID == "" {
 		userIDRaw, exists := context.Get("user_id")
 		if !exists {
 			context.JSON(http.StatusUnauthorized, response.FailedResponse{
 				Code:  http.StatusUnauthorized,
-				Error: "Unauthorized: user_id not found",
+				Error: "Unauthorized: user_id not found in context",
 			})
 			return
 		}
+
 		userID, ok := userIDRaw.(string)
 		if !ok {
 			context.JSON(http.StatusInternalServerError, response.FailedResponse{
@@ -1214,6 +1248,7 @@ func (receiver *DeviceController) GetSubmissionByCondition(context *gin.Context)
 			})
 			return
 		}
+
 		attr.UserID = userID
 	}
 

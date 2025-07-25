@@ -3,7 +3,8 @@ package request
 import "sen-global-api/internal/domain/value"
 
 type GetSubmissionByConditionRequest struct {
-	AtrValueString string `json:"atr_value_string" binding:"required"`
+	ChildID        *string `json:"child_id"`
+	AtrValueString string  `json:"atr_value_string" binding:"required"`
 }
 
 type AtrValueString struct {

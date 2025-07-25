@@ -97,3 +97,18 @@ func (r *ChildMenuRepository) DeleteAllTx(tx *gorm.DB) error {
 	}
 	return nil
 }
+
+func (r *ChildRepository) GetParentIDByChildID(childID string) (string, error) {
+	var child entity.SChild
+
+	err := r.DB.
+		Select("parent_id").
+		Where("id = ?", childID).
+		First(&child).Error
+
+	if err != nil {
+		return "", err
+	}
+
+	return child.ParentID.String(), nil
+}
