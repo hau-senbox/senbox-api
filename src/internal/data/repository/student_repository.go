@@ -99,3 +99,11 @@ func (r *StudentApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) 
 
 	return apps, nil
 }
+
+func (r *StudentApplicationRepository) CheckStudentBelongsToOrganizations(tx *gorm.DB, studentID uuid.UUID, orgIDs []string) (bool, error) {
+	var count int64
+	err := tx.Model(&entity.SStudentFormApplication{}).
+		Where("id = ? AND organization_id IN ?", studentID, orgIDs).
+		Count(&count).Error
+	return count > 0, err
+}

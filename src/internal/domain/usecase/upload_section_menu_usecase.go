@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
@@ -24,9 +25,10 @@ type UploadSectionMenuUseCase struct {
 	*repository.RoleOrgSignUpRepository
 	*repository.StudentMenuRepository
 	*repository.StudentApplicationRepository
+	*GetUserEntityUseCase
 }
 
-func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSectionMenuRequest) error {
+func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(ctx *gin.Context, req request.UploadSectionMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("Failt create transaction: %s", tx.Error.Error())
@@ -131,7 +133,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenu(req request.UploadSe
 					return err
 				}
 			case string(value.RoleStudent):
-				if err := receiver.createStudentMenus(tx, component.ID, visible, idx, studentIDs); err != nil {
+				if err := receiver.createStudentMenus(ctx, tx, component.ID, visible, idx, studentIDs); err != nil {
 					logrus.Error("Rollback by error create student menu:", err)
 					tx.Rollback()
 					rolledBack = true
@@ -185,8 +187,36 @@ func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componen
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) createStudentMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, studentIDs []uuid.UUID) error {
+func (receiver *UploadSectionMenuUseCase) createStudentMenus(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, visible bool, order int, studentIDs []uuid.UUID) error {
+	// dau tien kiem tra user dang la quan ly cua organization nao
+	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Nếu không phải SuperAdmin → lấy danh sách org mà user quản lý
+	if len(user.Organizations) == 0 {
+		return errors.New("user does not belong to any organization")
+	}
+
+	orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
+	if err != nil {
+		return err
+	}
+	if len(orgIDsManaged) == 0 {
+		return errors.New("user does not manage any organization")
+	}
+	// neu co thi chi lay student cua organization do
 	for _, studentID := range studentIDs {
+		// kiểm tra student có thuộc organization được quản lý không
+		isValid, err := receiver.StudentApplicationRepository.CheckStudentBelongsToOrganizations(tx, studentID, orgIDsManaged)
+		if err != nil {
+			return errors.New("student does not belong to any organization")
+		}
+		if !isValid {
+			continue // bỏ qua student này
+		}
+
 		existing, err := receiver.StudentMenuRepository.GetByStudentIDAndComponentID(tx, studentID, componentID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("lấy student menu thất bại: %w", err)
@@ -218,7 +248,7 @@ func (receiver *UploadSectionMenuUseCase) createStudentMenus(tx *gorm.DB, compon
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(req request.UploadSectionMenuRequest) error {
+func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, req request.UploadSectionMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
@@ -350,7 +380,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(req request.Upload
 					return err
 				}
 			case string(value.RoleStudent):
-				if err := receiver.createStudentMenus(tx, componentID, visible, idx, studentIDs); err != nil {
+				if err := receiver.createStudentMenus(ctx, tx, componentID, visible, idx, studentIDs); err != nil {
 					logrus.Error("rollback by error create student menu:", err)
 					tx.Rollback()
 					rolledBack = true
