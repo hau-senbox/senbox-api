@@ -38,6 +38,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.ComponentRepository{DBConn: dbConn},
 		&repository.ChildMenuRepository{DBConn: dbConn},
 		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		&usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{

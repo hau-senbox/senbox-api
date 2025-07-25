@@ -80,3 +80,22 @@ func (r *StudentApplicationRepository) GetAllStudentIDs() ([]uuid.UUID, error) {
 
 	return ids, nil
 }
+
+func (r *StudentApplicationRepository) GetDB() *gorm.DB {
+	return r.DB
+}
+
+func (r *StudentApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.SStudentFormApplication, error) {
+	var apps []entity.SStudentFormApplication
+
+	if len(orgIDStrs) == 0 {
+		return []entity.SStudentFormApplication{}, nil
+	}
+
+	err := r.DB.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return apps, nil
+}

@@ -1586,7 +1586,6 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	role := c.Request.URL.Query().Get("role")
 
-	// Nếu không có role hoặc role không hợp lệ → gọi tất cả
 	callAll := role == "all"
 	var (
 		users    = make([]response.UserResponse, 0)
@@ -1595,9 +1594,9 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	)
 
 	if callAll {
-		users, _ := receiver.GetAllUsers()
-		children, _ := receiver.ChildUseCase.GetAll()
-		students, _ := receiver.StudentApplicationUseCase.GetAllStudents()
+		users, _ := receiver.GetAllUsers4Search(c)
+		children, _ := receiver.ChildUseCase.GetAll4Search(c)
+		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 
 		userResponse := make([]response.UserResponse, 0, len(users))
 		for _, u := range users {
@@ -1656,10 +1655,10 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 	switch roleSignUp {
 	case value.RoleTeacher, value.RoleStaff, value.RoleOrganization:
-		users = nil
+		break
 	case value.RoleChild:
 		// get from childrepo
-		childrenDataRepo, _ := receiver.ChildUseCase.GetAll()
+		childrenDataRepo, _ := receiver.ChildUseCase.GetAll4Search(c)
 		for _, c := range childrenDataRepo {
 			children = append(children, response.ChildrenResponse{
 				ChildID:   c.ID.String(),
@@ -1669,7 +1668,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 	case value.RoleStudent:
 		//getbfrom student repo
-		studentsDataRepo, _ := receiver.StudentApplicationUseCase.GetAllStudents()
+		studentsDataRepo, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		for _, s := range studentsDataRepo {
 			students = append(students, response.StudentResponse{
 				StudentID:   s.StudentID,

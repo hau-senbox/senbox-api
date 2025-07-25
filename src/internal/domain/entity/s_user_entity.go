@@ -56,3 +56,30 @@ func (user *SUserEntity) BeforeCreate(tx *gorm.DB) (err error) {
 
 	return err
 }
+
+// func check is super admin
+func (user *SUserEntity) IsSuperAdmin() bool {
+	for _, role := range user.Roles {
+		if strings.EqualFold(role.Role.String(), "SuperAdmin") {
+			return true
+		}
+	}
+	return false
+}
+
+// Trả về danh sách OrganizationID mà user này là quản lý (IsManager == true)
+func (user *SUserEntity) GetManagedOrganizationIDs(db *gorm.DB) ([]string, error) {
+	var userOrgs []SUserOrg
+
+	err := db.Where("user_id = ? AND is_manager = ?", user.ID, true).Find(&userOrgs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	orgIDs := make([]string, 0, len(userOrgs))
+	for _, uo := range userOrgs {
+		orgIDs = append(orgIDs, uo.OrganizationID.String())
+	}
+
+	return orgIDs, nil
+}

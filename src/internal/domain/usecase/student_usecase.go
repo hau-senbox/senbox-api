@@ -8,14 +8,16 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type StudentApplicationUseCase struct {
-	StudentAppRepo  *repository.StudentApplicationRepository
-	StudentMenuRepo *repository.StudentMenuRepository
-	ComponentRepo   *repository.ComponentRepository
-	RoleOrgRepo     *repository.RoleOrgSignUpRepository
+	StudentAppRepo       *repository.StudentApplicationRepository
+	StudentMenuRepo      *repository.StudentMenuRepository
+	ComponentRepo        *repository.ComponentRepository
+	RoleOrgRepo          *repository.RoleOrgSignUpRepository
+	GetUserEntityUseCase *GetUserEntityUseCase
 }
 
 func NewStudentApplicationUseCase(
@@ -23,12 +25,14 @@ func NewStudentApplicationUseCase(
 	menuRepo *repository.StudentMenuRepository,
 	componentRepo *repository.ComponentRepository,
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
+	getUserEntityUseCase *GetUserEntityUseCase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
-		StudentAppRepo:  studentRepo,
-		StudentMenuRepo: menuRepo,
-		ComponentRepo:   componentRepo,
-		RoleOrgRepo:     roleOrgRepo,
+		StudentAppRepo:       studentRepo,
+		StudentMenuRepo:      menuRepo,
+		ComponentRepo:        componentRepo,
+		RoleOrgRepo:          roleOrgRepo,
+		GetUserEntityUseCase: getUserEntityUseCase,
 	}
 }
 
@@ -143,4 +147,50 @@ func (uc *StudentApplicationUseCase) UpdateStudentName(req request.UpdateStudent
 
 	// Lưu lại
 	return uc.StudentAppRepo.Update(student)
+}
+
+// GetAllStudents4Search returns all students for search functionality
+func (uc *StudentApplicationUseCase) GetAllStudents4Search(ctx *gin.Context) ([]response.StudentResponse, error) {
+	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Nếu là SuperAdmin → trả về tất cả
+	if user.IsSuperAdmin() {
+		apps, err := uc.StudentAppRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+		return mapStudentAppsToResponse(apps), nil
+	}
+
+	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
+	orgIDs, err := user.GetManagedOrganizationIDs(uc.StudentAppRepo.GetDB())
+	if err != nil {
+		return nil, err
+	}
+	if len(orgIDs) == 0 {
+		return []response.StudentResponse{}, nil
+	}
+
+	// 4. Lấy student application theo các orgID
+	apps, err := uc.StudentAppRepo.GetByOrganizationIDs(orgIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapStudentAppsToResponse(apps), nil
+}
+
+func mapStudentAppsToResponse(apps []entity.SStudentFormApplication) []response.StudentResponse {
+	res := make([]response.StudentResponse, 0, len(apps))
+	for _, a := range apps {
+		res = append(res, response.StudentResponse{
+			StudentID:   a.ID.String(),
+			StudentName: a.StudentName,
+		})
+	}
+	return res
 }

@@ -14,11 +14,12 @@ import (
 )
 
 type ChildUseCase struct {
-	childRepo     *repository.ChildRepository
-	userRepo      *repository.UserEntityRepository
-	componentRepo *repository.ComponentRepository
-	childMenuRepo *repository.ChildMenuRepository
-	roleOrgRepo   *repository.RoleOrgSignUpRepository
+	childRepo            *repository.ChildRepository
+	userRepo             *repository.UserEntityRepository
+	componentRepo        *repository.ComponentRepository
+	childMenuRepo        *repository.ChildMenuRepository
+	roleOrgRepo          *repository.RoleOrgSignUpRepository
+	getUserEntityUseCase *GetUserEntityUseCase
 }
 
 func NewChildUseCase(
@@ -27,13 +28,15 @@ func NewChildUseCase(
 	componentRepo *repository.ComponentRepository,
 	childMenuRepo *repository.ChildMenuRepository,
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
+	getUserEntityUseCase *GetUserEntityUseCase,
 ) *ChildUseCase {
 	return &ChildUseCase{
-		childRepo:     childRepo,
-		userRepo:      userRepo,
-		componentRepo: componentRepo,
-		childMenuRepo: childMenuRepo,
-		roleOrgRepo:   roleOrgRepo,
+		childRepo:            childRepo,
+		userRepo:             userRepo,
+		componentRepo:        componentRepo,
+		childMenuRepo:        childMenuRepo,
+		roleOrgRepo:          roleOrgRepo,
+		getUserEntityUseCase: getUserEntityUseCase,
 	}
 }
 
@@ -208,4 +211,19 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		// Parent:    *parent,
 		Menus: menus,
 	}, nil
+}
+
+func (receiver *ChildUseCase) GetAll4Search(ctx *gin.Context) ([]entity.SChild, error) {
+	user, err := receiver.getUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Nếu là SuperAdmin → trả về tất cả child
+	if user.IsSuperAdmin() {
+		return receiver.childRepo.GetAll()
+	}
+
+	// Nếu không phải SuperAdmin → return nil
+	return nil, nil
 }

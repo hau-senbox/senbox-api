@@ -1,9 +1,12 @@
 package usecase
 
 import (
+	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type GetUserEntityUseCase struct {
@@ -37,4 +40,67 @@ func (receiver *GetUserEntityUseCase) GetAllOrgManagerInfo(organization string) 
 
 func (receiver *GetUserEntityUseCase) GetAllUserAuthorize(userID string) ([]entity.SUserFunctionAuthorize, error) {
 	return receiver.UserEntityRepository.GetAllUserAuthorize(userID)
+}
+
+func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]entity.SUserEntity, error) {
+	user, err := receiver.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Nếu là SuperAdmin → trả về tất cả user
+	if user.IsSuperAdmin() {
+		return receiver.UserEntityRepository.GetAll()
+	}
+
+	// Nếu không phải SuperAdmin → lấy danh sách org mà user quản lý
+	if len(user.Organizations) == 0 {
+		return nil, errors.New("user does not belong to any organization")
+	}
+
+	orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
+	if err != nil {
+		return nil, err
+	}
+	if len(orgIDsManaged) == 0 {
+		return nil, errors.New("user does not manage any organization")
+	}
+
+	// Lấy user thuộc các tổ chức mà user này quản lý
+	users, err := receiver.UserEntityRepository.GetUsersByOrganizationIDs(orgIDsManaged)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lọc ra chính user đang truy cập khỏi kết quả
+	result := make([]entity.SUserEntity, 0, len(users))
+	for _, u := range users {
+		if u.ID != user.ID {
+			result = append(result, u)
+		}
+	}
+
+	return result, nil
+}
+
+func (receiver *GetUserEntityUseCase) GetCurrentUserWithOrganizations(ctx *gin.Context) (*entity.SUserEntity, error) {
+	userIDRaw, exists := ctx.Get("user_id")
+	if !exists {
+		return nil, errors.New("user ID not found in context")
+	}
+
+	userIDStr, ok := userIDRaw.(string)
+	if !ok || userIDStr == "" {
+		return nil, errors.New("invalid user ID format")
+	}
+
+	user, err := receiver.UserEntityRepository.GetByIDWithOrganizations(request.GetUserEntityByIDRequest{ID: userIDStr})
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
 }

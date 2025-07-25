@@ -1138,3 +1138,28 @@ func (receiver *UserEntityRepository) BlockStudentFormApplication(applicationID 
 func (receiver *UserEntityRepository) CreateStudentFormApplication(entity *entity.SStudentFormApplication) error {
 	return receiver.DBConn.Create(entity).Error
 }
+
+// GetByIDWithOrganizations lấy user và preload Organizations
+func (r *UserEntityRepository) GetByIDWithOrganizations(req request.GetUserEntityByIDRequest) (*entity.SUserEntity, error) {
+	var user entity.SUserEntity
+	err := r.DBConn.Preload("Organizations").Preload("Roles").First(&user, "id = ?", req.ID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserEntityRepository) GetUsersByOrganizationIDs(orgIDs []string) ([]entity.SUserEntity, error) {
+	var users []entity.SUserEntity
+	err := r.DBConn.
+		Joins("JOIN s_user_organizations ON s_user_organizations.user_id = s_user_entity.id").
+		Where("s_user_organizations.organization_id IN ?", orgIDs).
+		Preload("Roles").
+		Find(&users).Error
+
+	return users, err
+}
+
+func (r *UserEntityRepository) GetDB() *gorm.DB {
+	return r.DBConn
+}
