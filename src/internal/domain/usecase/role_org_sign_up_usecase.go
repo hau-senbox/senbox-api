@@ -45,9 +45,16 @@ func (receiver *RoleOrgSignUpUseCase) Get4WebAdmin(ctx *gin.Context) ([]entity.S
 		return nil, err
 	}
 
-	// Nếu là SuperAdmin → trả về tất cả roles
+	// Nếu là SuperAdmin → chỉ lấy role Child
 	if user.IsSuperAdmin() {
-		return receiver.Repo.GetAll()
+		childRole, err := receiver.Repo.GetByRoleName(string(value.RoleChild))
+		if err != nil {
+			return nil, err
+		}
+		if childRole != nil {
+			return []entity.SRoleOrgSignUp{*childRole}, nil
+		}
+		return []entity.SRoleOrgSignUp{}, nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy cả Student và Teacher

@@ -288,14 +288,9 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 
 	var roleNames []string
 	if user.IsSuperAdmin() {
-		// SuperAdmin: lấy tất cả roles (Child, Student, Teacher, ...)
-		allRoles, err := receiver.RoleOrgSignUpRepository.GetAll()
-		if err != nil {
-			return nil, err
-		}
-		for _, r := range allRoles {
-			roleNames = append(roleNames, r.RoleName)
-		}
+		// SuperAdmin: lấy child
+		roleNames = []string{string(value.RoleChild)}
+
 	} else {
 		// Không phải SuperAdmin: chỉ lấy role Student và Teacher
 		roleNames = []string{string(value.RoleStudent), string(value.RoleTeacher)}
