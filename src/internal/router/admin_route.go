@@ -315,6 +315,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
 			OrganizationMenuTemplateRepository: &repository.OrganizationMenuTemplateRepository{DBConn: dbConn},
+			StudentAppRepo:                     &repository.StudentApplicationRepository{DB: dbConn},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
 			MenuRepository:                     &repository.MenuRepository{DBConn: dbConn},
