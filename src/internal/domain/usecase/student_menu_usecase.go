@@ -1,19 +1,23 @@
 package usecase
 
 import (
+	"errors"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type StudentMenuUseCase struct {
-	StudentMenuRepo *repository.StudentMenuRepository
-	StudentAppRepo  *repository.StudentApplicationRepository
-	ComponentRepo   *repository.ComponentRepository
+	StudentMenuRepo      *repository.StudentMenuRepository
+	StudentAppRepo       *repository.StudentApplicationRepository
+	ComponentRepo        *repository.ComponentRepository
+	UserEntityRepo       *repository.UserEntityRepository
+	GetUserEntityUseCase *GetUserEntityUseCase
 }
 
 func NewStudentMenuUseCase(repo *repository.StudentMenuRepository) *StudentMenuUseCase {
@@ -83,6 +87,19 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStud
 	}, nil
 }
 
-func (uc *StudentMenuUseCase) UpdateIsShowByStudentAndComponentID(req request.UpdateStudentMenuRequest) error {
+func (uc *StudentMenuUseCase) UpdateIsShowByStudentAndComponentID(ctx *gin.Context, req request.UpdateStudentMenuRequest) error {
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
+	orgIDs, err := user.GetManagedOrganizationIDs(uc.StudentAppRepo.GetDB())
+	if err != nil {
+		return nil
+	}
+
+	// kiem tra student co nam trong orgIDs khong
+	student, _ := uc.StudentAppRepo.GetByID(uuid.MustParse(req.StudentID))
+	if student == nil || !student.IsInOrganizations(orgIDs) {
+		return errors.New("student not found or not in managed organizations")
+	}
+
 	return uc.StudentMenuRepo.UpdateIsShowByStudentAndComponentID(req.StudentID, req.ComponentID, *req.IsShow)
 }

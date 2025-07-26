@@ -24,3 +24,15 @@ func (application *SStudentFormApplication) BeforeCreate(tx *gorm.DB) (err error
 
 	return err
 }
+
+func (application *SStudentFormApplication) IsInOrganizations(orgIDs []string) bool {
+	orgIDStr := application.OrganizationID.String()
+
+	for _, id := range orgIDs {
+		if id == orgIDStr {
+			return true
+		}
+	}
+
+	return false
+}

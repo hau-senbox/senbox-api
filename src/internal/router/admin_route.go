@@ -338,6 +338,26 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
 			ChildRepo:     &repository.ChildRepository{DB: dbConn},
 		},
+		StudentMenuUseCase: &usecase.StudentMenuUseCase{
+			StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
+			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
+			ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
+			UserEntityRepo:  &repository.UserEntityRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+		},
+		StudentApplicationUseCase: &usecase.StudentApplicationUseCase{
+			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
+			StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
+			ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:     &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+		},
 	}
 	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
 	{

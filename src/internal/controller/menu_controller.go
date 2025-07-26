@@ -22,6 +22,8 @@ type MenuController struct {
 	*usecase.UploadDeviceMenuUseCase
 	*usecase.UploadSectionMenuUseCase
 	*usecase.ChildMenuUseCase
+	*usecase.StudentMenuUseCase
+	*usecase.StudentApplicationUseCase
 }
 
 type componentResponse struct {
@@ -759,7 +761,7 @@ func (receiver *MenuController) UpdateIsShowStudentMenu(context *gin.Context) {
 		return
 	}
 
-	err := receiver.StudentMenuUseCase.UpdateIsShowByStudentAndComponentID(req)
+	err := receiver.StudentMenuUseCase.UpdateIsShowByStudentAndComponentID(context, req)
 
 	if err != nil {
 		context.JSON(http.StatusOK, response.SucceedResponse{
