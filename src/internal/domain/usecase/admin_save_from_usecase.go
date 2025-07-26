@@ -136,6 +136,7 @@ func (receiver *SaveFormUseCase) unmarshalAttributes(rawQuestion parameters.RawQ
 		value.QuestionDurationForward,
 		value.QuestionQRCode,
 		value.QuestionInText,
+		value.QuestionText,
 		value.QuestionInCount,
 		value.QuestionNumber:
 		return "{}", nil

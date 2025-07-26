@@ -128,6 +128,8 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 		return receiver.unmarshalSelectionQuestion(param)
 	case value.QuestionInText:
 		return receiver.unmarshalTextQuestion(param)
+	case value.QuestionText:
+		return receiver.unmarshalTextQuestion(param)
 	case value.QuestionInCount:
 		return receiver.unmarshalCountQuestion(param)
 	case value.QuestionNumber:

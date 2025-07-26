@@ -18,6 +18,7 @@ const (
 	QuestionQRCode
 	QuestionSelection
 	QuestionInText
+	QuestionText
 	QuestionInCount
 	QuestionNumber
 	QuestionPhoto
@@ -219,6 +220,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "selection"
 	case QuestionInText:
 		return "in_text"
+	case QuestionText:
+		return "text"
 	case QuestionInCount:
 		return "in_count"
 	case QuestionNumber:
@@ -437,6 +440,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "selection"
 	case QuestionInText:
 		return "in_text"
+	case QuestionText:
+		return "text"
 	case QuestionInCount:
 		return "in_count"
 	case QuestionNumber:
@@ -612,6 +617,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return QuestionSelection, nil
 	case "in_text":
 		return QuestionInText, nil
+	case "text":
+		return QuestionText, nil
 	case "in_count":
 		return QuestionInCount, nil
 	case "number":
@@ -822,6 +829,7 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionQRCode,
 		QuestionSelection,
 		QuestionInText,
+		QuestionText,
 		QuestionInCount,
 		QuestionNumber,
 		QuestionPhoto,
