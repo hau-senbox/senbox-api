@@ -33,6 +33,8 @@ type GetMenuUseCase struct {
 	ChildMenuUseCase        *ChildMenuUseCase
 	StudentMenuUseCase      *StudentMenuUseCase
 	GetUserEntityUseCase    *GetUserEntityUseCase
+	TeacherMenuUseCase      *TeacherMenuUseCase
+	TeacherRepository       *repository.TeacherApplicationRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -123,9 +125,12 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 	var componentMenus []response.ComponentCommonMenuByUser
 
 	userID := ctx.GetString("user_id")
-	children, err := receiver.ChildRepository.GetByParentID(userID)
+	children, _ := receiver.ChildRepository.GetByParentID(userID)
+	students, _ := receiver.StudentAppRepo.GetByUserID(userID)
+	teachers, _ := receiver.TeacherRepository.GetByUserID(userID)
 
-	if err == nil && children != nil {
+	// Child btn
+	if children != nil {
 		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleChild))
 		var childOrg = ""
 		if err == nil || roleOrg != nil {
@@ -134,7 +139,7 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 		for _, child := range children {
 			childComponent := buildComponent(
 				uuid.NewString(),
-				fmt.Sprintf("Child Profile: %s", child.ChildName),
+				"Child Profile",
 				"child_profile",
 				"icon/accident_and_injury_report_1745206766342940327.png",
 				"button_form",
@@ -148,25 +153,71 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 		}
 	}
 
-	// check teacher menu
-	if teacherComponent, _ := receiver.getProfileComponentByRole("Teacher", userID); teacherComponent != nil {
-		componentMenus = append(componentMenus, *teacherComponent)
+	// student btn
+	if students != nil {
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
+		var studentOrg = ""
+		if err == nil && roleOrg != nil {
+			studentOrg = roleOrg.OrgProfile
+		}
+		for range students {
+			studentComponent := buildComponent(
+				uuid.NewString(),
+				"Student Profile",
+				"student_profile",
+				"icon/accident_and_injury_report_1745206766342940327.png",
+				"button_form",
+				studentOrg,
+			)
+
+			componentMenus = append(componentMenus, response.ComponentCommonMenuByUser{
+				Component: studentComponent,
+			})
+		}
 	}
+
+	// teacher btn
+	if teachers != nil {
+		roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+		var teacherOrg = ""
+		if err == nil && roleOrg != nil {
+			teacherOrg = roleOrg.OrgProfile
+		}
+		for range teachers {
+			teacherComponent := buildComponent(
+				uuid.NewString(),
+				"Teacher Profile",
+				"teacher_profile",
+				"icon/accident_and_injury_report_1745206766342940327.png",
+				"button_form",
+				teacherOrg,
+			)
+
+			componentMenus = append(componentMenus, response.ComponentCommonMenuByUser{
+				Component: teacherComponent,
+			})
+		}
+	}
+
+	// check teacher menu
+	// if teacherComponent, _ := receiver.getProfileComponentByRole("Teacher", userID); teacherComponent != nil {
+	// 	componentMenus = append(componentMenus, *teacherComponent)
+	// }
 
 	//checck student menu
-	if studentComponent, _ := receiver.getProfileComponentByRole("Student", userID); studentComponent != nil {
-		componentMenus = append(componentMenus, *studentComponent)
-	}
+	// if studentComponent, _ := receiver.getProfileComponentByRole("Student", userID); studentComponent != nil {
+	// 	componentMenus = append(componentMenus, *studentComponent)
+	// }
 
 	//check staff menu
-	if teacherComponent, _ := receiver.getProfileComponentByRole("Staff", userID); teacherComponent != nil {
-		componentMenus = append(componentMenus, *teacherComponent)
-	}
+	// if teacherComponent, _ := receiver.getProfileComponentByRole("Staff", userID); teacherComponent != nil {
+	// 	componentMenus = append(componentMenus, *teacherComponent)
+	// }
 
 	//check org menu
-	if teacherComponent, _ := receiver.getProfileComponentByRole("Sign up ORganise", userID); teacherComponent != nil {
-		componentMenus = append(componentMenus, *teacherComponent)
-	}
+	// if teacherComponent, _ := receiver.getProfileComponentByRole("Sign up ORganise", userID); teacherComponent != nil {
+	// 	componentMenus = append(componentMenus, *teacherComponent)
+	// }
 
 	return response.GetCommonMenuByUserResponse{
 		Components: componentMenus,
@@ -359,9 +410,10 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]response.GetMenuSectionResponse, error) {
 	userID := context.GetString("user_id")
 	var result []response.GetMenuSectionResponse
-	// Lay danh sach child vat students userId
+	// Lay danh sach child, students, teacher by userId
 	children, _ := receiver.ChildRepository.GetByParentID(userID)
 	students, _ := receiver.StudentAppRepo.GetByUserID(userID)
+	teachers, _ := receiver.TeacherRepository.GetByUserID(userID)
 	// neu co child lay menu cua child
 	for _, child := range children {
 		childMenu, _ := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
@@ -377,6 +429,15 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 			SectionName: studentMenu.StudentName,
 			SectionID:   studentMenu.StudentID,
 			Components:  studentMenu.Components,
+		})
+	}
+
+	for _, teacher := range teachers {
+		teacherMenu, _ := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String())
+		result = append(result, response.GetMenuSectionResponse{
+			SectionName: teacherMenu.TeacherName,
+			SectionID:   teacherMenu.TeacherID,
+			Components:  teacherMenu.Components,
 		})
 	}
 

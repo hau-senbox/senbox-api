@@ -9,22 +9,22 @@ import (
 )
 
 type TeacherApplicationRepository struct {
-	DBconn *gorm.DB
+	DBConn *gorm.DB
 }
 
 func NewTeacherApplicationRepository(db *gorm.DB) *TeacherApplicationRepository {
-	return &TeacherApplicationRepository{DBconn: db}
+	return &TeacherApplicationRepository{DBConn: db}
 }
 
 // Create a new teacher application
 func (r *TeacherApplicationRepository) Create(app *entity.STeacherFormApplication) error {
-	return r.DBconn.Create(app).Error
+	return r.DBConn.Create(app).Error
 }
 
 // Get by ID
 func (r *TeacherApplicationRepository) GetByID(id uuid.UUID) (*entity.STeacherFormApplication, error) {
 	var app entity.STeacherFormApplication
-	err := r.DBconn.Where("id = ?", id).First(&app).Error
+	err := r.DBConn.Where("id = ?", id).First(&app).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -38,31 +38,31 @@ func (r *TeacherApplicationRepository) GetByID(id uuid.UUID) (*entity.STeacherFo
 // Get all applications
 func (r *TeacherApplicationRepository) GetAll() ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
-	err := r.DBconn.Find(&apps).Error
+	err := r.DBConn.Find(&apps).Error
 	return apps, err
 }
 
 // Update application
 func (r *TeacherApplicationRepository) Update(app *entity.STeacherFormApplication) error {
-	return r.DBconn.Save(app).Error
+	return r.DBConn.Save(app).Error
 }
 
 // Delete by ID
 func (r *TeacherApplicationRepository) Delete(id uuid.UUID) error {
-	return r.DBconn.Delete(&entity.STeacherFormApplication{}, id).Error
+	return r.DBConn.Delete(&entity.STeacherFormApplication{}, id).Error
 }
 
 // Get by UserID
 func (r *TeacherApplicationRepository) GetByUserID(userID string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
-	err := r.DBconn.Where("user_id = ?", userID).Find(&apps).Error
+	err := r.DBConn.Where("user_id = ?", userID).Find(&apps).Error
 	return apps, err
 }
 
 // Get by OrganizationID
 func (r *TeacherApplicationRepository) GetByOrganizationID(orgID string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
-	err := r.DBconn.Where("organization_id = ?", orgID).Find(&apps).Error
+	err := r.DBConn.Where("organization_id = ?", orgID).Find(&apps).Error
 	return apps, err
 }
 
@@ -73,7 +73,7 @@ func (r *TeacherApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) 
 		return []entity.STeacherFormApplication{}, nil
 	}
 
-	err := r.DBconn.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
+	err := r.DBConn.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +92,14 @@ func (r *TeacherApplicationRepository) CheckTeacherBelongsToOrganizations(tx *go
 
 // Get GORM instance (optional)
 func (r *TeacherApplicationRepository) GetDB() *gorm.DB {
-	return r.DBconn
+	return r.DBConn
 }
 
 // GetAllTeacherIDs returns a list of all teacher application IDs
 func (r *TeacherApplicationRepository) GetAllTeacherIDs() ([]uuid.UUID, error) {
 	var ids []uuid.UUID
 
-	err := r.DBconn.
+	err := r.DBConn.
 		Model(&entity.STeacherFormApplication{}).
 		Pluck("id", &ids).Error
 

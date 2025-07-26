@@ -1,9 +1,10 @@
 package menu
 
 import (
-	"github.com/google/uuid"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/components"
+
+	"github.com/google/uuid"
 )
 
 type UserMenu struct {

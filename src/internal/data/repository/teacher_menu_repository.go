@@ -40,6 +40,12 @@ func (r *TeacherMenuRepository) GetByTeacherID(teacherID string) ([]entity.Teach
 	return result, err
 }
 
+func (r *TeacherMenuRepository) GetByTeacherIDActive(teacherID string) ([]entity.TeacherMenu, error) {
+	var result []entity.TeacherMenu
+	err := r.DBConn.Where("teacher_id = ? AND is_show = ?", teacherID, true).Find(&result).Error
+	return result, err
+}
+
 // Create with transaction
 func (r *TeacherMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.TeacherMenu) error {
 	return tx.Create(menu).Error

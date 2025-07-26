@@ -36,6 +36,12 @@ func (r *StudentMenuRepository) GetByStudentID(studentID string) ([]entity.Stude
 	return result, err
 }
 
+func (r *StudentMenuRepository) GetByStudentIDActive(studentID string) ([]entity.StudentMenu, error) {
+	var result []entity.StudentMenu
+	err := r.DBConn.Where("student_id = ? AND is_show = ?", studentID, true).Find(&result).Error
+	return result, err
+}
+
 func (r *StudentMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.StudentMenu) error {
 	return tx.Create(menu).Error
 }

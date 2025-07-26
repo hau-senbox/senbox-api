@@ -1,22 +1,26 @@
 package usecase
 
 import (
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type TeacherMenuUseCase struct {
-	TeacherMenuRepo *repository.TeacherMenuRepository
-	DB              *gorm.DB
+	TeacherMenuRepo      *repository.TeacherMenuRepository
+	TeacherAppRepo       *repository.TeacherApplicationRepository
+	ComponentRepo        *repository.ComponentRepository
+	UserEntityRepository *repository.UserEntityRepository
 }
 
-func NewTeacherMenuUseCase(repo *repository.TeacherMenuRepository, db *gorm.DB) *TeacherMenuUseCase {
+func NewTeacherMenuUseCase(repo *repository.TeacherMenuRepository) *TeacherMenuUseCase {
 	return &TeacherMenuUseCase{
 		TeacherMenuRepo: repo,
-		DB:              db,
 	}
 }
 
@@ -30,9 +34,60 @@ func (uc *TeacherMenuUseCase) BulkCreate(menus []entity.TeacherMenu) error {
 	return uc.TeacherMenuRepo.BulkCreate(menus)
 }
 
-// Get all menus by teacher ID
-func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string) ([]entity.TeacherMenu, error) {
-	return uc.TeacherMenuRepo.GetByTeacherID(teacherID)
+func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string) (response.GetTeacherMenuResponse, error) {
+	// B0: Lấy thông tin teacher
+	teacher, err := uc.TeacherAppRepo.GetByID(uuid.MustParse(teacherID))
+	if teacher == nil || err != nil {
+		return response.GetTeacherMenuResponse{}, err
+	}
+
+	// B1: Lấy các bản ghi teacher_menu
+	teacherMenus, err := uc.TeacherMenuRepo.GetByTeacherIDActive(teacherID)
+	if err != nil {
+		return response.GetTeacherMenuResponse{}, err
+	}
+
+	// B2: Lấy componentID từ teacher_menu
+	componentIDs := make([]uuid.UUID, 0, len(teacherMenus))
+	componentOrderMap := make(map[uuid.UUID]int)
+	componentIsShowMap := make(map[uuid.UUID]bool)
+
+	for _, tm := range teacherMenus {
+		componentIDs = append(componentIDs, tm.ComponentID)
+		componentOrderMap[tm.ComponentID] = tm.Order
+		componentIsShowMap[tm.ComponentID] = tm.IsShow
+	}
+
+	// B3: Lấy danh sách component tương ứng
+	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	if err != nil {
+		return response.GetTeacherMenuResponse{}, err
+	}
+
+	// B4: Build danh sách response
+	componentResponses := make([]response.ComponentResponse, 0, len(components))
+	for _, comp := range components {
+		componentResponses = append(componentResponses, response.ComponentResponse{
+			ID:     comp.ID.String(),
+			Name:   comp.Name,
+			Type:   comp.Type.String(),
+			Key:    comp.Key,
+			Value:  helper.BuildSectionValueMenu(string(comp.Value), comp),
+			Order:  componentOrderMap[comp.ID],
+			IsShow: componentIsShowMap[comp.ID],
+		})
+	}
+
+	// get user by user ID from teacher
+	user, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: teacher.UserID.String(),
+	})
+
+	return response.GetTeacherMenuResponse{
+		TeacherID:   teacherID,
+		TeacherName: user.Username,
+		Components:  componentResponses,
+	}, nil
 }
 
 // Delete all menus by teacher ID
@@ -63,22 +118,4 @@ func (uc *TeacherMenuUseCase) DeleteAll() error {
 // Delete by component ID
 func (uc *TeacherMenuUseCase) DeleteByComponentID(componentID string) error {
 	return uc.TeacherMenuRepo.DeleteByComponentID(componentID)
-}
-
-// Bulk replace menus by teacher ID (transactional)
-func (uc *TeacherMenuUseCase) ReplaceMenusForTeacher(teacherID uuid.UUID, newMenus []entity.TeacherMenu) error {
-	return uc.DB.Transaction(func(tx *gorm.DB) error {
-		// Xoá toàn bộ menu cũ
-		if err := uc.TeacherMenuRepo.DeleteByTeacherID(teacherID.String()); err != nil {
-			return err
-		}
-		// Tạo mới
-		for _, menu := range newMenus {
-			menu.TeacherID = teacherID
-			if err := uc.TeacherMenuRepo.CreateWithTx(tx, &menu); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
 }

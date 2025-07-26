@@ -40,7 +40,7 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStud
 	}
 
 	// B1: Lấy các bản ghi student_menu
-	studentMenus, err := uc.StudentMenuRepo.GetByStudentID(studentID)
+	studentMenus, err := uc.StudentMenuRepo.GetByStudentIDActive(studentID)
 	if err != nil {
 		return response.GetStudentMenuResponse{}, err
 	}
