@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -55,4 +56,38 @@ func (r *OrganizationMenuTemplateRepository) DeleteAllTx(tx *gorm.DB) error {
 // Create with transaction
 func (r *OrganizationMenuTemplateRepository) CreateWithTx(tx *gorm.DB, template *entity.OrganizationMenuTemplate) error {
 	return tx.Create(template).Error
+}
+
+// GetByOrgIDComponentIDSectionID returns OrganizationMenuTemplate if exists
+func (r *OrganizationMenuTemplateRepository) GetByOrgIDComponentIDSectionID(
+	tx *gorm.DB,
+	orgID string,
+	componentID uuid.UUID,
+	sectionID uuid.UUID,
+) (*entity.OrganizationMenuTemplate, error) {
+	var template entity.OrganizationMenuTemplate
+	err := tx.Where("organization_id = ? AND component_id = ? AND section_id = ?",
+		orgID, componentID.String(), sectionID.String()).First(&template).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil // không có record thì trả về nil
+		}
+		log.Errorf("GetByOrgIDComponentIDSectionID: %v", err)
+		return nil, fmt.Errorf("get OrganizationMenuTemplate failed: %w", err)
+	}
+
+	return &template, nil
+}
+
+// UpdateWithTx updates an existing OrganizationMenuTemplate inside a transaction
+func (r *OrganizationMenuTemplateRepository) UpdateWithTx(tx *gorm.DB, template *entity.OrganizationMenuTemplate) error {
+	return tx.Save(template).Error
+}
+
+// GetBySectionIDAndOrganizationID returns templates matching both section_id and organization_id
+func (r *OrganizationMenuTemplateRepository) GetBySectionIDAndOrganizationID(sectionID string, organizationID string) ([]entity.OrganizationMenuTemplate, error) {
+	var templates []entity.OrganizationMenuTemplate
+	err := r.DBConn.Where("section_id = ? AND organization_id = ?", sectionID, organizationID).Find(&templates).Error
+	return templates, err
 }

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"fmt"
+	"log"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
@@ -16,6 +18,7 @@ type CreateUserFormApplicationUseCase struct {
 	*repository.ComponentRepository
 	*repository.StudentMenuRepository
 	*repository.TeacherMenuRepository
+	*repository.OrganizationMenuTemplateRepository
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
@@ -23,6 +26,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 	if err != nil {
 		return err
 	}
+
 	teacherID := uuid.New()
 
 	err = receiver.UserEntityRepository.CreateTeacherFormApplication(&entity.STeacherFormApplication{
@@ -32,24 +36,45 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 	})
 
 	if err == nil {
-		// tao teacher menu
-		teacherRoleOrg, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
-		if teacherRoleOrg != nil {
-			components, _ := receiver.ComponentRepository.GetBySectionID(teacherRoleOrg.ID.String())
+		// Lấy role "teacher"
+		roleOrgTeacher, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+		if roleOrgTeacher == nil {
+			return nil // Không có role teacher, không cần tạo menu
+		}
 
-			for index, component := range components {
-				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
-				err := receiver.TeacherMenuRepository.Create(&entity.TeacherMenu{
-					ID:          uuid.New(),
-					TeacherID:   teacherID,
-					ComponentID: component.ID,
-					Order:       index,
-					IsShow:      true,
-					Visible:     visible,
-				})
-				if err != nil {
-					continue
-				}
+		sectionTeacherID := roleOrgTeacher.ID
+		organizationID := uuid.MustParse(req.OrganizationID)
+
+		// Lấy các Component ID từ bảng OrganizationMenuTemplate theo sectionID và organizationID
+		menuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetBySectionIDAndOrganizationID(sectionTeacherID.String(), organizationID.String())
+		if err != nil {
+			return fmt.Errorf("Error get OrganizationMenuTemplate teacher: %w", err)
+		}
+
+		for index, template := range menuTemplates {
+			componentID := template.ComponentID
+
+			// Lấy thông tin component
+			component, err := receiver.ComponentRepository.GetByID(componentID)
+			if err != nil {
+				log.Printf("WARNING: Không tìm thấy component %v: %v", componentID, err)
+				continue
+			}
+
+			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+
+			err = receiver.TeacherMenuRepository.Create(&entity.TeacherMenu{
+				ID:          uuid.New(),
+				TeacherID:   teacherID,
+				ComponentID: uuid.MustParse(componentID),
+				Order:       index,
+				IsShow:      true,
+				Visible:     visible,
+			})
+
+			if err != nil {
+				log.Printf("WARNING: Create TeacherMenu fail %v: %v", componentID, err)
+				continue
 			}
 		}
 	}
@@ -83,24 +108,45 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 	})
 
 	if err == nil {
-		// tao student menu
-		studentRoleOrg, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
-		if studentRoleOrg != nil {
-			components, _ := receiver.ComponentRepository.GetBySectionID(studentRoleOrg.ID.String())
+		// Lấy role "student"
+		roleOrgStudent, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
+		if roleOrgStudent == nil {
+			return nil // Không có role student, không cần tạo menu
+		}
 
-			for index, component := range components {
-				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
-				err := receiver.StudentMenuRepository.Create(&entity.StudentMenu{
-					ID:          uuid.New(),
-					StudentID:   studentID,
-					ComponentID: component.ID,
-					Order:       index,
-					IsShow:      true,
-					Visible:     visible,
-				})
-				if err != nil {
-					continue
-				}
+		sectionStudentID := roleOrgStudent.ID
+		organizationID := uuid.MustParse(req.OrganizationID)
+
+		// Lấy các Component ID từ bảng OrganizationMenuTemplate theo sectionID và organizationID
+		menuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetBySectionIDAndOrganizationID(sectionStudentID.String(), organizationID.String())
+		if err != nil {
+			return fmt.Errorf("lỗi khi lấy OrganizationMenuTemplate: %w", err)
+		}
+
+		for index, template := range menuTemplates {
+			componentID := template.ComponentID
+
+			// Lấy thông tin component để tính Visible (nếu cần)
+			component, err := receiver.ComponentRepository.GetByID(componentID)
+			if err != nil {
+				// log.Warnf("Không tìm thấy component %v: %v", componentID, err)
+				continue
+			}
+
+			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+
+			err = receiver.StudentMenuRepository.Create(&entity.StudentMenu{
+				ID:          uuid.New(),
+				StudentID:   studentID,
+				ComponentID: uuid.MustParse(componentID),
+				Order:       index,
+				IsShow:      true,
+				Visible:     visible,
+			})
+
+			if err != nil {
+				log.Printf("WARNING: Create StudentMenu fail %v: %v", componentID, err)
+				continue
 			}
 		}
 	}

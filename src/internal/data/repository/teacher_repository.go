@@ -94,3 +94,18 @@ func (r *TeacherApplicationRepository) CheckTeacherBelongsToOrganizations(tx *go
 func (r *TeacherApplicationRepository) GetDB() *gorm.DB {
 	return r.DBconn
 }
+
+// GetAllTeacherIDs returns a list of all teacher application IDs
+func (r *TeacherApplicationRepository) GetAllTeacherIDs() ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+
+	err := r.DBconn.
+		Model(&entity.STeacherFormApplication{}).
+		Pluck("id", &ids).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ids, nil
+}
