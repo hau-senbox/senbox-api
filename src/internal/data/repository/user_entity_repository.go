@@ -819,8 +819,23 @@ func (receiver *UserEntityRepository) BlockTeacherFormApplication(applicationID 
 	return nil
 }
 
-func (receiver *UserEntityRepository) CreateTeacherFormApplication(entity *entity.STeacherFormApplication) error {
-	return receiver.DBConn.Create(entity).Error
+func (receiver *UserEntityRepository) CreateTeacherFormApplication(teacher *entity.STeacherFormApplication) error {
+	var teacherExist entity.STeacherFormApplication
+	err := receiver.DBConn.Model(&entity.STeacherFormApplication{}).
+		Where("user_id = ? AND organization_id = ?", teacher.UserID, teacher.OrganizationID).
+		First(&teacherExist).Error
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("UserEntityRepository.CreateTeacherFormApplication: " + err.Error())
+		return errors.New("failed to check existing teacher application")
+	}
+
+	if err == nil {
+		// Tìm thấy bản ghi trùng
+		return fmt.Errorf("the teacher already exists in the organization")
+	}
+
+	return receiver.DBConn.Create(teacher).Error
 }
 
 // Staff
@@ -1125,8 +1140,25 @@ func (receiver *UserEntityRepository) BlockStudentFormApplication(applicationID 
 	return nil
 }
 
-func (receiver *UserEntityRepository) CreateStudentFormApplication(entity *entity.SStudentFormApplication) error {
-	return receiver.DBConn.Create(entity).Error
+func (receiver *UserEntityRepository) CreateStudentFormApplication(student *entity.SStudentFormApplication) error {
+	var studentEntity entity.SStudentFormApplication
+
+	err := receiver.DBConn.
+		Where("child_id = ? AND organization_id = ?", student.ChildID, student.OrganizationID).
+		First(&studentEntity).Error
+
+	if err == nil {
+		// Tìm thấy bản ghi trùng
+		return fmt.Errorf("the student already exists in the organization")
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Lỗi khác khi truy vấn
+		return err
+	}
+
+	// Không có bản ghi trùng, thực hiện tạo mới
+	return receiver.DBConn.Create(student).Error
 }
 
 // GetByIDWithOrganizations lấy user và preload Organizations
