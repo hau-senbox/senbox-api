@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"sen-global-api/internal/domain/entity"
 
@@ -90,4 +91,14 @@ func (r *OrganizationMenuTemplateRepository) GetBySectionIDAndOrganizationID(sec
 	var templates []entity.OrganizationMenuTemplate
 	err := r.DBConn.Where("section_id = ? AND organization_id = ?", sectionID, organizationID).Find(&templates).Error
 	return templates, err
+}
+
+// Delete by component ID
+func (r *OrganizationMenuTemplateRepository) DeleteByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&entity.OrganizationMenuTemplate{}).Error
+	if err != nil {
+		log.Error("OrganizationMenuTemplateRepository.DeleteByComponentID: " + err.Error())
+		return errors.New("failed to delete org template menu by component ID")
+	}
+	return nil
 }
