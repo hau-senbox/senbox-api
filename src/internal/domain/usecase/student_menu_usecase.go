@@ -88,7 +88,7 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStud
 }
 
 func (uc *StudentMenuUseCase) UpdateIsShowByStudentAndComponentID(ctx *gin.Context, req request.UpdateStudentMenuRequest) error {
-	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	user, _ := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
 	orgIDs, err := user.GetManagedOrganizationIDs(uc.StudentAppRepo.GetDB())
 	if err != nil {
