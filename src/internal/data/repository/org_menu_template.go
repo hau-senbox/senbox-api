@@ -102,3 +102,12 @@ func (r *OrganizationMenuTemplateRepository) DeleteByComponentID(componentID str
 	}
 	return nil
 }
+
+func (r *OrganizationMenuTemplateRepository) GetOrganizationMenuTemplatesByOrgID(orgID string) ([]entity.OrganizationMenuTemplate, error) {
+	var templates []entity.OrganizationMenuTemplate
+	err := r.DBConn.Where("organization_id = ?", orgID).Find(&templates).Error
+	if err != nil {
+		return nil, err
+	}
+	return templates, nil
+}

@@ -20,21 +20,22 @@ import (
 )
 
 type GetMenuUseCase struct {
-	MenuRepository          *repository.MenuRepository
-	UserEntityRepository    *repository.UserEntityRepository
-	OrganizationRepository  *repository.OrganizationRepository
-	DeviceRepository        *repository.DeviceRepository
-	RoleOrgSignUpRepository *repository.RoleOrgSignUpRepository
-	FormRepository          *repository.FormRepository
-	SubmissionRepository    *repository.SubmissionRepository
-	ComponentRepository     *repository.ComponentRepository
-	ChildRepository         *repository.ChildRepository
-	StudentAppRepo          *repository.StudentApplicationRepository
-	ChildMenuUseCase        *ChildMenuUseCase
-	StudentMenuUseCase      *StudentMenuUseCase
-	GetUserEntityUseCase    *GetUserEntityUseCase
-	TeacherMenuUseCase      *TeacherMenuUseCase
-	TeacherRepository       *repository.TeacherApplicationRepository
+	MenuRepository                     *repository.MenuRepository
+	UserEntityRepository               *repository.UserEntityRepository
+	OrganizationRepository             *repository.OrganizationRepository
+	DeviceRepository                   *repository.DeviceRepository
+	RoleOrgSignUpRepository            *repository.RoleOrgSignUpRepository
+	FormRepository                     *repository.FormRepository
+	SubmissionRepository               *repository.SubmissionRepository
+	ComponentRepository                *repository.ComponentRepository
+	ChildRepository                    *repository.ChildRepository
+	StudentAppRepo                     *repository.StudentApplicationRepository
+	ChildMenuUseCase                   *ChildMenuUseCase
+	StudentMenuUseCase                 *StudentMenuUseCase
+	GetUserEntityUseCase               *GetUserEntityUseCase
+	TeacherMenuUseCase                 *TeacherMenuUseCase
+	TeacherRepository                  *repository.TeacherApplicationRepository
+	OrganizationMenuTemplateRepository *repository.OrganizationMenuTemplateRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -366,6 +367,27 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 			return nil, err
 		}
 		allComponents = append(allComponents, comps...)
+	}
+
+	// Neu khong la super admin, loc theo organization menu template
+	if !user.IsSuperAdmin() {
+		// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
+		orgIDs, err := user.GetManagedOrganizationIDs(receiver.StudentAppRepo.GetDB())
+		if err != nil {
+			return nil, err
+		}
+		orgMenuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetOrganizationMenuTemplatesByOrgID(orgIDs[0])
+		if err != nil {
+			return nil, err
+		}
+		if len(orgMenuTemplates) > 0 {
+			// Lọc components theo OrganizationMenuTemplate
+			allComponents = lo.Filter(allComponents, func(c components.Component, _ int) bool {
+				return lo.ContainsBy(orgMenuTemplates, func(template entity.OrganizationMenuTemplate) bool {
+					return template.SectionID == c.SectionID && template.ComponentID == c.ID.String()
+				})
+			})
+		}
 	}
 
 	// Gom nhóm theo SectionID
