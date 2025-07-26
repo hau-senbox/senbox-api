@@ -1,9 +1,10 @@
 package response
 
 type SearchUserResponse struct {
-	Users    []UserResponse     `json:"users"`
-	Children []ChildrenResponse `json:"children"`
-	Students []StudentResponse  `json:"students"`
+	Users     []UserResponse     `json:"users"`
+	Children  []ChildrenResponse `json:"children"`
+	Students  []StudentResponse  `json:"students"`
+	Teadchers []TeacherResponse  `json:"teachers"`
 }
 
 type UserResponse struct {
@@ -22,4 +23,9 @@ type ChildrenResponse struct {
 type StudentResponse struct {
 	StudentID   string `json:"id"`
 	StudentName string `json:"username"`
+}
+
+type TeacherResponse struct {
+	TeacherID   string `json:"id"`
+	TeacherName string `json:"username"`
 }

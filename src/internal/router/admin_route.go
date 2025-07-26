@@ -378,12 +378,24 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			TeacherMenuRepo:      &repository.TeacherMenuRepository{DBConn: dbConn},
+			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		},
 	}
 	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
 		user.GET("/child/:id", userEntityController.GetChild4WebAdmin)
 		user.GET("/student/:id", userEntityController.GetStudent4WebAdmin)
+		user.GET("/teacher/:id", userEntityController.GetTeacher4WebAdmin)
 	}
 
 	executor := &TimeMachineSubscriber{

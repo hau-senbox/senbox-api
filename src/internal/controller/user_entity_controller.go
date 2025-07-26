@@ -40,6 +40,7 @@ type UserEntityController struct {
 	*usecase.RoleOrgSignUpUseCase
 	*usecase.ChildUseCase
 	*usecase.StudentApplicationUseCase
+	*usecase.TeacherApplicationUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1591,12 +1592,14 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		users    = make([]response.UserResponse, 0)
 		children = make([]response.ChildrenResponse, 0)
 		students = make([]response.StudentResponse, 0)
+		teachers = make([]response.TeacherResponse, 0)
 	)
 
 	if callAll {
 		users, _ := receiver.GetAllUsers4Search(c)
 		children, _ := receiver.ChildUseCase.GetAll4Search(c)
 		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 
 		userResponse := make([]response.UserResponse, 0, len(users))
 		for _, u := range users {
@@ -1625,12 +1628,21 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			})
 		}
 
+		teachersResponse := make([]response.TeacherResponse, 0, len(teachers))
+		for _, t := range teachers {
+			teachersResponse = append(teachersResponse, response.TeacherResponse{
+				TeacherID:   t.TeacherID,
+				TeacherName: t.TeacherName,
+			})
+		}
+
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
 			Data: response.SearchUserResponse{
-				Users:    userResponse,
-				Children: childrenResponse,
-				Students: studentResponse,
+				Users:     userResponse,
+				Children:  childrenResponse,
+				Students:  studentResponse,
+				Teadchers: teachersResponse,
 			},
 		})
 
@@ -1641,9 +1653,10 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
 			Data: response.SearchUserResponse{
-				Users:    users,
-				Children: children,
-				Students: students,
+				Users:     users,
+				Children:  children,
+				Students:  students,
+				Teadchers: teachers,
 			},
 		})
 
@@ -1654,7 +1667,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	roleSignUp := value.RoleSignUp(role)
 
 	switch roleSignUp {
-	case value.RoleTeacher, value.RoleStaff, value.RoleOrganization:
+	case value.RoleStaff, value.RoleOrganization:
 		break
 	case value.RoleChild:
 		// get from childrepo
@@ -1675,14 +1688,25 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				StudentName: s.StudentName,
 			})
 		}
+
+	case value.RoleTeacher:
+		// get from teacher repo
+		teachersDataRepo, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		for _, t := range teachersDataRepo {
+			teachers = append(teachers, response.TeacherResponse{
+				TeacherID:   t.TeacherID,
+				TeacherName: t.TeacherName,
+			})
+		}
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.SearchUserResponse{
-			Users:    users,
-			Children: children,
-			Students: students,
+			Users:     users,
+			Children:  children,
+			Students:  students,
+			Teadchers: teachers,
 		},
 	})
 }
@@ -1739,6 +1763,34 @@ func (receiver *UserEntityController) GetStudent4WebAdmin(context *gin.Context) 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: student,
+	})
+
+}
+
+func (receiver *UserEntityController) GetTeacher4WebAdmin(context *gin.Context) {
+	teacherID := context.Param("id")
+	if teacherID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing teacher ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByID(teacherID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get teacher",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
 	})
 
 }
