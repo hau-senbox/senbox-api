@@ -1028,88 +1028,88 @@ func (receiver *UserEntityController) CreateTeacherFormApplication(context *gin.
 
 // Staff
 
-func (receiver *UserEntityController) GetAllStaffFormApplication(context *gin.Context) {
-	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStaffFormApplication()
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// func (receiver *UserEntityController) GetAllStaffFormApplication(context *gin.Context) {
+// 	applications, err := receiver.GetUserFormApplicationUseCase.GetAllStaffFormApplication()
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	var applicationResponse []response.StaffFormApplicationResponse
-	if len(applications) > 0 {
-		applicationResponse = make([]response.StaffFormApplicationResponse, 0)
-		for _, application := range applications {
-			res := response.StaffFormApplicationResponse{
-				ID:         application.ID,
-				Status:     application.Status.String(),
-				ApprovedAt: "",
-				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-				UserID:     application.UserID.String(),
-			}
-			if application.ApprovedAt != defaultTime {
-				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-			}
-			applicationResponse = append(applicationResponse, res)
-		}
-	}
+// 	var applicationResponse []response.StaffFormApplicationResponse
+// 	if len(applications) > 0 {
+// 		applicationResponse = make([]response.StaffFormApplicationResponse, 0)
+// 		for _, application := range applications {
+// 			res := response.StaffFormApplicationResponse{
+// 				ID:         application.ID,
+// 				Status:     application.Status.String(),
+// 				ApprovedAt: "",
+// 				CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 				UserID:     application.UserID.String(),
+// 			}
+// 			if application.ApprovedAt != defaultTime {
+// 				res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 			}
+// 			applicationResponse = append(applicationResponse, res)
+// 		}
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: applicationResponse,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: applicationResponse,
+// 	})
+// }
 
-func (receiver *UserEntityController) GetStaffFormApplicationByID(context *gin.Context) {
-	applicationID := context.Param("id")
-	if applicationID == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "id is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+// func (receiver *UserEntityController) GetStaffFormApplicationByID(context *gin.Context) {
+// 	applicationID := context.Param("id")
+// 	if applicationID == "" {
+// 		context.JSON(
+// 			http.StatusBadRequest, response.FailedResponse{
+// 				Error: "id is required",
+// 				Code:  http.StatusBadRequest,
+// 			},
+// 		)
+// 		return
+// 	}
 
-	id, err := strconv.Atoi(applicationID)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Error: "invalid id",
-			Code:  http.StatusBadRequest,
-		})
-		return
-	}
+// 	id, err := strconv.Atoi(applicationID)
+// 	if err != nil {
+// 		context.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Error: "invalid id",
+// 			Code:  http.StatusBadRequest,
+// 		})
+// 		return
+// 	}
 
-	application, err := receiver.GetUserFormApplicationUseCase.GetStaffFormApplicationByID(int64(id))
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Error: err.Error(),
-			Code:  http.StatusInternalServerError,
-		})
+// 	application, err := receiver.GetUserFormApplicationUseCase.GetStaffFormApplicationByID(int64(id))
+// 	if err != nil {
+// 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Error: err.Error(),
+// 			Code:  http.StatusInternalServerError,
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	res := response.StaffFormApplicationResponse{
-		ID:         application.ID,
-		Status:     application.Status.String(),
-		ApprovedAt: "",
-		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
-		UserID:     application.UserID.String(),
-	}
-	if application.ApprovedAt != defaultTime {
-		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
-	}
+// 	res := response.StaffFormApplicationResponse{
+// 		ID:         application.ID,
+// 		Status:     application.Status.String(),
+// 		ApprovedAt: "",
+// 		CreatedAt:  application.CreatedAt.Format("2006-01-02 15:04:05"),
+// 		UserID:     application.UserID.String(),
+// 	}
+// 	if application.ApprovedAt != defaultTime {
+// 		res.ApprovedAt = application.ApprovedAt.Format("2006-01-02 15:04:05")
+// 	}
 
-	context.JSON(http.StatusOK, response.SucceedResponse{
-		Code: http.StatusOK,
-		Data: res,
-	})
-}
+// 	context.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code: http.StatusOK,
+// 		Data: res,
+// 	})
+// }
 
 func (receiver *UserEntityController) ApproveStaffFormApplication(context *gin.Context) {
 	applicationID := context.Param("id")
