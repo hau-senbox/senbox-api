@@ -431,6 +431,30 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/teacher/:id", userEntityController.GetTeacher4WebAdmin)
 	}
 
+	// application
+	applicationController := &controller.ApplicationController{
+		StaffAppUsecase: &usecase.StaffApplicationUseCase{
+			StaffAppRepo:  &repository.StaffApplicationRepository{DBConn: dbConn},
+			StaffMenuRepo: &repository.StaffMenuRepository{DBConn: dbConn},
+			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:   &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+		},
+	}
+
+	application := engine.Group("/v1/admin/application", secureMiddleware.Secured())
+	{
+		application.GET("/staff", applicationController.GetAllStaffApplications)
+		// application.GET("/staff/:id", applicationController.GetStaffApplicationByID)
+		// application.POST("/staff/approve", secureMiddleware.ValidateSuperAdminRole(), applicationController.ApproveStaffApplication)
+		// application.POST("/staff/reject", secureMiddleware.ValidateSuperAdminRole(), applicationController.RejectStaffApplication)
+		// application.POST("/staff/approve-batch", secureMiddleware.ValidateSuperAdminRole(), applicationController.ApproveStaffApplicationBatch)
+		// application.POST("/staff/reject-batch", secureMiddleware.ValidateSuperAdminRole(), applicationController.RejectStaffApplicationBatch)
+	}
+
 	executor := &TimeMachineSubscriber{
 		ImportFormsUseCase:        importFormsUseCase,
 		ImportRedirectUrlsUseCase: importUrlsUseCase,
