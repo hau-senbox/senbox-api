@@ -1909,6 +1909,34 @@ func (receiver *UserEntityController) GetTeacher4WebAdmin(context *gin.Context) 
 
 }
 
+func (receiver *UserEntityController) GetStaff4WebAdmin(context *gin.Context) {
+	staffID := context.Param("id")
+	if staffID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing teacher ID",
+		})
+		return
+	}
+
+	staff, err := receiver.StaffApplicationUseCase.GetStaffByID(staffID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get staff",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: staff,
+	})
+
+}
+
 func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
 
 	studentID := context.Param("id")

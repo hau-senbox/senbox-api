@@ -445,6 +445,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/child/:id", userEntityController.GetChild4WebAdmin)
 		user.GET("/student/:id", userEntityController.GetStudent4WebAdmin)
 		user.GET("/teacher/:id", userEntityController.GetTeacher4WebAdmin)
+		user.GET("/staff/:id", userEntityController.GetStaff4WebAdmin)
 	}
 
 	// application

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -172,4 +173,71 @@ func mapStaffAppsToResponse(apps []entity.SStaffFormApplication, uc *StaffApplic
 		})
 	}
 	return res
+}
+
+func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.StaffResponseBase, error) {
+	// Lấy thông tin application của staff
+	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
+	if err != nil {
+		return nil, err
+	}
+	if staff == nil {
+		return nil, errors.New("staff not found")
+	}
+
+	// Lấy danh sách menu của staff
+	staffMenus, err := uc.StaffMenuRepo.GetByStaffID(staffID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tạo danh sách componentID để lấy Component
+	componentIDs := make([]uuid.UUID, 0, len(staffMenus))
+	componentOrderMap := make(map[uuid.UUID]int)
+	componentIsShowMap := make(map[uuid.UUID]bool)
+
+	for _, cm := range staffMenus {
+		componentIDs = append(componentIDs, cm.ComponentID)
+		componentOrderMap[cm.ComponentID] = cm.Order
+		componentIsShowMap[cm.ComponentID] = cm.IsShow
+	}
+
+	// Lấy components theo ID
+	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build danh sách ComponentResponse
+	menus := make([]response.ComponentResponse, 0)
+	for _, comp := range components {
+		menu := response.ComponentResponse{
+			ID:     comp.ID.String(),
+			Name:   comp.Name,
+			Type:   comp.Type.String(),
+			Key:    comp.Key,
+			Value:  string(comp.Value),
+			Order:  componentOrderMap[comp.ID],
+			IsShow: componentIsShowMap[comp.ID],
+		}
+		menus = append(menus, menu)
+	}
+
+	// Tạo QR cho form profile
+	staffRoleOrg, err := uc.RoleOrgRepo.GetByRoleName(string(value.RoleStaff))
+	if err != nil {
+		return nil, err
+	}
+	formProfile := staffRoleOrg.OrgProfile + ":" + staff.ID.String()
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: staff.UserID.String(),
+	})
+	return &response.StaffResponseBase{
+		StaffID:       staffID,
+		StaffName:     userEntity.Username,
+		Avatar:        "",
+		AvatarURL:     "",
+		QrFormProfile: formProfile,
+		Menus:         menus,
+	}, nil
 }
