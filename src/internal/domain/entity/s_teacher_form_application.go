@@ -22,3 +22,13 @@ func (application *STeacherFormApplication) BeforeCreate(tx *gorm.DB) (err error
 
 	return err
 }
+
+func (t *STeacherFormApplication) IsInOrganizations(orgIDs []string) bool {
+	orgIDStr := t.OrganizationID.String()
+	for _, id := range orgIDs {
+		if orgIDStr == id {
+			return true
+		}
+	}
+	return false
+}

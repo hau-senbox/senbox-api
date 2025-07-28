@@ -358,6 +358,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
 		},
+		TeacherMenuUseCase: &usecase.TeacherMenuUseCase{
+			TeacherMenuRepo:      &repository.TeacherMenuRepository{DBConn: dbConn},
+			TeacherAppRepo:       &repository.TeacherApplicationRepository{DBConn: dbConn},
+			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+		},
 	}
 	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
 	{
@@ -367,6 +377,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("/child/:id", menuController.GetChildMenuByChildID)
 		menu.PUT("/child", menuController.UpdateIsShowChildMenu)
 		menu.PUT("/student", menuController.UpdateIsShowStudentMenu)
+		menu.PUT("/teacher", menuController.UpdateIsShowTeacherMenu)
 	}
 
 	// user

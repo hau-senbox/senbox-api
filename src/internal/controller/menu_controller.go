@@ -24,6 +24,7 @@ type MenuController struct {
 	*usecase.ChildMenuUseCase
 	*usecase.StudentMenuUseCase
 	*usecase.StudentApplicationUseCase
+	*usecase.TeacherMenuUseCase
 }
 
 type componentResponse struct {
@@ -762,6 +763,32 @@ func (receiver *MenuController) UpdateIsShowStudentMenu(context *gin.Context) {
 	}
 
 	err := receiver.StudentMenuUseCase.UpdateIsShowByStudentAndComponentID(context, req)
+
+	if err != nil {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Updated",
+	})
+}
+
+func (receiver *MenuController) UpdateIsShowTeacherMenu(context *gin.Context) {
+	var req request.UpdateTeacherMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.TeacherMenuUseCase.UpdateIsShow(context, req)
 
 	if err != nil {
 		context.JSON(http.StatusOK, response.SucceedResponse{

@@ -1,12 +1,14 @@
 package usecase
 
 import (
+	"errors"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -16,6 +18,7 @@ type TeacherMenuUseCase struct {
 	TeacherAppRepo       *repository.TeacherApplicationRepository
 	ComponentRepo        *repository.ComponentRepository
 	UserEntityRepository *repository.UserEntityRepository
+	GetUserEntityUseCase *GetUserEntityUseCase
 }
 
 func NewTeacherMenuUseCase(repo *repository.TeacherMenuRepository) *TeacherMenuUseCase {
@@ -96,8 +99,22 @@ func (uc *TeacherMenuUseCase) DeleteByTeacherID(teacherID string) error {
 }
 
 // Update is_show flag
-func (uc *TeacherMenuUseCase) UpdateIsShow(teacherID, componentID string, isShow bool) error {
-	return uc.TeacherMenuRepo.UpdateIsShowByTeacherAndComponentID(teacherID, componentID, isShow)
+func (uc *TeacherMenuUseCase) UpdateIsShow(ctx *gin.Context, req request.UpdateTeacherMenuRequest) error {
+	user, _ := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+
+	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
+	orgIDs, err := user.GetManagedOrganizationIDs(uc.TeacherAppRepo.GetDB())
+	if err != nil {
+		return err
+	}
+
+	// Kiểm tra teacher có thuộc các tổ chức mà user đang quản lý không
+	teacher, _ := uc.TeacherAppRepo.GetByID(uuid.MustParse(req.TeacherID))
+	if teacher == nil || !teacher.IsInOrganizations(orgIDs) {
+		return errors.New("teacher not found or not in managed organizations")
+	}
+
+	return uc.TeacherMenuRepo.UpdateIsShowByTeacherAndComponentID(req.TeacherID, req.ComponentID, *req.IsShow)
 }
 
 // Update full record with transaction
