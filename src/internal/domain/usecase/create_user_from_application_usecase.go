@@ -98,10 +98,10 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 	})
 
 	if err == nil {
-		// Lấy role "teacher"
+		// Lấy role "staff"
 		roleOrgStaff, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStaff))
 		if roleOrgStaff == nil {
-			return nil // Không có role teacher, không cần tạo menu
+			return nil // Không có role staff, không cần tạo menu
 		}
 
 		sectionStaffID := roleOrgStaff.ID
@@ -110,7 +110,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 		// Lấy các Component ID từ bảng OrganizationMenuTemplate theo sectionID và organizationID
 		menuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetBySectionIDAndOrganizationID(sectionStaffID.String(), organizationID.String())
 		if err != nil {
-			return fmt.Errorf("error get OrganizationMenuTemplate teacher: %w", err)
+			return fmt.Errorf("error get OrganizationMenuTemplate staff: %w", err)
 		}
 
 		for index, template := range menuTemplates {
