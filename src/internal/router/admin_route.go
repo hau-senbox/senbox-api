@@ -448,6 +448,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	application := engine.Group("/v1/admin/application", secureMiddleware.Secured())
 	{
 		application.GET("/staff", applicationController.GetAllStaffApplications)
+		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		// application.GET("/staff/:id", applicationController.GetStaffApplicationByID)
 		// application.POST("/staff/approve", secureMiddleware.ValidateSuperAdminRole(), applicationController.ApproveStaffApplication)
 		// application.POST("/staff/reject", secureMiddleware.ValidateSuperAdminRole(), applicationController.RejectStaffApplication)
