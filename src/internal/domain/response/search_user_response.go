@@ -5,6 +5,7 @@ type SearchUserResponse struct {
 	Children  []ChildrenResponse `json:"children"`
 	Students  []StudentResponse  `json:"students"`
 	Teadchers []TeacherResponse  `json:"teachers"`
+	Staffs    []StaffResponse    `json:"staffs"`
 }
 
 type UserResponse struct {
@@ -28,4 +29,9 @@ type StudentResponse struct {
 type TeacherResponse struct {
 	TeacherID   string `json:"id"`
 	TeacherName string `json:"username"`
+}
+
+type StaffResponse struct {
+	StaffID   string `json:"id"`
+	StaffName string `json:"username"`
 }

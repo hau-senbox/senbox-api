@@ -18,6 +18,7 @@ type StaffApplicationUseCase struct {
 	RoleOrgRepo          *repository.RoleOrgSignUpRepository
 	OrganizationRepo     *repository.OrganizationRepository
 	GetUserEntityUseCase *GetUserEntityUseCase
+	UserEntityRepository *repository.UserEntityRepository
 }
 
 func NewStaffApplicationUseCase(
@@ -27,6 +28,7 @@ func NewStaffApplicationUseCase(
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
 	organizationRepo *repository.OrganizationRepository,
 	getUserEntityUseCase *GetUserEntityUseCase,
+	userEntityResitory *repository.UserEntityRepository,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
 		StaffAppRepo:         staffRepo,
@@ -35,6 +37,7 @@ func NewStaffApplicationUseCase(
 		RoleOrgRepo:          roleOrgRepo,
 		OrganizationRepo:     organizationRepo,
 		GetUserEntityUseCase: getUserEntityUseCase,
+		UserEntityRepository: userEntityResitory,
 	}
 }
 
@@ -118,4 +121,55 @@ func (uc *StaffApplicationUseCase) BlockStaffApplication(applicationID string) e
 
 	// Lưu lại
 	return uc.StaffAppRepo.Update(application)
+}
+
+// GetAllStaff4Search returns all staff for search functionality
+func (uc *StaffApplicationUseCase) GetAllStaff4Search(ctx *gin.Context) ([]response.StaffResponse, error) {
+	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Nếu là SuperAdmin → trả về tất cả
+	if user.IsSuperAdmin() {
+		apps, err := uc.StaffAppRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+		return mapStaffAppsToResponse(apps, uc), nil
+	}
+
+	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
+	orgIDs, err := user.GetManagedOrganizationIDs(uc.StaffAppRepo.GetDB())
+	if err != nil {
+		return nil, err
+	}
+	if len(orgIDs) == 0 {
+		return []response.StaffResponse{}, nil
+	}
+
+	// 4. Lấy student application theo các orgID
+	apps, err := uc.StaffAppRepo.GetByOrganizationIDs(orgIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapStaffAppsToResponse(apps, uc), nil
+}
+
+func mapStaffAppsToResponse(apps []entity.SStaffFormApplication, uc *StaffApplicationUseCase) []response.StaffResponse {
+	res := make([]response.StaffResponse, 0, len(apps))
+	for _, a := range apps {
+
+		// lay user theo user id cua teacher
+		userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+			ID: a.UserID.String(),
+		})
+		res = append(res, response.StaffResponse{
+			StaffID:   a.ID.String(),
+			StaffName: userEntity.Username,
+		})
+	}
+	return res
 }

@@ -404,9 +404,23 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	)
 
+	staffUsecase := usecase.NewStaffApplicationUseCase(
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.StaffMenuRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		&repository.OrganizationRepository{DBConn: dbConn},
+		&usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		&repository.UserEntityRepository{DBConn: dbConn},
+	)
+
 	userEntityController := &controller.UserEntityController{
 		ChildUseCase:              childUseCase,
 		StudentApplicationUseCase: studentUseCase,
+		StaffApplicationUseCase:   staffUsecase,
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},

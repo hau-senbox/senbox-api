@@ -41,6 +41,7 @@ type UserEntityController struct {
 	*usecase.ChildUseCase
 	*usecase.StudentApplicationUseCase
 	*usecase.TeacherApplicationUseCase
+	*usecase.StaffApplicationUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1586,6 +1587,7 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 
 func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	role := c.Request.URL.Query().Get("role")
+	name := strings.ToLower(c.Request.URL.Query().Get("name"))
 
 	callAll := role == "all"
 	var (
@@ -1593,6 +1595,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		children = make([]response.ChildrenResponse, 0)
 		students = make([]response.StudentResponse, 0)
 		teachers = make([]response.TeacherResponse, 0)
+		staffs   = make([]response.StaffResponse, 0)
 	)
 
 	if callAll {
@@ -1600,6 +1603,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		children, _ := receiver.ChildUseCase.GetAll4Search(c)
 		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		staffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
 
 		userResponse := make([]response.UserResponse, 0, len(users))
 		for _, u := range users {
@@ -1636,6 +1640,64 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			})
 		}
 
+		staffsResponse := make([]response.StaffResponse, 0, len(staffs))
+		for _, s := range staffs {
+			staffsResponse = append(staffsResponse, response.StaffResponse{
+				StaffID:   s.StaffID,
+				StaffName: s.StaffName,
+			})
+		}
+
+		if name != "" {
+			filteredChildren := make([]response.ChildrenResponse, 0)
+			for _, child := range childrenResponse {
+				if strings.Contains(strings.ToLower(child.ChildName), name) {
+					filteredChildren = append(filteredChildren, child)
+				}
+			}
+			childrenResponse = filteredChildren
+		}
+
+		if name != "" {
+			filteredStudents := make([]response.StudentResponse, 0)
+			for _, s := range students {
+				if strings.Contains(strings.ToLower(s.StudentName), name) {
+					filteredStudents = append(filteredStudents, s)
+				}
+			}
+			studentResponse = filteredStudents
+		}
+
+		if name != "" {
+			filteredTeachers := make([]response.TeacherResponse, 0)
+			for _, t := range teachers {
+				if strings.Contains(strings.ToLower(t.TeacherName), name) {
+					filteredTeachers = append(filteredTeachers, t)
+				}
+			}
+			teachersResponse = filteredTeachers
+		}
+
+		if name != "" {
+			filteredUsers := make([]response.UserResponse, 0)
+			for _, u := range userResponse {
+				if strings.Contains(strings.ToLower(u.Nickname), name) {
+					filteredUsers = append(filteredUsers, u)
+				}
+			}
+			userResponse = filteredUsers
+		}
+
+		if name != "" {
+			filteredStaffs := make([]response.StaffResponse, 0)
+			for _, s := range staffsResponse {
+				if strings.Contains(strings.ToLower(s.StaffName), name) {
+					filteredStaffs = append(filteredStaffs, s)
+				}
+			}
+			staffsResponse = filteredStaffs
+		}
+
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
 			Data: response.SearchUserResponse{
@@ -1643,6 +1705,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				Children:  childrenResponse,
 				Students:  studentResponse,
 				Teadchers: teachersResponse,
+				Staffs:    staffsResponse,
 			},
 		})
 
@@ -1657,6 +1720,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				Children:  children,
 				Students:  students,
 				Teadchers: teachers,
+				Staffs:    staffs,
 			},
 		})
 
@@ -1678,6 +1742,15 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				ChildName: c.ChildName,
 			})
 		}
+		if name != "" {
+			filteredChildren := make([]response.ChildrenResponse, 0)
+			for _, child := range children {
+				if strings.Contains(strings.ToLower(child.ChildName), name) {
+					filteredChildren = append(filteredChildren, child)
+				}
+			}
+			children = filteredChildren
+		}
 
 	case value.RoleStudent:
 		//getbfrom student repo
@@ -1689,6 +1762,16 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			})
 		}
 
+		if name != "" {
+			filteredStudents := make([]response.StudentResponse, 0)
+			for _, s := range students {
+				if strings.Contains(strings.ToLower(s.StudentName), name) {
+					filteredStudents = append(filteredStudents, s)
+				}
+			}
+			students = filteredStudents
+		}
+
 	case value.RoleTeacher:
 		// get from teacher repo
 		teachersDataRepo, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
@@ -1697,6 +1780,16 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				TeacherID:   t.TeacherID,
 				TeacherName: t.TeacherName,
 			})
+		}
+
+		if name != "" {
+			filteredTeachers := make([]response.TeacherResponse, 0)
+			for _, t := range teachers {
+				if strings.Contains(strings.ToLower(t.TeacherName), name) {
+					filteredTeachers = append(filteredTeachers, t)
+				}
+			}
+			teachers = filteredTeachers
 		}
 	}
 
