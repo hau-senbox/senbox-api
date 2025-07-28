@@ -1731,7 +1731,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	roleSignUp := value.RoleSignUp(role)
 
 	switch roleSignUp {
-	case value.RoleStaff, value.RoleOrganization:
+	case value.RoleOrganization:
 		break
 	case value.RoleChild:
 		// get from childrepo
@@ -1791,6 +1791,26 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			}
 			teachers = filteredTeachers
 		}
+
+	case value.RoleStaff:
+		// get from staff repo
+		staffsDataRepo, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		for _, s := range staffsDataRepo {
+			staffs = append(staffs, response.StaffResponse{
+				StaffID:   s.StaffID,
+				StaffName: s.StaffName,
+			})
+		}
+
+		if name != "" {
+			filteredStaffs := make([]response.StaffResponse, 0)
+			for _, s := range staffs {
+				if strings.Contains(strings.ToLower(s.StaffName), name) {
+					filteredStaffs = append(filteredStaffs, s)
+				}
+			}
+			staffs = filteredStaffs
+		}
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
@@ -1800,6 +1820,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			Children:  children,
 			Students:  students,
 			Teadchers: teachers,
+			Staffs:    staffs,
 		},
 	})
 }
