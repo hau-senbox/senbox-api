@@ -34,6 +34,24 @@ func (uc *RoleOrgSignUpUseCase) GetAll() ([]entity.SRoleOrgSignUp, error) {
 	return uc.Repo.GetAll()
 }
 
+// Execute: Gọi UpdateOrCreate từ repository
+func (uc *RoleOrgSignUpUseCase) Get4App() ([]entity.SRoleOrgSignUp, error) {
+	roles, err := uc.Repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	// app không lay Staff
+	var filtered []entity.SRoleOrgSignUp
+	for _, role := range roles {
+		if role.RoleName != string(value.RoleStaff) {
+			filtered = append(filtered, role)
+		}
+	}
+
+	return filtered, nil
+}
+
 // GetByRoleName: Gọi GetByRoleName từ repository
 func (uc *RoleOrgSignUpUseCase) GetByRoleName(roleName string) (*entity.SRoleOrgSignUp, error) {
 	return uc.Repo.GetByRoleName(roleName)

@@ -1487,7 +1487,7 @@ func (receiver *UserEntityController) UploadAvatar(context *gin.Context) {
 }
 
 func (receiver *UserEntityController) GetAllRoleOrgSignUp(context *gin.Context) {
-	roles, err := receiver.RoleOrgSignUpUseCase.GetAll()
+	roles, err := receiver.RoleOrgSignUpUseCase.Get4App()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
