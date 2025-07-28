@@ -765,9 +765,10 @@ func (receiver *MenuController) UpdateIsShowStudentMenu(context *gin.Context) {
 	err := receiver.StudentMenuUseCase.UpdateIsShowByStudentAndComponentID(context, req)
 
 	if err != nil {
-		context.JSON(http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: err.Error(),
+		context.JSON(http.StatusBadRequest, response.SucceedResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    err.Error(),
 		})
 		return
 	}
@@ -791,9 +792,10 @@ func (receiver *MenuController) UpdateIsShowTeacherMenu(context *gin.Context) {
 	err := receiver.TeacherMenuUseCase.UpdateIsShow(context, req)
 
 	if err != nil {
-		context.JSON(http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: err.Error(),
+		context.JSON(http.StatusBadRequest, response.SucceedResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    err.Error(),
 		})
 		return
 	}

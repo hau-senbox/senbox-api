@@ -18,6 +18,7 @@ type CreateUserFormApplicationUseCase struct {
 	*repository.ComponentRepository
 	*repository.StudentMenuRepository
 	*repository.TeacherMenuRepository
+	*repository.StaffMenuRepository
 	*repository.OrganizationMenuTemplateRepository
 }
 
@@ -88,7 +89,59 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 		return err
 	}
 
-	return receiver.UserEntityRepository.CreateStaffFormApplication(req)
+	staffID := uuid.New()
+
+	err = receiver.UserEntityRepository.CreateStaffFormApplication(&entity.SStaffFormApplication{
+		ID:             staffID,
+		UserID:         uuid.MustParse(req.UserID),
+		OrganizationID: uuid.MustParse(req.OrganizationID),
+	})
+
+	if err == nil {
+		// Lấy role "teacher"
+		roleOrgStaff, _ := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStaff))
+		if roleOrgStaff == nil {
+			return nil // Không có role teacher, không cần tạo menu
+		}
+
+		sectionStaffID := roleOrgStaff.ID
+		organizationID := uuid.MustParse(req.OrganizationID)
+
+		// Lấy các Component ID từ bảng OrganizationMenuTemplate theo sectionID và organizationID
+		menuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetBySectionIDAndOrganizationID(sectionStaffID.String(), organizationID.String())
+		if err != nil {
+			return fmt.Errorf("error get OrganizationMenuTemplate teacher: %w", err)
+		}
+
+		for index, template := range menuTemplates {
+			componentID := template.ComponentID
+
+			// Lấy thông tin component
+			component, err := receiver.ComponentRepository.GetByID(componentID)
+			if err != nil {
+				log.Printf("WARNING: Không tìm thấy component %v: %v", componentID, err)
+				continue
+			}
+
+			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+
+			err = receiver.StaffMenuRepository.Create(&entity.StaffMenu{
+				ID:          uuid.New(),
+				StaffID:     staffID,
+				ComponentID: uuid.MustParse(componentID),
+				Order:       index,
+				IsShow:      true,
+				Visible:     visible,
+			})
+
+			if err != nil {
+				log.Printf("WARNING: Create StaffMenu fail %v: %v", componentID, err)
+				continue
+			}
+		}
+	}
+
+	return err
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
