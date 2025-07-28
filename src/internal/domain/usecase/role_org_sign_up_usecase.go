@@ -94,5 +94,13 @@ func (receiver *RoleOrgSignUpUseCase) Get4WebAdmin(ctx *gin.Context) ([]entity.S
 		roles = append(roles, *teacherRole)
 	}
 
+	staffRole, err := receiver.Repo.GetByRoleName(string(value.RoleStaff))
+	if err != nil {
+		return nil, err
+	}
+	if staffRole != nil {
+		roles = append(roles, *staffRole)
+	}
+
 	return roles, nil
 }
