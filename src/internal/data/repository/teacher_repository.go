@@ -77,6 +77,20 @@ func (r *TeacherApplicationRepository) GetByOrganizationID(orgID string) ([]enti
 	return apps, err
 }
 
+func (r *TeacherApplicationRepository) GetByOrganizationIDsApproved(orgIDStrs []string) ([]entity.STeacherFormApplication, error) {
+	var apps []entity.STeacherFormApplication
+	if len(orgIDStrs) == 0 {
+		return []entity.STeacherFormApplication{}, nil
+	}
+
+	err := r.DBConn.Where("organization_id IN ? AND status = ?", orgIDStrs, value.Approved).Find(&apps).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return apps, nil
+}
+
 // Get by list of OrganizationIDs
 func (r *TeacherApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
@@ -84,7 +98,7 @@ func (r *TeacherApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) 
 		return []entity.STeacherFormApplication{}, nil
 	}
 
-	err := r.DBConn.Where("organization_id IN ? AND status = ?", orgIDStrs, value.Approved).Find(&apps).Error
+	err := r.DBConn.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
 	if err != nil {
 		return nil, err
 	}

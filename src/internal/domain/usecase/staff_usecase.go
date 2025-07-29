@@ -151,7 +151,7 @@ func (uc *StaffApplicationUseCase) GetAllStaff4Search(ctx *gin.Context) ([]respo
 	}
 
 	// 4. Lấy student application theo các orgID
-	apps, err := uc.StaffAppRepo.GetByOrganizationIDs(orgIDs)
+	apps, err := uc.StaffAppRepo.GetByOrganizationIDsApproved(orgIDs)
 	if err != nil {
 		return nil, err
 	}

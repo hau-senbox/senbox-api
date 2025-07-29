@@ -8,18 +8,58 @@ import (
 )
 
 type ApplicationController struct {
-	StaffAppUsecase *usecase.StaffApplicationUseCase
+	StaffAppUsecase   *usecase.StaffApplicationUseCase
+	StudentAppUsecase *usecase.StudentApplicationUseCase
+	TeacherAppUsecase *usecase.TeacherApplicationUseCase
 }
 
-func NewApplicationController(staffAppUsecase *usecase.StaffApplicationUseCase) *ApplicationController {
+func NewApplicationController(
+	staffAppUsecase *usecase.StaffApplicationUseCase,
+	studentAppUsecase *usecase.StudentApplicationUseCase,
+	teacherAppUsecase *usecase.TeacherApplicationUseCase) *ApplicationController {
 	return &ApplicationController{
-		StaffAppUsecase: staffAppUsecase,
+		StaffAppUsecase:   staffAppUsecase,
+		StudentAppUsecase: studentAppUsecase,
+		TeacherAppUsecase: teacherAppUsecase,
 	}
 }
 
 // GetAllStaffApplications retrieves all staff applications
 func (ctrl *ApplicationController) GetAllStaffApplications(ctx *gin.Context) {
 	apps, err := ctrl.StaffAppUsecase.GetAllStaffApplications(ctx)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: apps,
+	})
+}
+
+// GetAllStudentApplications retrieves all staff applications
+func (ctrl *ApplicationController) GetAllStudentApplications(ctx *gin.Context) {
+	apps, err := ctrl.StudentAppUsecase.GetAllStudentApplications(ctx)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: apps,
+	})
+}
+
+func (ctrl *ApplicationController) GetAllTeacherApplications(ctx *gin.Context) {
+	apps, err := ctrl.TeacherAppUsecase.GetAllTeacherApplications(ctx)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -70,6 +110,106 @@ func (ctrl *ApplicationController) BlockStaffApplication(ctx *gin.Context) {
 	}
 
 	err := ctrl.StaffAppUsecase.BlockStaffApplication(applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: "Application blocked successfully",
+	})
+}
+
+func (ctrl *ApplicationController) ApproveStudentApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	err := ctrl.StudentAppUsecase.ApproveStudentApplication(applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: "Application approved successfully",
+	})
+}
+
+func (ctrl *ApplicationController) BlockStudentApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	err := ctrl.StudentAppUsecase.BlockStudentApplication(applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: "Application blocked successfully",
+	})
+}
+
+func (ctrl *ApplicationController) ApproveTeacherApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	err := ctrl.TeacherAppUsecase.ApproveTeacherApplication(applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: "Application approved successfully",
+	})
+}
+
+func (ctrl *ApplicationController) BlockTeacherApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	err := ctrl.TeacherAppUsecase.BlockTeacherApplication(applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,

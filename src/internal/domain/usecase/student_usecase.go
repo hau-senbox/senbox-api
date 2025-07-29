@@ -18,6 +18,7 @@ type StudentApplicationUseCase struct {
 	ComponentRepo        *repository.ComponentRepository
 	RoleOrgRepo          *repository.RoleOrgSignUpRepository
 	GetUserEntityUseCase *GetUserEntityUseCase
+	OrganizationRepo     *repository.OrganizationRepository
 }
 
 func NewStudentApplicationUseCase(
@@ -26,6 +27,7 @@ func NewStudentApplicationUseCase(
 	componentRepo *repository.ComponentRepository,
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
 	getUserEntityUseCase *GetUserEntityUseCase,
+	organizationRepo *repository.OrganizationRepository,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:       studentRepo,
@@ -33,6 +35,7 @@ func NewStudentApplicationUseCase(
 		ComponentRepo:        componentRepo,
 		RoleOrgRepo:          roleOrgRepo,
 		GetUserEntityUseCase: getUserEntityUseCase,
+		OrganizationRepo:     organizationRepo,
 	}
 }
 
@@ -197,7 +200,7 @@ func (uc *StudentApplicationUseCase) GetAllStudents4Search(ctx *gin.Context) ([]
 	}
 
 	// 4. Lấy student application theo các orgID
-	apps, err := uc.StudentAppRepo.GetByOrganizationIDs(orgIDs)
+	apps, err := uc.StudentAppRepo.GetByOrganizationIDsApproved(orgIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -214,4 +217,83 @@ func mapStudentAppsToResponse(apps []entity.SStudentFormApplication) []response.
 		})
 	}
 	return res
+}
+
+func (uc *StudentApplicationUseCase) ApproveStudentApplication(applicationID string) error {
+	// Tìm bản ghi hiện tại theo ID
+	application, err := uc.StudentAppRepo.GetByID(uuid.MustParse(applicationID))
+
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái thành Approved
+	application.Status = value.Approved
+
+	// Lưu lại
+	return uc.StudentAppRepo.Update(application)
+}
+
+func (uc *StudentApplicationUseCase) BlockStudentApplication(applicationID string) error {
+	// Tìm bản ghi hiện tại theo ID
+	application, err := uc.StudentAppRepo.GetByID(uuid.MustParse(applicationID))
+
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái thành Approved
+	application.Status = value.Blocked
+
+	// Lưu lại
+	return uc.StudentAppRepo.Update(application)
+}
+
+func (uc *StudentApplicationUseCase) GetAllStudentApplications(ctx *gin.Context) ([]response.StudentFormApplicationResponse, error) {
+	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var apps []entity.SStudentFormApplication
+
+	if user.IsSuperAdmin() {
+		// SuperAdmin → lấy tất cả đơn
+		apps, err = uc.StudentAppRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Nếu không phải SuperAdmin → lấy các orgIDs được quản lý
+		orgIDs, err := user.GetManagedOrganizationIDs(uc.StudentAppRepo.GetDB())
+		if err != nil {
+			return nil, err
+		}
+
+		// Lọc các đơn theo orgID
+		apps, err = uc.StudentAppRepo.GetByOrganizationIDs(orgIDs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Tạo response
+	res := make([]response.StudentFormApplicationResponse, 0, len(apps))
+	for _, a := range apps {
+		orgStaff, _ := uc.OrganizationRepo.GetByID(a.OrganizationID.String())
+
+		res = append(res, response.StudentFormApplicationResponse{
+			ID:               a.ID.String(),
+			StudentName:      a.StudentName,
+			Status:           a.Status.String(),
+			ApprovedAt:       a.ApprovedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt:        a.CreatedAt.Format("2006-01-02 15:04:05"),
+			UserID:           a.UserID.String(),
+			OrganizationID:   a.OrganizationID.String(),
+			OrganizationName: orgStaff.OrganizationName,
+		})
+	}
+
+	return res, nil
 }

@@ -97,7 +97,7 @@ func (r *StaffApplicationRepository) GetDB() *gorm.DB {
 	return r.DBConn
 }
 
-func (r *StaffApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.SStaffFormApplication, error) {
+func (r *StaffApplicationRepository) GetByOrganizationIDsApproved(orgIDStrs []string) ([]entity.SStaffFormApplication, error) {
 	var apps []entity.SStaffFormApplication
 
 	if len(orgIDStrs) == 0 {
@@ -105,6 +105,21 @@ func (r *StaffApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([
 	}
 
 	err := r.DBConn.Where("organization_id IN ? AND status = ?", orgIDStrs, value.Approved).Find(&apps).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return apps, nil
+}
+
+func (r *StaffApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.SStaffFormApplication, error) {
+	var apps []entity.SStaffFormApplication
+
+	if len(orgIDStrs) == 0 {
+		return []entity.SStaffFormApplication{}, nil
+	}
+
+	err := r.DBConn.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
 	if err != nil {
 		return nil, err
 	}

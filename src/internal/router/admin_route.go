@@ -392,6 +392,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		&repository.OrganizationRepository{DBConn: dbConn},
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -459,18 +460,49 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
+			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		StudentAppUsecase: &usecase.StudentApplicationUseCase{
+			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
+			StudentMenuRepo: &repository.StudentMenuRepository{DBConn: dbConn},
+			ComponentRepo:   &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:     &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		TeacherAppUsecase: &usecase.TeacherApplicationUseCase{
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			TeacherMenuRepo:      &repository.TeacherMenuRepository{DBConn: dbConn},
+			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
 
 	application := engine.Group("/v1/admin/application", secureMiddleware.Secured())
 	{
+		// student application
+		application.GET("/student", applicationController.GetAllStudentApplications)
+		application.PUT("/student/approve/:id", applicationController.ApproveStudentApplication)
+		application.PUT("/student/block/:id", applicationController.BlockStudentApplication)
+
+		// teacher application
+		application.GET("/teacher", applicationController.GetAllTeacherApplications)
+		application.PUT("/teacher/approve/:id", applicationController.ApproveTeacherApplication)
+		application.PUT("/teacher/block/:id", applicationController.BlockTeacherApplication)
+
+		// staff application
 		application.GET("/staff", applicationController.GetAllStaffApplications)
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
-		// application.GET("/staff/:id", applicationController.GetStaffApplicationByID)
-		// application.POST("/staff/approve", secureMiddleware.ValidateSuperAdminRole(), applicationController.ApproveStaffApplication)
-		// application.POST("/staff/reject", secureMiddleware.ValidateSuperAdminRole(), applicationController.RejectStaffApplication)
-		// application.POST("/staff/approve-batch", secureMiddleware.ValidateSuperAdminRole(), applicationController.ApproveStaffApplicationBatch)
-		// application.POST("/staff/reject-batch", secureMiddleware.ValidateSuperAdminRole(), applicationController.RejectStaffApplicationBatch)
+		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
 	}
 
 	executor := &TimeMachineSubscriber{

@@ -97,7 +97,7 @@ func (r *StudentApplicationRepository) GetDB() *gorm.DB {
 	return r.DB
 }
 
-func (r *StudentApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.SStudentFormApplication, error) {
+func (r *StudentApplicationRepository) GetByOrganizationIDsApproved(orgIDStrs []string) ([]entity.SStudentFormApplication, error) {
 	var apps []entity.SStudentFormApplication
 
 	if len(orgIDStrs) == 0 {
@@ -106,6 +106,23 @@ func (r *StudentApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) 
 
 	err := r.DB.
 		Where("organization_id IN ? AND status = ?", orgIDStrs, value.Approved).
+		Find(&apps).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return apps, nil
+}
+
+func (r *StudentApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) ([]entity.SStudentFormApplication, error) {
+	var apps []entity.SStudentFormApplication
+
+	if len(orgIDStrs) == 0 {
+		return []entity.SStudentFormApplication{}, nil
+	}
+
+	err := r.DB.
+		Where("organization_id IN ?", orgIDStrs).
 		Find(&apps).Error
 	if err != nil {
 		return nil, err

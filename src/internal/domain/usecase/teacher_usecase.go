@@ -20,6 +20,7 @@ type TeacherApplicationUseCase struct {
 	TeacherMenuRepo      *repository.TeacherMenuRepository
 	ComponentRepo        *repository.ComponentRepository
 	RoleOrgRepo          *repository.RoleOrgSignUpRepository
+	OrganizationRepo     *repository.OrganizationRepository
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -148,7 +149,7 @@ func (uc *TeacherApplicationUseCase) GetAllTeachers4Search(ctx *gin.Context) ([]
 	}
 
 	// Lấy teacher application theo các orgID
-	apps, err := uc.TeacherRepo.GetByOrganizationIDs(orgIDs)
+	apps, err := uc.TeacherRepo.GetByOrganizationIDsApproved(orgIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -237,4 +238,86 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		QrFormProfile: formProfile,
 		Menus:         menus,
 	}, nil
+}
+
+func (uc *TeacherApplicationUseCase) ApproveTeacherApplication(applicationID string) error {
+	// Tìm bản ghi hiện tại theo ID
+	application, err := uc.TeacherRepo.GetByID(uuid.MustParse(applicationID))
+
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái thành Approved
+	application.Status = value.Approved
+
+	// Lưu lại
+	return uc.TeacherRepo.Update(application)
+}
+
+func (uc *TeacherApplicationUseCase) BlockTeacherApplication(applicationID string) error {
+	// Tìm bản ghi hiện tại theo ID
+	application, err := uc.TeacherRepo.GetByID(uuid.MustParse(applicationID))
+
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái thành Approved
+	application.Status = value.Blocked
+
+	// Lưu lại
+	return uc.TeacherRepo.Update(application)
+}
+
+func (uc *TeacherApplicationUseCase) GetAllTeacherApplications(ctx *gin.Context) ([]response.TeacherFormApplicationResponse, error) {
+	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var apps []entity.STeacherFormApplication
+
+	if user.IsSuperAdmin() {
+		// SuperAdmin → lấy tất cả đơn
+		apps, err = uc.TeacherRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Nếu không phải SuperAdmin → lấy các orgIDs được quản lý
+		orgIDs, err := user.GetManagedOrganizationIDs(uc.TeacherRepo.GetDB())
+		if err != nil {
+			return nil, err
+		}
+
+		// Lọc các đơn theo orgID
+		apps, err = uc.TeacherRepo.GetByOrganizationIDs(orgIDs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Tạo response
+	res := make([]response.TeacherFormApplicationResponse, 0, len(apps))
+	for _, a := range apps {
+		userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+			ID: a.UserID.String(),
+		})
+		orgTeacher, _ := uc.OrganizationRepo.GetByID(a.OrganizationID.String())
+
+		res = append(res, response.TeacherFormApplicationResponse{
+			ID:               a.ID.String(),
+			TeacherName:      userEntity.Username,
+			Status:           a.Status.String(),
+			ApprovedAt:       a.ApprovedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt:        a.CreatedAt.Format("2006-01-02 15:04:05"),
+			UserID:           a.UserID.String(),
+			OrganizationID:   a.OrganizationID.String(),
+			OrganizationName: orgTeacher.OrganizationName,
+		})
+	}
+
+	return res, nil
 }
