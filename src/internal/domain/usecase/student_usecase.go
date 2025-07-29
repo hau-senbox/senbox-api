@@ -331,3 +331,27 @@ func (uc *StudentApplicationUseCase) GetAllStudentApplications(ctx *gin.Context)
 
 	return res, nil
 }
+
+func (uc *StudentApplicationUseCase) GetDetailStudentApplication(ctx *gin.Context, applicationID string) (*response.StudentFormApplicationResponse, error) {
+	// Tìm bản ghi hiện tại theo ID
+	application, err := uc.StudentAppRepo.GetByID(uuid.MustParse(applicationID))
+	if err != nil {
+		return nil, err
+	}
+
+	if application == nil {
+		return nil, errors.New("application not found")
+	}
+
+	orgStudent, _ := uc.OrganizationRepo.GetByID(application.OrganizationID.String())
+	return &response.StudentFormApplicationResponse{
+		ID:               application.ID.String(),
+		StudentName:      application.StudentName,
+		Status:           application.Status.String(),
+		ApprovedAt:       application.ApprovedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt:        application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:           application.UserID.String(),
+		OrganizationID:   application.OrganizationID.String(),
+		OrganizationName: orgStudent.OrganizationName,
+	}, nil
+}

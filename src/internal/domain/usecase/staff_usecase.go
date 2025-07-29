@@ -275,3 +275,29 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 		Menus:         menus,
 	}, nil
 }
+
+func (uc *StaffApplicationUseCase) GetDetailStaffApplication(ctx *gin.Context, applicationID string) (*response.StaffFormApplicationResponse, error) {
+	// Lấy thông tin application của staff
+	application, err := uc.StaffAppRepo.GetByID(uuid.MustParse(applicationID))
+	if err != nil {
+		return nil, err
+	}
+	if application == nil {
+		return nil, errors.New("staff application not found")
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: application.UserID.String(),
+	})
+	orgStaff, _ := uc.OrganizationRepo.GetByID(application.OrganizationID.String())
+	return &response.StaffFormApplicationResponse{
+		ID:               application.ID.String(),
+		StaffName:        userEntity.Username,
+		Status:           application.Status.String(),
+		ApprovedAt:       application.ApprovedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt:        application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:           application.UserID.String(),
+		OrganizationID:   application.OrganizationID.String(),
+		OrganizationName: orgStaff.OrganizationName,
+	}, nil
+}

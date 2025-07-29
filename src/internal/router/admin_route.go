@@ -460,7 +460,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
-			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
 		StudentAppUsecase: &usecase.StudentApplicationUseCase{
 			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
@@ -491,16 +492,19 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		// student application
 		application.GET("/student", applicationController.GetAllStudentApplications)
+		application.GET("/student/:id", applicationController.GetDetailStudentApplication)
 		application.PUT("/student/approve/:id", applicationController.ApproveStudentApplication)
 		application.PUT("/student/block/:id", applicationController.BlockStudentApplication)
 
 		// teacher application
 		application.GET("/teacher", applicationController.GetAllTeacherApplications)
+		application.GET("/teacher/:id", applicationController.GetDetailTeacherApplication)
 		application.PUT("/teacher/approve/:id", applicationController.ApproveTeacherApplication)
 		application.PUT("/teacher/block/:id", applicationController.BlockTeacherApplication)
 
 		// staff application
 		application.GET("/staff", applicationController.GetAllStaffApplications)
+		application.GET("/staff/:id", applicationController.GetDetailStaffApplication)
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
 	}

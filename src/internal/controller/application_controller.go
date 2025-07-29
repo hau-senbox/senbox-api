@@ -74,6 +74,81 @@ func (ctrl *ApplicationController) GetAllTeacherApplications(ctx *gin.Context) {
 	})
 }
 
+func (ctrl *ApplicationController) GetDetailStudentApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	app, err := ctrl.StudentAppUsecase.GetDetailStudentApplication(ctx, applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: app,
+	})
+}
+
+func (ctrl *ApplicationController) GetDetailTeacherApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	app, err := ctrl.TeacherAppUsecase.GetDetailTeacherApplication(ctx, applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: app,
+	})
+}
+
+func (ctrl *ApplicationController) GetDetailStaffApplication(ctx *gin.Context) {
+	applicationID := ctx.Param("id")
+	if applicationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Application ID is required",
+		})
+		return
+	}
+
+	app, err := ctrl.StaffAppUsecase.GetDetailStaffApplication(ctx, applicationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, response.SucceedResponse{
+		Code: 200,
+		Data: app,
+	})
+}
+
 func (ctrl *ApplicationController) ApproveStaffApplication(ctx *gin.Context) {
 	applicationID := ctx.Param("id")
 	if applicationID == "" {

@@ -354,3 +354,29 @@ func (uc *TeacherApplicationUseCase) GetAllTeacherApplications(ctx *gin.Context)
 
 	return res, nil
 }
+
+func (uc *TeacherApplicationUseCase) GetDetailTeacherApplication(ctx *gin.Context, applicationID string) (*response.TeacherFormApplicationResponse, error) {
+	// Lấy thông tin application của giáo viên
+	application, err := uc.TeacherRepo.GetByID(uuid.MustParse(applicationID))
+	if err != nil {
+		return nil, err
+	}
+	if application == nil {
+		return nil, errors.New("teacher application not found")
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: application.UserID.String(),
+	})
+	orgTeacher, _ := uc.OrganizationRepo.GetByID(application.OrganizationID.String())
+	return &response.TeacherFormApplicationResponse{
+		ID:               application.ID.String(),
+		TeacherName:      userEntity.Username,
+		Status:           application.Status.String(),
+		ApprovedAt:       application.ApprovedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt:        application.CreatedAt.Format("2006-01-02 15:04:05"),
+		UserID:           application.UserID.String(),
+		OrganizationID:   application.OrganizationID.String(),
+		OrganizationName: orgTeacher.OrganizationName,
+	}, nil
+}
