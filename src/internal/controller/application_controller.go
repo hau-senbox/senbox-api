@@ -84,7 +84,7 @@ func (ctrl *ApplicationController) ApproveStaffApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.StaffAppUsecase.ApproveStaffApplication(applicationID)
+	err := ctrl.StaffAppUsecase.ApproveStaffApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -109,7 +109,7 @@ func (ctrl *ApplicationController) BlockStaffApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.StaffAppUsecase.BlockStaffApplication(applicationID)
+	err := ctrl.StaffAppUsecase.BlockStaffApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -134,7 +134,7 @@ func (ctrl *ApplicationController) ApproveStudentApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.StudentAppUsecase.ApproveStudentApplication(applicationID)
+	err := ctrl.StudentAppUsecase.ApproveStudentApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -159,7 +159,7 @@ func (ctrl *ApplicationController) BlockStudentApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.StudentAppUsecase.BlockStudentApplication(applicationID)
+	err := ctrl.StudentAppUsecase.BlockStudentApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -184,7 +184,7 @@ func (ctrl *ApplicationController) ApproveTeacherApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.TeacherAppUsecase.ApproveTeacherApplication(applicationID)
+	err := ctrl.TeacherAppUsecase.ApproveTeacherApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,
@@ -209,7 +209,7 @@ func (ctrl *ApplicationController) BlockTeacherApplication(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.TeacherAppUsecase.BlockTeacherApplication(applicationID)
+	err := ctrl.TeacherAppUsecase.BlockTeacherApplication(ctx, applicationID)
 	if err != nil {
 		ctx.JSON(500, response.FailedResponse{
 			Code:  500,

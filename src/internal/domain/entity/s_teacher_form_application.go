@@ -13,6 +13,7 @@ type STeacherFormApplication struct {
 	UserID         uuid.UUID                   `gorm:"column:user_id;type:char(36);not null"`
 	OrganizationID uuid.UUID                   `gorm:"column:organization_id;type:char(36);not null"`
 	Status         value.FromApplicationStatus `gorm:"column:status;not null"`
+	IsAdminBlock   bool                        `gorm:"column:is_admin_block;default:false"`
 	ApprovedAt     time.Time                   `gorm:"column:approved_at;type:datetime"`
 	CreatedAt      time.Time                   `gorm:"default:CURRENT_TIMESTAMP;not null"`
 }

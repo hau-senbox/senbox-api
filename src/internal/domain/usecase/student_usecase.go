@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -219,7 +221,7 @@ func mapStudentAppsToResponse(apps []entity.SStudentFormApplication) []response.
 	return res
 }
 
-func (uc *StudentApplicationUseCase) ApproveStudentApplication(applicationID string) error {
+func (uc *StudentApplicationUseCase) ApproveStudentApplication(ctx *gin.Context, applicationID string) error {
 	// Tìm bản ghi hiện tại theo ID
 	application, err := uc.StudentAppRepo.GetByID(uuid.MustParse(applicationID))
 
@@ -227,19 +229,43 @@ func (uc *StudentApplicationUseCase) ApproveStudentApplication(applicationID str
 		return err
 	}
 
+	// Lấy thông tin người dùng hiện tại
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Nếu application bị block bởi admin → chỉ SuperAdmin mới có quyền duyệt
+	if application.IsAdminBlock && !user.IsSuperAdmin() {
+		return fmt.Errorf("only SuperAdmin can approve an admin-blocked application")
+	}
+
 	// Cập nhật trạng thái thành Approved
 	application.Status = value.Approved
+	application.ApprovedAt = time.Now()
+	application.IsAdminBlock = false // Reset block status when approving
 
 	// Lưu lại
 	return uc.StudentAppRepo.Update(application)
 }
 
-func (uc *StudentApplicationUseCase) BlockStudentApplication(applicationID string) error {
+func (uc *StudentApplicationUseCase) BlockStudentApplication(ctx *gin.Context, applicationID string) error {
 	// Tìm bản ghi hiện tại theo ID
 	application, err := uc.StudentAppRepo.GetByID(uuid.MustParse(applicationID))
 
 	if err != nil {
 		return err
+	}
+
+	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
+	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Nếu là SuperAdmin
+	if user.IsSuperAdmin() {
+		application.IsAdminBlock = true
 	}
 
 	// Cập nhật trạng thái thành Approved
