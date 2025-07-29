@@ -249,6 +249,10 @@ func (uc *TeacherApplicationUseCase) ApproveTeacherApplication(ctx *gin.Context,
 		return err
 	}
 
+	if application == nil {
+		return errors.New("application not found")
+	}
+
 	// Lấy thông tin người dùng hiện tại
 	user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
@@ -275,6 +279,10 @@ func (uc *TeacherApplicationUseCase) BlockTeacherApplication(ctx *gin.Context, a
 
 	if err != nil {
 		return err
+	}
+
+	if application == nil {
+		return errors.New("application not found")
 	}
 
 	// Lấy thông tin người dùng hiện tại (kèm Organizations, Roles)
