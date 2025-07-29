@@ -35,6 +35,8 @@ type GetMenuUseCase struct {
 	GetUserEntityUseCase               *GetUserEntityUseCase
 	TeacherMenuUseCase                 *TeacherMenuUseCase
 	TeacherRepository                  *repository.TeacherApplicationRepository
+	StaffMenuUsecase                   *StaffMenuUseCase
+	StaffApplicationRepo               *repository.StaffApplicationRepository
 	OrganizationMenuTemplateRepository *repository.OrganizationMenuTemplateRepository
 }
 
@@ -127,8 +129,8 @@ func (receiver *GetMenuUseCase) GetCommonMenuByUser(ctx *gin.Context) response.G
 
 	userID := ctx.GetString("user_id")
 	children, _ := receiver.ChildRepository.GetByParentID(userID)
-	students, _ := receiver.StudentAppRepo.GetByUserID(userID)
-	teachers, _ := receiver.TeacherRepository.GetByUserID(userID)
+	students, _ := receiver.StudentAppRepo.GetByUserIDApproved(userID)
+	teachers, _ := receiver.TeacherRepository.GetByUserIDApproved(userID)
 
 	// Child btn
 	if children != nil {
@@ -434,8 +436,9 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	var result []response.GetMenuSectionResponse
 	// Lay danh sach child, students, teacher by userId
 	children, _ := receiver.ChildRepository.GetByParentID(userID)
-	students, _ := receiver.StudentAppRepo.GetByUserID(userID)
-	teachers, _ := receiver.TeacherRepository.GetByUserID(userID)
+	students, _ := receiver.StudentAppRepo.GetByUserIDApproved(userID)
+	teachers, _ := receiver.TeacherRepository.GetByUserIDApproved(userID)
+	staffs, _ := receiver.StaffApplicationRepo.GetByUserIDApproved(userID)
 	// neu co child lay menu cua child
 	for _, child := range children {
 		childMenu, _ := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
@@ -460,6 +463,15 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 			SectionName: teacherMenu.TeacherName,
 			SectionID:   teacherMenu.TeacherID,
 			Components:  teacherMenu.Components,
+		})
+	}
+
+	for _, staff := range staffs {
+		staffMenu, _ := receiver.StaffMenuUsecase.GetByStaffID(staff.ID.String())
+		result = append(result, response.GetMenuSectionResponse{
+			SectionName: staffMenu.StaffName,
+			SectionID:   staffMenu.StaffID,
+			Components:  staffMenu.Components,
 		})
 	}
 

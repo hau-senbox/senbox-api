@@ -65,9 +65,9 @@ func (r *StudentApplicationRepository) Delete(id int64) error {
 }
 
 // Get by UserID
-func (r *StudentApplicationRepository) GetByUserID(userID string) ([]entity.SStudentFormApplication, error) {
+func (r *StudentApplicationRepository) GetByUserIDApproved(userID string) ([]entity.SStudentFormApplication, error) {
 	var apps []entity.SStudentFormApplication
-	err := r.DB.Where("user_id = ?", userID).Find(&apps).Error
+	err := r.DB.Where("user_id = ? AND status = ?", userID, value.Approved).Find(&apps).Error
 	return apps, err
 }
 

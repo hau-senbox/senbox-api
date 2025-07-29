@@ -64,9 +64,9 @@ func (r *TeacherApplicationRepository) Delete(id uuid.UUID) error {
 }
 
 // Get by UserID
-func (r *TeacherApplicationRepository) GetByUserID(userID string) ([]entity.STeacherFormApplication, error) {
+func (r *TeacherApplicationRepository) GetByUserIDApproved(userID string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
-	err := r.DBConn.Where("user_id = ?", userID).Find(&apps).Error
+	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).Find(&apps).Error
 	return apps, err
 }
 

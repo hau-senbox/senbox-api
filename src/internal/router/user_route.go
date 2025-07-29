@@ -208,7 +208,18 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
 				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 			},
-			TeacherRepository: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffMenuUsecase: &usecase.StaffMenuUseCase{
+				StaffMenuRepo:        &repository.StaffMenuRepository{DBConn: dbConn},
+				StaffAppRepo:         &repository.StaffApplicationRepository{DBConn: dbConn},
+				ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
+				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+				GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+					UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+					OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+				},
+			},
+			StaffApplicationRepo: &repository.StaffApplicationRepository{DBConn: dbConn},
+			TeacherRepository:    &repository.TeacherApplicationRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},

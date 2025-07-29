@@ -55,8 +55,8 @@ func (uc *TeacherApplicationUseCase) Delete(id uuid.UUID) error {
 }
 
 // Get by UserID
-func (uc *TeacherApplicationUseCase) GetByUserID(userID string) ([]entity.STeacherFormApplication, error) {
-	return uc.TeacherRepo.GetByUserID(userID)
+func (uc *TeacherApplicationUseCase) GetByUserIDApproved(userID string) ([]entity.STeacherFormApplication, error) {
+	return uc.TeacherRepo.GetByUserIDApproved(userID)
 }
 
 // Get by OrganizationID
