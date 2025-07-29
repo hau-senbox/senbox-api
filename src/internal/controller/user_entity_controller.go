@@ -3,6 +3,7 @@ package controller
 import (
 	"bufio"
 	"net/http"
+	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -1586,10 +1587,12 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 }
 
 func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
-	role := c.Request.URL.Query().Get("role")
-	name := strings.ToLower(c.Request.URL.Query().Get("name"))
+	role := c.Query("role")
+	name := strings.ToLower(c.Query("name"))
 
-	callAll := role == "all"
+	isAll := role == "all"
+
+	// Chuẩn bị cấu trúc response
 	var (
 		users    = make([]response.UserResponse, 0)
 		children = make([]response.ChildrenResponse, 0)
@@ -1598,16 +1601,17 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		staffs   = make([]response.StaffResponse, 0)
 	)
 
-	if callAll {
-		users, _ := receiver.GetAllUsers4Search(c)
-		children, _ := receiver.ChildUseCase.GetAll4Search(c)
-		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		staffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+	if isAll {
+		// Lấy tất cả
+		rawUsers, _ := receiver.GetAllUsers4Search(c)
+		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
+		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
 
-		userResponse := make([]response.UserResponse, 0, len(users))
-		for _, u := range users {
-			userResponse = append(userResponse, response.UserResponse{
+		// Map sang response
+		for _, u := range rawUsers {
+			users = append(users, response.UserResponse{
 				ID:        u.ID.String(),
 				Username:  u.Username,
 				Nickname:  u.Nickname,
@@ -1615,212 +1619,121 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				AvatarURL: u.AvatarURL,
 			})
 		}
-
-		childrenResponse := make([]response.ChildrenResponse, 0, len(children))
-		for _, c := range children {
-			childrenResponse = append(childrenResponse, response.ChildrenResponse{
-				ChildID:   c.ID.String(),
-				ChildName: c.ChildName,
-			})
-		}
-
-		studentResponse := make([]response.StudentResponse, 0, len(students))
-		for _, s := range students {
-			studentResponse = append(studentResponse, response.StudentResponse{
-				StudentID:   s.StudentID,
-				StudentName: s.StudentName,
-			})
-		}
-
-		teachersResponse := make([]response.TeacherResponse, 0, len(teachers))
-		for _, t := range teachers {
-			teachersResponse = append(teachersResponse, response.TeacherResponse{
-				TeacherID:   t.TeacherID,
-				TeacherName: t.TeacherName,
-			})
-		}
-
-		staffsResponse := make([]response.StaffResponse, 0, len(staffs))
-		for _, s := range staffs {
-			staffsResponse = append(staffsResponse, response.StaffResponse{
-				StaffID:   s.StaffID,
-				StaffName: s.StaffName,
-			})
-		}
-
-		if name != "" {
-			filteredChildren := make([]response.ChildrenResponse, 0)
-			for _, child := range childrenResponse {
-				if strings.Contains(strings.ToLower(child.ChildName), name) {
-					filteredChildren = append(filteredChildren, child)
-				}
-			}
-			childrenResponse = filteredChildren
-		}
-
-		if name != "" {
-			filteredStudents := make([]response.StudentResponse, 0)
-			for _, s := range students {
-				if strings.Contains(strings.ToLower(s.StudentName), name) {
-					filteredStudents = append(filteredStudents, s)
-				}
-			}
-			studentResponse = filteredStudents
-		}
-
-		if name != "" {
-			filteredTeachers := make([]response.TeacherResponse, 0)
-			for _, t := range teachers {
-				if strings.Contains(strings.ToLower(t.TeacherName), name) {
-					filteredTeachers = append(filteredTeachers, t)
-				}
-			}
-			teachersResponse = filteredTeachers
-		}
-
-		if name != "" {
-			filteredUsers := make([]response.UserResponse, 0)
-			for _, u := range userResponse {
-				if strings.Contains(strings.ToLower(u.Nickname), name) {
-					filteredUsers = append(filteredUsers, u)
-				}
-			}
-			userResponse = filteredUsers
-		}
-
-		if name != "" {
-			filteredStaffs := make([]response.StaffResponse, 0)
-			for _, s := range staffsResponse {
-				if strings.Contains(strings.ToLower(s.StaffName), name) {
-					filteredStaffs = append(filteredStaffs, s)
-				}
-			}
-			staffsResponse = filteredStaffs
-		}
-
-		c.JSON(http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: response.SearchUserResponse{
-				Users:     userResponse,
-				Children:  childrenResponse,
-				Students:  studentResponse,
-				Teadchers: teachersResponse,
-				Staffs:    staffsResponse,
-			},
-		})
-
-		return
-	}
-
-	if !value.IsValidRoleSignUp(role) {
-		c.JSON(http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: response.SearchUserResponse{
-				Users:     users,
-				Children:  children,
-				Students:  students,
-				Teadchers: teachers,
-				Staffs:    staffs,
-			},
-		})
-
-		return
-	}
-
-	// Nếu role hợp lệ, ép kiểu và xử lý từng trường hợp
-	roleSignUp := value.RoleSignUp(role)
-
-	switch roleSignUp {
-	case value.RoleOrganization:
-		break
-	case value.RoleChild:
-		// get from childrepo
-		childrenDataRepo, _ := receiver.ChildUseCase.GetAll4Search(c)
-		for _, c := range childrenDataRepo {
+		for _, c := range rawChildren {
 			children = append(children, response.ChildrenResponse{
 				ChildID:   c.ID.String(),
 				ChildName: c.ChildName,
 			})
 		}
-		if name != "" {
-			filteredChildren := make([]response.ChildrenResponse, 0)
-			for _, child := range children {
-				if strings.Contains(strings.ToLower(child.ChildName), name) {
-					filteredChildren = append(filteredChildren, child)
-				}
-			}
-			children = filteredChildren
-		}
-
-	case value.RoleStudent:
-		//getbfrom student repo
-		studentsDataRepo, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		for _, s := range studentsDataRepo {
+		for _, s := range rawStudents {
 			students = append(students, response.StudentResponse{
 				StudentID:   s.StudentID,
 				StudentName: s.StudentName,
 			})
 		}
-
-		if name != "" {
-			filteredStudents := make([]response.StudentResponse, 0)
-			for _, s := range students {
-				if strings.Contains(strings.ToLower(s.StudentName), name) {
-					filteredStudents = append(filteredStudents, s)
-				}
-			}
-			students = filteredStudents
-		}
-
-	case value.RoleTeacher:
-		// get from teacher repo
-		teachersDataRepo, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		for _, t := range teachersDataRepo {
+		for _, t := range rawTeachers {
 			teachers = append(teachers, response.TeacherResponse{
 				TeacherID:   t.TeacherID,
 				TeacherName: t.TeacherName,
 			})
 		}
-
-		if name != "" {
-			filteredTeachers := make([]response.TeacherResponse, 0)
-			for _, t := range teachers {
-				if strings.Contains(strings.ToLower(t.TeacherName), name) {
-					filteredTeachers = append(filteredTeachers, t)
-				}
-			}
-			teachers = filteredTeachers
-		}
-
-	case value.RoleStaff:
-		// get from staff repo
-		staffsDataRepo, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		for _, s := range staffsDataRepo {
+		for _, s := range rawStaffs {
 			staffs = append(staffs, response.StaffResponse{
 				StaffID:   s.StaffID,
 				StaffName: s.StaffName,
 			})
 		}
 
-		if name != "" {
-			filteredStaffs := make([]response.StaffResponse, 0)
-			for _, s := range staffs {
-				if strings.Contains(strings.ToLower(s.StaffName), name) {
-					filteredStaffs = append(filteredStaffs, s)
-				}
-			}
-			staffs = filteredStaffs
+		// Lọc theo name nếu có
+		users = helper.FilterUsersByName(users, name)
+		children = helper.FilterChildrenByName(children, name)
+		students = helper.FilterStudentByName(students, name)
+		teachers = helper.FilterTeacherByName(teachers, name)
+		staffs = helper.FilterStaffByName(staffs, name)
+
+		// Trả kết quả
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.SearchUserResponse{
+				Users:    users,
+				Children: children,
+				Students: students,
+				Teachers: teachers,
+				Staffs:   staffs,
+			},
+		})
+		return
+	}
+
+	// Nếu role không hợp lệ
+	if !value.IsValidRoleSignUp(role) {
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: response.SearchUserResponse{
+				Users:    users,
+				Children: children,
+				Students: students,
+				Teachers: teachers,
+				Staffs:   staffs,
+			},
+		})
+		return
+	}
+
+	// Xử lý từng role cụ thể
+	switch value.RoleSignUp(role) {
+	case value.RoleChild:
+		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
+		for _, c := range rawChildren {
+			children = append(children, response.ChildrenResponse{
+				ChildID:   c.ID.String(),
+				ChildName: c.ChildName,
+			})
 		}
+		children = helper.FilterChildrenByName(children, name)
+
+	case value.RoleStudent:
+		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		for _, s := range rawStudents {
+			students = append(students, response.StudentResponse{
+				StudentID:   s.StudentID,
+				StudentName: s.StudentName,
+			})
+		}
+		students = helper.FilterStudentByName(students, name)
+
+	case value.RoleTeacher:
+		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		for _, t := range rawTeachers {
+			teachers = append(teachers, response.TeacherResponse{
+				TeacherID:   t.TeacherID,
+				TeacherName: t.TeacherName,
+			})
+		}
+		teachers = helper.FilterTeacherByName(teachers, name)
+
+	case value.RoleStaff:
+		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		for _, s := range rawStaffs {
+			staffs = append(staffs, response.StaffResponse{
+				StaffID:   s.StaffID,
+				StaffName: s.StaffName,
+			})
+		}
+		staffs = helper.FilterStaffByName(staffs, name)
+
+	case value.RoleOrganization:
+		// Không xử lý gì
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.SearchUserResponse{
-			Users:     users,
-			Children:  children,
-			Students:  students,
-			Teadchers: teachers,
-			Staffs:    staffs,
+			Users:    users,
+			Children: children,
+			Students: students,
+			Teachers: teachers,
+			Staffs:   staffs,
 		},
 	})
 }

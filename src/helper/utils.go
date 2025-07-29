@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sort"
 	"strings"
 	"time"
 )
@@ -179,4 +181,77 @@ func FormatProfileLink(rawURL string, id string) string {
 		return strings.Join(parts, "/")
 	}
 	return rawURL
+}
+
+func FilterUsersByName(users []response.UserResponse, name string) []response.UserResponse {
+	name = strings.ToLower(name)
+	result := make([]response.UserResponse, 0)
+	for _, u := range users {
+		if strings.Contains(strings.ToLower(u.Nickname), name) {
+			result = append(result, u)
+			sort.Slice(result, func(i, j int) bool {
+				return strings.ToLower(result[i].Nickname) < strings.ToLower(result[j].Nickname)
+			})
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].Nickname) < strings.ToLower(result[j].Nickname)
+	})
+	return result
+}
+
+func FilterChildrenByName(users []response.ChildrenResponse, name string) []response.ChildrenResponse {
+	name = strings.ToLower(name)
+	result := make([]response.ChildrenResponse, 0)
+	for _, u := range users {
+		if strings.Contains(strings.ToLower(u.ChildName), name) {
+			result = append(result, u)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].ChildName) < strings.ToLower(result[j].ChildName)
+	})
+	return result
+}
+
+func FilterStudentByName(users []response.StudentResponse, name string) []response.StudentResponse {
+	name = strings.ToLower(name)
+	result := make([]response.StudentResponse, 0)
+	for _, u := range users {
+		if strings.Contains(strings.ToLower(u.StudentName), name) {
+			result = append(result, u)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].StudentName) < strings.ToLower(result[j].StudentName)
+	})
+	return result
+}
+
+func FilterTeacherByName(users []response.TeacherResponse, name string) []response.TeacherResponse {
+	name = strings.ToLower(name)
+	result := make([]response.TeacherResponse, 0)
+	for _, u := range users {
+		if strings.Contains(strings.ToLower(u.TeacherName), name) {
+			result = append(result, u)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].TeacherName) < strings.ToLower(result[j].TeacherName)
+	})
+	return result
+}
+
+func FilterStaffByName(users []response.StaffResponse, name string) []response.StaffResponse {
+	name = strings.ToLower(name)
+	result := make([]response.StaffResponse, 0)
+	for _, u := range users {
+		if strings.Contains(strings.ToLower(u.StaffName), name) {
+			result = append(result, u)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].StaffName) < strings.ToLower(result[j].StaffName)
+	})
+	return result
 }

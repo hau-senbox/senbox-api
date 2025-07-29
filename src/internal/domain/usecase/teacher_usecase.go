@@ -131,7 +131,7 @@ func (uc *TeacherApplicationUseCase) GetAllTeachers4Search(ctx *gin.Context) ([]
 
 	// Nếu là SuperAdmin → trả về tất cả
 	if user.IsSuperAdmin() {
-		apps, err := uc.TeacherRepo.GetAll()
+		apps, err := uc.TeacherRepo.GetApprovedAll()
 		if err != nil {
 			return nil, err
 		}

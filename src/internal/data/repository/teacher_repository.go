@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -42,6 +43,16 @@ func (r *TeacherApplicationRepository) GetAll() ([]entity.STeacherFormApplicatio
 	return apps, err
 }
 
+func (r *TeacherApplicationRepository) GetApprovedAll() ([]entity.STeacherFormApplication, error) {
+	var apps []entity.STeacherFormApplication
+
+	err := r.DBConn.
+		Where("status = ?", value.Approved).
+		Find(&apps).Error
+
+	return apps, err
+}
+
 // Update application
 func (r *TeacherApplicationRepository) Update(app *entity.STeacherFormApplication) error {
 	return r.DBConn.Save(app).Error
@@ -73,7 +84,7 @@ func (r *TeacherApplicationRepository) GetByOrganizationIDs(orgIDStrs []string) 
 		return []entity.STeacherFormApplication{}, nil
 	}
 
-	err := r.DBConn.Where("organization_id IN ?", orgIDStrs).Find(&apps).Error
+	err := r.DBConn.Where("organization_id IN ? AND status = ?", orgIDStrs, value.Approved).Find(&apps).Error
 	if err != nil {
 		return nil, err
 	}

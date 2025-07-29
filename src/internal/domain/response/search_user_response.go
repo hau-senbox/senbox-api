@@ -1,11 +1,11 @@
 package response
 
 type SearchUserResponse struct {
-	Users     []UserResponse     `json:"users"`
-	Children  []ChildrenResponse `json:"children"`
-	Students  []StudentResponse  `json:"students"`
-	Teadchers []TeacherResponse  `json:"teachers"`
-	Staffs    []StaffResponse    `json:"staffs"`
+	Users    []UserResponse     `json:"users"`
+	Children []ChildrenResponse `json:"children"`
+	Students []StudentResponse  `json:"students"`
+	Teachers []TeacherResponse  `json:"teachers"`
+	Staffs   []StaffResponse    `json:"staffs"`
 }
 
 type UserResponse struct {
@@ -18,20 +18,20 @@ type UserResponse struct {
 
 type ChildrenResponse struct {
 	ChildID   string `json:"id"`
-	ChildName string `json:"username"`
+	ChildName string `json:"nickname"`
 }
 
 type StudentResponse struct {
 	StudentID   string `json:"id"`
-	StudentName string `json:"username"`
+	StudentName string `json:"nickname"`
 }
 
 type TeacherResponse struct {
 	TeacherID   string `json:"id"`
-	TeacherName string `json:"username"`
+	TeacherName string `json:"nickname"`
 }
 
 type StaffResponse struct {
 	StaffID   string `json:"id"`
-	StaffName string `json:"username"`
+	StaffName string `json:"nickname"`
 }

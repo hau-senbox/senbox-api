@@ -180,7 +180,7 @@ func (uc *StudentApplicationUseCase) GetAllStudents4Search(ctx *gin.Context) ([]
 
 	// Nếu là SuperAdmin → trả về tất cả
 	if user.IsSuperAdmin() {
-		apps, err := uc.StudentAppRepo.GetAll()
+		apps, err := uc.StudentAppRepo.GetApprovedAll()
 		if err != nil {
 			return nil, err
 		}

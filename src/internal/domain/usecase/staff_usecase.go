@@ -134,7 +134,7 @@ func (uc *StaffApplicationUseCase) GetAllStaff4Search(ctx *gin.Context) ([]respo
 
 	// Nếu là SuperAdmin → trả về tất cả
 	if user.IsSuperAdmin() {
-		apps, err := uc.StaffAppRepo.GetAll()
+		apps, err := uc.StaffAppRepo.GetApprovedAll()
 		if err != nil {
 			return nil, err
 		}
