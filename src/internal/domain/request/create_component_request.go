@@ -17,4 +17,5 @@ type CreateMenuComponentRequest struct {
 	Key       string     `json:"key" binding:"required" default:""`
 	Value     string     `json:"value" binding:"required"`
 	Order     int        `json:"order" binding:"required"`
+	IsShow    bool       `json:"is_show"`
 }

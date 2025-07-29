@@ -375,11 +375,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
+		menu.POST("/section/student", menuController.UploadStudentMenu)
 		menu.DELETE("/section/:id", menuController.DeleteSectionMenu)
 		menu.GET("/child/:id", menuController.GetChildMenuByChildID)
 		menu.PUT("/child", menuController.UpdateIsShowChildMenu)
 		menu.PUT("/student", menuController.UpdateIsShowStudentMenu)
 		menu.PUT("/teacher", menuController.UpdateIsShowTeacherMenu)
+
 	}
 
 	// user

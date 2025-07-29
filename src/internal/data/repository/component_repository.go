@@ -281,6 +281,13 @@ func (r *ComponentRepository) CreateWithTx(tx *gorm.DB, component *components.Co
 	return tx.Create(component).Error
 }
 
+func (r *ComponentRepository) Create(component *components.Component) error {
+	if component.ID == uuid.Nil {
+		component.ID = uuid.New()
+	}
+	return r.DBConn.Create(component).Error
+}
+
 func (receiver *ComponentRepository) GetByIDs(componentIDs []uuid.UUID) ([]components.Component, error) {
 	var components []components.Component
 

@@ -6,6 +6,7 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 
@@ -188,17 +189,33 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 
 			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 
+			// → Tạo mới một Component từ thông tin đã lấy
+			newComponent := &components.Component{
+				ID:        uuid.New(),
+				Name:      component.Name,
+				Type:      component.Type,
+				Key:       component.Key,
+				SectionID: component.SectionID,
+				Value:     component.Value,
+			}
+
+			err = receiver.ComponentRepository.Create(newComponent)
+			if err != nil {
+				log.Printf("WARNING: Create new component faile: %v", err)
+				continue
+			}
+
 			err = receiver.StudentMenuRepository.Create(&entity.StudentMenu{
 				ID:          uuid.New(),
 				StudentID:   studentID,
-				ComponentID: uuid.MustParse(componentID),
+				ComponentID: newComponent.ID,
 				Order:       index,
 				IsShow:      true,
 				Visible:     visible,
 			})
 
 			if err != nil {
-				log.Printf("WARNING: Create StudentMenu fail %v: %v", componentID, err)
+				log.Printf("Create StudentMenu fail %v: %v", componentID, err)
 				continue
 			}
 		}

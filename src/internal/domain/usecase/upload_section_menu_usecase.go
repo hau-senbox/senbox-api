@@ -67,7 +67,7 @@ func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componen
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) createStudentMenus(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, visible bool, order int, studentIDs []uuid.UUID, sectionID uuid.UUID) error {
+func (receiver *UploadSectionMenuUseCase) createStudentsMenusTemplate(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, sectionID uuid.UUID) error {
 	// dau tien kiem tra user dang la quan ly cua organization nao
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
@@ -114,46 +114,6 @@ func (receiver *UploadSectionMenuUseCase) createStudentMenus(ctx *gin.Context, t
 		}
 	}
 
-	// neu co thi chi lay student cua organization do
-	for _, studentID := range studentIDs {
-		// kiểm tra student có thuộc organization được quản lý không
-		isValid, err := receiver.StudentApplicationRepository.CheckStudentBelongsToOrganizations(tx, studentID, orgIDsManaged)
-		if err != nil {
-			log.Errorf("Error CheckStudentBelongsToOrganizations: %v", err)
-			return errors.New("student does not belong to any organization")
-		}
-		if !isValid {
-			continue // bỏ qua student này
-		}
-
-		existing, err := receiver.StudentMenuRepository.GetByStudentIDAndComponentID(tx, studentID, componentID)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("get student menu fail: %w", err)
-		}
-
-		if existing != nil {
-			// Đã tồn tại → update
-			existing.Order = order
-			existing.Visible = visible
-			existing.IsShow = true
-			if err := receiver.StudentMenuRepository.UpdateWithTx(tx, existing); err != nil {
-				return fmt.Errorf("update student menu fail: %w", err)
-			}
-		} else {
-			// Không tồn tại → create
-			menu := &entity.StudentMenu{
-				ID:          uuid.New(),
-				StudentID:   studentID,
-				ComponentID: componentID,
-				Order:       order,
-				IsShow:      true,
-				Visible:     visible,
-			}
-			if err := receiver.StudentMenuRepository.CreateWithTx(tx, menu); err != nil {
-				return fmt.Errorf("create student menu fail: %w", err)
-			}
-		}
-	}
 	return nil
 }
 
@@ -357,13 +317,13 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 		return fmt.Errorf("Get list child_id failed: %w", err)
 	}
 
-	studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
-	if err != nil {
-		logrus.Error("Rollback by error getting student_ids:", err)
-		tx.Rollback()
-		rolledBack = true
-		return fmt.Errorf("Get list student_id failed: %w", err)
-	}
+	// studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
+	// if err != nil {
+	// 	logrus.Error("Rollback by error getting student_ids:", err)
+	// 	tx.Rollback()
+	// 	rolledBack = true
+	// 	return fmt.Errorf("Get list student_id failed: %w", err)
+	// }
 
 	teacherIDs, err := receiver.TeacherApplicationRepository.GetAllTeacherIDs()
 	if err != nil {
@@ -483,7 +443,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 					return err
 				}
 			case string(value.RoleStudent):
-				if err := receiver.createStudentMenus(ctx, tx, componentID, visible, idx, studentIDs, roleOrg.ID); err != nil {
+				if err := receiver.createStudentsMenusTemplate(ctx, tx, componentID, roleOrg.ID); err != nil {
 					logrus.Error("rollback by error create student menu:", err)
 					tx.Rollback()
 					rolledBack = true
@@ -549,5 +509,161 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization menu template failed: %w", err)
 	}
 
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, req request.UploadSectionMenuStudentRequest) error {
+	tx := receiver.MenuRepository.DBConn.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
+	}
+
+	rolledBack := false
+	defer func() {
+		if !rolledBack {
+			tx.Rollback()
+		}
+	}()
+
+	// 2. Upsert component và tạo menu theo role
+	for _, item := range req {
+
+		// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
+		if len(item.DeleteComponentIDs) > 0 {
+			for _, compID := range item.DeleteComponentIDs {
+				if err := receiver.DeleteSectionMenu(compID); err != nil {
+					logrus.Error("Rollback by error deleting section menu:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("Delete section menu failed: %w", err)
+				}
+			}
+		}
+
+		roleOrgStudent, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
+		if err != nil {
+			logrus.Error("Rollback by error getting role by role name:", err)
+			tx.Rollback()
+			rolledBack = true
+			return fmt.Errorf("Get role by role name failed: %w", err)
+		}
+
+		if roleOrgStudent == nil {
+			continue
+		}
+
+		for idx, compReq := range item.Components {
+			var componentID uuid.UUID
+
+			component := &components.Component{
+				Name:      compReq.Name,
+				Type:      components.ComponentType(compReq.Type),
+				Key:       compReq.Key,
+				Value:     datatypes.JSON([]byte(compReq.Value)),
+				SectionID: roleOrgStudent.ID.String(),
+			}
+
+			if compReq.ID != nil && *compReq.ID != uuid.Nil {
+				// Nếu có ID truyền lên
+				componentID = *compReq.ID
+				component.ID = componentID
+
+				existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					logrus.Error("rollback by error query component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("query component fail: %w", err)
+				}
+
+				if existingComponent != nil {
+					// Update
+					if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+						logrus.Error("rollback by error update component:", err)
+						tx.Rollback()
+						rolledBack = true
+						return fmt.Errorf("update component fail: %w", err)
+					}
+				} else {
+					// ID có nhưng không tồn tại
+					component.ID = uuid.New()
+					componentID = component.ID
+					if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+						logrus.Error("rollback by error create component (from non-existent id):", err)
+						tx.Rollback()
+						rolledBack = true
+						return fmt.Errorf("create component fail: %w", err)
+					}
+				}
+			} else {
+				// Tạo mới
+				component.ID = uuid.New()
+				componentID = component.ID
+				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error create component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("create component fail: %w", err)
+				}
+			}
+
+			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
+			if err != nil {
+				logrus.Error("rollback by error get visible:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("get visible fail: %w", err)
+			}
+
+			if err := receiver.createStudentMenu(tx, componentID, visible, idx, uuid.MustParse(item.StudentID), compReq.IsShow); err != nil {
+				logrus.Error("rollback by error create student menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return err
+			}
+		}
+
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		logrus.Error("Error committing transaction:", err)
+		rolledBack = true
+		return fmt.Errorf("commit transaction failed: %s", err.Error())
+	}
+
+	rolledBack = true
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createStudentMenu(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, studentID uuid.UUID, isShow bool) error {
+
+	// neu co thi chi lay student cua organization do
+	existing, err := receiver.StudentMenuRepository.GetByStudentIDAndComponentID(tx, studentID, componentID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get student menu fail: %w", err)
+	}
+
+	if existing != nil {
+		// Đã tồn tại → update
+		existing.Order = order
+		existing.Visible = visible
+		existing.IsShow = isShow
+		if err := receiver.StudentMenuRepository.UpdateWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update student menu fail: %w", err)
+		}
+	} else {
+		// Không tồn tại → create
+		menu := &entity.StudentMenu{
+			ID:          uuid.New(),
+			StudentID:   studentID,
+			ComponentID: componentID,
+			Order:       order,
+			IsShow:      isShow,
+			Visible:     visible,
+		}
+		if err := receiver.StudentMenuRepository.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("create student menu fail: %w", err)
+		}
+	}
 	return nil
 }
