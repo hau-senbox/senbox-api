@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
@@ -53,36 +52,22 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 	return receiver.MenuRepository.GetOrgMenu(org.ID.String())
 }
 
-func (receiver *GetMenuUseCase) GetStudentMenu(userID string) ([]menu.UserMenu, error) {
-	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+func (receiver *GetMenuUseCase) GetStudentMenu(studentID string) (response.GetStudentMenuResponse, error) {
+	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(studentID)
 	if err != nil {
-		return nil, err
+		return response.GetStudentMenuResponse{}, fmt.Errorf("failed to get student menu: %w", err)
 	}
 
-	present := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
-		return role.Role == entity.Student
-	})
-	if !present {
-		return nil, errors.New("failed to get student menu")
-	}
-
-	return receiver.MenuRepository.GetUserMenu(user.ID.String())
+	return studentMenu, nil
 }
 
-func (receiver *GetMenuUseCase) GetTeacherMenu(userID string) ([]menu.UserMenu, error) {
-	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+func (receiver *GetMenuUseCase) GetTeacherMenu(teacherID string) (response.GetTeacherMenuResponse, error) {
+	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacherID)
 	if err != nil {
-		return nil, err
+		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
 	}
 
-	present := lo.ContainsBy(user.Roles, func(role entity.SRole) bool {
-		return role.Role == entity.Teacher
-	})
-	if !present {
-		return nil, errors.New("failed to get teacher menu")
-	}
-
-	return receiver.MenuRepository.GetUserMenu(user.ID.String())
+	return teacherMenu, nil
 }
 
 func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, error) {

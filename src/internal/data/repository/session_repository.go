@@ -3,11 +3,12 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"github.com/tiendc/gofn"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 	"strings"
 	"time"
+
+	"github.com/tiendc/gofn"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -21,6 +22,13 @@ type SessionRepository struct {
 
 func (receiver *SessionRepository) VerifyPassword(password string, hashed string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
+}
+
+func (receiver *SessionRepository) VerifyPassword4LoginQr(qrPassword string, hashedPassword string) error {
+	if qrPassword != hashedPassword {
+		return errors.New("invalid QR password")
+	}
+	return nil
 }
 
 func (receiver *SessionRepository) VerifyRoleAccesses(user *entity.SUserEntity, roles ...string) bool {

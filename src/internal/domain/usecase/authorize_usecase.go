@@ -68,7 +68,7 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 		}
 	}
 
-	err = receiver.VerifyPassword(req.Password, user.Password)
+	err = receiver.VerifyPassword4LoginQr(req.Password, user.Password)
 	if err != nil {
 		return nil, errors.New("invalid username or password")
 	}

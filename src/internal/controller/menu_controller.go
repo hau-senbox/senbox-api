@@ -182,8 +182,8 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
-	userID := context.Param("id")
-	if userID == "" {
+	studentID := context.Param("id")
+	if studentID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Error: "id is required",
@@ -193,7 +193,7 @@ func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetStudentMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetStudentMenu(studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -203,31 +203,15 @@ func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
 		return
 	}
 
-	res := make([]componentResponse, 0)
-	for _, m := range menus {
-		res = append(res, componentResponse{
-			ID:    m.Component.ID.String(),
-			Name:  m.Component.Name,
-			Type:  m.Component.Type.String(),
-			Key:   m.Component.Key,
-			Value: string(m.Component.Value),
-			Order: m.Order,
-		})
-	}
-
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Order < res[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: menus,
 	})
 }
 
 func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
-	userID := context.Param("id")
-	if userID == "" {
+	teacherID := context.Param("id")
+	if teacherID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Error: "id is required",
@@ -237,7 +221,7 @@ func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetTeacherMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetTeacherMenu(teacherID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -247,25 +231,9 @@ func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
 		return
 	}
 
-	res := make([]componentResponse, 0)
-	for _, m := range menus {
-		res = append(res, componentResponse{
-			ID:    m.Component.ID.String(),
-			Name:  m.Component.Name,
-			Type:  m.Component.Type.String(),
-			Key:   m.Component.Key,
-			Value: string(m.Component.Value),
-			Order: m.Order,
-		})
-	}
-
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Order < res[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: menus,
 	})
 }
 
