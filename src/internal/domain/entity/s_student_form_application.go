@@ -13,6 +13,7 @@ type SStudentFormApplication struct {
 	StudentName    string                      `gorm:"column:student_name;type:varchar(255);not null"`
 	ChildID        uuid.UUID                   `gorm:"column:child_id;type:char(36);not null"`
 	UserID         uuid.UUID                   `gorm:"column:user_id;type:char(36);not null"`
+	CustomID       string                      `gorm:"column:custom_id;type:varchar(255);not null;default:''"`
 	OrganizationID uuid.UUID                   `gorm:"column:organization_id;type:char(36);not null"`
 	Status         value.FromApplicationStatus `gorm:"column:status;not null"`
 	IsAdminBlock   bool                        `gorm:"column:is_admin_block;default:false"`

@@ -1922,3 +1922,31 @@ func (receiver *UserEntityController) UpdateStudent4App(context *gin.Context) {
 	})
 
 }
+
+func (receiver *UserEntityController) AddCustomID2Student(context *gin.Context) {
+	var req request.AddCustomId2StudentRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	err := receiver.StudentApplicationUseCase.AddCustomID(req)
+	if err != nil {
+		context.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "Updated",
+	})
+
+}

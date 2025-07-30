@@ -118,6 +118,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		AvatarURL:     "",
 		QrFormProfile: formProfile,
 		Menus:         menus,
+		CustomID:      studentApp.CustomID,
 	}, nil
 }
 
@@ -154,6 +155,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
 		StudentName: studentApp.StudentName,
+		CustomID:    studentApp.CustomID,
 	}, nil
 }
 
@@ -354,4 +356,21 @@ func (uc *StudentApplicationUseCase) GetDetailStudentApplication(ctx *gin.Contex
 		OrganizationID:   application.OrganizationID.String(),
 		OrganizationName: orgStudent.OrganizationName,
 	}, nil
+}
+
+func (uc *StudentApplicationUseCase) AddCustomID(req request.AddCustomId2StudentRequest) error {
+	// Tìm bản ghi hiện tại theo ID
+	student := &entity.SStudentFormApplication{}
+	err := uc.StudentAppRepo.DB.
+		Where("id = ?", req.StudentID).
+		First(student).Error
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật tên
+	student.CustomID = req.CustomID
+
+	// Lưu lại
+	return uc.StudentAppRepo.Update(student)
 }
