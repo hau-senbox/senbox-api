@@ -277,22 +277,6 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 		return fmt.Errorf("Get list child_id failed: %w", err)
 	}
 
-	// studentIDs, err := receiver.StudentApplicationRepository.GetAllStudentIDs()
-	// if err != nil {
-	// 	logrus.Error("Rollback by error getting student_ids:", err)
-	// 	tx.Rollback()
-	// 	rolledBack = true
-	// 	return fmt.Errorf("Get list student_id failed: %w", err)
-	// }
-
-	// teacherIDs, err := receiver.TeacherApplicationRepository.GetAllTeacherIDs()
-	// if err != nil {
-	// 	logrus.Error("Rollback by error getting teacher_ids:", err)
-	// 	tx.Rollback()
-	// 	rolledBack = true
-	// 	return fmt.Errorf("Get list teacher_id failed: %w", err)
-	// }
-
 	staffIDs, err := receiver.StaffApplicationRepository.GetAllStaffIDs()
 	if err != nil {
 		logrus.Error("Rollback by error getting staff_ids:", err)
