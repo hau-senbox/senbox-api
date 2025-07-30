@@ -608,17 +608,6 @@ func (receiver *MenuController) UploadStudentMenu(context *gin.Context) {
 		return
 	}
 
-	// Validate DeleteComponentIDs for each item
-	for _, item := range req {
-		if err := item.Validate(); err != nil {
-			context.JSON(http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: err.Error(),
-			})
-			return
-		}
-	}
-
 	err := receiver.UploadSectionMenuUseCase.UploadStudentMenu(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -642,17 +631,6 @@ func (receiver *MenuController) UploadTeacherMenu(context *gin.Context) {
 			Error: err.Error(),
 		})
 		return
-	}
-
-	// Validate DeleteComponentIDs for each item
-	for _, item := range req {
-		if err := item.Validate(); err != nil {
-			context.JSON(http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: err.Error(),
-			})
-			return
-		}
 	}
 
 	err := receiver.UploadSectionMenuUseCase.UploadTeacherMenu(context, req)

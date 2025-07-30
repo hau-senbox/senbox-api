@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type UploadSectionMenuTeacherRequest []TeacherSectionMenuItem
+type UploadSectionMenuTeacherRequest TeacherSectionMenuItem
 
 type TeacherSectionMenuItem struct {
 	TeacherID          string                       `json:"teacher_id"`

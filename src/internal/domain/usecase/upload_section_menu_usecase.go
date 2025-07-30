@@ -470,103 +470,95 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, re
 	}()
 
 	// 2. Upsert component và tạo menu theo role
-	for _, item := range req {
-
-		// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
-		if len(item.DeleteComponentIDs) > 0 {
-			for _, compID := range item.DeleteComponentIDs {
-				if err := receiver.DeleteSectionMenu(compID); err != nil {
-					logrus.Error("Rollback by error deleting section menu:", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("Delete section menu failed: %w", err)
-				}
+	// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
+	if len(req.DeleteComponentIDs) > 0 {
+		for _, compID := range req.DeleteComponentIDs {
+			if err := receiver.DeleteSectionMenu(compID); err != nil {
+				logrus.Error("Rollback by error deleting section menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("Delete section menu failed: %w", err)
 			}
 		}
+	}
 
-		roleOrgStudent, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
-		if err != nil {
-			logrus.Error("Rollback by error getting role by role name:", err)
-			tx.Rollback()
-			rolledBack = true
-			return fmt.Errorf("Get role by role name failed: %w", err)
+	roleOrgStudent, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
+	if err != nil {
+		logrus.Error("Rollback by error getting role by role name:", err)
+		tx.Rollback()
+		rolledBack = true
+		return fmt.Errorf("Get role by role name failed: %w", err)
+	}
+
+	for idx, compReq := range req.Components {
+		var componentID uuid.UUID
+
+		component := &components.Component{
+			Name:      compReq.Name,
+			Type:      components.ComponentType(compReq.Type),
+			Key:       compReq.Key,
+			Value:     datatypes.JSON([]byte(compReq.Value)),
+			SectionID: roleOrgStudent.ID.String(),
 		}
 
-		if roleOrgStudent == nil {
-			continue
-		}
+		if compReq.ID != nil && *compReq.ID != uuid.Nil {
+			// Nếu có ID truyền lên
+			componentID = *compReq.ID
+			component.ID = componentID
 
-		for idx, compReq := range item.Components {
-			var componentID uuid.UUID
-
-			component := &components.Component{
-				Name:      compReq.Name,
-				Type:      components.ComponentType(compReq.Type),
-				Key:       compReq.Key,
-				Value:     datatypes.JSON([]byte(compReq.Value)),
-				SectionID: roleOrgStudent.ID.String(),
+			existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("query component fail: %w", err)
 			}
 
-			if compReq.ID != nil && *compReq.ID != uuid.Nil {
-				// Nếu có ID truyền lên
-				componentID = *compReq.ID
-				component.ID = componentID
-
-				existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
-				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-					logrus.Error("rollback by error query component:", err)
+			if existingComponent != nil {
+				// Update
+				if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
 					tx.Rollback()
 					rolledBack = true
-					return fmt.Errorf("query component fail: %w", err)
-				}
-
-				if existingComponent != nil {
-					// Update
-					if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
-						logrus.Error("rollback by error update component:", err)
-						tx.Rollback()
-						rolledBack = true
-						return fmt.Errorf("update component fail: %w", err)
-					}
-				} else {
-					// ID có nhưng không tồn tại
-					component.ID = uuid.New()
-					componentID = component.ID
-					if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-						logrus.Error("rollback by error create component (from non-existent id):", err)
-						tx.Rollback()
-						rolledBack = true
-						return fmt.Errorf("create component fail: %w", err)
-					}
+					return fmt.Errorf("update component fail: %w", err)
 				}
 			} else {
-				// Tạo mới
+				// ID có nhưng không tồn tại
 				component.ID = uuid.New()
 				componentID = component.ID
 				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component:", err)
+					logrus.Error("rollback by error create component (from non-existent id):", err)
 					tx.Rollback()
 					rolledBack = true
 					return fmt.Errorf("create component fail: %w", err)
 				}
 			}
-
-			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
-			if err != nil {
-				logrus.Error("rollback by error get visible:", err)
+		} else {
+			// Tạo mới
+			component.ID = uuid.New()
+			componentID = component.ID
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
 				tx.Rollback()
 				rolledBack = true
-				return fmt.Errorf("get visible fail: %w", err)
-			}
-
-			if err := receiver.createStudentMenu(tx, componentID, visible, idx, uuid.MustParse(item.StudentID), compReq.IsShow); err != nil {
-				logrus.Error("rollback by error create student menu:", err)
-				tx.Rollback()
-				rolledBack = true
-				return err
+				return fmt.Errorf("create component fail: %w", err)
 			}
 		}
 
+		visible, err := helper.GetVisibleToValueComponent(compReq.Value)
+		if err != nil {
+			logrus.Error("rollback by error get visible:", err)
+			tx.Rollback()
+			rolledBack = true
+			return fmt.Errorf("get visible fail: %w", err)
+		}
+
+		if err := receiver.createStudentMenu(tx, componentID, visible, idx, uuid.MustParse(req.StudentID), compReq.IsShow); err != nil {
+			logrus.Error("rollback by error create student menu:", err)
+			tx.Rollback()
+			rolledBack = true
+			return err
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
@@ -626,103 +618,95 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenu(ctx *gin.Context, re
 	}()
 
 	// 2. Upsert component và tạo menu theo role
-	for _, item := range req {
-
-		// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
-		if len(item.DeleteComponentIDs) > 0 {
-			for _, compID := range item.DeleteComponentIDs {
-				if err := receiver.DeleteSectionMenu(compID); err != nil {
-					logrus.Error("Rollback by error deleting section menu:", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("Delete section menu failed: %w", err)
-				}
+	// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
+	if len(req.DeleteComponentIDs) > 0 {
+		for _, compID := range req.DeleteComponentIDs {
+			if err := receiver.DeleteSectionMenu(compID); err != nil {
+				logrus.Error("Rollback by error deleting section menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("Delete section menu failed: %w", err)
 			}
 		}
+	}
 
-		roleOrgTeacher, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
-		if err != nil {
-			logrus.Error("Rollback by error getting role by role name:", err)
-			tx.Rollback()
-			rolledBack = true
-			return fmt.Errorf("Get role by role name failed: %w", err)
+	roleOrgTeacher, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+	if err != nil {
+		logrus.Error("Rollback by error getting role by role name:", err)
+		tx.Rollback()
+		rolledBack = true
+		return fmt.Errorf("Get role by role name failed: %w", err)
+	}
+
+	for idx, compReq := range req.Components {
+		var componentID uuid.UUID
+
+		component := &components.Component{
+			Name:      compReq.Name,
+			Type:      components.ComponentType(compReq.Type),
+			Key:       compReq.Key,
+			Value:     datatypes.JSON([]byte(compReq.Value)),
+			SectionID: roleOrgTeacher.ID.String(),
 		}
 
-		if roleOrgTeacher == nil {
-			continue
-		}
+		if compReq.ID != nil && *compReq.ID != uuid.Nil {
+			// Nếu có ID truyền lên
+			componentID = *compReq.ID
+			component.ID = componentID
 
-		for idx, compReq := range item.Components {
-			var componentID uuid.UUID
-
-			component := &components.Component{
-				Name:      compReq.Name,
-				Type:      components.ComponentType(compReq.Type),
-				Key:       compReq.Key,
-				Value:     datatypes.JSON([]byte(compReq.Value)),
-				SectionID: roleOrgTeacher.ID.String(),
+			existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("query component fail: %w", err)
 			}
 
-			if compReq.ID != nil && *compReq.ID != uuid.Nil {
-				// Nếu có ID truyền lên
-				componentID = *compReq.ID
-				component.ID = componentID
-
-				existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
-				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-					logrus.Error("rollback by error query component:", err)
+			if existingComponent != nil {
+				// Update
+				if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
 					tx.Rollback()
 					rolledBack = true
-					return fmt.Errorf("query component fail: %w", err)
-				}
-
-				if existingComponent != nil {
-					// Update
-					if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
-						logrus.Error("rollback by error update component:", err)
-						tx.Rollback()
-						rolledBack = true
-						return fmt.Errorf("update component fail: %w", err)
-					}
-				} else {
-					// ID có nhưng không tồn tại
-					component.ID = uuid.New()
-					componentID = component.ID
-					if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-						logrus.Error("rollback by error create component (from non-existent id):", err)
-						tx.Rollback()
-						rolledBack = true
-						return fmt.Errorf("create component fail: %w", err)
-					}
+					return fmt.Errorf("update component fail: %w", err)
 				}
 			} else {
-				// Tạo mới
+				// ID có nhưng không tồn tại
 				component.ID = uuid.New()
 				componentID = component.ID
 				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component:", err)
+					logrus.Error("rollback by error create component (from non-existent id):", err)
 					tx.Rollback()
 					rolledBack = true
 					return fmt.Errorf("create component fail: %w", err)
 				}
 			}
-
-			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
-			if err != nil {
-				logrus.Error("rollback by error get visible:", err)
+		} else {
+			// Tạo mới
+			component.ID = uuid.New()
+			componentID = component.ID
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
 				tx.Rollback()
 				rolledBack = true
-				return fmt.Errorf("get visible fail: %w", err)
-			}
-
-			if err := receiver.createTeacherMenu(tx, componentID, visible, idx, uuid.MustParse(item.TeacherID), compReq.IsShow); err != nil {
-				logrus.Error("rollback by error create student menu:", err)
-				tx.Rollback()
-				rolledBack = true
-				return err
+				return fmt.Errorf("create component fail: %w", err)
 			}
 		}
 
+		visible, err := helper.GetVisibleToValueComponent(compReq.Value)
+		if err != nil {
+			logrus.Error("rollback by error get visible:", err)
+			tx.Rollback()
+			rolledBack = true
+			return fmt.Errorf("get visible fail: %w", err)
+		}
+
+		if err := receiver.createTeacherMenu(tx, componentID, visible, idx, uuid.MustParse(req.TeacherID), compReq.IsShow); err != nil {
+			logrus.Error("rollback by error create student menu:", err)
+			tx.Rollback()
+			rolledBack = true
+			return err
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
