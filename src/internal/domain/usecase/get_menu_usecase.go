@@ -61,8 +61,11 @@ func (receiver *GetMenuUseCase) GetStudentMenu(studentID string) (response.GetSt
 	return studentMenu, nil
 }
 
-func (receiver *GetMenuUseCase) GetTeacherMenu(teacherID string) (response.GetTeacherMenuResponse, error) {
-	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacherID)
+func (receiver *GetMenuUseCase) GetTeacherMenu(userID string) (response.GetTeacherMenuResponse, error) {
+
+	teacher, _ := receiver.TeacherRepository.GetByUserID(userID)
+
+	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String())
 	if err != nil {
 		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
 	}

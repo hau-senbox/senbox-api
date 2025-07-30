@@ -210,8 +210,8 @@ func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
-	teacherID := context.Param("id")
-	if teacherID == "" {
+	userID := context.Param("id")
+	if userID == "" {
 		context.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Error: "id is required",
@@ -221,7 +221,7 @@ func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetTeacherMenu(teacherID)
+	menus, err := receiver.GetMenuUseCase.GetTeacherMenu(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

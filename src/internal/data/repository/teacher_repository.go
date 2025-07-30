@@ -70,6 +70,13 @@ func (r *TeacherApplicationRepository) GetByUserIDApproved(userID string) ([]ent
 	return apps, err
 }
 
+// Get by UserID
+func (r *TeacherApplicationRepository) GetByUserID(userID string) (entity.STeacherFormApplication, error) {
+	var app entity.STeacherFormApplication
+	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).First(&app).Error
+	return app, err
+}
+
 // Get by OrganizationID
 func (r *TeacherApplicationRepository) GetByOrganizationID(orgID string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
