@@ -634,6 +634,42 @@ func (receiver *MenuController) UploadStudentMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) UploadTeacherMenu(context *gin.Context) {
+	var req request.UploadSectionMenuTeacherRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Validate DeleteComponentIDs for each item
+	for _, item := range req {
+		if err := item.Validate(); err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: err.Error(),
+			})
+			return
+		}
+	}
+
+	err := receiver.UploadSectionMenuUseCase.UploadTeacherMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
+
 func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
 
 	menus, err := receiver.GetMenuUseCase.GetSectionMenu(context)
