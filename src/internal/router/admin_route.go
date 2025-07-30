@@ -511,6 +511,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		application.GET("/staff/:id", applicationController.GetDetailStaffApplication)
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
+
+		application.POST("/sync-test", applicationController.SyncDataDemo)
 	}
 
 	executor := &TimeMachineSubscriber{

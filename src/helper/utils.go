@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
@@ -11,6 +13,9 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 func Slugify(s string) string {
@@ -254,4 +259,33 @@ func FilterStaffByName(users []response.StaffResponse, name string) []response.S
 		return strings.ToLower(result[i].StaffName) < strings.ToLower(result[j].StaffName)
 	})
 	return result
+}
+
+func WriteDataToSheet(spreadsheetID, sheetName, startCell string, values [][]interface{}, credentialsPath string) error {
+	ctx := context.Background()
+
+	// Load credentials and create Sheets service
+	srv, err := sheets.NewService(ctx, option.WithCredentialsFile(credentialsPath))
+	if err != nil {
+		return fmt.Errorf("failed to create Sheets client: %w", err)
+	}
+
+	writeRange := fmt.Sprintf("%s!%s", sheetName, startCell)
+
+	// Create value range payload
+	vr := &sheets.ValueRange{
+		Range:  writeRange,
+		Values: values,
+	}
+
+	// Perform update (write)
+	_, err = srv.Spreadsheets.Values.Update(spreadsheetID, writeRange, vr).
+		ValueInputOption("USER_ENTERED").
+		Do()
+	if err != nil {
+		return fmt.Errorf("failed to write data to sheet: %w", err)
+	}
+
+	log.Printf("Successfully wrote data to %s", writeRange)
+	return nil
 }

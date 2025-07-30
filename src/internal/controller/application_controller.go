@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"sen-global-api/helper"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 
@@ -297,4 +298,27 @@ func (ctrl *ApplicationController) BlockTeacherApplication(ctx *gin.Context) {
 		Code: 200,
 		Data: "Application blocked successfully",
 	})
+}
+
+func (ctrl *ApplicationController) SyncDataDemo(ctx *gin.Context) {
+	// Cấu hình dữ liệu và thông tin sheet
+	spreadsheetID := "1YGe4AWf1qt8f5K5iJ6OGcZDGLGnGWWE0JmDZIr0jrn8"
+	sheetName := "Sheet1"
+	startCell := "A1"
+	credentialsPath := "credentials/uploader_service_account.json"
+
+	values := [][]interface{}{
+		{"ID", "Name", "Score"},
+		{"1", "Alice", 90},
+		{"2", "Bob", 85},
+		{"3", "Charlie", 92},
+	}
+
+	err := helper.WriteDataToSheet(spreadsheetID, sheetName, startCell, values, credentialsPath)
+	if err != nil {
+		ctx.JSON(500, gin.H{"message": "Failed to sync data", "error": err.Error()})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"message": "Data synced successfully to Google Sheet"})
 }
