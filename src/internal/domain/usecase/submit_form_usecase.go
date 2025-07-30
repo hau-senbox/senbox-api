@@ -92,6 +92,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		UserID:         req.UserID,
 		SubmissionData: submissionData,
 		OpenedAt:       req.OpenedAt,
+		CustomID:       req.CustomID,
 	}
 	submissionID, err := receiver.CreateSubmission(createSubmissionParams)
 	if err != nil {

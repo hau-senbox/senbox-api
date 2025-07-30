@@ -28,4 +28,5 @@ type SSubmission struct {
 	OpenedAt       time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	CreatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CustomID       string         `gorm:"column:custom_id;type:varchar(255);not null;default:''"`
 }

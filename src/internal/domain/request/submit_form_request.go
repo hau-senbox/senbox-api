@@ -8,4 +8,5 @@ type SubmitFormRequest struct {
 	OpenedAt time.Time `json:"opened_at" binding:"required"`
 	UserID   string
 	ChildID  *string `json:"child_id"`
+	CustomID *string `json:"custom_id"`
 }
