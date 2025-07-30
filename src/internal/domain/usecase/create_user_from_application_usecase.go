@@ -50,32 +50,47 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 		// Lấy các Component ID từ bảng OrganizationMenuTemplate theo sectionID và organizationID
 		menuTemplates, err := receiver.OrganizationMenuTemplateRepository.GetBySectionIDAndOrganizationID(sectionTeacherID.String(), organizationID.String())
 		if err != nil {
-			return fmt.Errorf("Error get OrganizationMenuTemplate teacher: %w", err)
+			return fmt.Errorf("error get OrganizationMenuTemplate teacher: %w", err)
 		}
 
 		for index, template := range menuTemplates {
-			componentID := template.ComponentID
 
 			// Lấy thông tin component
-			component, err := receiver.ComponentRepository.GetByID(componentID)
+			component, err := receiver.ComponentRepository.GetByID(template.ComponentID)
 			if err != nil {
-				log.Printf("WARNING: Không tìm thấy component %v: %v", componentID, err)
+				log.Printf("Not found component %v: %v", template.ComponentID, err)
 				continue
 			}
 
 			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 
+			// → Tạo mới một Component từ thông tin đã lấy
+			newComponent := &components.Component{
+				ID:        uuid.New(),
+				Name:      component.Name,
+				Type:      component.Type,
+				Key:       component.Key,
+				SectionID: component.SectionID,
+				Value:     component.Value,
+			}
+
+			err = receiver.ComponentRepository.Create(newComponent)
+			if err != nil {
+				log.Printf("Create new component fail: %v", err)
+				continue
+			}
+
 			err = receiver.TeacherMenuRepository.Create(&entity.TeacherMenu{
 				ID:          uuid.New(),
 				TeacherID:   teacherID,
-				ComponentID: uuid.MustParse(componentID),
+				ComponentID: newComponent.ID,
 				Order:       index,
 				IsShow:      true,
 				Visible:     visible,
 			})
 
 			if err != nil {
-				log.Printf("WARNING: Create TeacherMenu fail %v: %v", componentID, err)
+				log.Printf("Create TeacherMenu fail %v: %v", newComponent.ID.String(), err)
 				continue
 			}
 		}
@@ -178,10 +193,9 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 		}
 
 		for index, template := range menuTemplates {
-			componentID := template.ComponentID
 
 			// Lấy thông tin component để tính Visible (nếu cần)
-			component, err := receiver.ComponentRepository.GetByID(componentID)
+			component, err := receiver.ComponentRepository.GetByID(template.ComponentID)
 			if err != nil {
 				// log.Warnf("Không tìm thấy component %v: %v", componentID, err)
 				continue
@@ -201,7 +215,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 
 			err = receiver.ComponentRepository.Create(newComponent)
 			if err != nil {
-				log.Printf("WARNING: Create new component faile: %v", err)
+				log.Printf("Create new component fail: %v", err)
 				continue
 			}
 
@@ -215,7 +229,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 			})
 
 			if err != nil {
-				log.Printf("Create StudentMenu fail %v: %v", componentID, err)
+				log.Printf("Create StudentMenu fail %v: %v", newComponent.ID.String(), err)
 				continue
 			}
 		}
