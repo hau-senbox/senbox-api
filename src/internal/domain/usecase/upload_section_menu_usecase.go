@@ -117,7 +117,7 @@ func (receiver *UploadSectionMenuUseCase) createStudentsMenusTemplate(ctx *gin.C
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) createTeacherMenus(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, visible bool, order int, teacherIDs []uuid.UUID, sectionID uuid.UUID) error {
+func (receiver *UploadSectionMenuUseCase) createTeachersMenusTemplate(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, sectionID uuid.UUID) error {
 	// Lấy user hiện tại và danh sách organization được quản lý
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
@@ -163,46 +163,6 @@ func (receiver *UploadSectionMenuUseCase) createTeacherMenus(ctx *gin.Context, t
 		}
 	}
 
-	// Lặp qua danh sách teacherIDs
-	for _, teacherID := range teacherIDs {
-		// Kiểm tra giáo viên có thuộc tổ chức được quản lý hay không
-		isValid, err := receiver.TeacherApplicationRepository.CheckTeacherBelongsToOrganizations(tx, teacherID, orgIDsManaged)
-		if err != nil {
-			log.Printf("Error CheckTeacherBelongsToOrganizations: %v", err)
-			return errors.New("teacher does not belong to any organization")
-		}
-		if !isValid {
-			continue
-		}
-
-		existing, err := receiver.TeacherMenuRepository.GetByTeacherIDAndComponentID(tx, teacherID, componentID)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("get teacher menu fail: %w", err)
-		}
-
-		if existing != nil {
-			// Đã tồn tại → update
-			existing.Order = order
-			existing.Visible = visible
-			existing.IsShow = true
-			if err := receiver.TeacherMenuRepository.UpdateWithTx(tx, existing); err != nil {
-				return fmt.Errorf("update teacher menu fail: %w", err)
-			}
-		} else {
-			// Không tồn tại → tạo mới
-			menu := &entity.TeacherMenu{
-				ID:          uuid.New(),
-				TeacherID:   teacherID,
-				ComponentID: componentID,
-				Order:       order,
-				IsShow:      true,
-				Visible:     visible,
-			}
-			if err := receiver.TeacherMenuRepository.CreateWithTx(tx, menu); err != nil {
-				return fmt.Errorf("create teacher menu fail: %w", err)
-			}
-		}
-	}
 	return nil
 }
 
@@ -325,13 +285,13 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 	// 	return fmt.Errorf("Get list student_id failed: %w", err)
 	// }
 
-	teacherIDs, err := receiver.TeacherApplicationRepository.GetAllTeacherIDs()
-	if err != nil {
-		logrus.Error("Rollback by error getting teacher_ids:", err)
-		tx.Rollback()
-		rolledBack = true
-		return fmt.Errorf("Get list teacher_id failed: %w", err)
-	}
+	// teacherIDs, err := receiver.TeacherApplicationRepository.GetAllTeacherIDs()
+	// if err != nil {
+	// 	logrus.Error("Rollback by error getting teacher_ids:", err)
+	// 	tx.Rollback()
+	// 	rolledBack = true
+	// 	return fmt.Errorf("Get list teacher_id failed: %w", err)
+	// }
 
 	staffIDs, err := receiver.StaffApplicationRepository.GetAllStaffIDs()
 	if err != nil {
@@ -450,7 +410,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 					return err
 				}
 			case string(value.RoleTeacher):
-				if err := receiver.createTeacherMenus(ctx, tx, componentID, visible, idx, teacherIDs, roleOrg.ID); err != nil {
+				if err := receiver.createTeachersMenusTemplate(ctx, tx, componentID, roleOrg.ID); err != nil {
 					logrus.Error("rollback by error create teacher menu:", err)
 					tx.Rollback()
 					rolledBack = true
