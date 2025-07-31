@@ -306,6 +306,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
 			Roles:        &roleListResponse,
 			Devices:      &deviceListResponse,
+			CustomID:     userEntity.CustomID,
 		},
 	})
 }

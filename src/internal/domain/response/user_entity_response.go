@@ -15,6 +15,7 @@ type UserEntityResponse struct {
 	BlockedAt    string   `json:"blocked_at"`
 	Organization []string `json:"organizations"`
 	CreatedAt    string   `json:"created_at"`
+	CustomID     string   `json:"custom_id"`
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
