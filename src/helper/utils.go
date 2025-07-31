@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -264,28 +266,250 @@ func FilterStaffByName(users []response.StaffResponse, name string) []response.S
 func WriteDataToSheet(spreadsheetID, sheetName, startCell string, values [][]interface{}, credentialsPath string) error {
 	ctx := context.Background()
 
-	// Load credentials and create Sheets service
-	srv, err := sheets.NewService(ctx, option.WithCredentialsFile(credentialsPath))
+	b, err := os.ReadFile(credentialsPath)
 	if err != nil {
-		return fmt.Errorf("failed to create Sheets client: %w", err)
+		return fmt.Errorf("failed to read credentials file: %w", err)
+	}
+
+	config, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
+	if err != nil {
+		return fmt.Errorf("failed to parse credentials: %w", err)
+	}
+
+	client := config.Client(ctx)
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("failed to create sheets service: %w", err)
 	}
 
 	writeRange := fmt.Sprintf("%s!%s", sheetName, startCell)
+	valueRange := &sheets.ValueRange{Values: values}
 
-	// Create value range payload
-	vr := &sheets.ValueRange{
-		Range:  writeRange,
-		Values: values,
-	}
-
-	// Perform update (write)
-	_, err = srv.Spreadsheets.Values.Update(spreadsheetID, writeRange, vr).
+	_, err = srv.Spreadsheets.Values.Update(spreadsheetID, writeRange, valueRange).
 		ValueInputOption("USER_ENTERED").
 		Do()
+
 	if err != nil {
 		return fmt.Errorf("failed to write data to sheet: %w", err)
 	}
 
-	log.Printf("Successfully wrote data to %s", writeRange)
+	return nil
+}
+
+func AppendDataToSheet(spreadsheetID, sheetName string, values [][]interface{}, credentialsPath string) error {
+	ctx := context.Background()
+
+	b, err := os.ReadFile(credentialsPath)
+	if err != nil {
+		return fmt.Errorf("unable to read credentials file: %v", err)
+	}
+
+	config, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
+	if err != nil {
+		return fmt.Errorf("unable to parse credentials file to config: %v", err)
+	}
+
+	client := config.Client(ctx)
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("unable to retrieve Sheets client: %v", err)
+	}
+
+	valueRange := &sheets.ValueRange{
+		Values: values,
+	}
+
+	// Gọi append, dùng USER_ENTERED để tự động xử lý định dạng (ví dụ ngày/tháng)
+	_, err = srv.Spreadsheets.Values.Append(spreadsheetID, sheetName, valueRange).
+		ValueInputOption("USER_ENTERED").
+		InsertDataOption("INSERT_ROWS").
+		Do()
+
+	if err != nil {
+		return fmt.Errorf("unable to append data to sheet: %v", err)
+	}
+
+	return nil
+}
+
+func GetSheetHeaders(spreadsheetID, sheetName, credentialsPath string) ([]string, error) {
+	ctx := context.Background()
+
+	b, err := os.ReadFile(credentialsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
+	if err != nil {
+		return nil, err
+	}
+
+	client := config.Client(ctx)
+
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, err
+	}
+
+	readRange := fmt.Sprintf("%s!1:1", sheetName)
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	headers := []string{}
+	if len(resp.Values) > 0 {
+		for _, cell := range resp.Values[0] {
+			if str, ok := cell.(string); ok {
+				headers = append(headers, str)
+			} else {
+				headers = append(headers, "")
+			}
+		}
+	}
+
+	return headers, nil
+}
+
+func SheetHasData(spreadsheetID, sheetName, credentialsPath string) (bool, error) {
+	ctx := context.Background()
+
+	b, err := os.ReadFile(credentialsPath)
+	if err != nil {
+		return false, err
+	}
+
+	config, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
+	if err != nil {
+		return false, err
+	}
+
+	client := config.Client(ctx)
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, sheetName+"!A1:A2").Do()
+	if err != nil {
+		return false, err
+	}
+
+	// Nếu có ít nhất 1 dòng dữ liệu
+	return len(resp.Values) > 0, nil
+}
+
+func GetSheetHeader(spreadsheetID, sheetName, credentialsPath string) ([]string, error) {
+	srv, err := GetSheetsService(credentialsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	readRange := sheetName + "!1:1"
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.Values) == 0 {
+		return []string{}, nil
+	}
+
+	headers := make([]string, len(resp.Values[0]))
+	for i, val := range resp.Values[0] {
+		headers[i] = fmt.Sprintf("%v", val)
+	}
+	return headers, nil
+}
+
+func GetSheetsService(credentialsPath string) (*sheets.Service, error) {
+	ctx := context.Background()
+
+	// Đọc file credentials JSON
+	b, err := ioutil.ReadFile(credentialsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse credentials
+	config, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tạo sheets service
+	srv, err := sheets.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx)))
+	if err != nil {
+		return nil, err
+	}
+
+	return srv, nil
+}
+
+func AppendFormAnswersToSheet(srv *sheets.Service, spreadsheetID, sheetName string, baseInfo []interface{}, answers map[string]string) error {
+	readRange := fmt.Sprintf("%s!1:1", sheetName)
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	if err != nil {
+		return fmt.Errorf("failed to read header row: %w", err)
+	}
+
+	// Bước 1: Khởi tạo header (dòng đầu tiên)
+	var headers []interface{}
+	headerIndex := make(map[string]int)
+
+	if len(resp.Values) == 0 || len(resp.Values[0]) == 0 {
+		// Sheet chưa có header → thêm mặc định 5 cột đầu
+		defaultHeaders := []string{"SubmittedAt", "StudentID", "UserID", "FormCode", "FormName"}
+		for _, h := range defaultHeaders {
+			headers = append(headers, h)
+		}
+	} else {
+		headers = resp.Values[0]
+	}
+
+	// Bước 2: Mapping header index
+	for idx, h := range headers {
+		headerIndex[fmt.Sprintf("%v", h)] = idx
+	}
+
+	// Bước 3: Mở rộng header nếu có câu hỏi mới
+	for q := range answers {
+		if _, ok := headerIndex[q]; !ok {
+			headers = append(headers, q)
+			headerIndex[q] = len(headers) - 1
+		}
+	}
+
+	// Bước 4: Nếu có thêm header mới hoặc chưa có dòng đầu tiên → update lại dòng header
+	if len(resp.Values) == 0 || len(headers) > len(resp.Values[0]) {
+		updateRange := fmt.Sprintf("%s!1:1", sheetName)
+		_, err := srv.Spreadsheets.Values.Update(spreadsheetID, updateRange, &sheets.ValueRange{
+			Values: [][]interface{}{headers},
+		}).ValueInputOption("RAW").Do()
+		if err != nil {
+			return fmt.Errorf("failed to update headers: %w", err)
+		}
+	}
+
+	// Bước 5: Tạo dòng dữ liệu mới theo đúng thứ tự header
+	row := make([]interface{}, len(headers))
+	copy(row, baseInfo) // baseInfo = [SubmittedAt, StudentID, UserID, FormCode, FormName]
+
+	for q, a := range answers {
+		if colIndex, ok := headerIndex[q]; ok {
+			row[colIndex] = a
+		}
+	}
+
+	// Bước 6: Ghi vào sheet
+	appendRange := fmt.Sprintf("%s!A:Z", sheetName)
+	_, err = srv.Spreadsheets.Values.Append(spreadsheetID, appendRange, &sheets.ValueRange{
+		Values: [][]interface{}{row},
+	}).ValueInputOption("RAW").InsertDataOption("INSERT_ROWS").Do()
+	if err != nil {
+		return fmt.Errorf("failed to append data: %w", err)
+	}
+
 	return nil
 }

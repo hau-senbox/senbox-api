@@ -381,3 +381,19 @@ func (r *SubmissionRepository) GetByUserIdAndFormId(userID string, formID uint64
 
 	return &submission, nil
 }
+
+func (r *SubmissionRepository) GetSubmissionByCreatedAt(createdAfter time.Time) ([]*entity.SSubmission, error) {
+	var submissions []*entity.SSubmission
+
+	err := r.DBConn.
+		Preload("Form"). // nếu cần preload form
+		Where("created_at >= ?", createdAfter).
+		Order("created_at ASC").
+		Find(&submissions).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return submissions, nil
+}

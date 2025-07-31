@@ -3,6 +3,7 @@ package router
 import (
 	"encoding/json"
 	"sen-global-api/config"
+	"sen-global-api/helper"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -455,6 +456,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	}
 
 	// application
+	sheetsService, _ := helper.GetSheetsService("credentials/uploader_service_account.json")
+
+	syncDataUsecase := &usecase.SyncDataUsecae{
+		SheetService:   sheetsService,
+		SubmissionRepo: &repository.SubmissionRepository{DBConn: dbConn},
+	}
 	applicationController := &controller.ApplicationController{
 		StaffAppUsecase: &usecase.StaffApplicationUseCase{
 			StaffAppRepo:  &repository.StaffApplicationRepository{DBConn: dbConn},
@@ -491,6 +498,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		SyncDataUsecase: syncDataUsecase,
 	}
 
 	application := engine.Group("/v1/admin/application", secureMiddleware.Secured())
@@ -513,7 +521,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
 
-		application.POST("/sync-test", applicationController.SyncDataDemo)
+		application.POST("/sync-test", applicationController.SyncDataDemoV3)
 	}
 
 	executor := &TimeMachineSubscriber{
