@@ -38,6 +38,7 @@ type CreateSubmissionParams struct {
 	SubmissionData  SubmissionData
 	OpenedAt        time.Time
 	StudentCustomID *string
+	UserCustomID    *string
 }
 
 type GetSubmissionByConditionParam struct {
@@ -77,10 +78,16 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 	}
 
 	var studentCustomID string
+	var userCustomID string
 	if params.StudentCustomID != nil {
 		studentCustomID = *params.StudentCustomID
 	} else {
 		studentCustomID = ""
+	}
+	if params.UserCustomID != nil {
+		userCustomID = *params.UserCustomID
+	} else {
+		userCustomID = ""
 	}
 
 	submission := entity.SSubmission{
@@ -89,6 +96,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 		SubmissionData:  dataInJSON,
 		OpenedAt:        params.OpenedAt,
 		StudentCustomID: studentCustomID,
+		UserCustomID:    userCustomID,
 	}
 
 	if err := receiver.DBConn.Create(&submission).Error; err != nil {
