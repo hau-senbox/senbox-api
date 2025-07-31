@@ -1187,3 +1187,20 @@ func (r *UserEntityRepository) GetUsersByOrganizationIDs(orgIDs []string) ([]ent
 func (r *UserEntityRepository) GetDB() *gorm.DB {
 	return r.DBConn
 }
+
+func (r *UserEntityRepository) UpdateCustomIDByUserID(userID uuid.UUID, customID string) error {
+	result := r.DBConn.Model(&entity.SUserEntity{}).
+		Where("id = ?", userID).
+		Update("custom_id", customID)
+
+	if result.Error != nil {
+		log.Error("UserEntityRepository.UpdateCustomIDByUserID: " + result.Error.Error())
+		return errors.New("failed to update custom_id")
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("no rows affected; user not found")
+	}
+
+	return nil
+}

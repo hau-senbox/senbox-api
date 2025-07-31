@@ -88,11 +88,11 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		Items: submissionItems,
 	}
 	createSubmissionParams := repository.CreateSubmissionParams{
-		FormID:         form.ID,
-		UserID:         req.UserID,
-		SubmissionData: submissionData,
-		OpenedAt:       req.OpenedAt,
-		CustomID:       req.CustomID,
+		FormID:          form.ID,
+		UserID:          req.UserID,
+		SubmissionData:  submissionData,
+		OpenedAt:        req.OpenedAt,
+		StudentCustomID: req.StudentCustomID,
 	}
 	submissionID, err := receiver.CreateSubmission(createSubmissionParams)
 	if err != nil {

@@ -27,6 +27,7 @@ type SUserEntity struct {
 	BlockedAt time.Time `gorm:"type:datetime"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CustomID  string    `gorm:"column:custom_id;type:varchar(255);not null;default:''"`
 
 	// Many-to-many relationship with roles
 	Roles []SRole `gorm:"many2many:s_user_roles;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:role_id"`
