@@ -130,6 +130,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		Icon    string `json:"icon"`
 		Color   string `json:"color"`
 		URL     string `json:"url"`
+		FormQR  string `json:"form_qr"`
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
@@ -148,7 +149,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		"visible": old.Visible,
 	}
 	if isButtonForm {
-		newVal["form_qr"] = old.URL
+		newVal["form_qr"] = old.FormQR
 	} else {
 		newVal["url"] = old.URL
 	}
