@@ -382,13 +382,22 @@ func (r *SubmissionRepository) GetByUserIdAndFormId(userID string, formID uint64
 	return &submission, nil
 }
 
-func (r *SubmissionRepository) GetSubmissionByCreatedAt(createdAfter time.Time) ([]*entity.SSubmission, error) {
+func (r *SubmissionRepository) GetSubmissionByCreatedAtAndForms(createdAfter time.Time, formNotes []string) ([]*entity.SSubmission, error) {
 	var submissions []*entity.SSubmission
 
-	err := r.DBConn.
-		Preload("Form"). // nếu cần preload form
-		Where("created_at >= ?", createdAfter).
-		Order("created_at ASC").
+	// Join bảng s_form và lọc theo created_at
+	db := r.DBConn.
+		Joins("JOIN s_form ON s_form.id = s_submission.form_id").
+		Preload("Form").
+		Where("s_submission.created_at >= ?", createdAfter)
+
+	// Lọc theo danh sách formNotes (nếu có)
+	if len(formNotes) > 0 {
+		db = db.Where("s_form.note IN ?", formNotes)
+	}
+
+	err := db.
+		Order("s_submission.created_at ASC").
 		Find(&submissions).Error
 
 	if err != nil {

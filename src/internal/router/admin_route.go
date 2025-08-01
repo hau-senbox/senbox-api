@@ -521,7 +521,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
 
-		application.POST("/sync-test", applicationController.SyncDataDemoV3)
+	}
+
+	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
+	{
+		sync.POST("/form", applicationController.SyncDataDemoV3)
 	}
 
 	executor := &TimeMachineSubscriber{

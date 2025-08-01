@@ -152,9 +152,9 @@ func (uc *SyncDataUsecae) CreateAndSyncFormAnswerv2(
 	return nil
 }
 
-func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time) ([]CreateFormAnswerRequest, error) {
+func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time, formNote []string) ([]CreateFormAnswerRequest, error) {
 	// 1. Lấy danh sách submission mới nhất
-	submissions, err := uc.SubmissionRepo.GetSubmissionByCreatedAt(afterCreatedAt)
+	submissions, err := uc.SubmissionRepo.GetSubmissionByCreatedAtAndForms(afterCreatedAt, formNote)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get submissions: %w", err)
 	}
@@ -201,7 +201,7 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	}
 
 	// Lấy dữ liệu cần đồng bộ
-	dataList, err := uc.GetData2Sync(afterCreatedAt)
+	dataList, err := uc.GetData2Sync(afterCreatedAt, req.FormNotes)
 	if err != nil {
 		return "", fmt.Errorf("failed to get data to sync: %w", err)
 	}

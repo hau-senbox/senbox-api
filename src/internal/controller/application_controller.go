@@ -526,11 +526,17 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 		return
 	}
 
+	parsedTime, err := time.Parse(time.RFC3339, lastSubmitedTime)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": "Invalid time format"})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Waiting sync data",
 		Data: map[string]interface{}{
-			"last_submitted_at": lastSubmitedTime,
+			"last_submit_time": parsedTime.UTC().Format(time.RFC3339),
 		},
 	})
 }
