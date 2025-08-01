@@ -461,6 +461,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	syncDataUsecase := &usecase.SyncDataUsecae{
 		SheetService:   sheetsService,
 		SubmissionRepo: &repository.SubmissionRepository{DBConn: dbConn},
+		SyncQueueRepo:  &repository.SyncQueueRepository{DBConn: dbConn},
 	}
 	applicationController := &controller.ApplicationController{
 		StaffAppUsecase: &usecase.StaffApplicationUseCase{

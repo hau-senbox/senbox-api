@@ -7,17 +7,21 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/value"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
+	"gorm.io/datatypes"
 )
 
 type SyncDataUsecae struct {
 	SheetService   *sheets.Service
 	SubmissionRepo *repository.SubmissionRepository
+	SyncQueueRepo  *repository.SyncQueueRepository
 }
 
 type CreateFormAnswerRequest struct {
+	SubmissionID    uint64
 	SubmittedAt     string
 	StudentCustomID string
 	UserCustomID    string
@@ -173,6 +177,7 @@ func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time, formNote []stri
 		}
 
 		req := CreateFormAnswerRequest{
+			SubmissionID:    sub.ID,
 			SubmittedAt:     sub.CreatedAt.String(),
 			StudentCustomID: sub.StudentCustomID,
 			UserCustomID:    sub.UserCustomID,
@@ -224,16 +229,48 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	if err != nil {
 		return "", err
 	}
+	// Parse SubmittedAt từ string → time.Time
+	layout := "2006-01-02 15:04:05.000 -0700 -07"
+	parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
+
+	if err != nil {
+		return "", fmt.Errorf("invalid SubmittedAt format: %w", err)
+	}
+
+	// Marshal FormNotes
+	notesJSON, err := json.Marshal(req.FormNotes)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal form notes: %w", err)
+	}
+
+	// Tạo SyncQueue trước khi chạy goroutine
+	syncQueue := &entity.SyncQueue{
+		LastSubmissionID: dataList[len(dataList)-1].SubmissionID,
+		LastSubmittedAt:  parsedSubmittedAt,
+		FormNotes:        datatypes.JSON(notesJSON),
+		SheetName:        req.SheetName,
+		SpreadsheetID:    spreadsheetID,
+		Status:           value.SyncQueueStatusPending, // pending
+	}
+
+	// Lưu queue vào DB
+	if err := uc.SyncQueueRepo.Create(syncQueue); err != nil {
+		return "", fmt.Errorf("failed to create sync queue: %w", err)
+	}
 
 	// Ghi từng dòng
 	go func() {
+
 		for _, item := range dataList {
+
 			if err := uc.CreateAndSyncFormAnswerv2(item, spreadsheetID, req.SheetName, headers, headerIndex); err != nil {
 				fmt.Printf("[SYNC ERROR] StudentCustomID %s: %v\n", item.StudentCustomID, err)
 				continue
 			}
 			time.Sleep(1 * time.Second)
 		}
+		// Cập nhật queue: done
+		_ = uc.SyncQueueRepo.UpdateStatus(syncQueue.ID, string(value.SyncQueueStatusDone))
 	}()
 
 	// Trả kết quả ngay lập tức (timestamp cuối cùng)

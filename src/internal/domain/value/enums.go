@@ -1219,3 +1219,11 @@ func IsValidRoleSignUp(role string) bool {
 		return false
 	}
 }
+
+type SyncQueueStatus string
+
+const (
+	SyncQueueStatusPending SyncQueueStatus = "pending"
+	SyncQueueStatusDone    SyncQueueStatus = "done"
+	SyncQueueStatusFailed  SyncQueueStatus = "failed"
+)

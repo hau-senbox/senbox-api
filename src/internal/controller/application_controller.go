@@ -526,7 +526,8 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 		return
 	}
 
-	parsedTime, err := time.Parse(time.RFC3339, lastSubmitedTime)
+	layout := "2006-01-02 15:04:05.000 -0700 -07"
+	parsedTime, err := time.Parse(layout, lastSubmitedTime)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": "Invalid time format"})
 		return
