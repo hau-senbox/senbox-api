@@ -618,7 +618,7 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 		Username:   req.Username,
 		Password:   req.Password,
 		DeviceUUID: req.DeviceUUID,
-	})
+	}, value.ForRegister)
 
 	if err != nil {
 		context.JSON(

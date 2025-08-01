@@ -44,7 +44,7 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	return token, nil
 }
 
-func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDeviceReqest) (*response.LoginResponseData, error) {
+func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDeviceReqest, loginType value.LoginType) (*response.LoginResponseData, error) {
 	user, err := receiver.GetByUsername(request.GetUserEntityByUsernameRequest{Username: req.Username})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -68,7 +68,7 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 		}
 	}
 
-	err = receiver.VerifyPassword4LoginQr(req.Password, user.Password)
+	err = receiver.VerifyPassword4LoginQr(req.Password, user.Password, loginType)
 	if err != nil {
 		return nil, errors.New("invalid username or password")
 	}

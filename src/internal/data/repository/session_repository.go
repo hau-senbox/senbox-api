@@ -25,14 +25,14 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
 }
 
-func (receiver *SessionRepository) VerifyPassword4LoginQr(qrPassword string, hashedPassword string, loginType value.LoginType) error {
+func (receiver *SessionRepository) VerifyPassword4LoginQr(password string, hashedPassword string, loginType value.LoginType) error {
 	if loginType == value.ForScan {
-		if qrPassword != hashedPassword {
+		if password != hashedPassword {
 			return errors.New("invalid QR password")
 		}
 	}
 	if loginType == value.ForRegister {
-
+		return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	}
 	return nil
 }

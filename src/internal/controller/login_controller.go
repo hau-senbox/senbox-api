@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -68,7 +69,7 @@ func (receiver LoginController) UserLogin(c *gin.Context) {
 		return
 	}
 
-	data, err := receiver.UserLoginUsecase(req)
+	data, err := receiver.UserLoginUsecase(req, value.ForScan)
 
 	if err != nil {
 		c.JSON(
