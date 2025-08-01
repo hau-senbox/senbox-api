@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 	"strings"
 	"time"
 
@@ -24,9 +25,14 @@ func (receiver *SessionRepository) VerifyPassword(password string, hashed string
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
 }
 
-func (receiver *SessionRepository) VerifyPassword4LoginQr(qrPassword string, hashedPassword string) error {
-	if qrPassword != hashedPassword {
-		return errors.New("invalid QR password")
+func (receiver *SessionRepository) VerifyPassword4LoginQr(qrPassword string, hashedPassword string, loginType value.LoginType) error {
+	if loginType == value.ForScan {
+		if qrPassword != hashedPassword {
+			return errors.New("invalid QR password")
+		}
+	}
+	if loginType == value.ForRegister {
+
 	}
 	return nil
 }

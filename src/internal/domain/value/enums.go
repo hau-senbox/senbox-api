@@ -1227,3 +1227,11 @@ const (
 	SyncQueueStatusDone    SyncQueueStatus = "done"
 	SyncQueueStatusFailed  SyncQueueStatus = "failed"
 )
+
+type LoginType string
+
+const (
+	ForScan     LoginType = "scan"
+	ForLogin    LoginType = "login"
+	ForRegister LoginType = "register"
+)
