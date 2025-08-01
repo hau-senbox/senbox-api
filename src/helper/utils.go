@@ -126,11 +126,13 @@ func GetVisibleToValueComponent(value string) (bool, error) {
 
 func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 	var old struct {
-		Visible bool   `json:"visible"`
-		Icon    string `json:"icon"`
-		Color   string `json:"color"`
-		URL     string `json:"url"`
-		FormQR  string `json:"form_qr"`
+		Visible      bool   `json:"visible"`
+		Icon         string `json:"icon"`
+		Color        string `json:"color"`
+		URL          string `json:"url"`
+		FormQR       string `json:"form_qr"`
+		ShowedTop    string `json:"showed_top"`
+		ShowedBottom string `json:"showed_bottom"`
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
@@ -144,9 +146,11 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 
 	// Build value nội
 	newVal := map[string]interface{}{
-		"color":   old.Color,
-		"icon":    old.Icon,
-		"visible": old.Visible,
+		"color":         old.Color,
+		"icon":          old.Icon,
+		"visible":       old.Visible,
+		"showed_top":    old.ShowedTop,
+		"showed_bottom": old.ShowedBottom,
 	}
 	if isButtonForm {
 		newVal["form_qr"] = old.FormQR
