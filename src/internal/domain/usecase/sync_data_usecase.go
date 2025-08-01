@@ -264,13 +264,18 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	// Ghi từng dòng
 	go func() {
 
-		for _, item := range dataList {
+		for i, item := range dataList {
 
 			if err := uc.CreateAndSyncFormAnswerv2(item, spreadsheetID, req.SheetName, headers, headerIndex); err != nil {
 				fmt.Printf("[SYNC ERROR] StudentCustomID %s: %v\n", item.StudentCustomID, err)
 				continue
 			}
 			time.Sleep(1 * time.Second)
+			// Sau mỗi 30 item, chờ thêm 40 giây
+			if (i+1)%20 == 0 {
+				fmt.Println("Reached 30 items, waiting 30 seconds...")
+				time.Sleep(40 * time.Second)
+			}
 		}
 		// Cập nhật queue: done
 		_ = uc.SyncQueueRepo.UpdateStatus(syncQueue.ID, string(value.SyncQueueStatusDone))
