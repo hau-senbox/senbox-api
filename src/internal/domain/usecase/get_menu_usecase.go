@@ -424,7 +424,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	var result []response.GetMenuSectionResponse
 	// Lay danh sach child, students, teacher by userId
 	children, _ := receiver.ChildRepository.GetByParentID(userID)
-	students, _ := receiver.StudentAppRepo.GetByUserIDApproved(userID)
+	// students, _ := receiver.StudentAppRepo.GetByUserIDApproved(userID)
 	teachers, _ := receiver.TeacherRepository.GetByUserIDApproved(userID)
 	staffs, _ := receiver.StaffApplicationRepo.GetByUserIDApproved(userID)
 	// neu co child lay menu cua child
@@ -436,14 +436,14 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 		})
 	}
 
-	for _, student := range students {
-		studentMenu, _ := receiver.StudentMenuUseCase.GetByStudentID(student.ID.String())
-		result = append(result, response.GetMenuSectionResponse{
-			SectionName: studentMenu.StudentName,
-			SectionID:   studentMenu.StudentID,
-			Components:  studentMenu.Components,
-		})
-	}
+	// for _, student := range students {
+	// 	studentMenu, _ := receiver.StudentMenuUseCase.GetByStudentID(student.ID.String())
+	// 	result = append(result, response.GetMenuSectionResponse{
+	// 		SectionName: studentMenu.StudentName,
+	// 		SectionID:   studentMenu.StudentID,
+	// 		Components:  studentMenu.Components,
+	// 	})
+	// }
 
 	for _, teacher := range teachers {
 		teacherMenu, _ := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String())
