@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -526,18 +527,39 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 		return
 	}
 
-	layout := "2006-01-02 15:04:05.000 -0700 -07"
-	parsedTime, err := time.Parse(layout, lastSubmitedTime)
+	ctx.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Waiting sync data",
+		Data: map[string]interface{}{
+			"last_submit_time": lastSubmitedTime,
+		},
+	})
+}
+
+func (ctrl *ApplicationController) CheckStatusSyncQueue(ctx *gin.Context) {
+	hasPending, err := ctrl.SyncDataUsecase.HasPendingSyncQueue()
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": "Invalid time format"})
+		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to check sync queue",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if !hasPending {
+		ctx.JSON(http.StatusConflict, response.FailedResponse{
+			Code:    http.StatusConflict,
+			Message: "A sync is already in progress",
+		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "Waiting sync data",
+		Message: "No sync in progress. Ready to start sync.",
 		Data: map[string]interface{}{
-			"last_submit_time": parsedTime.UTC().Format(time.RFC3339),
+			"status": value.SyncQueueStatusDone,
 		},
 	})
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"sen-global-api/internal/data/repository"
@@ -194,7 +195,9 @@ func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time, formNote []stri
 
 func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequest) (string, error) {
 	// Parse thời gian từ chuỗi
-	afterCreatedAt, err := time.Parse(time.RFC3339, req.LastSubmitTime)
+	layout := "2006-01-02 15:04:05.000 -0700 MST"
+	afterCreatedAt, err := time.Parse(layout, req.LastSubmitTime)
+
 	if err != nil {
 		return "", fmt.Errorf("invalid time format (must be RFC3339): %w", err)
 	}
@@ -213,7 +216,7 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 
 	// Nếu không có gì để sync thì trả về luôn
 	if len(dataList) == 0 {
-		return "", nil
+		return "", errors.New("no data to sync")
 	}
 
 	// Lấy submissionID/timestamp cuối cùng
@@ -230,7 +233,7 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 		return "", err
 	}
 	// Parse SubmittedAt từ string → time.Time
-	layout := "2006-01-02 15:04:05.000 -0700 -07"
+	//layout := "2006-01-02 15:04:05.000 -0700 -07"
 	parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
 
 	if err != nil {
@@ -330,4 +333,17 @@ func (uc *SyncDataUsecae) prepareHeaders(spreadsheetID, sheetName string, allAns
 	}
 
 	return headers, headerIndex, nil
+}
+
+func (uc *SyncDataUsecae) HasPendingSyncQueue() (bool, error) {
+	ok, err := uc.SyncQueueRepo.HasPendingQueue()
+	if err != nil {
+		return false, fmt.Errorf("failed to check sync queue: %w", err)
+	}
+	if !ok {
+		// Có queue đang pending → không thể tiếp tục
+		return false, nil
+	}
+	// Không có pending → có thể sync
+	return true, nil
 }

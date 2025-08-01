@@ -527,6 +527,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
 	{
 		sync.POST("/form", applicationController.SyncDataDemoV3)
+		sync.GET("/form/check-status", applicationController.CheckStatusSyncQueue)
 	}
 
 	executor := &TimeMachineSubscriber{

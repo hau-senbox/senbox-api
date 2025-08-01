@@ -386,10 +386,11 @@ func (r *SubmissionRepository) GetSubmissionByCreatedAtAndForms(createdAfter tim
 	var submissions []*entity.SSubmission
 
 	// Join bảng s_form và lọc theo created_at
+	adjustedCreatedAfter := createdAfter.Add(500 * time.Millisecond)
 	db := r.DBConn.
 		Joins("JOIN s_form ON s_form.id = s_submission.form_id").
 		Preload("Form").
-		Where("s_submission.created_at >= ?", createdAfter)
+		Where("s_submission.created_at > ?", adjustedCreatedAfter)
 
 	// Lọc theo danh sách formNotes (nếu có)
 	if len(formNotes) > 0 {
