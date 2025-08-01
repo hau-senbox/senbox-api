@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
+	"strings"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
@@ -224,8 +225,14 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	}
 
 	// Parse SubmittedAt từ string → time.Time
-	layout := "2006-01-02 15:04:05.000 -0700 MST"
-	parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
+	// layout := "2006-01-02 15:04:05.000 -0700 MST"
+	// parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
+
+	rawTime := dataList[len(dataList)-1].SubmittedAt
+	cleanTime := strings.Replace(rawTime, " UTC", "", -1) // hoặc strings.TrimSuffix()
+
+	layout := "2006-01-02 15:04:05.00 -0700" // Không dùng MST
+	parsedSubmittedAt, err := time.Parse(layout, cleanTime)
 
 	if err != nil {
 		return "", fmt.Errorf("invalid SubmittedAt format: %w", err)
