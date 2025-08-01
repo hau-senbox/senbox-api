@@ -168,7 +168,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 
 	// field chính ở ngoài: form_qr hoặc url
 	if isButtonForm {
-		wrapped["form_qr"] = old.URL
+		wrapped["form_qr"] = old.FormQR
 	} else {
 		wrapped["url"] = old.URL
 	}
