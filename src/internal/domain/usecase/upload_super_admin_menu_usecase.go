@@ -14,6 +14,18 @@ type UploadSuperAdminMenuUseCase struct {
 
 func (receiver *UploadSuperAdminMenuUseCase) Upload(req request.UploadSuperAdminMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
+
+	// add rollbacl tx
+	defer func() {
+		// rollback nếu chưa commit
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else {
+			_ = tx.Rollback()
+		}
+	}()
+
 	if err := receiver.MenuRepository.DeleteSuperAdminMenu(tx); err != nil {
 		return err
 	}
