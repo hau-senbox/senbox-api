@@ -159,14 +159,16 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 
 	// Build object ngoài
 	wrapped := map[string]interface{}{
-		"id":      comp.ID.String(),
-		"name":    comp.Name,
-		"type":    string(comp.Type),
-		"key":     comp.Key,
-		"color":   old.Color,
-		"icon":    old.Icon,
-		"visible": old.Visible,
-		"value":   newVal,
+		"id":            comp.ID.String(),
+		"name":          comp.Name,
+		"type":          string(comp.Type),
+		"key":           comp.Key,
+		"color":         old.Color,
+		"icon":          old.Icon,
+		"visible":       old.Visible,
+		"value":         newVal,
+		"showed_top":    old.ShowedTop,
+		"showed_bottom": old.ShowedBottom,
 	}
 
 	// field chính ở ngoài: form_qr hoặc url
