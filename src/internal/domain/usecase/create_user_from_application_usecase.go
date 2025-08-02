@@ -141,10 +141,26 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 
 			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 
+			// → Tạo mới một Component từ thông tin đã lấy
+			newComponent := &components.Component{
+				ID:        uuid.New(),
+				Name:      component.Name,
+				Type:      component.Type,
+				Key:       component.Key,
+				SectionID: component.SectionID,
+				Value:     component.Value,
+			}
+
+			err = receiver.ComponentRepository.Create(newComponent)
+			if err != nil {
+				log.Printf("Create new component fail: %v", err)
+				continue
+			}
+
 			err = receiver.StaffMenuRepository.Create(&entity.StaffMenu{
 				ID:          uuid.New(),
 				StaffID:     staffID,
-				ComponentID: uuid.MustParse(componentID),
+				ComponentID: newComponent.ID,
 				Order:       index,
 				IsShow:      true,
 				Visible:     visible,
