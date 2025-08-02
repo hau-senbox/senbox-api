@@ -443,6 +443,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
 			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 		},
+		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
 	}
 	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
