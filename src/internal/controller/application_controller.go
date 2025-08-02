@@ -333,7 +333,7 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "Failed to start sync process",
+			Message: err.Error(),
 			Error:   err.Error(),
 		})
 		return

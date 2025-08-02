@@ -214,7 +214,7 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 
 	// Nếu không có gì để sync thì trả về luôn
 	if len(dataList) == 0 {
-		return "", errors.New("no data to sync")
+		return "", errors.New("not found")
 	}
 
 	// Collect all answers
