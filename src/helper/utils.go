@@ -130,8 +130,8 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		Color        string `json:"color"`
 		URL          string `json:"url"`
 		FormQR       string `json:"form_qr"`
-		ShowedTop    string `json:"showed_top"`
-		ShowedBottom string `json:"showed_bottom"`
+		ShowedTop    bool   `json:"showed_top"`
+		ShowedBottom bool   `json:"showed_bottom"`
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
