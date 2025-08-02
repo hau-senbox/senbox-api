@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -313,6 +314,19 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 			Error:   err.Error(),
 		})
 		return
+	}
+
+	// Tách chuỗi form_qrs thành slice FormNotes
+	if req.FormNotesStr != "" {
+		// Tách theo dấu phẩy và loại bỏ khoảng trắng thừa
+		splitted := strings.Split(req.FormNotesStr, ",")
+		req.FormNotes = make([]string, 0, len(splitted))
+		for _, s := range splitted {
+			trimmed := strings.TrimSpace(s)
+			if trimmed != "" {
+				req.FormNotes = append(req.FormNotes, trimmed)
+			}
+		}
 	}
 
 	lastSubmitedTimeStr, err := ctrl.SyncDataUsecase.ExcuteCreateAndSyncFormAnswer(req)
