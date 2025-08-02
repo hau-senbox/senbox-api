@@ -9,7 +9,6 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
-	"strings"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
@@ -228,11 +227,11 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	// layout := "2006-01-02 15:04:05.000 -0700 MST"
 	// parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
 
-	rawTime := dataList[len(dataList)-1].SubmittedAt
-	cleanTime := strings.Replace(rawTime, " UTC", "", -1) // hoặc strings.TrimSuffix()
+	// rawTime := dataList[len(dataList)-1].SubmittedAt
+	// cleanTime := strings.Replace(rawTime, " UTC", "", -1) // hoặc strings.TrimSuffix()
 
-	layout := "2006-01-02 15:04:05.00 -0700" // Không dùng MST
-	parsedSubmittedAt, err := time.Parse(layout, cleanTime)
+	// layout := "2006-01-02 15:04:05.00 -0700" // Không dùng MST
+	// parsedSubmittedAt, err := time.Parse(layout, cleanTime)
 
 	if err != nil {
 		return "", fmt.Errorf("invalid SubmittedAt format: %w", err)
@@ -247,7 +246,7 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 	// Tạo SyncQueue trước khi chạy goroutine
 	syncQueue := &entity.SyncQueue{
 		LastSubmissionID: dataList[len(dataList)-1].SubmissionID,
-		LastSubmittedAt:  parsedSubmittedAt,
+		LastSubmittedAt:  dataList[len(dataList)-1].SubmittedAt,
 		FormNotes:        datatypes.JSON(notesJSON),
 		SheetName:        req.SheetName,
 		SpreadsheetID:    spreadsheetID,
@@ -287,9 +286,9 @@ func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequ
 
 	// Trả kết quả ngay lập tức (timestamp cuối cùng)
 	// Lấy submissionID/timestamp cuối cùng
-	latestSubmissionTime := parsedSubmittedAt.UTC().Format("2006-01-02T15:04:05.000Z")
+	//latestSubmissionTime := parsedSubmittedAt.UTC().Format("2006-01-02T15:04:05.000Z")
 
-	return latestSubmissionTime, nil
+	return dataList[len(dataList)-1].SubmittedAt, nil
 }
 
 func ExtractSpreadsheetID(sheetUrl string) (string, error) {

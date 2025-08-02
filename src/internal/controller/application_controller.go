@@ -517,7 +517,7 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 		return
 	}
 
-	lastSubmitedTime, err := ctrl.SyncDataUsecase.ExcuteCreateAndSyncFormAnswer(req)
+	lastSubmitedTimeStr, err := ctrl.SyncDataUsecase.ExcuteCreateAndSyncFormAnswer(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -527,11 +527,26 @@ func (ctrl *ApplicationController) SyncDataDemoV3(ctx *gin.Context) {
 		return
 	}
 
+	// Parse lại chuỗi thời gian gốc
+	layoutIn := "2006-01-02 15:04:05.000 -0700 -07"
+	t, err := time.Parse(layoutIn, lastSubmitedTimeStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Invalid SubmittedAt format",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Chuyển sang UTC theo chuẩn ISO 8601
+	lastSubmitTimeISO := t.UTC().Format("2006-01-02T15:04:05.000Z")
+
 	ctx.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Waiting sync data",
 		Data: map[string]interface{}{
-			"last_submit_time": lastSubmitedTime,
+			"last_submit_time": lastSubmitTimeISO,
 		},
 	})
 }
