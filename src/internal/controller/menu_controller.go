@@ -267,12 +267,16 @@ func (receiver *MenuController) GetUserMenu(context *gin.Context) {
 
 	res := make([]componentResponse, 0)
 	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
 		res = append(res, componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
 			Key:   m.Component.Key,
-			Value: string(m.Component.Value),
+			Value: string(normalizedValue),
 			Order: m.Order,
 		})
 	}
@@ -316,13 +320,17 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 
 	resMap := make(map[string][]componentResponse)
 	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
 		key := m.OrganizationID.String()
 		resMap[key] = append(resMap[key], componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
 			Key:   m.Component.Key,
-			Value: string(m.Component.Value),
+			Value: string(normalizedValue),
 			Order: m.Order,
 		})
 	}
@@ -372,12 +380,16 @@ func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
 
 	res := make([]componentResponse, 0)
 	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
 		res = append(res, componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
 			Key:   m.Component.Key,
-			Value: string(m.Component.Value),
+			Value: string(normalizedValue),
 			Order: m.Order,
 		})
 	}
