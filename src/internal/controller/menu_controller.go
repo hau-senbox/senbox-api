@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"log"
 	"net/http"
+	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
@@ -56,6 +58,10 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 	topMenuResponse := make([]componentResponse, 0)
 	bottomMenuResponse := make([]componentResponse, 0)
 	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
 		switch m.Direction {
 		case menu.Top:
 			topMenuResponse = append(topMenuResponse, componentResponse{
@@ -63,7 +69,7 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
+				Value: string(normalizedValue),
 				Order: m.Order,
 			})
 		case menu.Bottom:
@@ -72,7 +78,7 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
+				Value: string(normalizedValue),
 				Order: m.Order,
 			})
 		default:

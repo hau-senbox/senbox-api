@@ -17,6 +17,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
+	"gorm.io/datatypes"
 )
 
 func Slugify(s string) string {
@@ -310,4 +311,31 @@ func ParseFlexibleTime(value string) (time.Time, error) {
 	// Fallback: parse as if it's in UTC
 	layout := "2006-01-02 15:04:05.00"
 	return time.ParseInLocation(layout, value, time.UTC)
+}
+
+func NormalizeComponentValue(raw datatypes.JSON) (datatypes.JSON, error) {
+	var compVal components.ComponentFullValue
+
+	err := json.Unmarshal(raw, &compVal)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal component value: %w", err)
+	}
+
+	compVal.Value.NormalizeDefault()
+	// Đồng bộ các field từ inner value ra ngoài
+	compVal.ShowedTop = *compVal.Value.ShowedTop
+	compVal.ShowedBottom = *compVal.Value.ShowedBottom
+	// compVal.Visible = compVal.Value.Visible
+	// compVal.Icon = compVal.Value.Icon
+	// compVal.Color = compVal.Value.Color
+	// compVal.FormQR = compVal.Value.FormQR
+	// compVal.Url = compVal.Value.Url
+
+	// Marshal lại thành JSON string
+	valBytes, err := json.Marshal(compVal)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal normalized component: %w", err)
+	}
+
+	return datatypes.JSON(valBytes), nil
 }

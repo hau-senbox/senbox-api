@@ -75,3 +75,40 @@ func (component *Component) GetSectionID() string {
 func (component *Component) SetSectionID(SectionID string) {
 	component.SectionID = SectionID
 }
+
+type ComponentInnerValue struct {
+	Visible      bool   `json:"visible"`
+	Icon         string `json:"icon"`
+	Color        string `json:"color"`
+	FormQR       string `json:"form_qr"`
+	Url          string `json:"url"`
+	ShowedTop    *bool  `json:"showed_top"`
+	ShowedBottom *bool  `json:"showed_bottom"`
+}
+
+type ComponentFullValue struct {
+	ID           string              `json:"id"`
+	Name         string              `json:"name"`
+	Type         string              `json:"type"`
+	Key          string              `json:"key"`
+	Value        ComponentInnerValue `json:"value"`
+	SectionID    string              `json:"section_id"`
+	Icon         string              `json:"icon"`
+	Visible      bool                `json:"visible"`
+	Color        string              `json:"color"`
+	FormQR       string              `json:"form_qr"`
+	Url          string              `json:"url"`
+	ShowedTop    bool                `json:"showed_top"`
+	ShowedBottom bool                `json:"showed_bottom"`
+}
+
+func (c *ComponentInnerValue) NormalizeDefault() {
+	defaultTrue := true
+
+	if c.ShowedTop == nil {
+		c.ShowedTop = &defaultTrue
+	}
+	if c.ShowedBottom == nil {
+		c.ShowedBottom = &defaultTrue
+	}
+}
