@@ -390,6 +390,7 @@ func (ctrl *ApplicationController) CheckStatusSyncQueue(ctx *gin.Context) {
 }
 
 func (ctrl *ApplicationController) GetAllSycnQueue(ctx *gin.Context) {
+
 	queues, err := ctrl.SyncDataUsecase.GetAllSyncQueue()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -399,8 +400,9 @@ func (ctrl *ApplicationController) GetAllSycnQueue(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Success",
-		"data":    queues,
+	ctx.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Get all sync success",
+		Data:    queues,
 	})
 }
