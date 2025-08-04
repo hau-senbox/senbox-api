@@ -16,7 +16,7 @@ type ApplicationController struct {
 	StaffAppUsecase   *usecase.StaffApplicationUseCase
 	StudentAppUsecase *usecase.StudentApplicationUseCase
 	TeacherAppUsecase *usecase.TeacherApplicationUseCase
-	SyncDataUsecase   *usecase.SyncDataUsecae
+	SyncDataUsecase   *usecase.SyncDataUsecase
 }
 
 func NewApplicationController(
@@ -387,4 +387,8 @@ func (ctrl *ApplicationController) CheckStatusSyncQueue(ctx *gin.Context) {
 			"status": value.SyncQueueStatusDone,
 		},
 	})
+}
+
+func (ctrl *ApplicationController) GetAllSycnQueue(ctx *gin.Context) {
+
 }

@@ -462,7 +462,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	// application
 	sheetsService, _ := helper.GetSheetsService("credentials/uploader_service_account.json")
 
-	syncDataUsecase := &usecase.SyncDataUsecae{
+	syncDataUsecase := &usecase.SyncDataUsecase{
 		SheetService:   sheetsService,
 		SubmissionRepo: &repository.SubmissionRepository{DBConn: dbConn},
 		SyncQueueRepo:  &repository.SyncQueueRepository{DBConn: dbConn},

@@ -32,3 +32,12 @@ func (r *SyncQueueRepository) HasPendingQueue() (bool, error) {
 	}
 	return count == 0, nil // false nếu có queue đang pending
 }
+
+func (r *SyncQueueRepository) GetAll() ([]entity.SyncQueue, error) {
+	var queues []entity.SyncQueue
+	err := r.DBConn.Find(&queues).Error
+	if err != nil {
+		return nil, err
+	}
+	return queues, nil
+}

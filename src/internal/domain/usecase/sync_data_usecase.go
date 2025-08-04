@@ -15,7 +15,7 @@ import (
 	"gorm.io/datatypes"
 )
 
-type SyncDataUsecae struct {
+type SyncDataUsecase struct {
 	SheetService   *sheets.Service
 	SubmissionRepo *repository.SubmissionRepository
 	SyncQueueRepo  *repository.SyncQueueRepository
@@ -31,7 +31,7 @@ type CreateFormAnswerRequest struct {
 	Answers         map[string]string
 }
 
-func (uc *SyncDataUsecae) CreateAndSyncFormAnswer(req CreateFormAnswerRequest, spreadsheetID string, sheetName string) error {
+func (uc *SyncDataUsecase) CreateAndSyncFormAnswer(req CreateFormAnswerRequest, spreadsheetID string, sheetName string) error {
 	// Parse SubmittedAt
 	tFormatted := req.SubmittedAt
 	if t, err := time.Parse("2006-01-02 15:04:05.999 -0700 MST", req.SubmittedAt); err == nil {
@@ -114,7 +114,7 @@ func (uc *SyncDataUsecae) CreateAndSyncFormAnswer(req CreateFormAnswerRequest, s
 	return nil
 }
 
-func (uc *SyncDataUsecae) CreateAndSyncFormAnswerv2(
+func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	req CreateFormAnswerRequest,
 	spreadsheetID string,
 	sheetName string,
@@ -157,7 +157,7 @@ func (uc *SyncDataUsecae) CreateAndSyncFormAnswerv2(
 	return nil
 }
 
-func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time, formNote []string) ([]CreateFormAnswerRequest, error) {
+func (uc *SyncDataUsecase) GetData2Sync(afterCreatedAt time.Time, formNote []string) ([]CreateFormAnswerRequest, error) {
 	// 1. Lấy danh sách submission mới nhất
 	submissions, err := uc.SubmissionRepo.GetSubmissionByCreatedAtAndForms(afterCreatedAt, formNote)
 	if err != nil {
@@ -193,7 +193,7 @@ func (uc *SyncDataUsecae) GetData2Sync(afterCreatedAt time.Time, formNote []stri
 	return results, nil
 }
 
-func (uc *SyncDataUsecae) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequest) (string, error) {
+func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequest) (string, error) {
 	// Parse thời gian từ chuỗi
 	afterCreatedAt, err := time.Parse(time.RFC3339Nano, req.LastSubmitTime)
 	if err != nil {
@@ -300,7 +300,7 @@ func ExtractSpreadsheetID(sheetUrl string) (string, error) {
 	return matches[1], nil
 }
 
-func (uc *SyncDataUsecae) prepareHeaders(spreadsheetID, sheetName string, allAnswers []map[string]string) ([]interface{}, map[string]int, error) {
+func (uc *SyncDataUsecase) prepareHeaders(spreadsheetID, sheetName string, allAnswers []map[string]string) ([]interface{}, map[string]int, error) {
 	readRange := fmt.Sprintf("%s!1:1", sheetName)
 	resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
 	if err != nil {
@@ -346,7 +346,7 @@ func (uc *SyncDataUsecae) prepareHeaders(spreadsheetID, sheetName string, allAns
 	return headers, headerIndex, nil
 }
 
-func (uc *SyncDataUsecae) HasPendingSyncQueue() (bool, error) {
+func (uc *SyncDataUsecase) HasPendingSyncQueue() (bool, error) {
 	ok, err := uc.SyncQueueRepo.HasPendingQueue()
 	if err != nil {
 		return false, fmt.Errorf("failed to check sync queue: %w", err)
@@ -357,4 +357,12 @@ func (uc *SyncDataUsecae) HasPendingSyncQueue() (bool, error) {
 	}
 	// Không có pending → có thể sync
 	return true, nil
+}
+
+func (uc *SyncDataUsecase) GetAllSyncQueue() ([]entity.SyncQueue, error) {
+	queues, err := uc.SyncQueueRepo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return queues, nil
 }
