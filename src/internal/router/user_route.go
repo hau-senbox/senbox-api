@@ -128,6 +128,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
+			DeviceRepo: &repository.DeviceRepository{DBConn: dbConn},
 		},
 	}
 
@@ -319,7 +320,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	studentApplication := engine.Group("/v1/user/student/application")
 	{
 		// studentApplication.GET("/", secureMiddleware.Secured(), userEntityController.GetAllStudentFormApplication)
-		studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudent4App)
+		studentApplication.GET("/:id/:device_id", secureMiddleware.Secured(), userEntityController.GetStudent4App)
 		studentApplication.POST("/", secureMiddleware.Secured(), userEntityController.CreateStudentFormApplication)
 		studentApplication.POST("/:id/approve", secureMiddleware.Secured(), userEntityController.ApproveStudentFormApplication)
 		studentApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockStudentFormApplication)

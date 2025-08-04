@@ -1857,7 +1857,16 @@ func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
 	if studentID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Missing child ID",
+			Message: "student id be required",
+		})
+		return
+	}
+
+	deviceID := context.Param("device_id")
+	if deviceID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "device id be required",
 		})
 		return
 	}
@@ -1870,7 +1879,7 @@ func (receiver *UserEntityController) GetStudent4App(context *gin.Context) {
 		return
 	}
 
-	student, err := receiver.StudentApplicationUseCase.GetStudentByID4App(context, studentID)
+	student, err := receiver.StudentApplicationUseCase.GetStudentByID4App(context, studentID, deviceID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/value"
 	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -449,4 +450,21 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 	}
 
 	return deviceID, nil
+}
+
+func (r *DeviceRepository) GetOrgIDsByDeviceID(deviceID string) ([]uuid.UUID, error) {
+	var orgDevices []entity.SOrgDevices
+	if err := r.DBConn.
+		Select("organization_id").
+		Where("device_id = ?", deviceID).
+		Find(&orgDevices).Error; err != nil {
+		return nil, err
+	}
+
+	orgIDs := make([]uuid.UUID, 0, len(orgDevices))
+	for _, od := range orgDevices {
+		orgIDs = append(orgIDs, od.OrganizationID)
+	}
+
+	return orgIDs, nil
 }

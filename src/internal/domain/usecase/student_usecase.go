@@ -21,6 +21,7 @@ type StudentApplicationUseCase struct {
 	RoleOrgRepo          *repository.RoleOrgSignUpRepository
 	GetUserEntityUseCase *GetUserEntityUseCase
 	OrganizationRepo     *repository.OrganizationRepository
+	DeviceRepo           *repository.DeviceRepository
 }
 
 func NewStudentApplicationUseCase(
@@ -122,7 +123,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	}, nil
 }
 
-func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string) (*response.StudentResponseBase, error) {
+func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string, deviceID string) (*response.StudentResponseBase, error) {
 	// user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	// if err != nil {
 	// 	return nil, err
@@ -138,19 +139,20 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 		return nil, errors.New("student not found")
 	}
 
-	// Kiểm tra student có thuộc 1 trong các tổ chức mà user quản lý không
-	// studentOrgID := studentApp.OrganizationID.String()
-	// isBelong := false
-	// for _, orgID := range orgIDs {
-	// 	if orgID == studentOrgID {
-	// 		isBelong = true
-	// 		break
-	// 	}
-	// }
+	// kiem tra student org va device org
+	deviceOrgIds, _ := uc.DeviceRepo.GetOrgIDsByDeviceID(deviceID)
 
-	// if !isBelong {
-	// 	return nil, errors.New("student is not under your management scope")
-	// }
+	found := false
+	for _, orgID := range deviceOrgIds {
+		if orgID == studentApp.OrganizationID {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, errors.New("device not associated with student's organization")
+	}
 
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
