@@ -532,6 +532,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		sync.POST("/form", applicationController.SyncDataDemoV3)
 		sync.GET("/form/check-status", applicationController.CheckStatusSyncQueue)
+		sync.GET("/form/sync-queues", applicationController.GetAllSycnQueue)
 	}
 
 	executor := &TimeMachineSubscriber{

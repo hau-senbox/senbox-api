@@ -390,5 +390,17 @@ func (ctrl *ApplicationController) CheckStatusSyncQueue(ctx *gin.Context) {
 }
 
 func (ctrl *ApplicationController) GetAllSycnQueue(ctx *gin.Context) {
+	queues, err := ctrl.SyncDataUsecase.GetAllSyncQueue()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to fetch sync queues",
+			"error":   err.Error(),
+		})
+		return
+	}
 
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Success",
+		"data":    queues,
+	})
 }

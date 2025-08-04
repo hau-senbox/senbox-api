@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SyncQueueRepository struct {
@@ -40,4 +41,22 @@ func (r *SyncQueueRepository) GetAll() ([]entity.SyncQueue, error) {
 		return nil, err
 	}
 	return queues, nil
+}
+
+func (r *SyncQueueRepository) UpdateOrCreateBySpreadsheetIDAndSheetName(q *entity.SyncQueue) error {
+	return r.DBConn.
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "spreadsheet_id"},
+				{Name: "sheet_name"},
+			},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"last_submission_id",
+				"last_submitted_at",
+				"form_notes",
+				"status",
+				"updated_at",
+			}),
+		}).
+		Create(q).Error
 }

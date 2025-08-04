@@ -223,27 +223,19 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 		allAnswers[i] = item.Answers
 	}
 
-	// Parse SubmittedAt từ string → time.Time
-	// layout := "2006-01-02 15:04:05.000 -0700 MST"
-	// parsedSubmittedAt, err := time.Parse(layout, dataList[len(dataList)-1].SubmittedAt)
-
-	// rawTime := dataList[len(dataList)-1].SubmittedAt
-	// cleanTime := strings.Replace(rawTime, " UTC", "", -1) // hoặc strings.TrimSuffix()
-
-	// layout := "2006-01-02 15:04:05.00 -0700" // Không dùng MST
-	// parsedSubmittedAt, err := time.Parse(layout, cleanTime)
-
-	if err != nil {
-		return "", fmt.Errorf("invalid SubmittedAt format: %w", err)
-	}
-
 	// Marshal FormNotes
 	notesJSON, err := json.Marshal(req.FormNotes)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal form notes: %w", err)
 	}
 
-	// Tạo SyncQueue trước khi chạy goroutine
+	// Chỉ đọc header 1 lần
+	headers, headerIndex, err := uc.prepareHeaders(spreadsheetID, req.SheetName, allAnswers)
+	if err != nil {
+		return "", err
+	}
+
+	// Lưu queue vào DB
 	syncQueue := &entity.SyncQueue{
 		LastSubmissionID: dataList[len(dataList)-1].SubmissionID,
 		LastSubmittedAt:  dataList[len(dataList)-1].SubmittedAt,
@@ -253,15 +245,8 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 		Status:           value.SyncQueueStatusPending, // pending
 	}
 
-	// Lưu queue vào DB
-	if err := uc.SyncQueueRepo.Create(syncQueue); err != nil {
+	if err := uc.SyncQueueRepo.UpdateOrCreateBySpreadsheetIDAndSheetName(syncQueue); err != nil {
 		return "", fmt.Errorf("failed to create sync queue: %w", err)
-	}
-
-	// Chỉ đọc header 1 lần
-	headers, headerIndex, err := uc.prepareHeaders(spreadsheetID, req.SheetName, allAnswers)
-	if err != nil {
-		return "", err
 	}
 
 	// Ghi từng dòng
