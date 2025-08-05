@@ -110,6 +110,22 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 				break // chỉ lấy 1 org đầu tiên mà user là manager
 			}
 		}
+
+		// Nếu không có org nào user quản lý, lấy org đầu tiên làm mặc định
+		if orgAdminResp == nil && len(userEntity.Organizations) > 0 {
+			org := userEntity.Organizations[0]
+			orgAdminResp = &response.OrganizationAdmin{
+				ID:               org.ID.String(),
+				OrganizationName: org.OrganizationName,
+				Avatar:           org.Avatar,
+				AvatarURL:        org.AvatarURL,
+				Address:          org.Address,
+				Description:      org.Description,
+				CreatedAt:        org.CreatedAt,
+				UpdatedAt:        org.UpdatedAt,
+			}
+		}
+
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
