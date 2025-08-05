@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"strings"
 	"time"
 
 	"google.golang.org/api/sheets/v4"
@@ -290,14 +291,14 @@ func (uc *SyncDataUsecase) GetAllSyncQueue() ([]response.SyncQueueResponse, erro
 
 		// Giải mã JSON dạng []string từ cột FormNotes
 		if err := json.Unmarshal(q.FormNotes, &formQRs); err != nil {
-			formQRs = []string{} // fallback nếu lỗi
+			formQRs = []string{}
 		}
 
 		result = append(result, response.SyncQueueResponse{
 			ID:        q.ID,
 			SheetURL:  q.SheetUrl,
 			SheetName: q.SheetName,
-			FormQRs:   formQRs,
+			FormQRs:   strings.Join(formQRs, ","),
 		})
 	}
 
