@@ -273,6 +273,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 		AvatarURL:     "",
 		QrFormProfile: formProfile,
 		Menus:         menus,
+		IsUserBlock:   userEntity.IsBlocked,
 	}, nil
 }
 

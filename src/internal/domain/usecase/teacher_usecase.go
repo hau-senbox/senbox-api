@@ -238,6 +238,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		AvatarURL:     "",
 		QrFormProfile: formProfile,
 		Menus:         menus,
+		IsUserBlock:   userEntity.IsBlocked,
 	}, nil
 }
 

@@ -7,4 +7,5 @@ type TeacherResponseBase struct {
 	AvatarURL     string              `json:"avatar_url,omitempty"`
 	QrFormProfile string              `json:"qr_form,omitempty"`
 	Menus         []ComponentResponse `json:"components,omitempty"`
+	IsUserBlock   bool                `json:"is_block"`
 }
