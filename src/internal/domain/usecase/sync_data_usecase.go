@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"time"
 
@@ -23,95 +24,12 @@ type SyncDataUsecase struct {
 
 type CreateFormAnswerRequest struct {
 	SubmissionID    uint64
-	SubmittedAt     string
+	SubmittedAt     time.Time
 	StudentCustomID string
 	UserCustomID    string
 	FormCode        string
 	FormName        string
 	Answers         map[string]string
-}
-
-func (uc *SyncDataUsecase) CreateAndSyncFormAnswer(req CreateFormAnswerRequest, spreadsheetID string, sheetName string) error {
-	// Parse SubmittedAt
-	tFormatted := req.SubmittedAt
-	if t, err := time.Parse("2006-01-02 15:04:05.999 -0700 MST", req.SubmittedAt); err == nil {
-		tFormatted = t.Format("2006-01-02 15:04:05")
-	}
-
-	// Build base info
-	baseInfo := []interface{}{
-		tFormatted,
-		req.StudentCustomID,
-		req.UserCustomID,
-		req.FormCode,
-		req.FormName,
-	}
-
-	// Đọc dòng header hiện tại
-	readRange := fmt.Sprintf("%s!1:1", sheetName)
-	resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
-	if err != nil {
-		return fmt.Errorf("failed to read sheet headers: %w", err)
-	}
-
-	var headers []interface{}
-	headerIndex := make(map[string]int)
-
-	// Nếu chưa có header → khởi tạo
-	if len(resp.Values) == 0 || len(resp.Values[0]) == 0 {
-		defaultHeaders := []string{"SubmittedAt", "StudentCustomID", "UserCustomID", "FormCode", "FormName"}
-		for _, h := range defaultHeaders {
-			headers = append(headers, h)
-		}
-	} else {
-		headers = resp.Values[0]
-	}
-
-	// Mapping header -> index
-	for idx, h := range headers {
-		headerIndex[fmt.Sprintf("%v", h)] = idx
-	}
-
-	// Bổ sung header nếu có câu hỏi mới
-	for q := range req.Answers {
-		if _, ok := headerIndex[q]; !ok {
-			headers = append(headers, q)
-			headerIndex[q] = len(headers) - 1
-		}
-	}
-
-	// Cập nhật lại header nếu có thay đổi
-	if len(resp.Values) == 0 || len(headers) > len(resp.Values[0]) {
-		updateRange := fmt.Sprintf("%s!1:1", sheetName)
-		_, err := uc.SheetService.Spreadsheets.Values.Update(spreadsheetID, updateRange, &sheets.ValueRange{
-			Values: [][]interface{}{headers},
-		}).ValueInputOption("RAW").Do()
-		time.Sleep(2 * time.Second)
-		if err != nil {
-			return fmt.Errorf("failed to update headers: %w", err)
-		}
-	}
-
-	// Tạo dòng dữ liệu mới
-	row := make([]interface{}, len(headers))
-	copy(row, baseInfo) // Gán SubmittedAt, StudentID, UserID...
-
-	for q, a := range req.Answers {
-		if colIndex, ok := headerIndex[q]; ok {
-			row[colIndex] = a
-		}
-	}
-
-	// Ghi dòng mới vào sheet
-	appendRange := fmt.Sprintf("%s!A:Z", sheetName)
-	_, err = uc.SheetService.Spreadsheets.Values.Append(spreadsheetID, appendRange, &sheets.ValueRange{
-		Values: [][]interface{}{row},
-	}).ValueInputOption("RAW").InsertDataOption("INSERT_ROWS").Do()
-	if err != nil {
-		return fmt.Errorf("failed to append data: %w", err)
-	}
-
-	return nil
 }
 
 func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
@@ -120,12 +38,10 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	sheetName string,
 	headers []interface{},
 	headerIndex map[string]int,
+	queueID uint64,
 ) error {
 	// Parse SubmittedAt
-	tFormatted := req.SubmittedAt
-	if t, err := time.Parse("2006-01-02 15:04:05.999 -0700 MST", req.SubmittedAt); err == nil {
-		tFormatted = t.Format("2006-01-02 15:04:05")
-	}
+	tFormatted := req.SubmittedAt.Format("2006-01-02 15:04:05")
 
 	// Base info
 	baseInfo := []interface{}{
@@ -150,7 +66,11 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	_, err := uc.SheetService.Spreadsheets.Values.Append(spreadsheetID, appendRange, &sheets.ValueRange{
 		Values: [][]interface{}{row},
 	}).ValueInputOption("RAW").InsertDataOption("INSERT_ROWS").Do()
+
 	if err != nil {
+		// Cập nhật trạng thái queue về FAIL
+		_ = uc.SyncQueueRepo.UpdateStatusByID(queueID, value.SyncQueueStatusFailed)
+
 		return fmt.Errorf("failed to append data: %w", err)
 	}
 
@@ -179,7 +99,7 @@ func (uc *SyncDataUsecase) GetData2Sync(afterCreatedAt time.Time, formNote []str
 
 		req := CreateFormAnswerRequest{
 			SubmissionID:    sub.ID,
-			SubmittedAt:     sub.CreatedAt.String(),
+			SubmittedAt:     sub.CreatedAt,
 			StudentCustomID: sub.StudentCustomID,
 			UserCustomID:    sub.UserCustomID,
 			FormCode:        sub.Form.Note,
@@ -194,86 +114,100 @@ func (uc *SyncDataUsecase) GetData2Sync(afterCreatedAt time.Time, formNote []str
 }
 
 func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequest) (string, error) {
-	// Parse thời gian từ chuỗi
-	afterCreatedAt, err := time.Parse(time.RFC3339Nano, req.LastSubmitTime)
-	if err != nil {
-		return "", fmt.Errorf("invalid time format (must be RFC3339): %w", err)
-	}
+	const defaultStartTime = "2025-06-01T00:00:00Z"
 
-	// Lấy ID từ sheet URL
-	spreadsheetID, err := ExtractSpreadsheetID(req.SheetUrl)
-	if err != nil {
-		return "", fmt.Errorf("invalid sheet URL: %w", err)
-	}
-
-	// Lấy dữ liệu cần đồng bộ
-	dataList, err := uc.GetData2Sync(afterCreatedAt, req.FormNotes)
-	if err != nil {
-		return "", fmt.Errorf("failed to get data to sync: %w", err)
-	}
-
-	// Nếu không có gì để sync thì trả về luôn
-	if len(dataList) == 0 {
-		return "", errors.New("not found")
-	}
-
-	// Collect all answers
-	allAnswers := make([]map[string]string, len(dataList))
-	for i, item := range dataList {
-		allAnswers[i] = item.Answers
-	}
-
-	// Marshal FormNotes
+	// Marshal form notes để dùng truy vấn
 	notesJSON, err := json.Marshal(req.FormNotes)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal form notes: %w", err)
 	}
 
-	// Chỉ đọc header 1 lần
+	// Truy vấn SyncQueue nếu đã có
+	var (
+		afterCreatedAt time.Time
+		syncQueue      *entity.SyncQueue
+	)
+
+	existingQueue, err := uc.SyncQueueRepo.GetBySheetUrlAndSheetNameAndFormNotes(req.SheetUrl, req.SheetName, notesJSON)
+	if err == nil && existingQueue != nil {
+		// Nếu đã tồn tại bản ghi trước đó → dùng LastSubmittedAt
+		afterCreatedAt = existingQueue.LastSubmittedAt
+		if err != nil {
+			return "", fmt.Errorf("invalid LastSubmittedAt in existing SyncQueue: %w", err)
+		}
+		syncQueue = existingQueue // sẽ dùng để update sau
+	} else {
+		// Không có dữ liệu cũ → bắt đầu từ ngày 1/6/2025
+		afterCreatedAt, _ = time.Parse(time.RFC3339, defaultStartTime)
+		syncQueue = &entity.SyncQueue{} // sẽ tạo mới sau
+	}
+
+	// Lấy spreadsheetID
+	spreadsheetID, err := ExtractSpreadsheetID(req.SheetUrl)
+	if err != nil {
+		return "", fmt.Errorf("invalid sheet URL: %w", err)
+	}
+
+	// Lấy dữ liệu để đồng bộ
+	dataList, err := uc.GetData2Sync(afterCreatedAt, req.FormNotes)
+	if err != nil {
+		return "", fmt.Errorf("failed to get data to sync: %w", err)
+	}
+
+	if len(dataList) == 0 {
+		return "", errors.New("no data to sync")
+	}
+
+	// Chuẩn bị headers
+	allAnswers := make([]map[string]string, len(dataList))
+	for i, item := range dataList {
+		allAnswers[i] = item.Answers
+	}
+
 	headers, headerIndex, err := uc.prepareHeaders(spreadsheetID, req.SheetName, allAnswers)
 	if err != nil {
 		return "", err
 	}
 
-	// Lưu queue vào DB
-	syncQueue := &entity.SyncQueue{
-		LastSubmissionID: dataList[len(dataList)-1].SubmissionID,
-		LastSubmittedAt:  dataList[len(dataList)-1].SubmittedAt,
-		FormNotes:        datatypes.JSON(notesJSON),
-		SheetName:        req.SheetName,
-		SpreadsheetID:    spreadsheetID,
-		Status:           value.SyncQueueStatusPending, // pending
+	// Cập nhật thông tin cho SyncQueue (dù là tạo mới hay update)
+	syncQueue.LastSubmissionID = dataList[len(dataList)-1].SubmissionID
+	syncQueue.LastSubmittedAt = dataList[len(dataList)-1].SubmittedAt
+	syncQueue.FormNotes = datatypes.JSON(notesJSON)
+	syncQueue.SheetName = req.SheetName
+	syncQueue.SpreadsheetID = spreadsheetID
+	syncQueue.SheetUrl = req.SheetUrl
+	syncQueue.Status = value.SyncQueueStatusPending
+
+	// Nếu là bản ghi cũ → update, nếu là bản mới → create
+	if existingQueue != nil {
+		if err := uc.SyncQueueRepo.Update(syncQueue); err != nil {
+			return "", fmt.Errorf("failed to update sync queue: %w", err)
+		}
+	} else {
+		if err := uc.SyncQueueRepo.Create(syncQueue); err != nil {
+			return "", fmt.Errorf("failed to create sync queue: %w", err)
+		}
 	}
 
-	if err := uc.SyncQueueRepo.UpdateOrCreateBySpreadsheetIDAndSheetName(syncQueue); err != nil {
-		return "", fmt.Errorf("failed to create sync queue: %w", err)
-	}
-
-	// Ghi từng dòng
-	go func() {
-
+	// Đồng bộ dữ liệu lên Google Sheet ở nền
+	go func(queueID uint64) {
 		for i, item := range dataList {
-
-			if err := uc.CreateAndSyncFormAnswerv2(item, spreadsheetID, req.SheetName, headers, headerIndex); err != nil {
+			if err := uc.CreateAndSyncFormAnswerv2(item, spreadsheetID, req.SheetName, headers, headerIndex, queueID); err != nil {
 				fmt.Printf("[SYNC ERROR] StudentCustomID %s: %v\n", item.StudentCustomID, err)
 				continue
 			}
 			time.Sleep(1 * time.Second)
-			// Sau mỗi 30 item, chờ thêm 40 giây
 			if (i+1)%20 == 0 {
-				fmt.Println("Reached 30 items, waiting 30 seconds...")
+				fmt.Println("Reached 20 items, waiting 40 seconds...")
 				time.Sleep(40 * time.Second)
 			}
 		}
-		// Cập nhật queue: done
-		_ = uc.SyncQueueRepo.UpdateStatus(syncQueue.ID, string(value.SyncQueueStatusDone))
-	}()
 
-	// Trả kết quả ngay lập tức (timestamp cuối cùng)
-	// Lấy submissionID/timestamp cuối cùng
-	//latestSubmissionTime := parsedSubmittedAt.UTC().Format("2006-01-02T15:04:05.000Z")
+		// Đánh dấu đã xong
+		_ = uc.SyncQueueRepo.UpdateStatus(queueID, string(value.SyncQueueStatusDone))
+	}(syncQueue.ID)
 
-	return dataList[len(dataList)-1].SubmittedAt, nil
+	return dataList[len(dataList)-1].SubmittedAt.String(), nil
 }
 
 func ExtractSpreadsheetID(sheetUrl string) (string, error) {
@@ -344,10 +278,28 @@ func (uc *SyncDataUsecase) HasPendingSyncQueue() (bool, error) {
 	return true, nil
 }
 
-func (uc *SyncDataUsecase) GetAllSyncQueue() ([]entity.SyncQueue, error) {
+func (uc *SyncDataUsecase) GetAllSyncQueue() ([]response.SyncQueueResponse, error) {
 	queues, err := uc.SyncQueueRepo.GetAll()
 	if err != nil {
 		return nil, err
 	}
-	return queues, nil
+
+	var result []response.SyncQueueResponse
+	for _, q := range queues {
+		var formQRs []string
+
+		// Giải mã JSON dạng []string từ cột FormNotes
+		if err := json.Unmarshal(q.FormNotes, &formQRs); err != nil {
+			formQRs = []string{} // fallback nếu lỗi
+		}
+
+		result = append(result, response.SyncQueueResponse{
+			ID:        q.ID,
+			SheetURL:  q.SheetUrl,
+			SheetName: q.SheetName,
+			FormQRs:   formQRs,
+		})
+	}
+
+	return result, nil
 }
