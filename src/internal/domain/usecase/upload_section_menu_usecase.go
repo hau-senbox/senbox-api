@@ -490,7 +490,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, re
 		return fmt.Errorf("Get role by role name failed: %w", err)
 	}
 
-	for idx, compReq := range req.Components {
+	for _, compReq := range req.Components {
 		var componentID uuid.UUID
 
 		component := &components.Component{
@@ -553,7 +553,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, re
 			return fmt.Errorf("get visible fail: %w", err)
 		}
 
-		if err := receiver.createStudentMenu(tx, componentID, visible, idx, uuid.MustParse(req.StudentID), compReq.IsShow); err != nil {
+		if err := receiver.createStudentMenu(tx, componentID, visible, compReq.Order, uuid.MustParse(req.StudentID), compReq.IsShow); err != nil {
 			logrus.Error("rollback by error create student menu:", err)
 			tx.Rollback()
 			rolledBack = true
@@ -638,7 +638,7 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenu(ctx *gin.Context, re
 		return fmt.Errorf("Get role by role name failed: %w", err)
 	}
 
-	for idx, compReq := range req.Components {
+	for _, compReq := range req.Components {
 		var componentID uuid.UUID
 
 		component := &components.Component{
@@ -701,7 +701,7 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenu(ctx *gin.Context, re
 			return fmt.Errorf("get visible fail: %w", err)
 		}
 
-		if err := receiver.createTeacherMenu(tx, componentID, visible, idx, uuid.MustParse(req.TeacherID), compReq.IsShow); err != nil {
+		if err := receiver.createTeacherMenu(tx, componentID, visible, compReq.Order, uuid.MustParse(req.TeacherID), compReq.IsShow); err != nil {
 			logrus.Error("rollback by error create student menu:", err)
 			tx.Rollback()
 			rolledBack = true
@@ -785,7 +785,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStaffMenu(ctx *gin.Context, req 
 		return fmt.Errorf("Get role by role name failed: %w", err)
 	}
 
-	for idx, compReq := range req.Components {
+	for _, compReq := range req.Components {
 		var componentID uuid.UUID
 
 		component := &components.Component{
@@ -848,7 +848,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStaffMenu(ctx *gin.Context, req 
 			return fmt.Errorf("get visible fail: %w", err)
 		}
 
-		if err := receiver.createStaffMenu(tx, componentID, visible, idx, uuid.MustParse(req.StaffID), compReq.IsShow); err != nil {
+		if err := receiver.createStaffMenu(tx, componentID, visible, compReq.Order, uuid.MustParse(req.StaffID), compReq.IsShow); err != nil {
 			logrus.Error("rollback by error create student menu:", err)
 			tx.Rollback()
 			rolledBack = true
