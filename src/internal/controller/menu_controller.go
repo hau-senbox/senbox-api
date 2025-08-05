@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
@@ -10,6 +9,8 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sort"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -625,6 +626,10 @@ func (receiver *MenuController) UploadStudentMenu(context *gin.Context) {
 		})
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"request": req,
+	}).Info("Received UploadStudentMenu request")
 
 	err := receiver.UploadSectionMenuUseCase.UploadStudentMenu(context, req)
 	if err != nil {
