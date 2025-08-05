@@ -41,8 +41,18 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	headerIndex map[string]int,
 	queueID uint64,
 ) error {
+	// Load Vietnam timezone
+	loc, errT := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if errT != nil {
+		return fmt.Errorf("failed to load timezone: %w", errT)
+	}
+
+	// Convert to Vietnam time
+	submittedAtVN := req.SubmittedAt.In(loc)
+	tFormatted := submittedAtVN.Format("2006-01-02 15:04:05")
+
 	// Parse SubmittedAt
-	tFormatted := req.SubmittedAt.Format("2006-01-02 15:04:05")
+	//tFormatted := req.SubmittedAt.Format("2006-01-02 15:04:05")
 
 	// Base info
 	baseInfo := []interface{}{
@@ -115,7 +125,7 @@ func (uc *SyncDataUsecase) GetData2Sync(afterCreatedAt time.Time, formNote []str
 }
 
 func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataRequest) (string, error) {
-	const defaultStartTime = "2025-06-01T00:00:00Z"
+	const defaultStartTime = "2025-08-01T00:00:00Z"
 
 	// Marshal form notes để dùng truy vấn
 	notesJSON, err := json.Marshal(req.FormNotes)
