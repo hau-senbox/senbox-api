@@ -81,25 +81,57 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		})
 	}
 
+	var orgAdminResp *response.OrganizationAdmin = nil
+
+	if len(userEntity.Organizations) > 0 {
+		// Lấy danh sách OrgID mà user là manager
+		managedOrgIDs, err := userEntity.GetManagedOrganizationIDs(receiver.GetUserEntityUseCase.GetDB())
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: "failed to get managed organizations",
+			})
+			return
+		}
+
+		// So sánh với các org đã preload, map sang OrganizationAdmin nếu khớp
+		for _, org := range userEntity.Organizations {
+			if lo.Contains(managedOrgIDs, org.ID.String()) {
+				orgAdminResp = &response.OrganizationAdmin{
+					ID:               org.ID.String(),
+					OrganizationName: org.OrganizationName,
+					Avatar:           org.Avatar,
+					AvatarURL:        org.AvatarURL,
+					Address:          org.Address,
+					Description:      org.Description,
+					CreatedAt:        org.CreatedAt,
+					UpdatedAt:        org.UpdatedAt,
+				}
+				break // chỉ lấy 1 org đầu tiên mà user là manager
+			}
+		}
+	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
-			ID:           userEntity.ID.String(),
-			Username:     userEntity.Username,
-			Fullname:     userEntity.Fullname,
-			Nickname:     userEntity.Nickname,
-			Phone:        userEntity.Phone,
-			Email:        userEntity.Email,
-			Dob:          userEntity.Birthday.Format("2006-01-02"),
-			QRLogin:      userEntity.QRLogin,
-			Avatar:       userEntity.Avatar,
-			AvatarURL:    userEntity.AvatarURL,
-			IsBlocked:    userEntity.IsBlocked,
-			BlockedAt:    userEntity.BlockedAt.Format("2006-01-02"),
-			Organization: organizations,
-			CreatedAt:    userEntity.CreatedAt.Format("2006-01-02"),
-			Roles:        &roleListResponse,
-			Devices:      &deviceListResponse,
+			ID:                userEntity.ID.String(),
+			Username:          userEntity.Username,
+			Fullname:          userEntity.Fullname,
+			Nickname:          userEntity.Nickname,
+			Phone:             userEntity.Phone,
+			Email:             userEntity.Email,
+			Dob:               userEntity.Birthday.Format("2006-01-02"),
+			QRLogin:           userEntity.QRLogin,
+			Avatar:            userEntity.Avatar,
+			AvatarURL:         userEntity.AvatarURL,
+			IsBlocked:         userEntity.IsBlocked,
+			BlockedAt:         userEntity.BlockedAt.Format("2006-01-02"),
+			Organization:      organizations,
+			CreatedAt:         userEntity.CreatedAt.Format("2006-01-02"),
+			Roles:             &roleListResponse,
+			Devices:           &deviceListResponse,
+			OrganizationAdmin: orgAdminResp,
 		},
 	})
 }

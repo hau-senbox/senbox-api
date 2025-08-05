@@ -1,5 +1,7 @@
 package response
 
+import "time"
+
 type UserEntityResponse struct {
 	ID           string   `json:"id"`
 	Username     string   `json:"username"`
@@ -39,6 +41,8 @@ type UserEntityResponseV2 struct {
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
+
+	OrganizationAdmin *OrganizationAdmin `json:"organization_admin"`
 }
 
 type UserEntityResponseData struct {
@@ -48,4 +52,15 @@ type UserEntityResponseData struct {
 	Avatar    string   `json:"avatar"`
 	AvatarURL string   `json:"avatar_url"`
 	Roles     []string `json:"roles"`
+}
+
+type OrganizationAdmin struct {
+	ID               string    `json:"id"`
+	OrganizationName string    `json:"organization_name"`
+	Avatar           string    `json:"avatar"`
+	AvatarURL        string    `json:"avatar_url"`
+	Address          string    `json:"address"`
+	Description      string    `json:"description"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
