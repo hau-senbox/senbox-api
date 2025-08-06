@@ -2,8 +2,8 @@ package request
 
 type UserBlockSettingRequest struct {
 	UserID          string `json:"user_id"`
-	IsDeactive      bool   `json:"is_deactive" binding:"required"`
-	IsViewMessage   bool   `json:"is_view_message" binding:"required"`
+	IsDeactive      *bool  `json:"is_deactive" binding:"required"`
+	IsViewMessage   *bool  `json:"is_view_message" binding:"required"`
 	MessageBox      string `json:"message_box" binding:"required"`
 	MessageDeactive string `json:"message_deactive" binding:"required"`
 }

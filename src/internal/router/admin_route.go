@@ -449,6 +449,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	}
 
+	userBlockSettingController := &controller.UserBlockSettingController{
+		Usecase: &usecase.UserBlockSettingUsecase{
+			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+		},
+	}
+
 	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
@@ -458,6 +464,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/staff/:id", userEntityController.GetStaff4WebAdmin)
 		user.POST("/student/add-custom-id", userEntityController.AddCustomID2Student)
 		user.POST("/add-custom-id", userEntityController.AddCustomID2User)
+		block := user.Group("/block")
+		{
+			block.GET("/:id", userBlockSettingController.GetByUserID)
+			block.POST("", userBlockSettingController.Upsert)
+			block.DELETE("/:id", userBlockSettingController.Delete)
+		}
 	}
 
 	// application

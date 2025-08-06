@@ -1,11 +1,14 @@
 package usecase
 
 import (
+	"errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type UserBlockSettingUsecase struct {
@@ -43,8 +46,8 @@ func (uc *UserBlockSettingUsecase) GetByUserID(userID string) (*response.UserBlo
 func (uc *UserBlockSettingUsecase) Create(req request.UserBlockSettingRequest) error {
 	setting := &entity.UserBlockSetting{
 		UserID:          req.UserID,
-		IsDeactive:      req.IsDeactive,
-		IsViewMessage:   req.IsViewMessage,
+		IsDeactive:      *req.IsDeactive,
+		IsViewMessage:   *req.IsViewMessage,
 		MessageBox:      req.MessageBox,
 		MessageDeactive: req.MessageDeactive,
 		CreatedAt:       time.Now(),
@@ -61,8 +64,8 @@ func (uc *UserBlockSettingUsecase) Update(id int, req request.UserBlockSettingRe
 		return err
 	}
 
-	setting.IsDeactive = req.IsDeactive
-	setting.IsViewMessage = req.IsViewMessage
+	setting.IsDeactive = *req.IsDeactive
+	setting.IsViewMessage = *req.IsViewMessage
 	setting.MessageBox = req.MessageBox
 	setting.MessageDeactive = req.MessageDeactive
 	setting.UpdatedAt = time.Now()
@@ -73,16 +76,19 @@ func (uc *UserBlockSettingUsecase) Update(id int, req request.UserBlockSettingRe
 // Upsert (create if not exists, otherwise update)
 func (uc *UserBlockSettingUsecase) Upsert(req request.UserBlockSettingRequest) error {
 	setting, err := uc.Repo.GetByUserID(req.UserID)
+
+	// Nếu là lỗi "record not found" thì tạo mới
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return uc.Create(req)
+		}
+		// Nếu là lỗi khác → return ra ngoài
 		return err
 	}
 
-	if setting == nil {
-		return uc.Create(req)
-	}
-
-	setting.IsDeactive = req.IsDeactive
-	setting.IsViewMessage = req.IsViewMessage
+	// Nếu tìm được bản ghi thì update
+	setting.IsDeactive = *req.IsDeactive
+	setting.IsViewMessage = *req.IsViewMessage
 	setting.MessageBox = req.MessageBox
 	setting.MessageDeactive = req.MessageDeactive
 	setting.UpdatedAt = time.Now()
