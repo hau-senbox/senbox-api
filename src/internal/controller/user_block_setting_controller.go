@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserBlockSettingController struct {
@@ -37,6 +39,16 @@ func (ctl *UserBlockSettingController) GetByUserID(c *gin.Context) {
 
 	result, err := ctl.Usecase.GetByUserID(userID)
 	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, response.SucceedResponse{
+				Code:    http.StatusOK,
+				Message: "not found",
+				Data:    nil,
+			})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
@@ -45,9 +57,10 @@ func (ctl *UserBlockSettingController) GetByUserID(c *gin.Context) {
 	}
 
 	if result == nil {
-		c.JSON(http.StatusNotFound, response.FailedResponse{
-			Code:  http.StatusNotFound,
-			Error: "not found",
+		c.JSON(http.StatusNotFound, response.SucceedResponse{
+			Code:    http.StatusNotFound,
+			Message: "not found",
+			Data:    nil,
 		})
 		return
 	}
