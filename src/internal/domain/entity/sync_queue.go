@@ -16,6 +16,7 @@ type SyncQueue struct {
 	SpreadsheetID    string                `gorm:"type:varchar(128);not null" json:"spreadsheet_id"`
 	SheetUrl         string                `gorm:"type:varchar(255);not null" json:"sheet_url"`
 	Status           value.SyncQueueStatus `gorm:"type:varchar(32);not null" json:"status"`
+	IsAuto           bool                  `gorm:"not null;default:false" json:"is_auto"`
 	CreatedAt        time.Time             `json:"created_at"`
 	UpdatedAt        time.Time             `json:"updated_at"`
 }

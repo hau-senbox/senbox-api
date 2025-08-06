@@ -90,3 +90,13 @@ func (r *SyncQueueRepository) UpdateStatusByID(id uint64, status value.SyncQueue
 		Where("id = ?", id).
 		Update("status", status).Error
 }
+
+func (r *SyncQueueRepository) GetAllAutoSync() ([]entity.SyncQueue, error) {
+	var queues []entity.SyncQueue
+	if err := r.DBConn.
+		Where("is_auto = ?", true).
+		Find(&queues).Error; err != nil {
+		return nil, err
+	}
+	return queues, nil
+}

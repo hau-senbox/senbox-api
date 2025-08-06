@@ -467,6 +467,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		SubmissionRepo: &repository.SubmissionRepository{DBConn: dbConn},
 		SyncQueueRepo:  &repository.SyncQueueRepository{DBConn: dbConn},
 	}
+
+	// call schedule sync cron job
+	syncDataUsecase.StartAutoSyncScheduler()
+
 	applicationController := &controller.ApplicationController{
 		StaffAppUsecase: &usecase.StaffApplicationUseCase{
 			StaffAppRepo:  &repository.StaffApplicationRepository{DBConn: dbConn},

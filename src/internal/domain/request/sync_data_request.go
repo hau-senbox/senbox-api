@@ -5,4 +5,5 @@ type SyncDataRequest struct {
 	SheetName    string   `json:"sheet_name"`
 	FormNotes    []string `json:"form_notes"` // giữ nguyên
 	FormNotesStr string   `json:"form_qrs"`   // không bind từ JSON
+	IsAuto       bool     `json:"is_auto"`
 }

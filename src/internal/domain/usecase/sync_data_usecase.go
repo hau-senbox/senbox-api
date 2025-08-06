@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/sheets/v4"
 	"gorm.io/datatypes"
 )
@@ -188,6 +190,7 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 	syncQueue.SpreadsheetID = spreadsheetID
 	syncQueue.SheetUrl = req.SheetUrl
 	syncQueue.Status = value.SyncQueueStatusPending
+	syncQueue.IsAuto = req.IsAuto
 
 	// Nếu là bản ghi cũ → update, nếu là bản mới → create
 	if existingQueue != nil {
@@ -313,4 +316,62 @@ func (uc *SyncDataUsecase) GetAllSyncQueue() ([]response.SyncQueueResponse, erro
 	}
 
 	return result, nil
+}
+
+func (uc *SyncDataUsecase) AutoSyncFormAnswersDaily() {
+	queues, err := uc.SyncQueueRepo.GetAllAutoSync()
+	if err != nil {
+		log.Printf("Failed to fetch auto-sync queues: %v\n", err)
+		return
+	}
+
+	for _, queue := range queues {
+		var formNotesArr []string
+		if err := json.Unmarshal(queue.FormNotes, &formNotesArr); err != nil {
+			log.Printf("[AUTO SYNC ERROR] Failed to unmarshal FormNotes for QueueID %d: %v", queue.ID, err)
+			continue
+		}
+
+		req := request.SyncDataRequest{
+			SheetUrl:  queue.SheetUrl,
+			SheetName: queue.SheetName,
+			FormNotes: formNotesArr,
+		}
+
+		go func(q entity.SyncQueue, r request.SyncDataRequest) {
+			log.Printf("[AUTO SYNC] Start syncing for Sheet: %s", q.SheetName)
+			_, err := uc.ExcuteCreateAndSyncFormAnswer(r)
+			if err != nil {
+				log.Printf("[AUTO SYNC ERROR] QueueID %d: %v", q.ID, err)
+			}
+		}(queue, req)
+
+		// doi 5 phut
+		time.Sleep(5 * time.Minute)
+	}
+
+}
+
+func (uc *SyncDataUsecase) StartAutoSyncScheduler() {
+	c := cron.New(cron.WithSeconds())
+	// chay vao lic 00:00
+	_, err := c.AddFunc("0 0 0 * * *", func() {
+		log.Println("[CRON] Running AutoSyncFormAnswersDaily at", time.Now().Format(time.RFC3339))
+		uc.AutoSyncFormAnswersDaily()
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to add cron job: %v", err)
+	}
+
+	// Chạy mỗi giây
+	// _, err = c.AddFunc("@every 1s", func() {
+	// 	log.Println("[CRON] Running job every second at", time.Now().Format(time.RFC3339))
+	// 	uc.AutoSyncFormAnswersDaily()
+	// })
+	// if err != nil {
+	// 	log.Fatalf("Failed to add every-second job: %v", err)
+	// }
+
+	c.Start()
 }
