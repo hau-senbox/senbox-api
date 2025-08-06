@@ -267,6 +267,13 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userAccess.POST("/login", loginController.UserLogin)
 	}
 
+	// block setting
+	userBlockSettingController := &controller.UserBlockSettingController{
+		Usecase: &usecase.UserBlockSettingUsecase{
+			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+		},
+	}
+
 	user := engine.Group("v1/user")
 	{
 		user.GET("/current-user", secureMiddleware.Secured(), userEntityController.GetCurrentUser)
@@ -295,6 +302,11 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.GET("/role-sign-up", userEntityController.GetAllRoleOrgSignUp)
 		user.GET("/child/:id", secureMiddleware.Secured(), userEntityController.GetChildByID)
 		user.PUT("/child", secureMiddleware.Secured(), userEntityController.UpdateChild)
+
+		block := user.Group("/block")
+		{
+			block.GET("/:user_id", userBlockSettingController.GetByUserID)
+		}
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")
