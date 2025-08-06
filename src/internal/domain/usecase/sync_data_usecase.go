@@ -312,6 +312,7 @@ func (uc *SyncDataUsecase) GetAllSyncQueue() ([]response.SyncQueueResponse, erro
 			SheetURL:  q.SheetUrl,
 			SheetName: q.SheetName,
 			FormQRs:   strings.Join(formQRs, ","),
+			IsAuto:    &q.IsAuto,
 		})
 	}
 
