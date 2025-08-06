@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserBlockSettingController struct {
@@ -16,11 +17,20 @@ type UserBlockSettingController struct {
 
 // GET /user-block-setting?user_id=xxx
 func (ctl *UserBlockSettingController) GetByUserID(c *gin.Context) {
-	userID := c.Query("user_id")
+	userID := c.Param("user_id")
+
 	if userID == "" {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "user_id is required",
+		})
+		return
+	}
+
+	if _, err := uuid.Parse(userID); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid user_id format (must be UUID)",
 		})
 		return
 	}

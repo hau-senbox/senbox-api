@@ -268,6 +268,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 	})
 	return &response.StaffResponseBase{
 		StaffID:       staffID,
+		UserID:        userEntity.ID.String(),
 		StaffName:     userEntity.Username,
 		Avatar:        "",
 		AvatarURL:     "",

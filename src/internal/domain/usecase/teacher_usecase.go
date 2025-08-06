@@ -233,6 +233,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	})
 	return &response.TeacherResponseBase{
 		TeacherID:     teacherID,
+		UserID:        userEntity.ID.String(),
 		TeacherName:   userEntity.Username,
 		Avatar:        "",
 		AvatarURL:     "",

@@ -466,7 +466,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.POST("/add-custom-id", userEntityController.AddCustomID2User)
 		block := user.Group("/block")
 		{
-			block.GET("/:id", userBlockSettingController.GetByUserID)
+			block.GET("/:user_id", userBlockSettingController.GetByUserID)
 			block.POST("", userBlockSettingController.Upsert)
 			block.DELETE("/:id", userBlockSettingController.Delete)
 		}
