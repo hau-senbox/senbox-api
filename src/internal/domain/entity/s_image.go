@@ -8,6 +8,7 @@ type SImage struct {
 	Extension string `gorm:"column:extension;not null;"`
 	Width     int    `gorm:"column:width;not null;default:0;"`
 	Height    int    `gorm:"column:height;not null;default:0;"`
+	FolderID  int    `gorm:"column:folder_id;not null;"`
 }
 
 func (SImage) TableName() string {
