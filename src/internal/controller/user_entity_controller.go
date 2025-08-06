@@ -43,6 +43,7 @@ type UserEntityController struct {
 	*usecase.StudentApplicationUseCase
 	*usecase.TeacherApplicationUseCase
 	*usecase.StaffApplicationUseCase
+	*usecase.UserBlockSettingUsecase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {

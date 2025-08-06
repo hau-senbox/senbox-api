@@ -448,6 +448,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
 	}
+
 	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
