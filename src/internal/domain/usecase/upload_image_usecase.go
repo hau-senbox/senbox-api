@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -15,11 +14,14 @@ import (
 	"sen-global-api/pkg/uploader"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type UploadImageUseCase struct {
 	uploader.UploadProvider
 	*repository.ImageRepository
+	*repository.UserImageRepository
 }
 
 func getImageDimensions(data []byte) (int, int, error) {
@@ -53,7 +55,16 @@ func isImage(extName string) bool {
 	return false
 }
 
-func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, imageName string, mode uploader.UploadMode) (*string, *entity.SImage, error) {
+func (receiver *UploadImageUseCase) UploadImage(
+	data []byte,
+	folder, fileName, imageName string,
+	mode uploader.UploadMode,
+	topicID *string,
+	userID *string,
+	studentID *string,
+	teacherID *string,
+) (*string, *entity.SImage, error) {
+
 	fileExt := strings.ToLower(path.Ext(fileName))
 
 	if !isImage(fileExt) {
@@ -71,7 +82,6 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 	// Determine dimensions only for raster images
 	var width, height int
 	var err error
-
 	if supportedRasterImageExts[fileExt] {
 		width, height, err = getImageDimensions(data)
 		if err != nil {
@@ -87,7 +97,7 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 		return nil, nil, err
 	}
 
-	// Save image metadata
+	// Create SImage entity
 	img := entity.SImage{
 		ImageName: imageName,
 		Folder:    folder,
@@ -97,11 +107,20 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 		Extension: fileExt,
 	}
 
+	// add topic id
+	if topicID != nil {
+		img.TopicID = *topicID
+	} else {
+		img.TopicID = ""
+	}
+
+	// Save image metadata
 	err = receiver.ImageRepository.CreateImage(img)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	// Optionally create public image
 	if mode == uploader.UploadPublic {
 		err = receiver.ImageRepository.CreatePublicImage(entity.PublicImage{
 			ImageName: imageName,
@@ -116,6 +135,33 @@ func (receiver *UploadImageUseCase) UploadImage(data []byte, folder, fileName, i
 			return nil, nil, err
 		}
 	}
+
+	go func(imgID uint64, userID *string, studentID *string, teacherID *string) {
+		// Gán giá trị chuỗi rỗng nếu nil
+		var uid, sid, tid string
+
+		if userID != nil {
+			uid = *userID
+		}
+		if studentID != nil {
+			sid = *studentID
+		}
+		if teacherID != nil {
+			tid = *teacherID
+		}
+
+		userImage := &entity.SUserImage{
+			ImageID:   imgID,
+			UserID:    uid,
+			StudentID: sid,
+			TeacherID: tid,
+		}
+
+		err := receiver.UserImageRepository.Create(userImage)
+		if err != nil {
+			log.Errorf("error creating user image link: %v", err)
+		}
+	}(img.ID, userID, studentID, teacherID)
 
 	return url, &img, nil
 }

@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -136,6 +137,24 @@ func (receiver *ImageController) GetIconByKey(context *gin.Context) {
 }
 
 func (receiver *ImageController) CreateImage(context *gin.Context) {
+	userIDRaw, exists := context.Get("user_id")
+	if !exists {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized: user_id not found",
+		})
+		return
+	}
+
+	userID, ok := userIDRaw.(string)
+	if !ok {
+		context.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized: user_id is not a valid string",
+		})
+		return
+	}
+
 	fileHeader, err := context.FormFile("file")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -176,7 +195,26 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		return
 	}
 
-	url, img, err := receiver.UploadImageUseCase.UploadImage(dataBytes, folder, fileHeader.Filename, fileName, mode)
+	// Lấy topic_id và student_id nếu có
+	topicIDRaw := context.PostForm("topic_id")
+	var topicID *string
+	if strings.TrimSpace(topicIDRaw) != "" {
+		topicID = &topicIDRaw
+	}
+
+	studentIDRaw := context.PostForm("student_id")
+	var studentID *string
+	if strings.TrimSpace(studentIDRaw) != "" {
+		studentID = &studentIDRaw
+	}
+
+	teacherIDRaw := context.PostForm("teacher_id")
+	var teacherID *string
+	if strings.TrimSpace(teacherIDRaw) != "" {
+		teacherID = &teacherIDRaw
+	}
+
+	url, img, err := receiver.UploadImageUseCase.UploadImage(dataBytes, folder, fileHeader.Filename, fileName, mode, topicID, &userID, studentID, teacherID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -231,4 +269,3 @@ func (receiver *ImageController) DeleteImage(context *gin.Context) {
 		Message: "image deleted successfully",
 	})
 }
-

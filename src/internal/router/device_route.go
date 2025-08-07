@@ -164,8 +164,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			UploadProvider:  provider,
 		},
 		UploadImageUseCase: &usecase.UploadImageUseCase{
-			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			UploadProvider:  provider,
+			ImageRepository:     &repository.ImageRepository{DBConn: dbConn},
+			UploadProvider:      provider,
+			UserImageRepository: &repository.UserImageRepository{DBConn: dbConn},
 		},
 		DeleteImageUseCase: &usecase.DeleteImageUseCase{
 			ImageRepository: &repository.ImageRepository{DBConn: dbConn},

@@ -8,16 +8,17 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/cloudfront/sign"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"log"
-	"net/http"
-	"os"
-	"time"
 )
 
 type s3Provider struct {
@@ -74,7 +75,7 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, key stri
 		Key:         aws.String(key),
 		Body:        fileBytes,
 		ContentType: aws.String(fileType),
-		ACL:         types.ObjectCannedACLPrivate,
+		ACL:         types.ObjectCannedACLPublicRead,
 	})
 
 	if err != nil {
