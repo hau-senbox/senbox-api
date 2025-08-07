@@ -2,9 +2,10 @@ package repository
 
 import (
 	"errors"
+	"sen-global-api/internal/domain/entity"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"sen-global-api/internal/domain/entity"
 )
 
 type ImageRepository struct {
@@ -96,7 +97,7 @@ func (receiver *ImageRepository) CreateImages(images []entity.SImage) error {
 	return nil
 }
 
-func (receiver *ImageRepository) CreateImage(image entity.SImage) error {
+func (receiver *ImageRepository) CreateImage(image *entity.SImage) error {
 	if err := receiver.DBConn.Model(entity.SImage{}).Create(&image).Error; err != nil {
 		log.Error("ImageRepository.CreateImages: " + err.Error())
 		return errors.New("failed to create images")

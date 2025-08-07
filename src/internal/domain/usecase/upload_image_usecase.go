@@ -115,7 +115,7 @@ func (receiver *UploadImageUseCase) UploadImage(
 	}
 
 	// Save image metadata
-	err = receiver.ImageRepository.CreateImage(img)
+	err = receiver.ImageRepository.CreateImage(&img)
 	if err != nil {
 		return nil, nil, err
 	}
