@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	config2 "sen-global-api/config"
@@ -8,7 +9,9 @@ import (
 	"sen-global-api/pkg/logger"
 	"sen-global-api/pkg/messaging"
 
+	"cloud.google.com/go/firestore"
 	"github.com/ilyakaznacheev/cleanenv"
+	"google.golang.org/api/option"
 )
 
 // @title           Swagger Sen Master API
@@ -36,6 +39,27 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	// firestore firebase setup
+
+	ctx := context.Background()
+
+	sa := option.WithCredentialsFile("credentials/senboxapp-firebase-adminsdk.json") // đường dẫn tới file key
+	client, err := firestore.NewClient(ctx, "senboxapp-a1ad0", sa)
+	if err != nil {
+		log.Fatalf("Failed to create Firestore client: %v", err)
+	}
+	defer client.Close()
+
+	// Thêm document
+	_, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
+		"name": "Tanhung",
+		"age":  28,
+	})
+	if err != nil {
+		log.Fatalf("Failed to add document: %v", err)
+	}
+	log.Println("Document added")
 
 	// Run the app
 	err = app.Run(appConfig, fcm)
