@@ -75,7 +75,7 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, key stri
 		Key:         aws.String(key),
 		Body:        fileBytes,
 		ContentType: aws.String(fileType),
-		ACL:         types.ObjectCannedACLPublicRead,
+		ACL:         types.ObjectCannedACLPrivate,
 	})
 
 	if err != nil {
