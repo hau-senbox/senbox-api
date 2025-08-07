@@ -164,8 +164,14 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		return
 	}
 
-	folder := context.DefaultPostForm("folder", "img")
-	fileName := context.DefaultPostForm("file_name", randx.GenString(10))
+	// folder := context.DefaultPostForm("folder", "img")
+	// fileName := context.DefaultPostForm("file_name", randx.GenString(10))
+	folder := strings.TrimSpace(context.DefaultPostForm("folder", "img"))
+	fileName := strings.TrimSpace(context.DefaultPostForm("file_name", randx.GenString(10)))
+
+	// Replace all whitespace sequences (tabs, spaces, multiple spaces, etc.) with "_"
+	folder = strings.Join(strings.Fields(folder), "_")
+	fileName = strings.Join(strings.Fields(fileName), "_")
 	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
