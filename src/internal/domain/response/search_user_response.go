@@ -9,11 +9,12 @@ type SearchUserResponse struct {
 }
 
 type UserResponse struct {
-	ID        string `json:"id"`
-	Username  string `json:"username"`
-	Nickname  string `json:"nickname"`
-	Avatar    string `json:"avatar"`
-	AvatarURL string `json:"avatar_url"`
+	ID         string `json:"id"`
+	Username   string `json:"username"`
+	Nickname   string `json:"nickname"`
+	Avatar     string `json:"avatar"`
+	AvatarURL  string `json:"avatar_url"`
+	IsDeactive bool   `json:"is_deactive"`
 }
 
 type ChildrenResponse struct {
@@ -29,9 +30,11 @@ type StudentResponse struct {
 type TeacherResponse struct {
 	TeacherID   string `json:"id"`
 	TeacherName string `json:"nickname"`
+	IsDeactive  bool   `json:"is_deactive"`
 }
 
 type StaffResponse struct {
-	StaffID   string `json:"id"`
-	StaffName string `json:"nickname"`
+	StaffID    string `json:"id"`
+	StaffName  string `json:"nickname"`
+	IsDeactive bool   `json:"is_deactive"`
 }

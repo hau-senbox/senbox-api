@@ -11,11 +11,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserBlockSettingUsecase struct {
-	Repo *repository.UserBlockSettingRepository
+	Repo        *repository.UserBlockSettingRepository
+	TeacherRepo *repository.TeacherApplicationRepository
+	StaffRepo   *repository.StaffApplicationRepository
 }
 
 func NewUserBlockSettingUsecase(repo *repository.UserBlockSettingRepository) *UserBlockSettingUsecase {
@@ -127,4 +130,65 @@ func (uc *UserBlockSettingUsecase) pushToFirestore(req request.UserBlockSettingR
 		Doc(req.UserID).
 		Set(ctx, data, firestore.MergeAll)
 	return err
+}
+
+func (uc *UserBlockSettingUsecase) GetDeactive4User(userID string) (bool, error) {
+	return uc.Repo.GetIsDeactiveByUserID(userID)
+}
+
+func (uc *UserBlockSettingUsecase) GetDeactive4Teacher(teacherID string) (bool, error) {
+	// Parse teacherID sang UUID
+	tid, err := uuid.Parse(teacherID)
+	if err != nil {
+		return false, err
+	}
+
+	// Lấy thông tin teacher
+	teacher, err := uc.TeacherRepo.GetByID(tid)
+	if err != nil {
+		return false, err
+	}
+	if teacher == nil {
+		return false, nil
+	}
+
+	// Lấy is_deactive từ user_id
+	isDeactive, err := uc.Repo.GetIsDeactiveByUserID(teacher.UserID.String())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return isDeactive, nil
+
+}
+
+func (uc *UserBlockSettingUsecase) GetDeactive4Staff(staffID string) (bool, error) {
+	// Parse teacherID sang UUID
+	stid, err := uuid.Parse(staffID)
+	if err != nil {
+		return false, err
+	}
+
+	// Lấy thông tin teacher
+	staff, err := uc.StaffRepo.GetByID(stid)
+	if err != nil {
+		return false, err
+	}
+	if staff == nil {
+		return false, nil
+	}
+
+	// Lấy is_deactive từ user_id
+	isDeactive, err := uc.Repo.GetIsDeactiveByUserID(staff.UserID.String())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return isDeactive, nil
 }

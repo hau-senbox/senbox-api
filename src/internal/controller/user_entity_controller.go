@@ -1639,8 +1639,17 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	role := c.Query("role")
 	name := strings.ToLower(c.Query("name"))
+	deactiveParam := c.Query("deactive")
 
 	isAll := role == "all"
+
+	var deactiveFilter *bool
+	if deactiveParam != "" {
+		val, err := strconv.ParseBool(deactiveParam)
+		if err == nil {
+			deactiveFilter = &val
+		}
+	}
 
 	// Chuẩn bị cấu trúc response
 	var (
@@ -1661,12 +1670,15 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 		// Map sang response
 		for _, u := range rawUsers {
+			// get is_deactive
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
 			users = append(users, response.UserResponse{
-				ID:        u.ID.String(),
-				Username:  u.Username,
-				Nickname:  u.Nickname,
-				Avatar:    u.Avatar,
-				AvatarURL: u.AvatarURL,
+				ID:         u.ID.String(),
+				Username:   u.Username,
+				Nickname:   u.Nickname,
+				Avatar:     u.Avatar,
+				AvatarURL:  u.AvatarURL,
+				IsDeactive: isDeactive,
 			})
 		}
 		for _, c := range rawChildren {
@@ -1682,24 +1694,57 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			})
 		}
 		for _, t := range rawTeachers {
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			teachers = append(teachers, response.TeacherResponse{
 				TeacherID:   t.TeacherID,
 				TeacherName: t.TeacherName,
+				IsDeactive:  isDeactive,
 			})
 		}
 		for _, s := range rawStaffs {
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:   s.StaffID,
-				StaffName: s.StaffName,
+				StaffID:    s.StaffID,
+				StaffName:  s.StaffName,
+				IsDeactive: isDeactive,
 			})
 		}
 
-		// Lọc theo name nếu có
+		// Lọc theo name va deactive nếu có
 		users = helper.FilterUsersByName(users, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.UserResponse, 0)
+			for _, u := range users {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			users = filtered
+		}
+
 		children = helper.FilterChildrenByName(children, name)
 		students = helper.FilterStudentByName(students, name)
 		teachers = helper.FilterTeacherByName(teachers, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.TeacherResponse, 0)
+			for _, u := range teachers {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			teachers = filtered
+		}
+
 		staffs = helper.FilterStaffByName(staffs, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.StaffResponse, 0)
+			for _, u := range staffs {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			staffs = filtered
+		}
 
 		// Trả kết quả
 		c.JSON(http.StatusOK, response.SucceedResponse{
@@ -1755,22 +1800,44 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	case value.RoleTeacher:
 		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 		for _, t := range rawTeachers {
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			teachers = append(teachers, response.TeacherResponse{
 				TeacherID:   t.TeacherID,
 				TeacherName: t.TeacherName,
+				IsDeactive:  isDeactive,
 			})
 		}
 		teachers = helper.FilterTeacherByName(teachers, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.TeacherResponse, 0)
+			for _, u := range teachers {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			teachers = filtered
+		}
 
 	case value.RoleStaff:
 		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
 		for _, s := range rawStaffs {
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:   s.StaffID,
-				StaffName: s.StaffName,
+				StaffID:    s.StaffID,
+				StaffName:  s.StaffName,
+				IsDeactive: isDeactive,
 			})
 		}
 		staffs = helper.FilterStaffByName(staffs, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.StaffResponse, 0)
+			for _, u := range staffs {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			staffs = filtered
+		}
 
 	case value.RoleOrganization:
 		// Không xử lý gì

@@ -447,11 +447,18 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
+		UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+		},
 	}
 
 	userBlockSettingController := &controller.UserBlockSettingController{
 		Usecase: &usecase.UserBlockSettingUsecase{
-			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
 	}
 
