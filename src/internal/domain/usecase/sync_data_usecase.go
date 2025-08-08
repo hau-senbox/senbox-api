@@ -337,6 +337,7 @@ func (uc *SyncDataUsecase) AutoSyncFormAnswersDaily() {
 			SheetUrl:  queue.SheetUrl,
 			SheetName: queue.SheetName,
 			FormNotes: formNotesArr,
+			IsAuto:    queue.IsAuto,
 		}
 
 		go func(q entity.SyncQueue, r request.SyncDataRequest) {
