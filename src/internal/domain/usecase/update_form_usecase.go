@@ -135,6 +135,7 @@ func (receiver *UpdateFormUseCase) unmarshalAttributes(rawQuestion parameters.Ra
 		value.QuestionInText,
 		value.QuestionText,
 		value.QuestionInCount,
+		value.QuestionCount,
 		value.QuestionNumber:
 		return "{}", nil
 	case value.QuestionDurationBackward,

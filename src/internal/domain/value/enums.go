@@ -20,6 +20,7 @@ const (
 	QuestionInText
 	QuestionText
 	QuestionInCount
+	QuestionCount
 	QuestionNumber
 	QuestionPhoto
 	QuestionMultipleChoice
@@ -224,6 +225,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "text"
 	case QuestionInCount:
 		return "in_count"
+	case QuestionCount:
+		return "count"
 	case QuestionNumber:
 		return "number"
 	case QuestionPhoto:
@@ -444,6 +447,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "text"
 	case QuestionInCount:
 		return "in_count"
+	case QuestionCount:
+		return "count"
 	case QuestionNumber:
 		return "number"
 	case QuestionPhoto:
@@ -621,6 +626,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return QuestionText, nil
 	case "in_count":
 		return QuestionInCount, nil
+	case "count":
+		return QuestionCount, nil
 	case "number":
 		return QuestionNumber, nil
 	case "photo":
@@ -831,6 +838,7 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		QuestionInText,
 		QuestionText,
 		QuestionInCount,
+		QuestionCount,
 		QuestionNumber,
 		QuestionPhoto,
 		QuestionMultipleChoice,
