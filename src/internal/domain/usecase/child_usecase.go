@@ -70,7 +70,10 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		ParentID:  userID,
 	}
 
+	// create child
 	err := uc.childRepo.Create(child)
+
+	// sau khi create chid thanh cong create paren application from
 
 	if err == nil {
 		//tao child menu
