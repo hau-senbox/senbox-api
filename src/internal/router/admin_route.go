@@ -372,6 +372,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
 		},
+		DeviceMenuUseCase: &usecase.DeviceMenuUseCase{
+			Repo:          &repository.DeviceMenuRepository{DBConn: dbConn},
+			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+			DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
+		},
 	}
 	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
 	{
@@ -381,13 +386,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.POST("/section/teacher", menuController.UploadTeacherMenu)
 		menu.POST("/section/staff", menuController.UploadStaffMenu)
 		menu.POST("/section/child", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadChildMenu)
+		menu.GET("/section/device/:id", menuController.GetDeviceMenu4Admin)
 		menu.POST("/section/device", menuController.UploadDeviceSectionMenu)
 		menu.DELETE("/section/:id", menuController.DeleteSectionMenu)
 		menu.GET("/child/:id", menuController.GetChildMenuByChildID)
 		menu.PUT("/child", menuController.UpdateIsShowChildMenu)
 		menu.PUT("/student", menuController.UpdateIsShowStudentMenu)
 		menu.PUT("/teacher", menuController.UpdateIsShowTeacherMenu)
-
 	}
 
 	// user

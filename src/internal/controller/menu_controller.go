@@ -28,6 +28,7 @@ type MenuController struct {
 	*usecase.StudentMenuUseCase
 	*usecase.StudentApplicationUseCase
 	*usecase.TeacherMenuUseCase
+	*usecase.DeviceMenuUseCase
 }
 
 type componentResponse struct {
@@ -354,6 +355,34 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: res,
+	})
+}
+
+func (receiver *MenuController) GetDeviceMenu4Admin(context *gin.Context) {
+	deviceID := context.Param("id")
+	if deviceID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "deviceID is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.DeviceMenuUseCase.GetByDeviceID(deviceID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
 	})
 }
 
