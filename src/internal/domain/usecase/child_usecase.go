@@ -5,12 +5,14 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 type ChildUseCase struct {
@@ -74,18 +76,38 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		//tao child menu
 		childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
 		if childRoleOrg != nil {
-			components, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
+			comps, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
 
-			for index, component := range components {
+			for index, component := range comps {
+
 				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+
+				// → Tạo mới một Component từ thông tin đã lấy
+				newComponent := &components.Component{
+					ID:        uuid.New(),
+					Name:      component.Name,
+					Type:      component.Type,
+					Key:       component.Key,
+					SectionID: component.SectionID,
+					Value:     component.Value,
+				}
+
+				err = uc.componentRepo.Create(newComponent)
+
+				if err != nil {
+					log.Printf("Create new component fail: %v", err)
+					continue
+				}
+
 				err := uc.childMenuRepo.Create(&entity.ChildMenu{
 					ID:          uuid.New(),
 					ChildID:     childID,
-					ComponentID: component.ID,
+					ComponentID: newComponent.ID,
 					Order:       index,
 					IsShow:      true,
 					Visible:     visible,
 				})
+
 				if err != nil {
 					continue
 				}
