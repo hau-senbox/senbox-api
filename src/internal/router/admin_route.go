@@ -335,6 +335,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherMenuRepository:        &repository.TeacherMenuRepository{DBConn: dbConn},
 			StaffMenuRepository:          &repository.StaffMenuRepository{DBConn: dbConn},
 			StaffApplicationRepository:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			DeviceMenuRepository:         &repository.DeviceMenuRepository{DBConn: dbConn},
 		},
 		ChildMenuUseCase: &usecase.ChildMenuUseCase{
 			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
@@ -380,7 +381,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.POST("/section/teacher", menuController.UploadTeacherMenu)
 		menu.POST("/section/staff", menuController.UploadStaffMenu)
 		menu.POST("/section/child", menuController.UploadChildMenu)
-		menu.POST("/section/device", menuController.UploadDeviceMenu)
+		menu.POST("/section/device", menuController.UploadDeviceSectionMenu)
 		menu.DELETE("/section/:id", menuController.DeleteSectionMenu)
 		menu.GET("/child/:id", menuController.GetChildMenuByChildID)
 		menu.PUT("/child", menuController.UpdateIsShowChildMenu)

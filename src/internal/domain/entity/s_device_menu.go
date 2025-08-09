@@ -8,7 +8,7 @@ import (
 
 type SDeviceMenuV2 struct {
 	ID          uuid.UUID `json:"id" gorm:"type:char(36);primaryKey"`
-	DeviceID    uuid.UUID `json:"device_id" gorm:"type:char(36);not null"`
+	DeviceID    string    `json:"device_id" gorm:"type:char(36);not null"`
 	ComponentID uuid.UUID `json:"component_id" gorm:"type:char(36);not null"`
 	Order       int       `json:"order" gorm:"not null"`
 	IsShow      bool      `json:"is_show" gorm:"default:true"`
