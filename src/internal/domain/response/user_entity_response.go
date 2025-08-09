@@ -38,6 +38,7 @@ type UserEntityResponseV2 struct {
 	BlockedAt    string   `json:"blocked_at"`
 	Organization []string `json:"organizations"`
 	CreatedAt    string   `json:"created_at"`
+	IsDeactive   bool     `json:"is_deactive"`
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`

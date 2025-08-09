@@ -129,6 +129,8 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 
 	}
 
+	isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
@@ -149,6 +151,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Roles:             &roleListResponse,
 			Devices:           &deviceListResponse,
 			OrganizationAdmin: orgAdminResp,
+			IsDeactive:        isDeactive,
 		},
 	})
 }
