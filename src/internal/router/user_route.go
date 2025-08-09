@@ -94,6 +94,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			TeacherMenuRepository:              &repository.TeacherMenuRepository{DBConn: dbConn},
 			OrganizationMenuTemplateRepository: &repository.OrganizationMenuTemplateRepository{DBConn: dbConn},
 			StaffMenuRepository:                &repository.StaffMenuRepository{DBConn: dbConn},
+			OrganizationRepository:             &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		ApproveUserFormApplicationUseCase: &usecase.ApproveUserFormApplicationUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},

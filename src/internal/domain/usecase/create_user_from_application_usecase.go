@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"sen-global-api/helper"
@@ -21,12 +22,23 @@ type CreateUserFormApplicationUseCase struct {
 	*repository.TeacherMenuRepository
 	*repository.StaffMenuRepository
 	*repository.OrganizationMenuTemplateRepository
+	*repository.OrganizationRepository
 }
 
 func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
 	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
+	}
+
+	// check org exist
+	org, err := receiver.OrganizationRepository.GetByID(req.OrganizationID)
+	if err != nil {
+		return fmt.Errorf("organization not found: %w", err)
+	}
+
+	if org == nil {
+		return errors.New("organization does not exist")
 	}
 
 	teacherID := uuid.New()
@@ -105,6 +117,16 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 		return err
 	}
 
+	// check org exist
+	org, err := receiver.OrganizationRepository.GetByID(req.OrganizationID)
+	if err != nil {
+		return fmt.Errorf("organization not found: %w", err)
+	}
+
+	if org == nil {
+		return errors.New("organization does not exist")
+	}
+
 	staffID := uuid.New()
 
 	err = receiver.UserEntityRepository.CreateStaffFormApplication(&entity.SStaffFormApplication{
@@ -180,6 +202,16 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
+	}
+
+	// check org exist
+	org, err := receiver.OrganizationRepository.GetByID(req.OrganizationID)
+	if err != nil {
+		return fmt.Errorf("organization not found: %w", err)
+	}
+
+	if org == nil {
+		return errors.New("organization does not exist")
 	}
 
 	studentID := uuid.New()
