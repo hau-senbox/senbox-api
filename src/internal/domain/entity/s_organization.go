@@ -10,15 +10,16 @@ import (
 )
 
 type SOrganization struct {
-	ID               uuid.UUID `gorm:"type:char(36);primary_key"`
-	OrganizationName string    `gorm:"type:varchar(255);not null;unique"`
-	Avatar           string    `gorm:"type:varchar(255);not null;default:''"`
-	AvatarURL        string    `gorm:"type:longtext;not null;default:''"`
-	Password         string    `gorm:"type:varchar(255);not null;default:''"`
-	Address          string    `gorm:"type:varchar(255);not null;default:''"`
-	Description      string    `gorm:"type:varchar(255);not null;default:''"`
-	CreatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	UpdatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	ID                   uuid.UUID `gorm:"type:char(36);primary_key"`
+	OrganizationName     string    `gorm:"type:varchar(255);not null;unique"`
+	OrganizationNickName string    `gorm:"type:varchar(255);not null;default:''"`
+	Avatar               string    `gorm:"type:varchar(255);not null;default:''"`
+	AvatarURL            string    `gorm:"type:longtext;not null;default:''"`
+	Password             string    `gorm:"type:varchar(255);not null;default:''"`
+	Address              string    `gorm:"type:varchar(255);not null;default:''"`
+	Description          string    `gorm:"type:varchar(255);not null;default:''"`
+	CreatedAt            time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	UpdatedAt            time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 
 	UserOrgs []SUserOrg `gorm:"foreignKey:organization_id;references:id;constraint:OnDelete:CASCADE"`
 }

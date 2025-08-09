@@ -2,12 +2,13 @@ package repository
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"github.com/tiendc/gofn"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/tiendc/gofn"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -78,10 +79,11 @@ func (receiver *OrganizationRepository) GetByName(name string) (*entity.SOrganiz
 
 func (receiver *OrganizationRepository) CreateOrganization(req request.CreateOrganizationRequest) error {
 	result := receiver.DBConn.Create(&entity.SOrganization{
-		OrganizationName: req.OrganizationName,
-		Password:         req.Password,
-		Address:          req.Address,
-		Description:      req.Description,
+		OrganizationName:     req.OrganizationName,
+		OrganizationNickName: req.OrganizationNickName,
+		Password:             req.Password,
+		Address:              req.Address,
+		Description:          req.Description,
 	})
 
 	if result.Error != nil {
