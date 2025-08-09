@@ -80,6 +80,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SyncQueue{},
 		&entity.UserBlockSetting{},
 		&entity.SUserImage{},
+		&entity.SDeviceMenuV2{},
 	)
 
 	// Seed

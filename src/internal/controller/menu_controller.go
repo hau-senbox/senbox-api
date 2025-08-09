@@ -721,6 +721,51 @@ func (receiver *MenuController) UploadChildMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) UploadDevice4AdminMenu(context *gin.Context) {
+	var req request.UploadDeviceMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	present := lo.ContainsBy(user.Roles, func(org entity.SRole) bool {
+		return org.Role == entity.SuperAdmin || org.Role == entity.Admin
+	})
+	if !present {
+		context.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: "access denied",
+		})
+		return
+	}
+
+	err = receiver.UploadDeviceMenuUseCase.Upload(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "menu was upload successfully",
+	})
+}
+
 func (receiver *MenuController) GetSectionMenu(context *gin.Context) {
 
 	menus, err := receiver.GetMenuUseCase.GetSectionMenu(context)
