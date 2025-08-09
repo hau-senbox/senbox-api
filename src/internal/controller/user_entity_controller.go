@@ -1839,6 +1839,31 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			staffs = filtered
 		}
 
+	case value.User:
+		rawUsers, _ := receiver.GetAllUsers4Search(c)
+		for _, u := range rawUsers {
+			// get is_deactive
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
+			users = append(users, response.UserResponse{
+				ID:         u.ID.String(),
+				Username:   u.Username,
+				Nickname:   u.Nickname,
+				Avatar:     u.Avatar,
+				AvatarURL:  u.AvatarURL,
+				IsDeactive: isDeactive,
+			})
+		}
+		users = helper.FilterUsersByName(users, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.UserResponse, 0)
+			for _, u := range users {
+				if u.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, u)
+				}
+			}
+			users = filtered
+		}
+
 	case value.RoleOrganization:
 		// Không xử lý gì
 	}

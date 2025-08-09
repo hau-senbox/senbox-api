@@ -1211,7 +1211,7 @@ type TimeRange struct {
 type RoleSignUp string
 
 const (
-	Users            RoleSignUp = "Users"
+	User             RoleSignUp = "User"
 	RoleTeacher      RoleSignUp = "Teacher"
 	RoleChild        RoleSignUp = "Child"
 	RoleStaff        RoleSignUp = "Staff"
@@ -1221,7 +1221,7 @@ const (
 
 func IsValidRoleSignUp(role string) bool {
 	switch RoleSignUp(role) {
-	case RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
+	case User, RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
 		return true
 	default:
 		return false
