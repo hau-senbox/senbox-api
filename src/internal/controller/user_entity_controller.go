@@ -153,6 +153,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Devices:           &deviceListResponse,
 			OrganizationAdmin: orgAdminResp,
 			IsDeactive:        isDeactive,
+			IsSuperAdmin:      userEntity.IsSuperAdmin(),
 		},
 	})
 }
