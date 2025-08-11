@@ -279,9 +279,14 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	}
 
 	// block setting
-	userBlockSettingController := &controller.UserBlockSettingController{
-		Usecase: &usecase.UserBlockSettingUsecase{
-			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+	userBlockSettingController := &controller.BlockSettingController{
+		UserBlockUsecase: &usecase.UserBlockSettingUsecase{
+			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+		},
+		StudentBlockUsecase: &usecase.StudentBlockSettingUsecase{
+			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},
 	}
 

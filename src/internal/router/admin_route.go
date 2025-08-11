@@ -471,11 +471,14 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	}
 
-	userBlockSettingController := &controller.UserBlockSettingController{
-		Usecase: &usecase.UserBlockSettingUsecase{
+	userBlockSettingController := &controller.BlockSettingController{
+		UserBlockUsecase: &usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+		},
+		StudentBlockUsecase: &usecase.StudentBlockSettingUsecase{
+			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},
 	}
 
@@ -492,9 +495,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		block := user.Group("/block")
 		{
 			block.GET("/:user_id", userBlockSettingController.GetByUserID)
-			block.POST("", userBlockSettingController.Upsert)
-			block.POST("/student", userBlockSettingController.Upsert)
-			block.DELETE("/:id", userBlockSettingController.Delete)
+			block.POST("", userBlockSettingController.UpsertUserBlockSetting)
+			block.POST("/student", userBlockSettingController.UpsertStudentBlockSetting)
+			block.GET("/student/:student_id", userBlockSettingController.GetByStudentID)
 		}
 	}
 

@@ -24,7 +24,7 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		return nil, errors.New("parent not found")
 	}
 
-	// Lấy danh sách ChildMenu
+	// Lấy danh sách ParentMenus
 	parentMenus, err := uc.ParentMenuRepo.GetByParentID(parentID)
 	if err != nil {
 		return nil, err
