@@ -41,7 +41,7 @@ type StaffResponse struct {
 }
 
 type ParentResponse struct {
-	ParentID   string `json:"parent_id"`
+	ParentID   string `json:"id"`
 	ParentName string `json:"nickname"`
 	IsDeactive bool   `json:"is_deactive"`
 }
