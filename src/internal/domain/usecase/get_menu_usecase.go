@@ -331,7 +331,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 	var roleNames []string
 	if user.IsSuperAdmin() {
 		// SuperAdmin: lấy child
-		roleNames = []string{string(value.RoleChild)}
+		roleNames = []string{string(value.RoleChild), string(value.Parent)}
 
 	} else {
 		// Không phải SuperAdmin: chỉ lấy role Student và Teacher

@@ -298,6 +298,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	roleSignUp := engine.Group("/v1/admin/role-sign-up", secureMiddleware.Secured())
 	{
 		roleSignUp.GET("", roleOrgSignUpController.Get4AdminWeb)
+		roleSignUp.POST("", secureMiddleware.ValidateSuperAdminRole(), roleOrgSignUpController.CreateOrUpdate)
 	}
 
 	//menu

@@ -65,14 +65,27 @@ func (receiver *RoleOrgSignUpUseCase) Get4WebAdmin(ctx *gin.Context) ([]entity.S
 
 	// Nếu là SuperAdmin → chỉ lấy role Child
 	if user.IsSuperAdmin() {
+		var roles []entity.SRoleOrgSignUp
+
+		// Lấy role Child
 		childRole, err := receiver.Repo.GetByRoleName(string(value.RoleChild))
 		if err != nil {
 			return nil, err
 		}
 		if childRole != nil {
-			return []entity.SRoleOrgSignUp{*childRole}, nil
+			roles = append(roles, *childRole)
 		}
-		return []entity.SRoleOrgSignUp{}, nil
+
+		// Lấy role Parent
+		parentRole, err := receiver.Repo.GetByRoleName(string(value.Parent))
+		if err != nil {
+			return nil, err
+		}
+		if parentRole != nil {
+			roles = append(roles, *parentRole)
+		}
+
+		return roles, nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy cả Student và Teacher

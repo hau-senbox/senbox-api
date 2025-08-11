@@ -293,14 +293,18 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 					}
 				} else {
 					// ID có nhưng không tồn tại
-					component.ID = uuid.New()
-					componentID = component.ID
-					if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-						logrus.Error("rollback by error create component (from non-existent id):", err)
-						tx.Rollback()
-						rolledBack = true
-						return fmt.Errorf("create component fail: %w", err)
-					}
+					// component.ID = uuid.New()
+					// componentID = component.ID
+					// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+					// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+					// 	tx.Rollback()
+					// 	rolledBack = true
+					// 	return fmt.Errorf("create component fail: %w", err)
+					// }
+					logrus.Error("rollback by error create component (from non-existent id):", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 				}
 			} else {
 				// Tạo mới
@@ -465,14 +469,18 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, re
 				}
 			} else {
 				// ID có nhưng không tồn tại
-				component.ID = uuid.New()
-				componentID = component.ID
-				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component (from non-existent id):", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("create component fail: %w", err)
-				}
+				// component.ID = uuid.New()
+				// componentID = component.ID
+				// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+				// 	tx.Rollback()
+				// 	rolledBack = true
+				// 	return fmt.Errorf("create component fail: %w", err)
+				// }
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 			}
 		} else {
 			// Tạo mới
@@ -613,14 +621,18 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenu(ctx *gin.Context, re
 				}
 			} else {
 				// ID có nhưng không tồn tại
-				component.ID = uuid.New()
-				componentID = component.ID
-				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component (from non-existent id):", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("create component fail: %w", err)
-				}
+				// component.ID = uuid.New()
+				// componentID = component.ID
+				// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+				// 	tx.Rollback()
+				// 	rolledBack = true
+				// 	return fmt.Errorf("create component fail: %w", err)
+				// }
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 			}
 		} else {
 			// Tạo mới
@@ -760,14 +772,18 @@ func (receiver *UploadSectionMenuUseCase) UploadStaffMenu(ctx *gin.Context, req 
 				}
 			} else {
 				// ID có nhưng không tồn tại
-				component.ID = uuid.New()
-				componentID = component.ID
-				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component (from non-existent id):", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("create component fail: %w", err)
-				}
+				// component.ID = uuid.New()
+				// componentID = component.ID
+				// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+				// 	tx.Rollback()
+				// 	rolledBack = true
+				// 	return fmt.Errorf("create component fail: %w", err)
+				// }
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 			}
 		} else {
 			// Tạo mới
@@ -898,14 +914,18 @@ func (receiver *UploadSectionMenuUseCase) UploadChildMenu(ctx *gin.Context, req 
 				}
 			} else {
 				// ID có nhưng không tồn tại
-				component.ID = uuid.New()
-				componentID = component.ID
-				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component (from non-existent id):", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("create component fail: %w", err)
-				}
+				// component.ID = uuid.New()
+				// componentID = component.ID
+				// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+				// 	tx.Rollback()
+				// 	rolledBack = true
+				// 	return fmt.Errorf("create component fail: %w", err)
+				// }
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 			}
 		} else {
 			// Tạo mới
@@ -1036,14 +1056,18 @@ func (receiver *UploadSectionMenuUseCase) UploadDeviceMenu(ctx *gin.Context, req
 				}
 			} else {
 				// ID có nhưng không tồn tại
-				component.ID = uuid.New()
-				componentID = component.ID
-				if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error create component (from non-existent id):", err)
-					tx.Rollback()
-					rolledBack = true
-					return fmt.Errorf("create component fail: %w", err)
-				}
+				// component.ID = uuid.New()
+				// componentID = component.ID
+				// if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				// 	logrus.Error("rollback by error create component (from non-existent id):", err)
+				// 	tx.Rollback()
+				// 	rolledBack = true
+				// 	return fmt.Errorf("create component fail: %w", err)
+				// }
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
 			}
 		} else {
 			// Tạo mới
