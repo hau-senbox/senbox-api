@@ -35,6 +35,7 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 	organizationController := &controller.OrganizationController{
 		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
 		},
 		CreateOrganizationUseCase: &usecase.CreateOrganizationUseCase{
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
@@ -84,6 +85,7 @@ func setupOrganizationRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.
 		org.POST("/", secureMiddleware.Secured(), secureMiddleware.ValidateSuperAdminRole(), organizationController.CreateOrganization)
 		org.POST("/join", secureMiddleware.Secured(), organizationController.UserJoinOrganization)
 		org.POST("/avatar", secureMiddleware.Secured(), organizationController.UploadAvatar)
+		org.GET("/check/:device_id/:organization_id", secureMiddleware.Secured(), organizationController.Check4App)
 	}
 
 	application := engine.Group("/v1/organization/application")

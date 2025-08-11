@@ -82,6 +82,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SUserImage{},
 		&entity.SDeviceMenuV2{},
 		&entity.ParentMenu{},
+		&entity.StudentBlockSetting{},
 	)
 
 	// Seed

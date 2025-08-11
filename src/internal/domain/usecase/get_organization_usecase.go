@@ -7,6 +7,7 @@ import (
 
 type GetOrganizationUseCase struct {
 	*repository.OrganizationRepository
+	*repository.DeviceRepository
 }
 
 func (receiver *GetOrganizationUseCase) GetOrganizationByID(id string) (*entity.SOrganization, error) {
@@ -23,4 +24,18 @@ func (receiver *GetOrganizationUseCase) GetAllOrganization(user *entity.SUserEnt
 
 func (receiver *GetOrganizationUseCase) GetAllUserByOrganization(organizationID string) ([]*entity.SUserOrg, error) {
 	return receiver.OrganizationRepository.GetAllUserByOrganization(organizationID)
+}
+
+func (receiver *GetOrganizationUseCase) CheckDeviceInOrg4App(deviceID string, organizationID string) (bool, error) {
+	deviceOrgIds, _ := receiver.DeviceRepository.GetOrgIDsByDeviceID(deviceID)
+
+	found := false
+	for _, orgID := range deviceOrgIds {
+		if orgID.String() == organizationID {
+			found = true
+			break
+		}
+	}
+
+	return found, nil
 }
