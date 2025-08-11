@@ -5,6 +5,6 @@ type ParentResponseBase struct {
 	ParentName string              `json:"name"`
 	Avatar     string              `json:"avatar,omitempty"`
 	AvatarURL  string              `json:"avatar_url,omitempty"`
-	Menus      []ComponentResponse `json:"components,omitempty"`
+	Menus      []ComponentResponse `json:"components"`
 	CustomID   string              `json:"custom_id"`
 }
