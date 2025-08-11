@@ -464,6 +464,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
+		ParentUseCase: &usecase.ParentUseCase{
+			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
+			ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
+			ComponentRepo:  &repository.ComponentRepository{DBConn: dbConn},
+		},
 	}
 
 	userBlockSettingController := &controller.UserBlockSettingController{
@@ -481,6 +486,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/student/:id", userEntityController.GetStudent4WebAdmin)
 		user.GET("/teacher/:id", userEntityController.GetTeacher4WebAdmin)
 		user.GET("/staff/:id", userEntityController.GetStaff4WebAdmin)
+		user.GET("/parent/:id", userEntityController.GetParent4WebAdmin)
 		user.POST("/student/add-custom-id", userEntityController.AddCustomID2Student)
 		user.POST("/add-custom-id", userEntityController.AddCustomID2User)
 		block := user.Group("/block")

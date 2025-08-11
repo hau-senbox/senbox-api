@@ -44,6 +44,7 @@ type UserEntityController struct {
 	*usecase.TeacherApplicationUseCase
 	*usecase.StaffApplicationUseCase
 	*usecase.UserBlockSettingUsecase
+	*usecase.ParentUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -2036,6 +2037,34 @@ func (receiver *UserEntityController) GetStaff4WebAdmin(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: staff,
+	})
+
+}
+
+func (receiver *UserEntityController) GetParent4WebAdmin(context *gin.Context) {
+	parentID := context.Param("id")
+	if parentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing parent ID",
+		})
+		return
+	}
+
+	parent, err := receiver.ParentUseCase.GetParentByID(parentID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get parent",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: parent,
 	})
 
 }
