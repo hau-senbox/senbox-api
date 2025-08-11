@@ -73,8 +73,6 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	// create child
 	err := uc.childRepo.Create(child)
 
-	// sau khi create chid thanh cong create paren application from
-
 	if err == nil {
 		//tao child menu
 		childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))

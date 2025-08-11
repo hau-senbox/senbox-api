@@ -270,6 +270,20 @@ func FilterStaffByName(users []response.StaffResponse, name string) []response.S
 	return result
 }
 
+func FilterParentByName(parents []response.ParentResponse, name string) []response.ParentResponse {
+	name = strings.ToLower(name)
+	result := make([]response.ParentResponse, 0)
+	for _, p := range parents {
+		if strings.Contains(strings.ToLower(p.ParentName), name) {
+			result = append(result, p)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return strings.ToLower(result[i].ParentName) < strings.ToLower(result[j].ParentName)
+	})
+	return result
+}
+
 func GetSheetsService(credentialsPath string) (*sheets.Service, error) {
 	ctx := context.Background()
 

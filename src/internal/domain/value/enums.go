@@ -1212,6 +1212,7 @@ type RoleSignUp string
 
 const (
 	User             RoleSignUp = "User"
+	Parent           RoleSignUp = "Parent"
 	RoleTeacher      RoleSignUp = "Teacher"
 	RoleChild        RoleSignUp = "Child"
 	RoleStaff        RoleSignUp = "Staff"
@@ -1221,7 +1222,7 @@ const (
 
 func IsValidRoleSignUp(role string) bool {
 	switch RoleSignUp(role) {
-	case User, RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
+	case User, Parent, RoleTeacher, RoleChild, RoleStaff, RoleStudent, RoleOrganization:
 		return true
 	default:
 		return false

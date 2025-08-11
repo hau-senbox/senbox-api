@@ -1661,6 +1661,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		students = make([]response.StudentResponse, 0)
 		teachers = make([]response.TeacherResponse, 0)
 		staffs   = make([]response.StaffResponse, 0)
+		parents  = make([]response.ParentResponse, 0)
 	)
 
 	if isAll {
@@ -1670,6 +1671,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		rawParents, _ := receiver.GetAllParents4Search(c)
 
 		// Map sang response
 		for _, u := range rawUsers {
@@ -1712,6 +1714,15 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				IsDeactive: isDeactive,
 			})
 		}
+		for _, p := range rawParents {
+			// get is_deactive
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
+			parents = append(parents, response.ParentResponse{
+				ParentID:   p.ID.String(),
+				ParentName: p.Nickname,
+				IsDeactive: isDeactive,
+			})
+		}
 
 		// Lọc theo name va deactive nếu có
 		users = helper.FilterUsersByName(users, name)
@@ -1749,6 +1760,17 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			staffs = filtered
 		}
 
+		parents = helper.FilterParentByName(parents, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.ParentResponse, 0)
+			for _, p := range parents {
+				if p.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, p)
+				}
+			}
+			parents = filtered
+		}
+
 		// Trả kết quả
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
@@ -1758,6 +1780,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				Students: students,
 				Teachers: teachers,
 				Staffs:   staffs,
+				Parents:  parents,
 			},
 		})
 		return
@@ -1867,6 +1890,27 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			users = filtered
 		}
 
+	case value.Parent:
+		rawParents, _ := receiver.GetAllParents4Search(c)
+		for _, p := range rawParents {
+			isDeactive, _ := receiver.GetDeactive4User(p.ID.String())
+			parents = append(parents, response.ParentResponse{
+				ParentID:   p.ID.String(),
+				ParentName: p.Nickname,
+				IsDeactive: isDeactive,
+			})
+		}
+		parents = helper.FilterParentByName(parents, name)
+		if deactiveFilter != nil {
+			filtered := make([]response.ParentResponse, 0)
+			for _, p := range parents {
+				if p.IsDeactive == *deactiveFilter {
+					filtered = append(filtered, p)
+				}
+			}
+			parents = filtered
+		}
+
 	case value.RoleOrganization:
 		// Không xử lý gì
 	}
@@ -1879,6 +1923,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			Students: students,
 			Teachers: teachers,
 			Staffs:   staffs,
+			Parents:  parents,
 		},
 	})
 }

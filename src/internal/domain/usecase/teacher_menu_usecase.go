@@ -88,7 +88,7 @@ func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string) (response.GetTeac
 
 	return response.GetTeacherMenuResponse{
 		TeacherID:   teacherID,
-		TeacherName: user.Username,
+		TeacherName: user.Nickname,
 		Components:  componentResponses,
 	}, nil
 }

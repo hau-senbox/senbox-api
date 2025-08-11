@@ -74,7 +74,7 @@ func (uc *StaffMenuUseCase) GetByStaffID(staffID string) (response.GetStaffMenuR
 
 	return response.GetStaffMenuResponse{
 		StaffID:    staffID,
-		StaffName:  user.Username,
+		StaffName:  user.Nickname,
 		Components: componentResponses,
 	}, nil
 }

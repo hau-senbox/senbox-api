@@ -12,6 +12,7 @@ import (
 type GetUserEntityUseCase struct {
 	*repository.UserEntityRepository
 	*repository.OrganizationRepository
+	*repository.ChildRepository
 }
 
 func (receiver *GetUserEntityUseCase) GetUserByID(req request.GetUserEntityByIDRequest) (*entity.SUserEntity, error) {
@@ -81,6 +82,20 @@ func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]en
 	}
 
 	return result, nil
+}
+
+func (receiver *GetUserEntityUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SUserEntity, error) {
+	user, err := receiver.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Nếu ko là SuperAdmin -> return nil
+	if !user.IsSuperAdmin() {
+		return nil, nil
+	}
+
+	return receiver.ChildRepository.GetAllParents()
 }
 
 func (receiver *GetUserEntityUseCase) GetCurrentUserWithOrganizations(ctx *gin.Context) (*entity.SUserEntity, error) {

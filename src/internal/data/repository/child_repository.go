@@ -112,3 +112,23 @@ func (r *ChildRepository) GetParentIDByChildID(childID string) (string, error) {
 
 	return child.ParentID.String(), nil
 }
+
+func (r *ChildRepository) GetAllParents() ([]entity.SUserEntity, error) {
+	var parents []entity.SUserEntity
+
+	err := r.DB.
+		Table("s_child AS c").
+		Select("DISTINCT u.*").
+		Joins(`
+			JOIN s_user_entity AS u 
+			ON CONVERT(u.id USING utf8mb4) COLLATE utf8mb4_unicode_ci = 
+			   CONVERT(c.parent_id USING utf8mb4) COLLATE utf8mb4_unicode_ci
+		`).
+		Scan(&parents).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return parents, nil
+}

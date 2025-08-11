@@ -6,6 +6,7 @@ type SearchUserResponse struct {
 	Students []StudentResponse  `json:"students"`
 	Teachers []TeacherResponse  `json:"teachers"`
 	Staffs   []StaffResponse    `json:"staffs"`
+	Parents  []ParentResponse   `json:"parents"`
 }
 
 type UserResponse struct {
@@ -36,5 +37,11 @@ type TeacherResponse struct {
 type StaffResponse struct {
 	StaffID    string `json:"id"`
 	StaffName  string `json:"nickname"`
+	IsDeactive bool   `json:"is_deactive"`
+}
+
+type ParentResponse struct {
+	ParentID   string `json:"parent_id"`
+	ParentName string `json:"nickname"`
 	IsDeactive bool   `json:"is_deactive"`
 }

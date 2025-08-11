@@ -440,6 +440,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			ChildRepository:        &repository.ChildRepository{DB: dbConn},
 		},
 		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
@@ -483,6 +484,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		{
 			block.GET("/:user_id", userBlockSettingController.GetByUserID)
 			block.POST("", userBlockSettingController.Upsert)
+			block.POST("/student", userBlockSettingController.Upsert)
 			block.DELETE("/:id", userBlockSettingController.Delete)
 		}
 	}
