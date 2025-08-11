@@ -11,7 +11,6 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -37,6 +36,7 @@ type GetMenuUseCase struct {
 	StaffMenuUsecase                   *StaffMenuUseCase
 	StaffApplicationRepo               *repository.StaffApplicationRepository
 	OrganizationMenuTemplateRepository *repository.OrganizationMenuTemplateRepository
+	ParentMenuUsecase                  *ParentMenuUseCase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -288,40 +288,6 @@ func (receiver *GetMenuUseCase) GetSectionMenu(context *gin.Context) ([]response
 	return result, nil
 }
 
-func (receiver *GetMenuUseCase) getProfileComponentByRole(roleName, userID string) (*response.ComponentCommonMenuByUser, error) {
-	// Lấy thông tin role theo tên
-	roleOrg, err := receiver.RoleOrgSignUpRepository.GetByRoleName(roleName)
-	if err != nil || roleOrg == nil {
-		return nil, nil
-	}
-
-	// Lấy form theo OrgCode của role
-	form, err := receiver.FormRepository.GetFormByQRCode(roleOrg.OrgCode)
-	if err != nil || form == nil {
-		return nil, nil
-	}
-
-	// Kiểm tra xem user đã nộp form hay chưa
-	submission, err := receiver.SubmissionRepository.GetByUserIdAndFormId(userID, form.ID)
-	if err != nil || submission == nil {
-		return nil, nil
-	}
-
-	// Tạo component
-	component := buildComponent(
-		uuid.NewString(),
-		fmt.Sprintf("%s Profile", roleName),
-		fmt.Sprintf("%s_profile", strings.ToLower(roleName)),
-		"icon/accident_and_injury_report_1745206766342940327.png",
-		"button_form",
-		roleOrg.OrgProfile,
-	)
-
-	return &response.ComponentCommonMenuByUser{
-		Component: component,
-	}, nil
-}
-
 func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]response.GetMenuSectionResponse, error) {
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
@@ -424,12 +390,13 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]response.GetMenuSectionResponse, error) {
 	userID := context.GetString("user_id")
 	var result []response.GetMenuSectionResponse
-	// Lay danh sach child, students, teacher by userId
+	// Lay danh sach child, students, teachers, staffs by userId
 	children, _ := receiver.ChildRepository.GetByParentID(userID)
 	// students, _ := receiver.StudentAppRepo.GetByUserIDApproved(userID)
 	teachers, _ := receiver.TeacherRepository.GetByUserIDApproved(userID)
 	staffs, _ := receiver.StaffApplicationRepo.GetByUserIDApproved(userID)
-	// neu co child lay menu cua child
+
+	// Get menu
 	for _, child := range children {
 		childMenu, _ := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
 		result = append(result, response.GetMenuSectionResponse{
@@ -465,5 +432,13 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 		})
 	}
 
+	// Get Parent Menu
+	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(userID)
+	if err == nil && parentMenu.ParentID != "" && len(parentMenu.Components) > 0 {
+		result = append(result, response.GetMenuSectionResponse{
+			SectionName: "Parent Menu",
+			Components:  parentMenu.Components,
+		})
+	}
 	return result, nil
 }
