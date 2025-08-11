@@ -167,7 +167,7 @@ func (receiver *UploadSectionMenuUseCase) createTeachersMenusTemplate(ctx *gin.C
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) createStaffMenus(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, visible bool, order int, staffIDs []uuid.UUID, sectionID uuid.UUID) error {
+func (receiver *UploadSectionMenuUseCase) createStaffsMenusTemplate(ctx *gin.Context, tx *gorm.DB, componentID uuid.UUID, sectionID uuid.UUID) error {
 	// Lấy user hiện tại và danh sách organization được quản lý
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
@@ -195,8 +195,8 @@ func (receiver *UploadSectionMenuUseCase) createStaffMenus(ctx *gin.Context, tx 
 			sectionID,
 		)
 		if err != nil {
-			log.Printf("Lỗi khi kiểm tra OrganizationMenuTemplate: %v", err)
-			return fmt.Errorf("kiểm tra OrganizationMenuTemplate thất bại: %w", err)
+			log.Printf("Error OrganizationMenuTemplate: %v", err)
+			return fmt.Errorf("error OrganizationMenuTemplate fail: %w", err)
 		}
 
 		if existingTemplate == nil {
@@ -207,52 +207,12 @@ func (receiver *UploadSectionMenuUseCase) createStaffMenus(ctx *gin.Context, tx 
 				SectionID:      sectionID.String(),
 			}
 			if err := receiver.OrganizationMenuTemplateRepository.CreateWithTx(tx, newTemplate); err != nil {
-				log.Printf("Lỗi khi tạo OrganizationMenuTemplate: %v", err)
-				return fmt.Errorf("tạo OrganizationMenuTemplate thất bại: %w", err)
+				log.Printf("Error create OrganizationMenuTemplate: %v", err)
+				return fmt.Errorf("create OrganizationMenuTemplate fail: %w", err)
 			}
 		}
 	}
 
-	// Lặp qua danh sách teacherIDs
-	for _, staffID := range staffIDs {
-		// Kiểm tra giáo viên có thuộc tổ chức được quản lý hay không
-		isValid, err := receiver.StaffApplicationRepository.CheckStaffBelongsToOrganizations(tx, staffID, orgIDsManaged)
-		if err != nil {
-			log.Printf("Error CheckTeacherBelongsToOrganizations: %v", err)
-			return errors.New("teacher does not belong to any organization")
-		}
-		if !isValid {
-			continue
-		}
-
-		existing, err := receiver.StaffMenuRepository.GetByStaffIDAndComponentID(tx, staffID, componentID)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("get teacher menu fail: %w", err)
-		}
-
-		if existing != nil {
-			// Đã tồn tại → update
-			existing.Order = order
-			existing.Visible = visible
-			existing.IsShow = true
-			if err := receiver.StaffMenuRepository.UpdateWithTx(tx, existing); err != nil {
-				return fmt.Errorf("update teacher menu fail: %w", err)
-			}
-		} else {
-			// Không tồn tại → tạo mới
-			menu := &entity.StaffMenu{
-				ID:          uuid.New(),
-				StaffID:     staffID,
-				ComponentID: componentID,
-				Order:       order,
-				IsShow:      true,
-				Visible:     visible,
-			}
-			if err := receiver.StaffMenuRepository.CreateWithTx(tx, menu); err != nil {
-				return fmt.Errorf("create staff menu fail: %w", err)
-			}
-		}
-	}
 	return nil
 }
 
@@ -268,23 +228,6 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 			tx.Rollback()
 		}
 	}()
-
-	// 1. Lấy danh sách child_id và student_id
-	// childIDs, err := receiver.ChildRepository.GetAllIDs()
-	// if err != nil {
-	// 	logrus.Error("Rollback by error getting child_ids:", err)
-	// 	tx.Rollback()
-	// 	rolledBack = true
-	// 	return fmt.Errorf("Get list child_id failed: %w", err)
-	// }
-
-	staffIDs, err := receiver.StaffApplicationRepository.GetAllStaffIDs()
-	if err != nil {
-		logrus.Error("Rollback by error getting staff_ids:", err)
-		tx.Rollback()
-		rolledBack = true
-		return fmt.Errorf("Get list staff_id failed: %w", err)
-	}
 
 	// 2. Upsert component và tạo menu theo role
 	for _, item := range req {
@@ -316,7 +259,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 			continue
 		}
 
-		for idx, compReq := range item.Components {
+		for _, compReq := range item.Components {
 			var componentID uuid.UUID
 
 			component := &components.Component{
@@ -371,14 +314,6 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 				}
 			}
 
-			visible, err := helper.GetVisibleToValueComponent(compReq.Value)
-			if err != nil {
-				logrus.Error("rollback by error get visible:", err)
-				tx.Rollback()
-				rolledBack = true
-				return fmt.Errorf("get visible fail: %w", err)
-			}
-
 			switch roleOrg.RoleName {
 			// case string(value.RoleChild):
 			// 	if err := receiver.createChildMenus(tx, componentID, visible, idx, childIDs); err != nil {
@@ -402,7 +337,7 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 					return err
 				}
 			case string(value.RoleStaff):
-				if err := receiver.createStaffMenus(ctx, tx, componentID, visible, idx, staffIDs, roleOrg.ID); err != nil {
+				if err := receiver.createStaffsMenusTemplate(ctx, tx, componentID, roleOrg.ID); err != nil {
 					logrus.Error("rollback by error create staff menu:", err)
 					tx.Rollback()
 					rolledBack = true

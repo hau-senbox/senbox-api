@@ -377,6 +377,8 @@ func (receiver *GetMenuUseCase) GetSectionMenu4WebAdmin(ctx *gin.Context) ([]res
 					return template.SectionID == c.SectionID && template.ComponentID == c.ID.String()
 				})
 			})
+		} else {
+			allComponents = []components.Component{}
 		}
 	}
 
