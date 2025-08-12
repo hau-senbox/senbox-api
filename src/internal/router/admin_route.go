@@ -577,6 +577,22 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	}
 
+	// organization
+
+	orgController := &controller.OrganizationController{
+		OrganizationSettingUsecase: &usecase.OrganizationSettingUsecase{
+			Repo:          &repository.OrganizationSettingRepository{DBConn: dbConn},
+			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+
+	org := engine.Group("/v1/admin/organization", secureMiddleware.Secured())
+	{
+		org.GET("/setting/:org_id", orgController.GetOrgSetting)
+		org.POST("/setting", orgController.UploadOrgSetting)
+
+	}
+
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
 	{
 		sync.POST("/form", applicationController.SyncDataDemoV3)

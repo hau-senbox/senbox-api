@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type OrganizationController struct {
@@ -22,6 +23,7 @@ type OrganizationController struct {
 	*usecase.BlockOrgFormApplicationUseCase
 	*usecase.CreateOrgFormApplicationUseCase
 	*usecase.UploadOrgAvatarUseCase
+	*usecase.OrganizationSettingUsecase
 }
 
 func (receiver OrganizationController) GetAllOrganization(context *gin.Context) {
@@ -566,5 +568,70 @@ func (receiver OrganizationController) UploadAvatar(context *gin.Context) {
 			Width:     img.Width,
 			Height:    img.Height,
 		},
+	})
+}
+
+func (receiver OrganizationController) UploadOrgSetting(c *gin.Context) {
+	var req request.UploadOrgSettingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request payload",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	err := receiver.OrganizationSettingUsecase.UploadOrgSetting(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to upload organization setting",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Upload success",
+		Data:    nil,
+	})
+}
+
+func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	if orgID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+
+	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting(orgID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, response.SucceedResponse{
+				Code:    http.StatusOK,
+				Message: "Not Found",
+				Data:    nil,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get organization setting",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    orgSetting,
 	})
 }
