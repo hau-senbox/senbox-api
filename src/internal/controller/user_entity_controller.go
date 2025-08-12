@@ -155,6 +155,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			OrganizationAdmin: orgAdminResp,
 			IsDeactive:        isDeactive,
 			IsSuperAdmin:      userEntity.IsSuperAdmin(),
+			QrLogin:           userEntity.QRLogin,
 		},
 	})
 }

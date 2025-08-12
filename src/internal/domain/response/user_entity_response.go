@@ -40,6 +40,7 @@ type UserEntityResponseV2 struct {
 	CreatedAt    string   `json:"created_at"`
 	IsDeactive   bool     `json:"is_deactive"`
 	IsSuperAdmin bool     `json:"is_super_admin"`
+	QrLogin      string   `json:"qr_login"`
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
