@@ -469,6 +469,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
 			ComponentRepo:  &repository.ComponentRepository{DBConn: dbConn},
 		},
+		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
+			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
+		},
 	}
 
 	userBlockSettingController := &controller.BlockSettingController{

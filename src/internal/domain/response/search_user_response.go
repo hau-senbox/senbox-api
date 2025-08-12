@@ -26,6 +26,7 @@ type ChildrenResponse struct {
 type StudentResponse struct {
 	StudentID   string `json:"id"`
 	StudentName string `json:"nickname"`
+	IsDeactive  bool   `json:"is_deactive"`
 }
 
 type TeacherResponse struct {
