@@ -114,6 +114,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		IsShowSpecialBtn:  req.IsShowSpecialBtn,
 		MessageBox:        req.MessageBox,
 		MessageTopMenu:    req.MessageTopMenu,
+		TopMenuPasswod:    req.TopMenuPassword,
 	}
 
 	existingSetting, err := u.Repo.GetByOrgID(req.OrganizationID)
@@ -171,6 +172,7 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string, orgID string
 		IsShowSpecialBtn:  orgSetting.IsShowSpecialBtn,
 		MessageBox:        orgSetting.MessageBox,
 		MessageTopMenu:    orgSetting.MessageTopMenu,
+		TopMenuPasswod:    orgSetting.TopMenuPasswod,
 		Component:         components,
 	}
 

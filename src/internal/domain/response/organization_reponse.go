@@ -12,5 +12,6 @@ type OrgSettingResponse struct {
 	IsShowSpecialBtn  bool                  `json:"is_show_special_btn"`
 	MessageBox        string                `json:"message_box"`
 	MessageTopMenu    string                `json:"message_top_menu"`
+	TopMenuPasswod    string                `json:"top_menu_password"`
 	Component         *components.Component `json:"component"`
 }

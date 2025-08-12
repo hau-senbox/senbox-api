@@ -9,5 +9,6 @@ type UploadOrgSettingRequest struct {
 	IsShowSpecialBtn  bool                       `json:"is_show_special_btn"`
 	MessageBox        string                     `json:"message_box" binding:"max=500"`
 	MessageTopMenu    string                     `json:"message_top_menu" binding:"max=500"`
+	TopMenuPassword   string                     `json:"top_menu_password"`
 	Component         CreateMenuComponentRequest `json:"component" binding:"required"`
 }

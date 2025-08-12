@@ -18,6 +18,7 @@ type OrganizationSetting struct {
 	IsShowSpecialBtn  bool      `gorm:"not null;default:false" json:"is_show_special_btn"`
 	MessageBox        string    `gorm:"type:text" json:"message_box"`
 	MessageTopMenu    string    `gorm:"type:text" json:"message_top_menu"`
+	TopMenuPasswod    string    `gorm:"type:text" json:"top_menu_password"`
 	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
