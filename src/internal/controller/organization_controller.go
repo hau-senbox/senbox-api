@@ -600,6 +600,16 @@ func (receiver OrganizationController) UploadOrgSetting(c *gin.Context) {
 }
 
 func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
+	deviceID := c.Param("device_id")
+
+	if deviceID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing device ID",
+		})
+		return
+	}
+
 	orgID := c.Param("org_id")
 
 	if orgID == "" {
@@ -610,7 +620,7 @@ func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
 		return
 	}
 
-	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting(orgID)
+	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting(deviceID, orgID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, response.SucceedResponse{

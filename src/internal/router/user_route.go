@@ -432,6 +432,6 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	org := engine.Group("/v1/user/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/:org_id", orgController.GetOrgSetting)
+		org.GET("/setting/:device_id/:org_id", orgController.GetOrgSetting)
 	}
 }

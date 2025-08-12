@@ -56,6 +56,15 @@ func (r *OrganizationSettingRepository) GetByOrgID(orgID string) (*entity.Organi
 	return &setting, nil
 }
 
+// GetByOrgID lấy thông tin OrganizationSetting theo OrganizationID
+func (r *OrganizationSettingRepository) GetByDeviceIdAndOrgId(deviceID string, orgID string) (*entity.OrganizationSetting, error) {
+	var setting entity.OrganizationSetting
+	if err := r.DBConn.Where("organization_id = ? AND device_id = ?", orgID, deviceID).First(&setting).Error; err != nil {
+		return nil, err
+	}
+	return &setting, nil
+}
+
 // CreateWithTx tạo mới OrganizationSetting trong transaction
 func (r *OrganizationSettingRepository) CreateWithTx(tx *gorm.DB, setting *entity.OrganizationSetting) error {
 	return tx.Create(setting).Error

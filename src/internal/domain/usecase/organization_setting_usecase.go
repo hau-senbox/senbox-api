@@ -106,6 +106,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	// Upsert organization setting
 	setting := &entity.OrganizationSetting{
 		OrganizationID:    req.OrganizationID,
+		DeviceID:          req.DeviceID,
 		ComponentID:       componentID.String(),
 		IsViewMessage:     req.IsViewMessage,
 		IsShowOrgNews:     req.IsShowOrgNews,
@@ -146,9 +147,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	return nil
 }
 
-func (u *OrganizationSettingUsecase) GetOrgSetting(orgID string) (*response.OrgSettingResponse, error) {
+func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string, orgID string) (*response.OrgSettingResponse, error) {
 	// Lấy thông tin OrgSetting
-	orgSetting, err := u.Repo.GetByOrgID(orgID)
+	orgSetting, err := u.Repo.GetByDeviceIdAndOrgId(deviceID, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +164,7 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(orgID string) (*response.OrgS
 	resp := &response.OrgSettingResponse{
 		ID:                orgSetting.ID.String(),
 		OrganizationID:    orgSetting.OrganizationID,
+		DeviceID:          orgSetting.DeviceID,
 		IsViewMessage:     orgSetting.IsViewMessage,
 		IsShowOrgNews:     orgSetting.IsShowOrgNews,
 		IsDeactiveTopMenu: orgSetting.IsDeactiveTopMenu,

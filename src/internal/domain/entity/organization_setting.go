@@ -10,6 +10,7 @@ import (
 type OrganizationSetting struct {
 	ID                uuid.UUID `gorm:"type:char(36);primary_key" json:"id"`
 	OrganizationID    string    `gorm:"type:varchar(255);not null" json:"organization_id"`
+	DeviceID          string    `gorm:"type:varchar(255);not null" json:"device_id"`
 	ComponentID       string    `gorm:"type:varchar(255);not null" json:"component_id"`
 	IsViewMessage     bool      `gorm:"not null;default:false" json:"is_view_message"`
 	IsShowOrgNews     bool      `gorm:"not null;default:false" json:"is_show_org_news"`
