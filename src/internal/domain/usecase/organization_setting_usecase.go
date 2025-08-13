@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/entity/components"
+	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
@@ -54,70 +55,80 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	tx := u.Repo.DBConn.Begin()
 	rolledBack := false
 
-	// upsert compoent
-	var componentID uuid.UUID
+	var componentID string
 
-	component := &components.Component{
-		Name:  req.Component.Name,
-		Type:  components.ComponentType(req.Component.Type),
-		Key:   req.Component.Key,
-		Value: datatypes.JSON([]byte(req.Component.Value)),
-	}
-
-	if req.Component.ID != nil && *req.Component.ID != uuid.Nil {
-		// Nếu có ID truyền lên
-		componentID = *req.Component.ID
-		component.ID = componentID
-
-		existingComponent, err := u.ComponentRepo.GetByID(componentID.String())
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			logrus.Error("rollback by error query component:", err)
-			tx.Rollback()
-			rolledBack = true
-			return fmt.Errorf("query component fail: %w", err)
+	// Nếu request có component thì xử lý upsert component
+	if req.Component.Name != "" || req.Component.ID != nil {
+		var cid uuid.UUID
+		component := &components.Component{
+			Name:  req.Component.Name,
+			Type:  components.ComponentType(req.Component.Type),
+			Key:   req.Component.Key,
+			Value: datatypes.JSON([]byte(req.Component.Value)),
 		}
 
-		if existingComponent != nil {
-			// Update
-			if err := u.ComponentRepo.UpdateWithTx(tx, component); err != nil {
-				logrus.Error("rollback by error update component:", err)
+		if req.Component.ID != nil && *req.Component.ID != uuid.Nil {
+			// Update component
+			cid = *req.Component.ID
+			component.ID = cid
+
+			existingComponent, err := u.ComponentRepo.GetByID(cid.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
 				tx.Rollback()
 				rolledBack = true
-				return fmt.Errorf("update component fail: %w", err)
+				return fmt.Errorf("query component fail: %w", err)
+			}
+
+			if existingComponent != nil {
+				if err := u.ComponentRepo.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("update component fail: %w", err)
+				}
+			} else {
+				logrus.Error("rollback by error create component (from non-existent id)")
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("component ID not found, cannot update")
 			}
 		} else {
-			logrus.Error("rollback by error create component (from non-existent id):", err)
-			tx.Rollback()
-			rolledBack = true
-			return fmt.Errorf("create component fail (Component ID wrong): %w", err)
+			// Create component
+			cid = uuid.New()
+			component.ID = cid
+			if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail: %w", err)
+			}
 		}
-	} else {
-		// Tạo mới
-		component.ID = uuid.New()
-		componentID = component.ID
-		if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
-			logrus.Error("rollback by error create component:", err)
-			tx.Rollback()
-			rolledBack = true
-			return fmt.Errorf("create component fail: %w", err)
-		}
+
+		componentID = cid.String()
 	}
 
 	// Upsert organization setting
 	setting := &entity.OrganizationSetting{
-		OrganizationID:    req.OrganizationID,
-		DeviceID:          req.DeviceID,
-		ComponentID:       componentID.String(),
-		IsViewMessage:     req.IsViewMessage,
-		IsShowOrgNews:     req.IsShowOrgNews,
-		IsDeactiveTopMenu: req.IsDeactiveTopMenu,
-		IsShowSpecialBtn:  req.IsShowSpecialBtn,
-		MessageBox:        req.MessageBox,
-		MessageTopMenu:    req.MessageTopMenu,
-		TopMenuPasswod:    req.TopMenuPassword,
+		OrganizationID:     req.OrganizationID,
+		DeviceID:           req.DeviceID,
+		IsViewMessageBox:   req.IsViewMessageBox,
+		IsShowMessage:      req.IsShowMessage,
+		MessageBox:         req.MessageBox,
+		IsShowSpecialBtn:   req.IsShowSpecialBtn,
+		IsDeactiveApp:      req.IsDeactiveApp,
+		MessageDeactiveApp: req.MessageDeactiveApp,
+		IsDeactiveTopMenu:  req.IsDeactiveTopMenu,
+		MessageTopMenu:     req.MessageTopMenu,
+		TopMenuPasswod:     req.TopMenuPassword,
 	}
 
-	existingSetting, err := u.Repo.GetByOrgID(req.OrganizationID)
+	// Nếu có component thì set ComponentID
+	if componentID != "" {
+		setting.ComponentID = componentID
+	}
+
+	existingSetting, err := u.Repo.GetByDeviceIdAndOrgId(req.DeviceID, req.OrganizationID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logrus.Error("rollback by error query org setting:", err)
 		tx.Rollback()
@@ -126,7 +137,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	}
 
 	if existingSetting != nil {
-		setting.ID = existingSetting.ID // Giữ nguyên ID cũ khi update
+		setting.ID = existingSetting.ID
 		if err := u.Repo.UpdateWithTx(tx, setting); err != nil {
 			logrus.Error("rollback by error update org setting:", err)
 			tx.Rollback()
@@ -148,33 +159,17 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	return nil
 }
 
-func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string, orgID string) (*response.OrgSettingResponse, error) {
+func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string, orgID string) (response.OrgSettingResponse, error) {
 	// Lấy thông tin OrgSetting
 	orgSetting, err := u.Repo.GetByDeviceIdAndOrgId(deviceID, orgID)
 	if err != nil {
-		return nil, err
+		return response.OrgSettingResponse{}, err
 	}
 
 	// Lấy danh sách components
-	components, err := u.ComponentRepo.GetByID(orgSetting.ComponentID)
-	if err != nil {
-		return nil, err
-	}
+	component, _ := u.ComponentRepo.GetByID(orgSetting.ComponentID)
 
-	// Mapping sang response
-	resp := &response.OrgSettingResponse{
-		ID:                orgSetting.ID.String(),
-		OrganizationID:    orgSetting.OrganizationID,
-		DeviceID:          orgSetting.DeviceID,
-		IsViewMessage:     orgSetting.IsViewMessage,
-		IsShowOrgNews:     orgSetting.IsShowOrgNews,
-		IsDeactiveTopMenu: orgSetting.IsDeactiveTopMenu,
-		IsShowSpecialBtn:  orgSetting.IsShowSpecialBtn,
-		MessageBox:        orgSetting.MessageBox,
-		MessageTopMenu:    orgSetting.MessageTopMenu,
-		TopMenuPasswod:    orgSetting.TopMenuPasswod,
-		Component:         components,
-	}
+	resp := mapper.MapOrgSettingToResponse(orgSetting, component)
 
 	return resp, nil
 }
