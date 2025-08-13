@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -402,12 +403,19 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
+
+	// Get device name
+	listDeviceByOrg, _ := receiver.GetDeviceListByOrgID(org.ID.String())
+	count := len(listDeviceByOrg) // số thiết bị hiện có
+	deviceName := fmt.Sprintf("%s-DEVICE-[%d]", org.OrganizationName, count+1)
+
 	err = receiver.DBConn.Transaction(func(tx *gorm.DB) error {
 		if device != nil {
 			// add new user_device
 			userDeviceResult := receiver.DBConn.Create(&entity.SOrgDevices{
 				OrganizationID: org.ID,
 				DeviceID:       device.ID,
+				DeviceName:     deviceName,
 			})
 
 			if userDeviceResult.Error != nil {
@@ -434,6 +442,7 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 		userDeviceResult := receiver.DBConn.Create(&entity.SOrgDevices{
 			OrganizationID: org.ID,
 			DeviceID:       device.ID,
+			DeviceName:     deviceName,
 		})
 
 		if userDeviceResult.Error != nil {
@@ -467,4 +476,17 @@ func (r *DeviceRepository) GetOrgIDsByDeviceID(deviceID string) ([]uuid.UUID, er
 	}
 
 	return orgIDs, nil
+}
+
+func (r *DeviceRepository) GetOrgByDeviceID(deviceID string) (*entity.SOrgDevices, error) {
+	// Gia su chi lay 1 org theo device id (case 1 device chi active 1 org)
+	var orgDevices *entity.SOrgDevices
+	if err := r.DBConn.
+		Select("organization_id").
+		Where("device_id = ?", deviceID).
+		First(&orgDevices).Error; err != nil {
+		return nil, err
+	}
+
+	return orgDevices, nil
 }

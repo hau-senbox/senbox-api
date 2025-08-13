@@ -258,6 +258,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		v1.GET("/sign-up/pre-set-2", deviceController.GetPreset2)
 
 		v1.GET("/sign-up/pre-set-1", deviceController.GetPreset1)
+
+		//v1.GET("/:device_id/organization", deviceController)
 	}
 
 	form := engine.Group("v1/form", secureMiddleware.Secured())
