@@ -22,9 +22,10 @@ type LanguagesConfig struct {
 }
 
 type LanguageConfig struct {
+	Order    int    `json:"order"`
 	Language string `json:"language"`
 	Origin   string `json:"origin"`
-	Percent  uint64 `json:"percent"`
+	Percent  int    `json:"percent"`
 	Note     string `json:"note"`
 }
 

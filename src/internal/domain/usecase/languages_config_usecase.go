@@ -7,6 +7,8 @@ import (
 
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/mapper"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
@@ -79,8 +81,13 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByID(ctx context.Context, id
 }
 
 // GetLanguagesConfigByOwner - Lấy theo OwnerID & OwnerType
-func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*entity.LanguagesConfig, error) {
-	return uc.repo.GetByOwner(ctx, ownerID, ownerRole)
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse, error) {
+
+	lc, err := uc.repo.GetByOwner(ctx, ownerID, ownerRole)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToLanguagesConfigResponse(lc), nil
 }
 
 // UpdateLanguagesConfig - Cập nhật
