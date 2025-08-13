@@ -1252,17 +1252,28 @@ const (
 	OwnerRoleLangStudent      OwnerRole4LangConfig = "student"
 	OwnerRoleLangUser         OwnerRole4LangConfig = "user"
 	OwnerRoleLangOrganization OwnerRole4LangConfig = "organization"
+	OwnerRoleLangTeacher      OwnerRole4LangConfig = "teacher"
+	OwnerRoleLangStaff        OwnerRole4LangConfig = "staff"
 )
 
 func ParseOwnerRole4LangConfig(s string) (OwnerRole4LangConfig, error) {
 	switch s {
 	case string(OwnerRoleLangStudent):
 		return OwnerRoleLangStudent, nil
+
+	case string(OwnerRoleLangTeacher):
+		return OwnerRoleLangTeacher, nil
+
+	case string(OwnerRoleLangStaff):
+		return OwnerRoleLangStaff, nil
+
 	case string(OwnerRoleLangUser):
 		return OwnerRoleLangUser, nil
+
 	case string(OwnerRoleLangOrganization):
 		return OwnerRoleLangOrganization, nil
+
 	default:
-		return "", fmt.Errorf("invalid owner role: %s", s)
+		return "", fmt.Errorf("invalid owner role in languages config: %s", s)
 	}
 }
