@@ -600,6 +600,19 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		sync.GET("/form/sync-queues", applicationController.GetAllSycnQueue)
 	}
 
+	// languages config
+	languagesConfigController := controller.NewLanguagesConfigController(
+		usecase.NewLanguagesConfigUsecase(
+			repository.NewLanguagesConfigRepository(dbConn),
+		),
+	)
+
+	languagesConfig := engine.Group("/v1/admin/languages-config", secureMiddleware.Secured())
+	{
+		languagesConfig.GET("", languagesConfigController.GetByOwner)
+		languagesConfig.POST("", languagesConfigController.UploadLanguagesConfig)
+	}
+
 	executor := &TimeMachineSubscriber{
 		ImportFormsUseCase:        importFormsUseCase,
 		ImportRedirectUrlsUseCase: importUrlsUseCase,

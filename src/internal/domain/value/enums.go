@@ -2,6 +2,7 @@ package value
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -1244,3 +1245,24 @@ const (
 	ForLogin    LoginType = "login"
 	ForRegister LoginType = "register"
 )
+
+type OwnerRole4LangConfig string
+
+const (
+	OwnerRoleLangStudent      OwnerRole4LangConfig = "student"
+	OwnerRoleLangUser         OwnerRole4LangConfig = "user"
+	OwnerRoleLangOrganization OwnerRole4LangConfig = "organization"
+)
+
+func ParseOwnerRole4LangConfig(s string) (OwnerRole4LangConfig, error) {
+	switch s {
+	case string(OwnerRoleLangStudent):
+		return OwnerRoleLangStudent, nil
+	case string(OwnerRoleLangUser):
+		return OwnerRoleLangUser, nil
+	case string(OwnerRoleLangOrganization):
+		return OwnerRoleLangOrganization, nil
+	default:
+		return "", fmt.Errorf("invalid owner role: %s", s)
+	}
+}
