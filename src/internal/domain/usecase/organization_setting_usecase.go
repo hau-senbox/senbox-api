@@ -138,6 +138,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 
 	if existingSetting != nil {
 		setting.ID = existingSetting.ID
+		setting.ComponentID = existingSetting.ComponentID
 		if err := u.Repo.UpdateWithTx(tx, setting); err != nil {
 			logrus.Error("rollback by error update org setting:", err)
 			tx.Rollback()
