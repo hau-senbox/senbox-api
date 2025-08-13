@@ -18,11 +18,21 @@ type UploadOrgSettingRequest struct {
 }
 
 type UploadOrgSettingMenuRequest struct {
-	ID     *uuid.UUID `json:"id"`
-	Name   string     `json:"name"`
-	Type   string     `json:"type"`
-	Key    string     `json:"key" default:""`
-	Value  string     `json:"value"`
-	Order  int        `json:"order"`
-	IsShow bool       `json:"is_show"`
+	ID     *uuid.UUID                `json:"id"`
+	Name   string                    `json:"name"`
+	Type   string                    `json:"type"`
+	Key    string                    `json:"key" default:""`
+	Value  UploadOrgSettingMenuValue `json:"value"`
+	Order  int                       `json:"order"`
+	IsShow bool                      `json:"is_show"`
+}
+
+type UploadOrgSettingMenuValue struct {
+	Icon         string `json:"icon"`
+	Visible      bool   `json:"visible"`
+	Color        string `json:"color"`
+	URL          string `json:"url"`
+	FormQr       string `json:"form_qr"`
+	ShowedTop    bool   `json:"showed_top"`
+	ShowedBottom bool   `json:"showed_bottom"`
 }

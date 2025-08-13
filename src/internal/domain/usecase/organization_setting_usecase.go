@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sen-global-api/internal/data/repository"
@@ -60,11 +61,17 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	// Nếu request có component thì xử lý upsert component
 	if req.Component.Name != "" || req.Component.ID != nil {
 		var cid uuid.UUID
+		valueJSON, err := json.Marshal(req.Component.Value)
+
+		if err != nil {
+			return err
+		}
+
 		component := &components.Component{
 			Name:  req.Component.Name,
 			Type:  components.ComponentType(req.Component.Type),
 			Key:   req.Component.Key,
-			Value: datatypes.JSON([]byte(req.Component.Value)),
+			Value: datatypes.JSON([]byte(valueJSON)),
 		}
 
 		if req.Component.ID != nil && *req.Component.ID != uuid.Nil {
