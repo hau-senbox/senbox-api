@@ -57,6 +57,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	rolledBack := false
 
 	var componentID string
+	isNewComp := false
 
 	// Nếu request có component thì xử lý upsert component
 	if req.Component.Name != "" || req.Component.ID != nil {
@@ -94,6 +95,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 					rolledBack = true
 					return fmt.Errorf("update component fail: %w", err)
 				}
+				isNewComp = false
 			} else {
 				logrus.Error("rollback by error create component (from non-existent id)")
 				tx.Rollback()
@@ -110,6 +112,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 				rolledBack = true
 				return fmt.Errorf("create component fail: %w", err)
 			}
+			isNewComp = true
 		}
 
 		componentID = cid.String()
@@ -145,7 +148,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 
 	if existingSetting != nil {
 		setting.ID = existingSetting.ID
-		setting.ComponentID = existingSetting.ComponentID
+		if !isNewComp {
+			setting.ComponentID = existingSetting.ComponentID
+		}
 		if err := u.Repo.UpdateWithTx(tx, setting); err != nil {
 			logrus.Error("rollback by error update org setting:", err)
 			tx.Rollback()

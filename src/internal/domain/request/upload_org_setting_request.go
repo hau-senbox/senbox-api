@@ -35,4 +35,5 @@ type UploadOrgSettingMenuValue struct {
 	FormQr       string `json:"form_qr"`
 	ShowedTop    bool   `json:"showed_top"`
 	ShowedBottom bool   `json:"showed_bottom"`
+	Note         string `json:"note"`
 }
