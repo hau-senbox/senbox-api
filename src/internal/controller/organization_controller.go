@@ -636,80 +636,105 @@ func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
 	})
 }
 
-// func (receiver OrganizationController) GetOrgSettingNews(c *gin.Context) {
-// 	orgID := c.Param("organization_id")
+// Org Setting News
+func (receiver *OrganizationController) UploadOrgSettingNewsDevice(c *gin.Context) {
+	var req request.UploadOrgSettingDeviceNewsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request payload",
+			Error:   err.Error(),
+		})
+		return
+	}
 
-// 	if orgID == "" {
-// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
-// 			Code:    http.StatusBadRequest,
-// 			Message: "Missing organization ID",
-// 		})
-// 		return
-// 	}
+	orgID := c.Param("organization_id")
+	if orgID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
 
-// 	orgSettingNews, err := receiver.OrganizationSettingUsecase.GetOrgSettingNews(orgID)
-// 	if err != nil {
-// 		if err == gorm.ErrRecordNotFound {
-// 			c.JSON(http.StatusOK, response.SucceedResponse{
-// 				Code:    http.StatusOK,
-// 				Message: "Not Found",
-// 				Data:    nil,
-// 			})
-// 			return
-// 		}
+	req.OrganizationID = orgID
 
-// 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: "Failed to get organization setting",
-// 			Error:   err.Error(),
-// 		})
-// 		return
-// 	}
+	if err := receiver.OrganizationSettingUsecase.UploadOrgSettingNewsDevice(req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to upload organization device news setting",
+			Error:   err.Error(),
+		})
+		return
+	}
 
-// 	c.JSON(http.StatusOK, response.SucceedResponse{
-// 		Code:    http.StatusOK,
-// 		Message: "Success",
-// 		Data:    orgSettingNews,
-// 	})
-// }
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Device news updated successfully",
+	})
+}
 
-// func (receiver OrganizationController) UploadOrgSettingNews(c *gin.Context) {
-// 	var req request.UploadOrgSettingNewsRequest
-// 	if err := c.ShouldBindJSON(&req); err != nil {
-// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
-// 			Code:    http.StatusBadRequest,
-// 			Message: "Invalid request payload",
-// 			Error:   err.Error(),
-// 		})
-// 		return
-// 	}
+func (receiver *OrganizationController) UploadOrgSettingNewsPortal(c *gin.Context) {
+	var req request.UploadOrgSettingPortalNewsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request payload",
+			Error:   err.Error(),
+		})
+		return
+	}
 
-// 	orgID := c.Param("organization_id")
+	orgID := c.Param("organization_id")
 
-// 	if orgID == "" {
-// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
-// 			Code:    http.StatusBadRequest,
-// 			Message: "Missing organization ID",
-// 		})
-// 		return
-// 	}
+	if orgID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
 
-// 	req.OrganizationID = orgID
-// 	req.IsNewsConfig = true
+	req.OrganizationID = orgID
 
-// 	err := receiver.OrganizationSettingUsecase.UploadOrgSettingNews(req)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: "Failed to upload organization setting news",
-// 			Error:   err.Error(),
-// 		})
-// 		return
-// 	}
+	if err := receiver.OrganizationSettingUsecase.UploadOrgSettingNewsPortal(req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to upload organization portal news setting",
+			Error:   err.Error(),
+		})
+		return
+	}
 
-// 	c.JSON(http.StatusOK, response.SucceedResponse{
-// 		Code:    http.StatusOK,
-// 		Message: "Upload success",
-// 		Data:    nil,
-// 	})
-// }
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Portal news updated successfully",
+	})
+}
+
+func (receiver *OrganizationController) GetOrgSettingNews(c *gin.Context) {
+	orgID := c.Param("organization_id")
+
+	data, err := receiver.OrganizationSettingUsecase.GetOrgSettingNews(orgID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get organization device news setting",
+			Error:   err.Error(),
+		})
+		return
+	}
+	if data == nil {
+		c.JSON(http.StatusNotFound, response.FailedResponse{
+			Code:    http.StatusNotFound,
+			Message: "Device news not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    data,
+	})
+}

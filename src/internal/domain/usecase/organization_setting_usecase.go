@@ -250,3 +250,66 @@ func (uc *OrganizationSettingUsecase) pushToFirestore(setting response.OrgSettin
 
 	return err
 }
+
+// UploadOrgSettingNewsDevice uploads organization setting news for device & portal
+func (u *OrganizationSettingUsecase) UploadOrgSettingNewsDevice(req request.UploadOrgSettingDeviceNewsRequest) error {
+	// check exist by org id
+	exist, _ := u.Repo.GetSettingNewsByOrganizationID(req.OrganizationID)
+
+	if exist != nil {
+		// Update
+		exist.IsPusblishedDevice = req.IsPusblishedDevice
+		exist.MessageDeviceNews = req.MessageDeviceNews
+
+		return u.Repo.UpdateSettingNews(exist)
+	}
+
+	// Create
+	newSetting := &entity.OrganizationNewsSetting{
+		OrganizationID:     req.OrganizationID,
+		IsPusblishedDevice: req.IsPusblishedDevice,
+		MessageDeviceNews:  req.MessageDeviceNews,
+	}
+
+	return u.Repo.CreateSettingNews(newSetting)
+}
+
+func (u *OrganizationSettingUsecase) UploadOrgSettingNewsPortal(req request.UploadOrgSettingPortalNewsRequest) error {
+	// check exist by org id
+	exist, _ := u.Repo.GetSettingNewsByOrganizationID(req.OrganizationID)
+
+	if exist != nil {
+		// Update
+		exist.IsPusblishedPortal = req.IsPusblishedPortal
+		exist.MessagePortalNews = req.MessagePortalNews
+
+		return u.Repo.UpdateSettingNews(exist)
+	}
+
+	// Create
+	newSetting := &entity.OrganizationNewsSetting{
+		OrganizationID:     req.OrganizationID,
+		IsPusblishedPortal: req.IsPusblishedPortal,
+		MessagePortalNews:  req.MessagePortalNews,
+	}
+
+	return u.Repo.CreateSettingNews(newSetting)
+}
+
+func (u *OrganizationSettingUsecase) GetOrgSettingNews(orgID string) (*response.OrgSettingNewsResponse, error) {
+	setting, err := u.Repo.GetSettingNewsByOrganizationID(orgID)
+	if err != nil {
+		return nil, err
+	}
+	if setting == nil {
+		return nil, nil
+	}
+
+	return &response.OrgSettingNewsResponse{
+		OrganizationID:     setting.OrganizationID,
+		IsPusblishedDevice: setting.IsPusblishedDevice,
+		MessageDeviceNews:  setting.MessageDeviceNews,
+		IsPusblishedPortal: setting.IsPusblishedPortal,
+		MessagePortalNews:  setting.MessagePortalNews,
+	}, nil
+}

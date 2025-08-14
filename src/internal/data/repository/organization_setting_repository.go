@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"context"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -91,4 +93,33 @@ func (r *OrganizationSettingRepository) GetByIDAndIsNewConfig(orgID string) (*en
 		return nil, err
 	}
 	return &setting, nil
+}
+
+// Setting News
+func (r *OrganizationSettingRepository) CreateSettingNews(setting *entity.OrganizationNewsSetting) error {
+	setting.ID = uuid.New()
+	return r.DBConn.Create(setting).Error
+}
+
+// Get by ID
+func (r *OrganizationSettingRepository) GetSettingNewsByID(ctx context.Context, id uuid.UUID) (*entity.OrganizationNewsSetting, error) {
+	var setting entity.OrganizationNewsSetting
+	if err := r.DBConn.WithContext(ctx).First(&setting, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &setting, nil
+}
+
+// Get by OrganizationID
+func (r *OrganizationSettingRepository) GetSettingNewsByOrganizationID(orgID string) (*entity.OrganizationNewsSetting, error) {
+	var setting entity.OrganizationNewsSetting
+	if err := r.DBConn.First(&setting, "organization_id = ?", orgID).Error; err != nil {
+		return nil, err
+	}
+	return &setting, nil
+}
+
+// Update
+func (r *OrganizationSettingRepository) UpdateSettingNews(setting *entity.OrganizationNewsSetting) error {
+	return r.DBConn.Save(setting).Error
 }
