@@ -20,7 +20,7 @@ func MapOrgSettingToResponse(setting *entity.OrganizationSetting, comp *componen
 		MessageDeactiveApp: setting.MessageDeactiveApp,
 		IsDeactiveTopMenu:  setting.IsDeactiveTopMenu,
 		MessageTopMenu:     setting.MessageTopMenu,
-		TopMenuPassword:    setting.TopMenuPasswod,
+		TopMenuPassword:    setting.TopMenuPassword,
 		Component:          comp,
 	}
 }

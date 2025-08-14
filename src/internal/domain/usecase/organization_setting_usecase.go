@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,8 +11,12 @@ import (
 	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/firebase"
+	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -120,7 +125,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		MessageDeactiveApp: req.MessageDeactiveApp,
 		IsDeactiveTopMenu:  req.IsDeactiveTopMenu,
 		MessageTopMenu:     req.MessageTopMenu,
-		TopMenuPasswod:     req.TopMenuPassword,
+		TopMenuPassword:    req.TopMenuPassword,
 	}
 
 	if componentID != "" {
@@ -154,7 +159,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		if req.IsDeactiveTopMenu == false && req.MessageTopMenu == "" && req.TopMenuPassword == "" {
 			setting.IsDeactiveTopMenu = existingSetting.IsDeactiveTopMenu
 			setting.MessageTopMenu = existingSetting.MessageTopMenu
-			setting.TopMenuPasswod = existingSetting.TopMenuPasswod
+			setting.TopMenuPassword = existingSetting.TopMenuPassword
 		}
 
 		// Merge component
@@ -172,7 +177,21 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		}
 	}
 
-	return tx.Commit().Error
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	// Push lên Firestore sau khi commit thành công
+	// get setting by device id
+	settingFirestore, _ := u.GetOrgSetting(req.DeviceID)
+	if err := u.pushToFirestore(settingFirestore); err != nil {
+		// Nếu push Firestore fail thì log lại nhưng không rollback DB
+		log.Printf("pushToFirestore error: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.OrgSettingResponse, error) {
@@ -188,4 +207,46 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.Or
 	resp := mapper.MapOrgSettingToResponse(orgSetting, component)
 
 	return resp, nil
+}
+
+func (uc *OrganizationSettingUsecase) pushToFirestore(setting response.OrgSettingResponse) error {
+	client := firebase.InitFirestoreClient()
+	ctx := context.Background()
+
+	// Convert Component.Value (struct) -> map[string]interface{}
+	var valueMap map[string]interface{}
+	if b, err := json.Marshal(setting.Component.Value); err == nil {
+		_ = json.Unmarshal(b, &valueMap)
+	} else {
+		return fmt.Errorf("failed to marshal component value: %w", err)
+	}
+
+	// Build data map
+	data := map[string]interface{}{
+		"device_id":            setting.DeviceID,
+		"is_view_message_box":  setting.IsViewMessageBox,
+		"is_show_message":      setting.IsShowMessage,
+		"message_box":          setting.MessageBox,
+		"is_show_special_btn":  setting.IsShowSpecialBtn,
+		"is_deactive_app":      setting.IsDeactiveApp,
+		"message_deactive_app": setting.MessageDeactiveApp,
+		"is_deactive_top_menu": setting.IsDeactiveTopMenu,
+		"message_top_menu":     setting.MessageTopMenu,
+		"top_menu_password":    setting.TopMenuPassword,
+		"component": map[string]interface{}{
+			"name":  setting.Component.Name,
+			"type":  setting.Component.Type,
+			"key":   setting.Component.Key,
+			"value": valueMap, // <-- giữ nguyên tất cả field trong struct
+		},
+		"updated_at": time.Now(),
+	}
+
+	// Upsert theo device_id
+	docID := setting.DeviceID
+	_, err := client.Collection("device_settings").
+		Doc(docID).
+		Set(ctx, data, firestore.MergeAll)
+
+	return err
 }

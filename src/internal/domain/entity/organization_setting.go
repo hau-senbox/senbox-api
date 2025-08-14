@@ -32,7 +32,7 @@ type OrganizationSetting struct {
 	//top menu config
 	IsDeactiveTopMenu bool      `gorm:"not null;default:false" json:"is_deactive_top_menu"`
 	MessageTopMenu    string    `gorm:"type:text" json:"message_top_menu"`
-	TopMenuPasswod    string    `gorm:"type:text" json:"top_menu_password"`
+	TopMenuPassword   string    `gorm:"type:text" json:"top_menu_password"`
 	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }

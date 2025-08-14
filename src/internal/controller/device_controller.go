@@ -46,6 +46,7 @@ type DeviceController struct {
 	*usecase.GetUserEntityUseCase
 	*usecase.GetSubmission4MemoriesFormUseCase
 	*usecase.ChildUseCase
+	*usecase.DeviceUsecase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1459,3 +1460,32 @@ func (receiver *DeviceController) GetSubmission4Memories(c *gin.Context) {
 // 		return
 // 	}
 // }
+
+func (receiver *DeviceController) GetDevice4App(c *gin.Context) {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "device id is required",
+			},
+		)
+		return
+	}
+
+	res, err := receiver.DeviceUsecase.GetDeviceInfoFromOrg(deviceID)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}

@@ -482,7 +482,6 @@ func (r *DeviceRepository) GetOrgByDeviceID(deviceID string) (*entity.SOrgDevice
 	// Gia su chi lay 1 org theo device id (case 1 device chi active 1 org)
 	var orgDevices *entity.SOrgDevices
 	if err := r.DBConn.
-		Select("organization_id").
 		Where("device_id = ?", deviceID).
 		First(&orgDevices).Error; err != nil {
 		return nil, err

@@ -422,7 +422,6 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	}
 
 	// organization
-
 	orgController := &controller.OrganizationController{
 		OrganizationSettingUsecase: &usecase.OrganizationSettingUsecase{
 			Repo:          &repository.OrganizationSettingRepository{DBConn: dbConn},
@@ -433,5 +432,17 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	org := engine.Group("/v1/user/organization", secureMiddleware.Secured())
 	{
 		org.GET("/setting/:device_id", orgController.GetOrgSetting)
+	}
+
+	//device
+	deviceController := &controller.DeviceController{
+		DeviceUsecase: &usecase.DeviceUsecase{
+			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+		},
+	}
+
+	device := engine.Group("/v1/user/device", secureMiddleware.Secured())
+	{
+		device.GET("/:device_id", deviceController.GetDevice4App)
 	}
 }

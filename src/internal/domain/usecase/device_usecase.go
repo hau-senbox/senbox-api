@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/response"
 
 	"gorm.io/gorm"
 )
@@ -17,11 +18,16 @@ func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
 }
 
 // case device chi active 1 org.
-// func (receiver *DeviceUsecase) GetOrgActiveByDeviceID(deviceID string) (*entity.SDevice, error) {
-// 	orgDevice, err := receiver.GetOrgByDeviceID(deviceID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (receiver *DeviceUsecase) GetDeviceInfoFromOrg(deviceID string) (*response.GetDeviceInfoResponse, error) {
+	orgDeviceInfo, err := receiver.GetOrgByDeviceID(deviceID)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return receiver.FindDeviceByID(deviceID)
-// }
+	// DeviceName info di theo org ma device dang ky
+	res := &response.GetDeviceInfoResponse{
+		DeviceName: orgDeviceInfo.DeviceName,
+	}
+
+	return res, nil
+}
