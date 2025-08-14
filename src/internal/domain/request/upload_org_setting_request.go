@@ -8,7 +8,7 @@ type UploadOrgSettingRequest struct {
 	IsViewMessageBox   bool                        `json:"is_view_message_box"`
 	IsShowMessage      bool                        `json:"is_show_message"`
 	MessageBox         string                      `json:"message_box"`
-	IsShowSpecialBtn   bool                        `json:"is_show_special_btn"`
+	IsShowSpecialBtn   *bool                       `json:"is_show_special_btn"`
 	IsDeactiveApp      bool                        `json:"is_deactive_app"`
 	MessageDeactiveApp string                      `json:"message_deactive_app"`
 	IsDeactiveTopMenu  bool                        `json:"is_deactive_top_menu"`

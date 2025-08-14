@@ -120,7 +120,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		IsViewMessageBox:   req.IsViewMessageBox,
 		IsShowMessage:      req.IsShowMessage,
 		MessageBox:         req.MessageBox,
-		IsShowSpecialBtn:   req.IsShowSpecialBtn,
+		IsShowSpecialBtn:   *req.IsShowSpecialBtn,
 		IsDeactiveApp:      req.IsDeactiveApp,
 		MessageDeactiveApp: req.MessageDeactiveApp,
 		IsDeactiveTopMenu:  req.IsDeactiveTopMenu,
@@ -147,7 +147,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			setting.MessageBox = existingSetting.MessageBox
 		}
 
-		setting.IsShowSpecialBtn = existingSetting.IsShowSpecialBtn
+		if req.IsShowSpecialBtn != nil {
+			setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
+		}
 
 		if req.IsDeactiveApp == false && req.MessageDeactiveApp == "" {
 			setting.IsDeactiveApp = existingSetting.IsDeactiveApp
