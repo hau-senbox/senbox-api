@@ -83,3 +83,12 @@ func (r *OrganizationSettingRepository) CreateWithTx(tx *gorm.DB, setting *entit
 func (r *OrganizationSettingRepository) UpdateWithTx(tx *gorm.DB, setting *entity.OrganizationSetting) error {
 	return tx.Save(setting).Error
 }
+
+// GetByID retrieves an OrganizationSetting by ID
+func (r *OrganizationSettingRepository) GetByIDAndIsNewConfig(orgID string) (*entity.OrganizationSetting, error) {
+	var setting entity.OrganizationSetting
+	if err := r.DBConn.Where("organization_id = ? AND is_news_config = ?", orgID, true).First(&setting).Error; err != nil {
+		return nil, err
+	}
+	return &setting, nil
+}

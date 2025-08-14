@@ -586,10 +586,94 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	}
 
+	deviceController := &controller.DeviceController{
+		DBConn: dbConn,
+		UpdateDeviceSheetUseCase: &usecase.UpdateDeviceSheetUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		RegisterDeviceUseCase: &usecase.RegisterDeviceUseCase{
+			DeviceRepository:  deviceRepository,
+			SessionRepository: &sessionRepository,
+			SettingRepository: &repository.SettingRepository{DBConn: dbConn},
+			Writer:            userSpreadsheet.Writer,
+			Reader:            userSpreadsheet.Reader,
+		},
+		GetDeviceByIDUseCase: &usecase.GetDeviceByIDUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		GetDeviceListUseCase: &usecase.GetDeviceListUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		UpdateDeviceUseCase: &usecase.UpdateDeviceUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		FindDeviceFromRequestCase: &usecase.FindDeviceFromRequestCase{
+			DeviceRepository:  deviceRepository,
+			SessionRepository: &sessionRepository,
+		},
+		GetFormByIDUseCase: &usecase.GetFormByIDUseCase{
+			FormRepository: formRepo,
+		},
+		TakeNoteUseCase: &usecase.TakeNoteUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		RefreshAccessTokenUseCase: &usecase.RefreshAccessTokenUseCase{
+			SessionRepository: &sessionRepository,
+			DeviceRepository:  deviceRepository,
+		},
+		DiscoverUseCase: &usecase.DiscoverUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		DeviceSignUpUseCases: &usecase.DeviceSignUpUseCases{
+			SettingRepository: &repository.SettingRepository{DBConn: dbConn},
+			FormRepository:    formRepo,
+			GetQuestionsByFormUseCase: &usecase.GetQuestionsByFormUseCase{
+				QuestionRepository:     &repository.QuestionRepository{DBConn: dbConn},
+				CodeCountingRepository: repository.NewCodeCountingRepository(),
+				DB:                     dbConn,
+			},
+		},
+		GetRecentSubmissionByFormIDUseCase:     usecase.NewGetRecentSubmissionByFormIDUseCase(dbConn),
+		GetSubmissionByConditionUseCase:        usecase.NewGetSubmissionByConditionUseCase(dbConn),
+		GetTotalNrSubmissionByConditionUseCase: usecase.NewGetTotalNrSubmissionByConditionUseCase(dbConn),
+		GetSubmission4MemoriesFormUseCase:      usecase.NewGetSubmission4MemoriesFormUseCase(dbConn),
+		RegisterFcmDeviceUseCase:               usecase.NewRegisterFcmDeviceUseCase(dbConn, fcm),
+		SendNotificationUseCase:                usecase.NewSendNotificationUseCase(dbConn, fcm),
+		ResetCodeCountingUseCase:               usecase.NewResetCodeCountingUseCase(dbConn),
+		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
+			SessionRepository:    sessionRepository,
+		},
+		GetUserDeviceUseCase: &usecase.GetUserDeviceUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+		},
+		GetDeviceStatusUseCase: &usecase.GetDeviceStatusUseCase{
+			DeviceRepository: deviceRepository,
+		},
+		OrgDeviceRegistrationUseCase: &usecase.OrgDeviceRegistrationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:       deviceRepository,
+		},
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		ChildUseCase: childUseCase,
+		DeviceUsecase: &usecase.DeviceUsecase{
+			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+		},
+	}
+
 	org := engine.Group("/v1/admin/organization", secureMiddleware.Secured())
 	{
 		org.GET("/setting/:device_id", orgController.GetOrgSetting)
 		org.POST("/setting", orgController.UploadOrgSetting)
+		org.GET("/:organization_id/device", deviceController.GetAllDeviceByOrgID)
+		org.GET("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
+		// org.POST("/:organization_id/setting/device/news", orgController.UploadOrgSettingNews)
+		// org.GET("/:organization_id/setting/device/news", orgController.GetOrgSettingNews)
+		// org.POST("/:organization_id/setting/portal/news", orgController.UploadOrgSettingNews)
+		// org.GET("/:organization_id/setting/portal/news", orgController.GetOrgSettingNews)
 
 	}
 

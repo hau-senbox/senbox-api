@@ -436,6 +436,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	//device
 	deviceController := &controller.DeviceController{
+		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
+			//SessionRepository: repository.SessionRepository{},
+		},
 		DeviceUsecase: &usecase.DeviceUsecase{
 			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
 		},

@@ -635,3 +635,81 @@ func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
 		Data:    orgSetting,
 	})
 }
+
+// func (receiver OrganizationController) GetOrgSettingNews(c *gin.Context) {
+// 	orgID := c.Param("organization_id")
+
+// 	if orgID == "" {
+// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Code:    http.StatusBadRequest,
+// 			Message: "Missing organization ID",
+// 		})
+// 		return
+// 	}
+
+// 	orgSettingNews, err := receiver.OrganizationSettingUsecase.GetOrgSettingNews(orgID)
+// 	if err != nil {
+// 		if err == gorm.ErrRecordNotFound {
+// 			c.JSON(http.StatusOK, response.SucceedResponse{
+// 				Code:    http.StatusOK,
+// 				Message: "Not Found",
+// 				Data:    nil,
+// 			})
+// 			return
+// 		}
+
+// 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: "Failed to get organization setting",
+// 			Error:   err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code:    http.StatusOK,
+// 		Message: "Success",
+// 		Data:    orgSettingNews,
+// 	})
+// }
+
+// func (receiver OrganizationController) UploadOrgSettingNews(c *gin.Context) {
+// 	var req request.UploadOrgSettingNewsRequest
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Code:    http.StatusBadRequest,
+// 			Message: "Invalid request payload",
+// 			Error:   err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	orgID := c.Param("organization_id")
+
+// 	if orgID == "" {
+// 		c.JSON(http.StatusBadRequest, response.FailedResponse{
+// 			Code:    http.StatusBadRequest,
+// 			Message: "Missing organization ID",
+// 		})
+// 		return
+// 	}
+
+// 	req.OrganizationID = orgID
+// 	req.IsNewsConfig = true
+
+// 	err := receiver.OrganizationSettingUsecase.UploadOrgSettingNews(req)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: "Failed to upload organization setting news",
+// 			Error:   err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, response.SucceedResponse{
+// 		Code:    http.StatusOK,
+// 		Message: "Upload success",
+// 		Data:    nil,
+// 	})
+// }

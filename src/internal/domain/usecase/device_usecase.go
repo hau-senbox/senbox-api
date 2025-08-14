@@ -63,3 +63,21 @@ func (receiver *DeviceUsecase) GetDeviceInfoFromOrg4App(deviceID string) ([]resp
 
 	return responses, nil
 }
+
+func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) ([]response.GetDeviceInfoResponse, error) {
+	orgDevices, err := receiver.GetOrgsByDeviceID(deviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build list response
+	responses := make([]response.GetDeviceInfoResponse, 0, len(orgDevices))
+	for _, orgDevice := range orgDevices {
+		responses = append(responses, response.GetDeviceInfoResponse{
+			DeviceName: orgDevice.DeviceName,
+			// Nếu có thêm field nào trong GetDeviceInfoResponse, map ở đây
+		})
+	}
+
+	return responses, nil
+}
