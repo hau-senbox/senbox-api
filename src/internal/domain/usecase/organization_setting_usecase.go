@@ -12,7 +12,6 @@ import (
 	"sen-global-api/internal/domain/response"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -54,68 +53,59 @@ func (u *OrganizationSettingUsecase) ListOrganizationSettings() ([]entity.Organi
 // upload org setting
 func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSettingRequest) error {
 	tx := u.Repo.DBConn.Begin()
-	rolledBack := false
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	var componentID string
 	isNewComp := false
 
-	// Nếu request có component thì xử lý upsert component
-	if req.Component.Name != "" || req.Component.ID != nil {
-		var cid uuid.UUID
+	// Xử lý component nếu có
+	if req.Component.Name != "" || (req.Component.ID != nil && *req.Component.ID != uuid.Nil) {
 		valueJSON, err := json.Marshal(req.Component.Value)
-
 		if err != nil {
-			return err
+			tx.Rollback()
+			return fmt.Errorf("marshal component value fail: %w", err)
 		}
 
 		component := &components.Component{
 			Name:  req.Component.Name,
 			Type:  components.ComponentType(req.Component.Type),
 			Key:   req.Component.Key,
-			Value: datatypes.JSON([]byte(valueJSON)),
+			Value: datatypes.JSON(valueJSON),
 		}
 
 		if req.Component.ID != nil && *req.Component.ID != uuid.Nil {
 			// Update component
-			cid = *req.Component.ID
-			component.ID = cid
-
-			existingComponent, err := u.ComponentRepo.GetByID(cid.String())
+			component.ID = *req.Component.ID
+			existingComp, err := u.ComponentRepo.GetByID(component.ID.String())
 			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				logrus.Error("rollback by error query component:", err)
 				tx.Rollback()
-				rolledBack = true
 				return fmt.Errorf("query component fail: %w", err)
 			}
-
-			if existingComponent != nil {
+			if existingComp != nil {
 				if err := u.ComponentRepo.UpdateWithTx(tx, component); err != nil {
-					logrus.Error("rollback by error update component:", err)
 					tx.Rollback()
-					rolledBack = true
 					return fmt.Errorf("update component fail: %w", err)
 				}
 				isNewComp = false
 			} else {
-				logrus.Error("rollback by error create component (from non-existent id)")
 				tx.Rollback()
-				rolledBack = true
 				return fmt.Errorf("component ID not found, cannot update")
 			}
 		} else {
-			// Create component
-			cid = uuid.New()
-			component.ID = cid
+			// Create component mới
+			component.ID = uuid.New()
 			if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
-				logrus.Error("rollback by error create component:", err)
 				tx.Rollback()
-				rolledBack = true
 				return fmt.Errorf("create component fail: %w", err)
 			}
 			isNewComp = true
 		}
 
-		componentID = cid.String()
+		componentID = component.ID.String()
 	}
 
 	// Upsert organization setting
@@ -133,48 +123,61 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		TopMenuPasswod:     req.TopMenuPassword,
 	}
 
-	// Nếu có component thì set ComponentID
 	if componentID != "" {
 		setting.ComponentID = componentID
 	}
 
-	existingSetting, err := u.Repo.GetByDeviceIdAndOrgId(req.DeviceID, req.OrganizationID)
+	existingSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logrus.Error("rollback by error query org setting:", err)
 		tx.Rollback()
-		rolledBack = true
 		return fmt.Errorf("query organization setting fail: %w", err)
 	}
 
 	if existingSetting != nil {
 		setting.ID = existingSetting.ID
-		if !isNewComp {
+		// Merge dữ liệu
+		if req.IsViewMessageBox == false && req.IsShowMessage == false && req.MessageBox == "" {
+			setting.IsViewMessageBox = existingSetting.IsViewMessageBox
+			setting.IsShowMessage = existingSetting.IsShowMessage
+			setting.MessageBox = existingSetting.MessageBox
+		}
+
+		if req.IsShowSpecialBtn == false {
+			setting.IsShowSpecialBtn = existingSetting.IsShowSpecialBtn
+		}
+
+		if req.IsDeactiveApp == false && req.MessageDeactiveApp == "" {
+			setting.IsDeactiveApp = existingSetting.IsDeactiveApp
+			setting.MessageDeactiveApp = existingSetting.MessageDeactiveApp
+		}
+
+		if req.IsDeactiveTopMenu == false && req.MessageTopMenu == "" && req.TopMenuPassword == "" {
+			setting.IsDeactiveTopMenu = existingSetting.IsDeactiveTopMenu
+			setting.MessageTopMenu = existingSetting.MessageTopMenu
+			setting.TopMenuPasswod = existingSetting.TopMenuPasswod
+		}
+
+		// Merge component
+		if !isNewComp && componentID == "" {
 			setting.ComponentID = existingSetting.ComponentID
 		}
 		if err := u.Repo.UpdateWithTx(tx, setting); err != nil {
-			logrus.Error("rollback by error update org setting:", err)
 			tx.Rollback()
-			rolledBack = true
 			return fmt.Errorf("update organization setting fail: %w", err)
 		}
 	} else {
 		if err := u.Repo.CreateWithTx(tx, setting); err != nil {
-			logrus.Error("rollback by error create org setting:", err)
 			tx.Rollback()
-			rolledBack = true
 			return fmt.Errorf("create organization setting fail: %w", err)
 		}
 	}
 
-	if !rolledBack {
-		return tx.Commit().Error
-	}
-	return nil
+	return tx.Commit().Error
 }
 
-func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string, orgID string) (response.OrgSettingResponse, error) {
+func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.OrgSettingResponse, error) {
 	// Lấy thông tin OrgSetting
-	orgSetting, err := u.Repo.GetByDeviceIdAndOrgId(deviceID, orgID)
+	orgSetting, err := u.Repo.GetByDeviceID(deviceID)
 	if err != nil {
 		return response.OrgSettingResponse{}, err
 	}

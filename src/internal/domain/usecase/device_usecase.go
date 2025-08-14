@@ -16,6 +16,7 @@ func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
 	}
 }
 
+// case device chi active 1 org.
 // func (receiver *DeviceUsecase) GetOrgActiveByDeviceID(deviceID string) (*entity.SDevice, error) {
 // 	orgDevice, err := receiver.GetOrgByDeviceID(deviceID)
 // 	if err != nil {
