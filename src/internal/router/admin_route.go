@@ -666,7 +666,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	org := engine.Group("/v1/admin/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/:device_id", orgController.GetOrgSetting)
+		org.GET("/setting/device/:device_id", orgController.GetOrgSetting)
 		org.POST("/setting", orgController.UploadOrgSetting)
 		org.GET("/:organization_id/device", deviceController.GetAllDeviceByOrgID)
 		org.GET("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
