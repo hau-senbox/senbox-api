@@ -147,9 +147,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			setting.MessageBox = existingSetting.MessageBox
 		}
 
-		if req.IsShowSpecialBtn == false {
-			setting.IsShowSpecialBtn = existingSetting.IsShowSpecialBtn
-		}
+		setting.IsShowSpecialBtn = existingSetting.IsShowSpecialBtn
 
 		if req.IsDeactiveApp == false && req.MessageDeactiveApp == "" {
 			setting.IsDeactiveApp = existingSetting.IsDeactiveApp
