@@ -489,3 +489,25 @@ func (r *DeviceRepository) GetOrgByDeviceID(deviceID string) (*entity.SOrgDevice
 
 	return orgDevices, nil
 }
+
+func (r *DeviceRepository) GetOrgsByDeviceID(deviceID string) ([]entity.SOrgDevices, error) {
+	var orgDevices []entity.SOrgDevices
+	if err := r.DBConn.
+		Where("device_id = ?", deviceID).
+		Find(&orgDevices).Error; err != nil {
+		return nil, err
+	}
+
+	return orgDevices, nil
+}
+
+func (r *DeviceRepository) GetOrgDeviceByDeviceIdAndOrgID(orgID string, deviceID string) (*entity.SOrgDevices, error) {
+	var orgDevices *entity.SOrgDevices
+	if err := r.DBConn.
+		Where("organization_id = ? AND device_id = ?", orgID, deviceID).
+		First(&orgDevices).Error; err != nil {
+		return nil, err
+	}
+
+	return orgDevices, nil
+}
