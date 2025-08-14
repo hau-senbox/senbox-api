@@ -189,9 +189,11 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 
 	deviceResponse := make([]response.DeviceResponseV2, 0)
 	for _, device := range devices {
+		// get device name by org_device
+		infoDeviceOrg, _ := receiver.DeviceUsecase.GetDeviceInfoFromOrg(device.ID)
 		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
 			ID:         device.ID,
-			DeviceName: device.DeviceName,
+			DeviceName: infoDeviceOrg.DeviceName,
 		})
 	}
 

@@ -141,6 +141,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		ChildUseCase: childUseCase,
+		DeviceUsecase: &usecase.DeviceUsecase{
+			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+		},
 	}
 
 	answerRepo := repository.AnswerRepository{DBConn: dbConn}
