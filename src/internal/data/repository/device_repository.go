@@ -407,7 +407,7 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 	// Get device name
 	listDeviceByOrg, _ := receiver.GetDeviceListByOrgID(org.ID.String())
 	count := len(listDeviceByOrg) // số thiết bị hiện có
-	deviceName := fmt.Sprintf("%s - DEVICE -[%d]", org.OrganizationName, count+1)
+	deviceName := fmt.Sprintf("%s	Device :[%d] NICKNAME", org.OrganizationName, count+1)
 
 	err = receiver.DBConn.Transaction(func(tx *gorm.DB) error {
 		if device != nil {
