@@ -258,7 +258,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSettingNewsDevice(req request.Uplo
 
 	if exist != nil {
 		// Update
-		exist.IsPusblishedDevice = req.IsPusblishedDevice
+		exist.IsPublishedDevice = req.IsPublishedDevice
 		exist.MessageDeviceNews = req.MessageDeviceNews
 
 		return u.Repo.UpdateSettingNews(exist)
@@ -266,9 +266,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSettingNewsDevice(req request.Uplo
 
 	// Create
 	newSetting := &entity.OrganizationNewsSetting{
-		OrganizationID:     req.OrganizationID,
-		IsPusblishedDevice: req.IsPusblishedDevice,
-		MessageDeviceNews:  req.MessageDeviceNews,
+		OrganizationID:    req.OrganizationID,
+		IsPublishedDevice: req.IsPublishedDevice,
+		MessageDeviceNews: req.MessageDeviceNews,
 	}
 
 	return u.Repo.CreateSettingNews(newSetting)
@@ -280,7 +280,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSettingNewsPortal(req request.Uplo
 
 	if exist != nil {
 		// Update
-		exist.IsPusblishedPortal = req.IsPusblishedPortal
+		exist.IsPublishedPortal = req.IsPublishedPortal
 		exist.MessagePortalNews = req.MessagePortalNews
 
 		return u.Repo.UpdateSettingNews(exist)
@@ -288,9 +288,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSettingNewsPortal(req request.Uplo
 
 	// Create
 	newSetting := &entity.OrganizationNewsSetting{
-		OrganizationID:     req.OrganizationID,
-		IsPusblishedPortal: req.IsPusblishedPortal,
-		MessagePortalNews:  req.MessagePortalNews,
+		OrganizationID:    req.OrganizationID,
+		IsPublishedPortal: req.IsPublishedPortal,
+		MessagePortalNews: req.MessagePortalNews,
 	}
 
 	return u.Repo.CreateSettingNews(newSetting)
@@ -307,9 +307,9 @@ func (u *OrganizationSettingUsecase) GetOrgSettingNews(orgID string) (*response.
 
 	return &response.OrgSettingNewsResponse{
 		OrganizationID:     setting.OrganizationID,
-		IsPusblishedDevice: setting.IsPusblishedDevice,
+		IsPusblishedDevice: setting.IsPublishedDevice,
 		MessageDeviceNews:  setting.MessageDeviceNews,
-		IsPusblishedPortal: setting.IsPusblishedPortal,
+		IsPusblishedPortal: setting.IsPublishedPortal,
 		MessagePortalNews:  setting.MessagePortalNews,
 	}, nil
 }
