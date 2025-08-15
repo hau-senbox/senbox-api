@@ -413,6 +413,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},
+		&usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
 	)
 
 	childUseCase := usecase.NewChildUseCase(

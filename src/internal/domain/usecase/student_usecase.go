@@ -23,6 +23,7 @@ type StudentApplicationUseCase struct {
 	OrganizationRepo           *repository.OrganizationRepository
 	DeviceRepo                 *repository.DeviceRepository
 	StudentBlockSettingUsecase *StudentBlockSettingUsecase
+	LanguagesConfigUsecase     *LanguagesConfigUsecase
 }
 
 func NewStudentApplicationUseCase(
@@ -33,6 +34,7 @@ func NewStudentApplicationUseCase(
 	getUserEntityUseCase *GetUserEntityUseCase,
 	organizationRepo *repository.OrganizationRepository,
 	studentBlockSettingUsecase *StudentBlockSettingUsecase,
+	languagesConfigUsecase *LanguagesConfigUsecase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:             studentRepo,
@@ -42,6 +44,7 @@ func NewStudentApplicationUseCase(
 		GetUserEntityUseCase:       getUserEntityUseCase,
 		OrganizationRepo:           organizationRepo,
 		StudentBlockSettingUsecase: studentBlockSettingUsecase,
+		LanguagesConfigUsecase:     languagesConfigUsecase,
 	}
 }
 
@@ -118,15 +121,19 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	// get student block setting
 	studentBlockSetting, _ := uc.StudentBlockSettingUsecase.GetByStudentID(studentID)
 
+	// get languages config
+	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(studentID, value.OwnerRoleLangStudent)
+
 	return &response.StudentResponseBase{
-		StudentID:     studentID,
-		StudentName:   studentApp.StudentName,
-		Avatar:        "",
-		AvatarURL:     "",
-		QrFormProfile: formProfile,
-		Menus:         menus,
-		CustomID:      studentApp.CustomID,
-		StudentBlock:  studentBlockSetting,
+		StudentID:      studentID,
+		StudentName:    studentApp.StudentName,
+		Avatar:         "",
+		AvatarURL:      "",
+		QrFormProfile:  formProfile,
+		Menus:          menus,
+		CustomID:       studentApp.CustomID,
+		StudentBlock:   studentBlockSetting,
+		LanguageConfig: languageConfig,
 	}, nil
 }
 

@@ -90,6 +90,15 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner(ctx context.Context,
 	return mapper.ToLanguagesConfigResponse(lc), nil
 }
 
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwnerNoCtx(ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse, error) {
+
+	lc, err := uc.Repo.GetByOwnerNoCtx(ownerID, ownerRole)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToLanguagesConfigResponse(lc), nil
+}
+
 // UpdateLanguagesConfig - Cập nhật
 func (uc *LanguagesConfigUsecase) UpdateLanguagesConfig(ctx context.Context, lc *entity.LanguagesConfig) error {
 	if lc.ID == uuid.Nil {

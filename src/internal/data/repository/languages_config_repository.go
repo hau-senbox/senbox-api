@@ -44,6 +44,20 @@ func (r *LanguagesConfigRepository) GetByOwner(ctx context.Context, ownerID stri
 	return &lc, nil
 }
 
+func (r *LanguagesConfigRepository) GetByOwnerNoCtx(ownerID string, ownerRole value.OwnerRole4LangConfig) (*entity.LanguagesConfig, error) {
+	var lc entity.LanguagesConfig
+	err := r.DBConn.
+		Where("owner_id = ? AND owner_role = ?", ownerID, ownerRole).
+		First(&lc).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // không có thì trả về nil
+		}
+		return nil, err
+	}
+	return &lc, nil
+}
+
 func (r *LanguagesConfigRepository) Update(ctx context.Context, lc *entity.LanguagesConfig) error {
 	return r.DBConn.WithContext(ctx).
 		Model(&entity.LanguagesConfig{}).
