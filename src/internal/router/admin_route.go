@@ -380,7 +380,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
 		},
 	}
-	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
+
+	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured(), middleware.MenuUploadLoggerMiddleware(dbConn))
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
