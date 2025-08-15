@@ -410,6 +410,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		&repository.OrganizationRepository{DBConn: dbConn},
+		&usecase.StudentBlockSettingUsecase{
+			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
+		},
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -662,6 +665,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		ChildUseCase: childUseCase,
 		DeviceUsecase: &usecase.DeviceUsecase{
 			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+			DeviceMenuUseCase: &usecase.DeviceMenuUseCase{
+				Repo:          &repository.DeviceMenuRepository{DBConn: dbConn},
+				ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+				DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
+			},
 		},
 	}
 
@@ -674,6 +682,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.POST("/:organization_id/setting/device/news", orgController.UploadOrgSettingNewsDevice)
 		org.POST("/:organization_id/setting/portal/news", orgController.UploadOrgSettingNewsPortal)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
+		org.PUT("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())

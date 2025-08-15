@@ -15,13 +15,14 @@ import (
 )
 
 type StudentApplicationUseCase struct {
-	StudentAppRepo       *repository.StudentApplicationRepository
-	StudentMenuRepo      *repository.StudentMenuRepository
-	ComponentRepo        *repository.ComponentRepository
-	RoleOrgRepo          *repository.RoleOrgSignUpRepository
-	GetUserEntityUseCase *GetUserEntityUseCase
-	OrganizationRepo     *repository.OrganizationRepository
-	DeviceRepo           *repository.DeviceRepository
+	StudentAppRepo             *repository.StudentApplicationRepository
+	StudentMenuRepo            *repository.StudentMenuRepository
+	ComponentRepo              *repository.ComponentRepository
+	RoleOrgRepo                *repository.RoleOrgSignUpRepository
+	GetUserEntityUseCase       *GetUserEntityUseCase
+	OrganizationRepo           *repository.OrganizationRepository
+	DeviceRepo                 *repository.DeviceRepository
+	StudentBlockSettingUsecase *StudentBlockSettingUsecase
 }
 
 func NewStudentApplicationUseCase(
@@ -31,14 +32,16 @@ func NewStudentApplicationUseCase(
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
 	getUserEntityUseCase *GetUserEntityUseCase,
 	organizationRepo *repository.OrganizationRepository,
+	studentBlockSettingUsecase *StudentBlockSettingUsecase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
-		StudentAppRepo:       studentRepo,
-		StudentMenuRepo:      menuRepo,
-		ComponentRepo:        componentRepo,
-		RoleOrgRepo:          roleOrgRepo,
-		GetUserEntityUseCase: getUserEntityUseCase,
-		OrganizationRepo:     organizationRepo,
+		StudentAppRepo:             studentRepo,
+		StudentMenuRepo:            menuRepo,
+		ComponentRepo:              componentRepo,
+		RoleOrgRepo:                roleOrgRepo,
+		GetUserEntityUseCase:       getUserEntityUseCase,
+		OrganizationRepo:           organizationRepo,
+		StudentBlockSettingUsecase: studentBlockSettingUsecase,
 	}
 }
 
@@ -112,6 +115,9 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	}
 	formProfile := studentRoleOrg.OrgProfile + ":" + studentApp.ID.String()
 
+	// get student block setting
+	studentBlockSetting, _ := uc.StudentBlockSettingUsecase.GetByStudentID(studentID)
+
 	return &response.StudentResponseBase{
 		StudentID:     studentID,
 		StudentName:   studentApp.StudentName,
@@ -120,6 +126,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		QrFormProfile: formProfile,
 		Menus:         menus,
 		CustomID:      studentApp.CustomID,
+		StudentBlock:  studentBlockSetting,
 	}, nil
 }
 

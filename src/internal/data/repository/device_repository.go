@@ -511,3 +511,15 @@ func (r *DeviceRepository) GetOrgDeviceByDeviceIdAndOrgID(orgID string, deviceID
 
 	return orgDevices, nil
 }
+
+func (r *DeviceRepository) UpdateDeviceNameByOrgIDAndDeviceID(orgID string, deviceID string, deviceName string) error {
+	var orgDevice entity.SOrgDevices
+	if err := r.DBConn.
+		Where("organization_id = ? AND device_id = ?", orgID, deviceID).
+		First(&orgDevice).Error; err != nil {
+		return err
+	}
+
+	orgDevice.DeviceName = deviceName
+	return r.DBConn.Save(&orgDevice).Error
+}

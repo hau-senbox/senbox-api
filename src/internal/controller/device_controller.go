@@ -1504,7 +1504,7 @@ func (receiver *DeviceController) GetDevice4Web(c *gin.Context) {
 		return
 	}
 
-	orgID := c.Param("organiation_id")
+	orgID := c.Param("organization_id")
 	if orgID == "" {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
@@ -1515,7 +1515,56 @@ func (receiver *DeviceController) GetDevice4Web(c *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DeviceUsecase.GetDeviceInfoFromOrg4App(deviceID)
+	res, err := receiver.DeviceUsecase.GetDeviceInfo4Web(orgID, deviceID)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *DeviceController) UploadDevice4Web(c *gin.Context) {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "device id is required",
+			},
+		)
+		return
+	}
+
+	orgID := c.Param("organization_id")
+	if orgID == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "organization id is required",
+			},
+		)
+		return
+	}
+
+	var req request.UploadDeviceInfoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "device_name is required",
+		})
+		return
+	}
+
+	res, err := receiver.DeviceUsecase.UploadDeviceName4Web(orgID, deviceID, req.DeviceName)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
