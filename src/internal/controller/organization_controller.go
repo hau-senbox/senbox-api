@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"errors"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -717,6 +718,14 @@ func (receiver *OrganizationController) GetOrgSettingNews(c *gin.Context) {
 
 	data, err := receiver.OrganizationSettingUsecase.GetOrgSettingNews(orgID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, response.SucceedResponse{
+				Code:    http.StatusOK,
+				Message: "Record not found",
+				Data:    nil,
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to get organization device news setting",
@@ -724,6 +733,7 @@ func (receiver *OrganizationController) GetOrgSettingNews(c *gin.Context) {
 		})
 		return
 	}
+
 	if data == nil {
 		c.JSON(http.StatusNotFound, response.FailedResponse{
 			Code:    http.StatusNotFound,

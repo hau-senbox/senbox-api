@@ -10,7 +10,7 @@ type OrganizationNewsSetting struct {
 	ID                uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
 	OrganizationID    string    `gorm:"type:varchar(255);not null" json:"organization_id"`
 	IsPublishedDevice bool      `gorm:"type:tinyint(1);not null;default:0" json:"is_published_device"`
-	MessageDeviceNews string    `gorm:"type:text;not null" json:"message_devices_news" binding:"required"`
+	MessageDeviceNews string    `gorm:"type:text;not null" json:"message_device_news" binding:"required"`
 	IsPublishedPortal bool      `gorm:"type:tinyint(1);not null;default:0" json:"is_published_portal"`
 	MessagePortalNews string    `gorm:"type:text;not null" json:"message_portal_news" binding:"required"`
 	CreatedAt         time.Time `gorm:"type:datetime;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
