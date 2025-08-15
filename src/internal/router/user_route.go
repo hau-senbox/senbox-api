@@ -450,4 +450,20 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	{
 		device.GET("/:device_id", deviceController.GetDevice4App)
 	}
+
+	// languages config
+	languagesConfigController := &controller.LanguagesConfigController{
+		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
+		ChildUsecase: childUsecase,
+	}
+
+	languagesConfig := engine.Group("/v1/user/languages-config", secureMiddleware.Secured())
+	{
+		languagesConfig.GET("/child/:child_id", languagesConfigController.GetChildLanguageConfig)
+		languagesConfig.GET("/parent/:parent_id", languagesConfigController.GetParentLanguageConfig)
+		languagesConfig.POST("/child", languagesConfigController.UploadLanguagesConfig)
+		languagesConfig.POST("/parent", languagesConfigController.UploadLanguagesConfig)
+	}
 }

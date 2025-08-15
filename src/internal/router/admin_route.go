@@ -693,11 +693,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	}
 
 	// languages config
-	languagesConfigController := controller.NewLanguagesConfigController(
-		usecase.NewLanguagesConfigUsecase(
-			repository.NewLanguagesConfigRepository(dbConn),
-		),
-	)
+
+	languagesConfigController := &controller.LanguagesConfigController{
+		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
+	}
 
 	languagesConfig := engine.Group("/v1/admin/languages-config", secureMiddleware.Secured())
 	{

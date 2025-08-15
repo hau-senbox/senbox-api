@@ -13,14 +13,10 @@ import (
 )
 
 type LanguagesConfigController struct {
-	uc *usecase.LanguagesConfigUsecase
+	LanguagesConfigUsecase *usecase.LanguagesConfigUsecase
+	ChildUsecase           *usecase.ChildUseCase
 }
 
-func NewLanguagesConfigController(uc *usecase.LanguagesConfigUsecase) *LanguagesConfigController {
-	return &LanguagesConfigController{uc: uc}
-}
-
-// GET /languages-config?owner_id=xxx&owner_type=student
 func (c *LanguagesConfigController) GetByOwner(ctx *gin.Context) {
 	ownerID := ctx.Query("owner_id")
 	ownerRoleStr := ctx.Query("owner_role")
@@ -34,7 +30,7 @@ func (c *LanguagesConfigController) GetByOwner(ctx *gin.Context) {
 		return
 	}
 
-	list, err := c.uc.GetLanguagesConfigByOwner(ctx, ownerID, ownerRole)
+	list, err := c.LanguagesConfigUsecase.GetLanguagesConfigByOwner(ctx, ownerID, ownerRole)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -72,7 +68,7 @@ func (c *LanguagesConfigController) UploadLanguagesConfig(ctx *gin.Context) {
 		return
 	}
 
-	err := c.uc.UploadLanguagesConfig(
+	err := c.LanguagesConfigUsecase.UploadLanguagesConfig(
 		ctx,
 		req.OwnerID,
 		ownerRole,
@@ -94,4 +90,84 @@ func (c *LanguagesConfigController) UploadLanguagesConfig(ctx *gin.Context) {
 		Message: "Upload languages config successfully",
 		Data:    nil,
 	})
+}
+
+func (c *LanguagesConfigController) GetChildLanguageConfig(ctx *gin.Context) {
+
+	childID := ctx.Param("child_id")
+	if childID == "" {
+		ctx.JSON(http.StatusBadGateway, response.FailedResponse{
+			Code:    http.StatusBadGateway,
+			Message: "child id is required",
+		})
+	}
+
+	//check child belong to user access
+	userID, ok := getUserID(ctx)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, response.FailedResponse{
+			Code:  http.StatusUnauthorized,
+			Error: "Unauthorized: invalid user_id",
+		})
+		return
+	}
+	isParent, _ := c.ChildUsecase.IsParentOfChild(userID, childID)
+	if !isParent {
+		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Access Denied",
+		})
+		return
+	}
+	list, err := c.LanguagesConfigUsecase.GetLanguagesConfigByOwner(ctx, childID, value.OwnerRoleLangChild)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get languages config",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    list,
+	})
+}
+
+func (c *LanguagesConfigController) GetParentLanguageConfig(ctx *gin.Context) {
+
+	parentID := ctx.Param("parent_id")
+	if parentID == "" {
+		ctx.JSON(http.StatusBadGateway, response.FailedResponse{
+			Code:    http.StatusBadGateway,
+			Message: "child id is required",
+		})
+	}
+
+	list, err := c.LanguagesConfigUsecase.GetLanguagesConfigByOwner(ctx, parentID, value.OwnerRoleLangParent)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get languages config",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    list,
+	})
+}
+
+func getUserID(ctx *gin.Context) (string, bool) {
+	val, exists := ctx.Get("user_id")
+	if !exists {
+		return "", false
+	}
+	userID, ok := val.(string)
+	return userID, ok
 }

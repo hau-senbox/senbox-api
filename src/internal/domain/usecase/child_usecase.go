@@ -254,3 +254,16 @@ func (receiver *ChildUseCase) GetAll4Search(ctx *gin.Context) ([]entity.SChild, 
 func (uc *ChildUseCase) GetParentIDByChildID(childID string) (string, error) {
 	return uc.childRepo.GetParentIDByChildID(childID)
 }
+
+func (uc *ChildUseCase) IsParentOfChild(userID string, childID string) (bool, error) {
+	parentID, err := uc.childRepo.GetParentIDByChildID(childID)
+	if err != nil {
+		return false, err
+	}
+
+	if parentID == "" {
+		return false, nil
+	}
+
+	return parentID == userID, nil
+}

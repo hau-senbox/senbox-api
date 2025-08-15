@@ -11,20 +11,16 @@ import (
 )
 
 type LanguagesConfigRepository struct {
-	db *gorm.DB
-}
-
-func NewLanguagesConfigRepository(db *gorm.DB) *LanguagesConfigRepository {
-	return &LanguagesConfigRepository{db: db}
+	DBConn *gorm.DB
 }
 
 func (r *LanguagesConfigRepository) Create(ctx context.Context, lc *entity.LanguagesConfig) error {
-	return r.db.WithContext(ctx).Create(lc).Error
+	return r.DBConn.WithContext(ctx).Create(lc).Error
 }
 
 func (r *LanguagesConfigRepository) GetByID(ctx context.Context, id string) (*entity.LanguagesConfig, error) {
 	var lc entity.LanguagesConfig
-	err := r.db.WithContext(ctx).First(&lc, "id = ?", id).Error
+	err := r.DBConn.WithContext(ctx).First(&lc, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil // không tìm thấy
@@ -36,7 +32,7 @@ func (r *LanguagesConfigRepository) GetByID(ctx context.Context, id string) (*en
 
 func (r *LanguagesConfigRepository) GetByOwner(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*entity.LanguagesConfig, error) {
 	var lc entity.LanguagesConfig
-	err := r.db.WithContext(ctx).
+	err := r.DBConn.WithContext(ctx).
 		Where("owner_id = ? AND owner_role = ?", ownerID, ownerRole).
 		First(&lc).Error
 	if err != nil {
@@ -49,12 +45,12 @@ func (r *LanguagesConfigRepository) GetByOwner(ctx context.Context, ownerID stri
 }
 
 func (r *LanguagesConfigRepository) Update(ctx context.Context, lc *entity.LanguagesConfig) error {
-	return r.db.WithContext(ctx).
+	return r.DBConn.WithContext(ctx).
 		Model(&entity.LanguagesConfig{}).
 		Where("id = ?", lc.ID).
 		Updates(lc).Error
 }
 
 func (r *LanguagesConfigRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&entity.LanguagesConfig{}, "id = ?", id).Error
+	return r.DBConn.WithContext(ctx).Delete(&entity.LanguagesConfig{}, "id = ?", id).Error
 }

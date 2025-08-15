@@ -15,12 +15,12 @@ import (
 )
 
 type LanguagesConfigUsecase struct {
-	repo *repository.LanguagesConfigRepository
+	Repo *repository.LanguagesConfigRepository
 }
 
-func NewLanguagesConfigUsecase(repo *repository.LanguagesConfigRepository) *LanguagesConfigUsecase {
-	return &LanguagesConfigUsecase{repo: repo}
-}
+// func NewLanguagesConfigUsecase(repo *repository.LanguagesConfigRepository) *LanguagesConfigUsecase {
+// 	return &LanguagesConfigUsecase{Repo: repo}
+// }
 
 // Upsert
 func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
@@ -43,7 +43,7 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 	}
 
 	// Check tồn tại
-	existing, err := uc.repo.GetByOwner(ctx, ownerID, ownerRole)
+	existing, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 		existing.StudyLang = studyLang
 		existing.UpdatedAt = time.Now()
 
-		if err := uc.repo.Update(ctx, existing); err != nil {
+		if err := uc.Repo.Update(ctx, existing); err != nil {
 			return err
 		}
 		return nil
@@ -69,7 +69,7 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
-	if err := uc.repo.Create(ctx, newLC); err != nil {
+	if err := uc.Repo.Create(ctx, newLC); err != nil {
 		return err
 	}
 	return nil
@@ -77,13 +77,13 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 
 // GetLanguagesConfigByID - Lấy theo ID
 func (uc *LanguagesConfigUsecase) GetLanguagesConfigByID(ctx context.Context, id string) (*entity.LanguagesConfig, error) {
-	return uc.repo.GetByID(ctx, id)
+	return uc.Repo.GetByID(ctx, id)
 }
 
 // GetLanguagesConfigByOwner - Lấy theo OwnerID & OwnerType
 func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse, error) {
 
-	lc, err := uc.repo.GetByOwner(ctx, ownerID, ownerRole)
+	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +96,10 @@ func (uc *LanguagesConfigUsecase) UpdateLanguagesConfig(ctx context.Context, lc 
 		return errors.New("ID không được rỗng khi update")
 	}
 	lc.UpdatedAt = time.Now()
-	return uc.repo.Update(ctx, lc)
+	return uc.Repo.Update(ctx, lc)
 }
 
 // DeleteLanguagesConfig - Xoá
 func (uc *LanguagesConfigUsecase) DeleteLanguagesConfig(ctx context.Context, id string) error {
-	return uc.repo.Delete(ctx, id)
+	return uc.Repo.Delete(ctx, id)
 }

@@ -1250,10 +1250,12 @@ type OwnerRole4LangConfig string
 
 const (
 	OwnerRoleLangStudent      OwnerRole4LangConfig = "student"
+	OwnerRoleLangChild        OwnerRole4LangConfig = "child"
 	OwnerRoleLangUser         OwnerRole4LangConfig = "user"
 	OwnerRoleLangOrganization OwnerRole4LangConfig = "organization"
 	OwnerRoleLangTeacher      OwnerRole4LangConfig = "teacher"
 	OwnerRoleLangStaff        OwnerRole4LangConfig = "staff"
+	OwnerRoleLangParent       OwnerRole4LangConfig = "parent"
 )
 
 func ParseOwnerRole4LangConfig(s string) (OwnerRole4LangConfig, error) {
