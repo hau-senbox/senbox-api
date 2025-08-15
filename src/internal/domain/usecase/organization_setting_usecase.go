@@ -306,10 +306,10 @@ func (u *OrganizationSettingUsecase) GetOrgSettingNews(orgID string) (*response.
 	}
 
 	return &response.OrgSettingNewsResponse{
-		OrganizationID:     setting.OrganizationID,
-		IsPusblishedDevice: setting.IsPublishedDevice,
-		MessageDeviceNews:  setting.MessageDeviceNews,
-		IsPusblishedPortal: setting.IsPublishedPortal,
-		MessagePortalNews:  setting.MessagePortalNews,
+		OrganizationID:    setting.OrganizationID,
+		IsPublishedDevice: setting.IsPublishedDevice,
+		MessageDeviceNews: setting.MessageDeviceNews,
+		IsPublishedPortal: setting.IsPublishedPortal,
+		MessagePortalNews: setting.MessagePortalNews,
 	}, nil
 }
