@@ -19,12 +19,24 @@ type SStudentFormApplication struct {
 	IsAdminBlock   bool                        `gorm:"column:is_admin_block;default:false"`
 	ApprovedAt     time.Time                   `gorm:"column:approved_at;type:datetime"`
 	CreatedAt      time.Time                   `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CreatedIndex   int                         `gorm:"column:created_index;not null;default:0"`
 }
 
 func (application *SStudentFormApplication) BeforeCreate(tx *gorm.DB) (err error) {
+	// Luôn set trạng thái Pending khi tạo mới
 	application.Status = value.Pending
 
-	return err
+	// Tính CreatedIndex = tổng số record hiện tại + 1 theo organization_id
+	var count int64
+	if err := tx.Model(&SStudentFormApplication{}).
+		Where("organization_id = ?", application.OrganizationID).
+		Count(&count).Error; err != nil {
+		return err
+	}
+
+	application.CreatedIndex = int(count) + 1
+
+	return nil
 }
 
 func (application *SStudentFormApplication) IsInOrganizations(orgIDs []string) bool {
