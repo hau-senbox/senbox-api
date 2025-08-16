@@ -441,6 +441,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		&repository.UserEntityRepository{DBConn: dbConn},
+		&usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -462,6 +465,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherMenuRepo:      &repository.TeacherMenuRepository{DBConn: dbConn},
 			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
 			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			},
 		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
@@ -475,6 +481,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
 			ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
 			ComponentRepo:  &repository.ComponentRepository{DBConn: dbConn},
+			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			},
 		},
 		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},

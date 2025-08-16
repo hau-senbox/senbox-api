@@ -15,13 +15,14 @@ import (
 )
 
 type StaffApplicationUseCase struct {
-	StaffAppRepo         *repository.StaffApplicationRepository
-	StaffMenuRepo        *repository.StaffMenuRepository
-	ComponentRepo        *repository.ComponentRepository
-	RoleOrgRepo          *repository.RoleOrgSignUpRepository
-	OrganizationRepo     *repository.OrganizationRepository
-	GetUserEntityUseCase *GetUserEntityUseCase
-	UserEntityRepository *repository.UserEntityRepository
+	StaffAppRepo           *repository.StaffApplicationRepository
+	StaffMenuRepo          *repository.StaffMenuRepository
+	ComponentRepo          *repository.ComponentRepository
+	RoleOrgRepo            *repository.RoleOrgSignUpRepository
+	OrganizationRepo       *repository.OrganizationRepository
+	GetUserEntityUseCase   *GetUserEntityUseCase
+	UserEntityRepository   *repository.UserEntityRepository
+	LanguagesConfigUsecase *LanguagesConfigUsecase
 }
 
 func NewStaffApplicationUseCase(
@@ -32,15 +33,17 @@ func NewStaffApplicationUseCase(
 	organizationRepo *repository.OrganizationRepository,
 	getUserEntityUseCase *GetUserEntityUseCase,
 	userEntityResitory *repository.UserEntityRepository,
+	languagesConfigUsecase *LanguagesConfigUsecase,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
-		StaffAppRepo:         staffRepo,
-		StaffMenuRepo:        menuRepo,
-		ComponentRepo:        componentRepo,
-		RoleOrgRepo:          roleOrgRepo,
-		OrganizationRepo:     organizationRepo,
-		GetUserEntityUseCase: getUserEntityUseCase,
-		UserEntityRepository: userEntityResitory,
+		StaffAppRepo:           staffRepo,
+		StaffMenuRepo:          menuRepo,
+		ComponentRepo:          componentRepo,
+		RoleOrgRepo:            roleOrgRepo,
+		OrganizationRepo:       organizationRepo,
+		GetUserEntityUseCase:   getUserEntityUseCase,
+		UserEntityRepository:   userEntityResitory,
+		LanguagesConfigUsecase: languagesConfigUsecase,
 	}
 }
 
@@ -266,15 +269,20 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
 		ID: staff.UserID.String(),
 	})
+
+	// get languages config
+	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(staffID, value.OwnerRoleLangStaff)
+
 	return &response.StaffResponseBase{
-		StaffID:       staffID,
-		UserID:        userEntity.ID.String(),
-		StaffName:     userEntity.Username,
-		Avatar:        "",
-		AvatarURL:     "",
-		QrFormProfile: formProfile,
-		Menus:         menus,
-		IsUserBlock:   userEntity.IsBlocked,
+		StaffID:        staffID,
+		UserID:         userEntity.ID.String(),
+		StaffName:      userEntity.Username,
+		Avatar:         "",
+		AvatarURL:      "",
+		QrFormProfile:  formProfile,
+		Menus:          menus,
+		IsUserBlock:    userEntity.IsBlocked,
+		LanguageConfig: languageConfig,
 	}, nil
 }
 

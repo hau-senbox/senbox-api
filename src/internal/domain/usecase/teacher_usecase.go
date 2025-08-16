@@ -15,13 +15,14 @@ import (
 )
 
 type TeacherApplicationUseCase struct {
-	TeacherRepo          *repository.TeacherApplicationRepository
-	GetUserEntityUseCase *GetUserEntityUseCase
-	UserEntityRepository *repository.UserEntityRepository
-	TeacherMenuRepo      *repository.TeacherMenuRepository
-	ComponentRepo        *repository.ComponentRepository
-	RoleOrgRepo          *repository.RoleOrgSignUpRepository
-	OrganizationRepo     *repository.OrganizationRepository
+	TeacherRepo            *repository.TeacherApplicationRepository
+	GetUserEntityUseCase   *GetUserEntityUseCase
+	UserEntityRepository   *repository.UserEntityRepository
+	TeacherMenuRepo        *repository.TeacherMenuRepository
+	ComponentRepo          *repository.ComponentRepository
+	RoleOrgRepo            *repository.RoleOrgSignUpRepository
+	OrganizationRepo       *repository.OrganizationRepository
+	LanguagesConfigUsecase *LanguagesConfigUsecase
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -231,15 +232,20 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
 		ID: teacherApp.UserID.String(),
 	})
+
+	// get languages config
+	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(teacherID, value.OwnerRoleLangTeacher)
+
 	return &response.TeacherResponseBase{
-		TeacherID:     teacherID,
-		UserID:        userEntity.ID.String(),
-		TeacherName:   userEntity.Username,
-		Avatar:        "",
-		AvatarURL:     "",
-		QrFormProfile: formProfile,
-		Menus:         menus,
-		IsUserBlock:   userEntity.IsBlocked,
+		TeacherID:      teacherID,
+		UserID:         userEntity.ID.String(),
+		TeacherName:    userEntity.Username,
+		Avatar:         "",
+		AvatarURL:      "",
+		QrFormProfile:  formProfile,
+		Menus:          menus,
+		IsUserBlock:    userEntity.IsBlocked,
+		LanguageConfig: languageConfig,
 	}, nil
 }
 

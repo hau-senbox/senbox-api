@@ -5,14 +5,16 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 )
 
 type ParentUseCase struct {
-	UserRepo       *repository.UserEntityRepository
-	ParentMenuRepo *repository.ParentMenuRepository
-	ComponentRepo  *repository.ComponentRepository
+	UserRepo               *repository.UserEntityRepository
+	ParentMenuRepo         *repository.ParentMenuRepository
+	ComponentRepo          *repository.ComponentRepository
+	LanguagesConfigUsecase *LanguagesConfigUsecase
 }
 
 func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentResponseBase, error) {
@@ -62,12 +64,16 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		menus = append(menus, menu)
 	}
 
+	// get languages config
+	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(parentID, value.OwnerRoleLangParent)
+
 	return &response.ParentResponseBase{
-		ParentID:   parentID,
-		ParentName: parent.Nickname,
-		Avatar:     "",
-		AvatarURL:  "",
-		Menus:      menus,
-		CustomID:   parent.CustomID,
+		ParentID:       parentID,
+		ParentName:     parent.Nickname,
+		Avatar:         "",
+		AvatarURL:      "",
+		Menus:          menus,
+		CustomID:       parent.CustomID,
+		LanguageConfig: languageConfig,
 	}, nil
 }
