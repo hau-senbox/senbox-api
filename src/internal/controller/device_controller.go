@@ -192,8 +192,10 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 		// get device name by org_device
 		infoDeviceOrg, _ := receiver.DeviceUsecase.GetDeviceInfoFromOrg4Admin(organizationID, device.ID)
 		deviceResponse = append(deviceResponse, response.DeviceResponseV2{
-			ID:         device.ID,
-			DeviceName: infoDeviceOrg.DeviceName,
+			ID:             device.ID,
+			DeviceName:     infoDeviceOrg.DeviceName,
+			CreatedIndex:   infoDeviceOrg.CreatedIndex,
+			DeviceNickName: infoDeviceOrg.DeviceNickName,
 		})
 	}
 

@@ -85,6 +85,8 @@ type DeviceListResponseV2 struct {
 }
 
 type DeviceResponseV2 struct {
-	ID         string `json:"id"`
-	DeviceName string `json:"device_name"`
+	ID             string `json:"id"`
+	DeviceName     string `json:"device_name"`
+	CreatedIndex   int    `json:"created_index"`
+	DeviceNickName string `json:"device_nick_name"`
 }

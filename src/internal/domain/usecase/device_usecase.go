@@ -44,7 +44,9 @@ func (receiver *DeviceUsecase) GetDeviceInfoFromOrg4Admin(orgID string, deviceID
 
 	// DeviceName info di theo org ma device dang ky
 	res := &response.GetDeviceInfoResponse{
-		DeviceName: orgDeviceInfo.DeviceName,
+		DeviceName:     orgDeviceInfo.DeviceName,
+		CreatedIndex:   orgDeviceInfo.CreatedIndex,
+		DeviceNickName: orgDeviceInfo.DeviceNickName,
 	}
 
 	return res, nil

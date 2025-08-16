@@ -1,6 +1,9 @@
 package entity
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type SOrgDevices struct {
 	OrganizationID uuid.UUID     `gorm:"column:organization_id;primary_key"`
@@ -9,4 +12,16 @@ type SOrgDevices struct {
 	Device         SDevice       `gorm:"foreignKey:DeviceID;references:id;constraint:OnDelete:CASCADE;"`
 	DeviceName     string        `gorm:"column:device_name;type:varchar(255);default:''"`
 	DeviceNickName string        `gorm:"column:device_nick_name;type:varchar(255);default:''"`
+	CreatedIndex   int           `gorm:"column:created_index;not null;default:0"`
+}
+
+func (d *SOrgDevices) BeforeCreate(tx *gorm.DB) (err error) {
+	var count int64
+	if err = tx.Model(&SOrgDevices{}).
+		Where("organization_id = ?", d.OrganizationID).
+		Count(&count).Error; err != nil {
+		return err
+	}
+	d.CreatedIndex = int(count) + 1
+	return nil
 }
