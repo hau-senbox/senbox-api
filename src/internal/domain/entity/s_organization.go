@@ -20,20 +20,30 @@ type SOrganization struct {
 	Description          string    `gorm:"type:varchar(255);not null;default:''"`
 	CreatedAt            time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt            time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CreatedIndex         int       `gorm:"column:created_index;not null;default:0"`
 
 	UserOrgs []SUserOrg `gorm:"foreignKey:organization_id;references:id;constraint:OnDelete:CASCADE"`
 }
 
 func (organization *SOrganization) BeforeCreate(tx *gorm.DB) (err error) {
+	// Tạo UUID mới
 	id, err := uuid.NewUUID()
 	if err == nil {
 		organization.ID = id
 	}
 
+	// Hash password
 	encryptedPwdData, err := bcrypt.GenerateFromPassword([]byte(organization.Password), bcrypt.DefaultCost)
 	if err == nil {
 		organization.Password = string(encryptedPwdData)
 	}
 
-	return err
+	// Tính CreatedIndex = tổng số record + 1
+	var count int64
+	if err := tx.Model(&SOrganization{}).Count(&count).Error; err != nil {
+		return err
+	}
+	organization.CreatedIndex = int(count) + 1
+
+	return nil
 }
