@@ -205,8 +205,9 @@ func mapStaffAppsToResponse(apps []entity.SStaffFormApplication, uc *StaffApplic
 			ID: a.UserID.String(),
 		})
 		res = append(res, response.StaffResponse{
-			StaffID:   a.ID.String(),
-			StaffName: userEntity.Nickname,
+			StaffID:      a.ID.String(),
+			StaffName:    userEntity.Nickname,
+			CreatedIndex: a.CreatedIndex,
 		})
 	}
 	return res

@@ -1437,32 +1437,36 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		}
 		for _, c := range rawChildren {
 			children = append(children, response.ChildrenResponse{
-				ChildID:   c.ID.String(),
-				ChildName: c.ChildName,
+				ChildID:      c.ID.String(),
+				ChildName:    c.ChildName,
+				CreatedIndex: c.CreatedIndex,
 			})
 		}
 		for _, s := range rawStudents {
 			isDeactive, _ := receiver.StudentBlockSettingUsecase.GetDeactive4Student(s.StudentID)
 			students = append(students, response.StudentResponse{
-				StudentID:   s.StudentID,
-				StudentName: s.StudentName,
-				IsDeactive:  isDeactive,
+				StudentID:    s.StudentID,
+				StudentName:  s.StudentName,
+				IsDeactive:   isDeactive,
+				CreatedIndex: s.CreatedIndex,
 			})
 		}
 		for _, t := range rawTeachers {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:   t.TeacherID,
-				TeacherName: t.TeacherName,
-				IsDeactive:  isDeactive,
+				TeacherID:    t.TeacherID,
+				TeacherName:  t.TeacherName,
+				IsDeactive:   isDeactive,
+				CreatedIndex: t.CreatedIndex,
 			})
 		}
 		for _, s := range rawStaffs {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:    s.StaffID,
-				StaffName:  s.StaffName,
-				IsDeactive: isDeactive,
+				StaffID:      s.StaffID,
+				StaffName:    s.StaffName,
+				IsDeactive:   isDeactive,
+				CreatedIndex: s.CreatedIndex,
 			})
 		}
 		for _, p := range rawParents {
@@ -1558,8 +1562,9 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
 		for _, c := range rawChildren {
 			children = append(children, response.ChildrenResponse{
-				ChildID:   c.ID.String(),
-				ChildName: c.ChildName,
+				ChildID:      c.ID.String(),
+				ChildName:    c.ChildName,
+				CreatedIndex: c.CreatedIndex,
 			})
 		}
 		children = helper.FilterChildrenByName(children, name)
@@ -1568,8 +1573,9 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		for _, s := range rawStudents {
 			students = append(students, response.StudentResponse{
-				StudentID:   s.StudentID,
-				StudentName: s.StudentName,
+				StudentID:    s.StudentID,
+				StudentName:  s.StudentName,
+				CreatedIndex: s.CreatedIndex,
 			})
 		}
 		students = helper.FilterStudentByName(students, name)
@@ -1579,9 +1585,10 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		for _, t := range rawTeachers {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:   t.TeacherID,
-				TeacherName: t.TeacherName,
-				IsDeactive:  isDeactive,
+				TeacherID:    t.TeacherID,
+				TeacherName:  t.TeacherName,
+				IsDeactive:   isDeactive,
+				CreatedIndex: t.CreatedIndex,
 			})
 		}
 		teachers = helper.FilterTeacherByName(teachers, name)
@@ -1600,9 +1607,10 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		for _, s := range rawStaffs {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:    s.StaffID,
-				StaffName:  s.StaffName,
-				IsDeactive: isDeactive,
+				StaffID:      s.StaffID,
+				StaffName:    s.StaffName,
+				IsDeactive:   isDeactive,
+				CreatedIndex: s.CreatedIndex,
 			})
 		}
 		staffs = helper.FilterStaffByName(staffs, name)

@@ -80,6 +80,7 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 	resp := &response.GetDeviceInfoResponse{
 		OrganizationID: orgDevice.OrganizationID.String(),
 		DeviceName:     orgDevice.DeviceName,
+		DeviceNickName: orgDevice.DeviceNickName,
 	}
 
 	// B2: Lấy menu (không để lỗi menu làm fail hàm)

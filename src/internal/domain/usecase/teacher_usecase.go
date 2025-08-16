@@ -168,8 +168,9 @@ func mapTeacherAppsToResponse(apps []entity.STeacherFormApplication, uc *Teacher
 			ID: a.UserID.String(),
 		})
 		res = append(res, response.TeacherResponse{
-			TeacherID:   a.ID.String(),
-			TeacherName: userEntity.Nickname,
+			TeacherID:    a.ID.String(),
+			TeacherName:  userEntity.Nickname,
+			CreatedIndex: a.CreatedIndex,
 		})
 	}
 	return res

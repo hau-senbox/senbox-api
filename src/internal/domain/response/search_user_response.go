@@ -19,26 +19,30 @@ type UserResponse struct {
 }
 
 type ChildrenResponse struct {
-	ChildID   string `json:"id"`
-	ChildName string `json:"nickname"`
+	ChildID      string `json:"id"`
+	ChildName    string `json:"nickname"`
+	CreatedIndex int    `json:"created_index"`
 }
 
 type StudentResponse struct {
-	StudentID   string `json:"id"`
-	StudentName string `json:"nickname"`
-	IsDeactive  bool   `json:"is_deactive"`
+	StudentID    string `json:"id"`
+	StudentName  string `json:"nickname"`
+	IsDeactive   bool   `json:"is_deactive"`
+	CreatedIndex int    `json:"created_index"`
 }
 
 type TeacherResponse struct {
-	TeacherID   string `json:"id"`
-	TeacherName string `json:"nickname"`
-	IsDeactive  bool   `json:"is_deactive"`
+	TeacherID    string `json:"id"`
+	TeacherName  string `json:"nickname"`
+	IsDeactive   bool   `json:"is_deactive"`
+	CreatedIndex int    `json:"created_index"`
 }
 
 type StaffResponse struct {
-	StaffID    string `json:"id"`
-	StaffName  string `json:"nickname"`
-	IsDeactive bool   `json:"is_deactive"`
+	StaffID      string `json:"id"`
+	StaffName    string `json:"nickname"`
+	IsDeactive   bool   `json:"is_deactive"`
+	CreatedIndex int    `json:"created_index"`
 }
 
 type ParentResponse struct {
