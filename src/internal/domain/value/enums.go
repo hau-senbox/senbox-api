@@ -123,7 +123,7 @@ const (
 	OutListResponse
 	OutNrAverageAll
 	OutNrLineGraph
-	HiddenText
+	HiddenMessageText
 )
 
 type DeviceStatus int
@@ -420,8 +420,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "out_nr_average_all"
 	case OutNrLineGraph:
 		return "out_nr_line_graph"
-	case HiddenText:
-		return "hidden_text"
+	case HiddenMessageText:
+		return "hidden_message_text"
 	}
 
 	return ""
@@ -600,8 +600,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "out_nr_average_all"
 	case OutNrLineGraph:
 		return "out_nr_line_graph"
-	case HiddenText:
-		return "hidden_text"
+	case HiddenMessageText:
+		return "hidden_message_text"
 	default:
 		return ""
 	}
@@ -825,8 +825,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OutNrAverageAll, nil
 	case "out_nr_line_graph":
 		return OutNrLineGraph, nil
-	case "hidden_text":
-		return HiddenText, nil
+	case "hidden_message_text":
+		return HiddenMessageText, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -925,7 +925,7 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OutListResponse,
 		OutNrAverageAll,
 		OutNrLineGraph,
-		HiddenText:
+		HiddenMessageText:
 		return true
 	default:
 		return false
