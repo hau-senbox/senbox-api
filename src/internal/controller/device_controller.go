@@ -1534,7 +1534,7 @@ func (receiver *DeviceController) GetDevice4Web(c *gin.Context) {
 	})
 }
 
-func (receiver *DeviceController) UploadDevice4Web(c *gin.Context) {
+func (receiver *DeviceController) UploadDeviceByOrg4Web(c *gin.Context) {
 	deviceID := c.Param("device_id")
 	if deviceID == "" {
 		c.JSON(
@@ -1566,7 +1566,7 @@ func (receiver *DeviceController) UploadDevice4Web(c *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DeviceUsecase.UploadDeviceName4Web(orgID, deviceID, req.DeviceName)
+	res, err := receiver.DeviceUsecase.UploadDeviceNickName4Web(orgID, deviceID, req.DeviceNickName)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{

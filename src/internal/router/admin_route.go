@@ -694,7 +694,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.POST("/:organization_id/setting/device/news", orgController.UploadOrgSettingNewsDevice)
 		org.POST("/:organization_id/setting/portal/news", orgController.UploadOrgSettingNewsPortal)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
-		org.PUT("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
+		org.PUT("/:organization_id/device/:device_id", deviceController.UploadDeviceByOrg4Web)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())

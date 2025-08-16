@@ -93,14 +93,14 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 	return resp, nil
 }
 
-func (receiver *DeviceUsecase) UploadDeviceName4Web(orgID string, deviceID string, deviceName string) (*entity.SOrgDevices, error) {
+func (receiver *DeviceUsecase) UploadDeviceNickName4Web(orgID string, deviceID string, deviceNickName string) (*entity.SOrgDevices, error) {
 	// Validate input
 	if orgID == "" || deviceID == "" {
 		return nil, errors.New("organization_id and device_id are required")
 	}
 
 	// Update device name
-	if err := receiver.DeviceRepository.UpdateDeviceNameByOrgIDAndDeviceID(orgID, deviceID, deviceName); err != nil {
+	if err := receiver.DeviceRepository.UpdateDeviceNickNameByOrgIDAndDeviceID(orgID, deviceID, deviceNickName); err != nil {
 		return nil, err
 	}
 

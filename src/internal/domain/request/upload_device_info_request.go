@@ -1,5 +1,5 @@
 package request
 
 type UploadDeviceInfoRequest struct {
-	DeviceName string `json:"device_name" binding:"required"`
+	DeviceNickName string `json:"device_nick_name" binding:"required"`
 }
