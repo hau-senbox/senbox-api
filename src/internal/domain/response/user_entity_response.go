@@ -21,6 +21,8 @@ type UserEntityResponse struct {
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
+
+	UserOrganizationActive UserOrganizationActive `json:"user_organization_active"`
 }
 
 type UserEntityResponseV2 struct {
@@ -66,6 +68,20 @@ type OrganizationAdmin struct {
 	Description      string    `json:"description"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+}
+
+type OrganizationActive struct {
+	ID               string    `json:"id"`
+	OrganizationName string    `json:"organization_name"`
+	Avatar           string    `json:"avatar"`
+	AvatarURL        string    `json:"avatar_url"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+type UserOrganizationActive struct {
+	DefaultOrganization []OrganizationActive `json:"default_organization"`
+	TeacherOrganization []OrganizationActive `json:"teacher_organization"`
+	StaffOrganization   []OrganizationActive `json:"staff_organization"`
 }
 
 // type OrganizationIdActive struct {
