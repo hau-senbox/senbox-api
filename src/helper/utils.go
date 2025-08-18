@@ -353,3 +353,71 @@ func NormalizeComponentValue(raw datatypes.JSON) (datatypes.JSON, error) {
 
 	return datatypes.JSON(valBytes), nil
 }
+
+func FilterUsersByStatus(users []response.UserResponse, status value.SearchUserStatus) []response.UserResponse {
+	if status == value.SearchUserStatusAll {
+		return users
+	}
+
+	filtered := make([]response.UserResponse, 0)
+	for _, u := range users {
+		if status == value.SearchUserStatusActive && !u.IsDeactive {
+			filtered = append(filtered, u)
+		}
+		if status == value.SearchUserStatusDeactivated && u.IsDeactive {
+			filtered = append(filtered, u)
+		}
+	}
+	return filtered
+}
+
+func FilterTeachersByStatus(teachers []response.TeacherResponse, status value.SearchUserStatus) []response.TeacherResponse {
+	if status == value.SearchUserStatusAll {
+		return teachers
+	}
+
+	filtered := make([]response.TeacherResponse, 0)
+	for _, t := range teachers {
+		if status == value.SearchUserStatusActive && !t.IsDeactive {
+			filtered = append(filtered, t)
+		}
+		if status == value.SearchUserStatusDeactivated && t.IsDeactive {
+			filtered = append(filtered, t)
+		}
+	}
+	return filtered
+}
+
+func FilterStaffsByStatus(staffs []response.StaffResponse, status value.SearchUserStatus) []response.StaffResponse {
+	if status == value.SearchUserStatusAll {
+		return staffs
+	}
+
+	filtered := make([]response.StaffResponse, 0)
+	for _, s := range staffs {
+		if status == value.SearchUserStatusActive && !s.IsDeactive {
+			filtered = append(filtered, s)
+		}
+		if status == value.SearchUserStatusDeactivated && s.IsDeactive {
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered
+}
+
+func FilterParentsByStatus(parents []response.ParentResponse, status value.SearchUserStatus) []response.ParentResponse {
+	if status == value.SearchUserStatusAll {
+		return parents
+	}
+
+	filtered := make([]response.ParentResponse, 0)
+	for _, p := range parents {
+		if status == value.SearchUserStatusActive && !p.IsDeactive {
+			filtered = append(filtered, p)
+		}
+		if status == value.SearchUserStatusDeactivated && p.IsDeactive {
+			filtered = append(filtered, p)
+		}
+	}
+	return filtered
+}

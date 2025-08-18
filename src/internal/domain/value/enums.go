@@ -1287,3 +1287,21 @@ func ParseOwnerRole4LangConfig(s string) (OwnerRole4LangConfig, error) {
 		return "", fmt.Errorf("invalid owner role in languages config: %s", s)
 	}
 }
+
+type SearchUserStatus string
+
+const (
+	SearchUserStatusAll         SearchUserStatus = "all"
+	SearchUserStatusActive      SearchUserStatus = "active"
+	SearchUserStatusDeactivated SearchUserStatus = "deactivated"
+	SearchUserStatusNew         SearchUserStatus = "new"
+)
+
+// Kiểm tra hợp lệ
+func IsValidSearchUserStatus(status string) bool {
+	switch SearchUserStatus(status) {
+	case SearchUserStatusAll, SearchUserStatusActive, SearchUserStatusDeactivated, SearchUserStatusNew:
+		return true
+	}
+	return false
+}
