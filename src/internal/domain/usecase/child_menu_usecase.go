@@ -32,7 +32,7 @@ func (uc *ChildMenuUseCase) DeleteByChildID(childID string) error {
 	return uc.Repo.DeleteByChildID(childID)
 }
 
-func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuResponse, error) {
+func (uc *ChildMenuUseCase) GetByChildID(childID string, isApp bool) (response.GetChildMenuResponse, error) {
 	child, err := uc.ChildRepo.GetByID(childID)
 	if child == nil || err != nil {
 		return response.GetChildMenuResponse{}, err
@@ -62,6 +62,12 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string) (response.GetChildMenuR
 	// B3: Map sang ComponentChildResponse
 	componentResponses := make([]response.ComponentResponse, 0, len(components))
 	for _, comp := range components {
+		if isApp {
+			visible, _ := helper.GetVisibleToValueComponent(comp.Value.String())
+			if !visible {
+				continue
+			}
+		}
 		componentResponses = append(componentResponses, response.ComponentResponse{
 			ID:     comp.ID.String(),
 			Name:   comp.Name,

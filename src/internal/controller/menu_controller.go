@@ -189,7 +189,7 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
+func (receiver *MenuController) GetStudentMenu4App(context *gin.Context) {
 	studentID := context.Param("id")
 	if studentID == "" {
 		context.JSON(
@@ -201,7 +201,7 @@ func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetStudentMenu(studentID)
+	menus, err := receiver.GetMenuUseCase.GetStudentMenu4App(studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -217,7 +217,7 @@ func (receiver *MenuController) GetStudentMenu(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
+func (receiver *MenuController) GetTeacherMenu4App(context *gin.Context) {
 	userID := context.Param("id")
 	if userID == "" {
 		context.JSON(
@@ -229,7 +229,7 @@ func (receiver *MenuController) GetTeacherMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetTeacherMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetTeacherMenu4App(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -881,7 +881,7 @@ func (receiver *MenuController) GetChildMenuByChildID(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.ChildMenuUseCase.GetByChildID(childID)
+	menus, err := receiver.ChildMenuUseCase.GetByChildID(childID, false)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

@@ -23,7 +23,7 @@ func NewStaffMenuUseCase(repo *repository.StaffMenuRepository) *StaffMenuUseCase
 	}
 }
 
-func (uc *StaffMenuUseCase) GetByStaffID(staffID string) (response.GetStaffMenuResponse, error) {
+func (uc *StaffMenuUseCase) GetByStaffID(staffID string, isApp bool) (response.GetStaffMenuResponse, error) {
 	// B0: Lấy thông tin staff
 	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
 	if staff == nil || err != nil {
@@ -56,6 +56,12 @@ func (uc *StaffMenuUseCase) GetByStaffID(staffID string) (response.GetStaffMenuR
 	// B4: Build danh sách response
 	componentResponses := make([]response.ComponentResponse, 0, len(components))
 	for _, comp := range components {
+		if isApp {
+			visible, _ := helper.GetVisibleToValueComponent(comp.Value.String())
+			if !visible {
+				continue
+			}
+		}
 		componentResponses = append(componentResponses, response.ComponentResponse{
 			ID:     comp.ID.String(),
 			Name:   comp.Name,

@@ -37,7 +37,7 @@ func (uc *TeacherMenuUseCase) BulkCreate(menus []entity.TeacherMenu) error {
 	return uc.TeacherMenuRepo.BulkCreate(menus)
 }
 
-func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string) (response.GetTeacherMenuResponse, error) {
+func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string, isApp bool) (response.GetTeacherMenuResponse, error) {
 	// B0: Lấy thông tin teacher
 	teacher, err := uc.TeacherAppRepo.GetByID(uuid.MustParse(teacherID))
 	if teacher == nil || err != nil {
@@ -70,6 +70,12 @@ func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string) (response.GetTeac
 	// B4: Build danh sách response
 	componentResponses := make([]response.ComponentResponse, 0, len(components))
 	for _, comp := range components {
+		if isApp {
+			visible, _ := helper.GetVisibleToValueComponent(comp.Value.String())
+			if !visible {
+				continue
+			}
+		}
 		componentResponses = append(componentResponses, response.ComponentResponse{
 			ID:     comp.ID.String(),
 			Name:   comp.Name,

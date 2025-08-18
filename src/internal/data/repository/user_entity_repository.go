@@ -289,7 +289,7 @@ func (receiver *UserEntityRepository) CreateUser(req request.CreateUserEntityReq
 
 	var organization entity.SOrganization
 	err = tx.Model(&entity.SOrganization{}).
-		Where("organization_name = 'HOME'").
+		Where("organization_name = 'HOME STUDY'").
 		Attrs(entity.SOrganization{
 			OrganizationName: "HOME",
 			Password:         "123",

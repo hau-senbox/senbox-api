@@ -24,23 +24,23 @@ type UserEntityResponse struct {
 }
 
 type UserEntityResponseV2 struct {
-	ID           string   `json:"id"`
-	Username     string   `json:"username"`
-	Nickname     string   `json:"nickname"`
-	Fullname     string   `json:"fullname"`
-	Phone        string   `json:"phone"`
-	Email        string   `json:"email"`
-	Dob          string   `json:"dob"`
-	QRLogin      string   `json:"qr_login"`
-	Avatar       string   `json:"avatar"`
-	AvatarURL    string   `json:"avatar_url"`
-	IsBlocked    bool     `json:"is_blocked"`
-	BlockedAt    string   `json:"blocked_at"`
-	Organization []string `json:"organizations"`
-	CreatedAt    string   `json:"created_at"`
-	IsDeactive   bool     `json:"is_deactive"`
-	IsSuperAdmin bool     `json:"is_super_admin"`
-	QrLogin      string   `json:"qr_login"`
+	ID                   string   `json:"id"`
+	Username             string   `json:"username"`
+	Nickname             string   `json:"nickname"`
+	Fullname             string   `json:"fullname"`
+	Phone                string   `json:"phone"`
+	Email                string   `json:"email"`
+	Dob                  string   `json:"dob"`
+	QRLogin              string   `json:"qr_login"`
+	Avatar               string   `json:"avatar"`
+	AvatarURL            string   `json:"avatar_url"`
+	IsBlocked            bool     `json:"is_blocked"`
+	BlockedAt            string   `json:"blocked_at"`
+	Organization         []string `json:"organizations"`
+	CreatedAt            string   `json:"created_at"`
+	IsDeactive           bool     `json:"is_deactive"`
+	IsSuperAdmin         bool     `json:"is_super_admin"`
+	OrganizationIdActive string   `json:"organization_id_active"`
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
@@ -67,3 +67,7 @@ type OrganizationAdmin struct {
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }
+
+// type OrganizationIdActive struct {
+// 	OrgTeacher
+// }

@@ -395,8 +395,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	{
 		userMenu.GET("/super-admin", menuController.GetSuperAdminMenu)
 		userMenu.GET("/org/:id", menuController.GetOrgMenu)
-		userMenu.GET("/student/:id", menuController.GetStudentMenu)
-		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu)
+		userMenu.GET("/student/:id", menuController.GetStudentMenu4App)
+		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu4App)
 		userMenu.GET("/user/:id", menuController.GetUserMenu)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)

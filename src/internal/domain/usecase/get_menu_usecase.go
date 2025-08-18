@@ -52,8 +52,8 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 	return receiver.MenuRepository.GetOrgMenu(org.ID.String())
 }
 
-func (receiver *GetMenuUseCase) GetStudentMenu(studentID string) (response.GetStudentMenuResponse, error) {
-	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(studentID)
+func (receiver *GetMenuUseCase) GetStudentMenu4App(studentID string) (response.GetStudentMenuResponse, error) {
+	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(studentID, true)
 	if err != nil {
 		return response.GetStudentMenuResponse{}, fmt.Errorf("failed to get student menu: %w", err)
 	}
@@ -61,11 +61,11 @@ func (receiver *GetMenuUseCase) GetStudentMenu(studentID string) (response.GetSt
 	return studentMenu, nil
 }
 
-func (receiver *GetMenuUseCase) GetTeacherMenu(userID string) (response.GetTeacherMenuResponse, error) {
+func (receiver *GetMenuUseCase) GetTeacherMenu4App(userID string) (response.GetTeacherMenuResponse, error) {
 
 	teacher, _ := receiver.TeacherRepository.GetByUserID(userID)
 
-	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String())
+	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String(), true)
 	if err != nil {
 		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
 	}
@@ -398,11 +398,14 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	// Get menu
 	for _, child := range children {
-		childMenu, _ := receiver.ChildMenuUseCase.GetByChildID(child.ID.String())
-		result = append(result, response.GetMenuSectionResponse{
-			SectionName: child.ChildName,
-			Components:  childMenu.Components,
-		})
+		// get 4 app
+		childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String(), true)
+		if err == nil && len(childMenu.Components) > 0 {
+			result = append(result, response.GetMenuSectionResponse{
+				SectionName: child.ChildName,
+				Components:  childMenu.Components,
+			})
+		}
 	}
 
 	// for _, student := range students {
@@ -415,21 +418,27 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	// }
 
 	for _, teacher := range teachers {
-		teacherMenu, _ := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String())
-		result = append(result, response.GetMenuSectionResponse{
-			SectionName: teacherMenu.TeacherName,
-			SectionID:   teacherMenu.TeacherID,
-			Components:  teacherMenu.Components,
-		})
+		// get 4 app
+		teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String(), true)
+		if err == nil && len(teacherMenu.Components) > 0 {
+			result = append(result, response.GetMenuSectionResponse{
+				SectionName: teacherMenu.TeacherName,
+				SectionID:   teacherMenu.TeacherID,
+				Components:  teacherMenu.Components,
+			})
+		}
 	}
 
 	for _, staff := range staffs {
-		staffMenu, _ := receiver.StaffMenuUsecase.GetByStaffID(staff.ID.String())
-		result = append(result, response.GetMenuSectionResponse{
-			SectionName: staffMenu.StaffName,
-			SectionID:   staffMenu.StaffID,
-			Components:  staffMenu.Components,
-		})
+		// get 4 app
+		staffMenu, err := receiver.StaffMenuUsecase.GetByStaffID(staff.ID.String(), true)
+		if err == nil && len(staffMenu.Components) > 0 {
+			result = append(result, response.GetMenuSectionResponse{
+				SectionName: staffMenu.StaffName,
+				SectionID:   staffMenu.StaffID,
+				Components:  staffMenu.Components,
+			})
+		}
 	}
 
 	// Get Parent Menu

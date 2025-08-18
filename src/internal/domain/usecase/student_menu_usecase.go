@@ -36,7 +36,7 @@ func (uc *StudentMenuUseCase) DeleteByStudentID(studentID string) error {
 	return uc.StudentMenuRepo.DeleteByStudentID(studentID)
 }
 
-func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStudentMenuResponse, error) {
+func (uc *StudentMenuUseCase) GetByStudentID(studentID string, isApp bool) (response.GetStudentMenuResponse, error) {
 	// B0: Lấy thông tin student
 	student, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if student == nil || err != nil {
@@ -69,6 +69,12 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string) (response.GetStud
 	// B4: Build danh sách response
 	componentResponses := make([]response.ComponentResponse, 0, len(components))
 	for _, comp := range components {
+		if isApp {
+			visible, _ := helper.GetVisibleToValueComponent(comp.Value.String())
+			if !visible {
+				continue
+			}
+		}
 		componentResponses = append(componentResponses, response.ComponentResponse{
 			ID:     comp.ID.String(),
 			Name:   comp.Name,
