@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"encoding/json"
 	"net/http"
 	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/entity/menu"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -104,6 +106,76 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
+	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	topMenuResponse := make([]componentResponse, 0)
+	bottomMenuResponse := make([]componentResponse, 0)
+	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
+
+		var compVal components.ComponentFullValue
+		if err := json.Unmarshal(normalizedValue, &compVal); err != nil {
+			log.Println("Unmarshal error:", err)
+			continue
+		}
+
+		// Bỏ qua nếu không visible
+		if !compVal.Visible {
+			continue
+		}
+
+		switch m.Direction {
+		case menu.Top:
+			topMenuResponse = append(topMenuResponse, componentResponse{
+				ID:    m.Component.ID.String(),
+				Name:  m.Component.Name,
+				Type:  m.Component.Type.String(),
+				Key:   m.Component.Key,
+				Value: string(normalizedValue),
+				Order: m.Order,
+			})
+		case menu.Bottom:
+			bottomMenuResponse = append(bottomMenuResponse, componentResponse{
+				ID:    m.Component.ID.String(),
+				Name:  m.Component.Name,
+				Type:  m.Component.Type.String(),
+				Key:   m.Component.Key,
+				Value: string(normalizedValue),
+				Order: m.Order,
+			})
+		default:
+			continue
+		}
+	}
+
+	sort.Slice(topMenuResponse, func(i, j int) bool {
+		return topMenuResponse[i].Order < topMenuResponse[j].Order
+	})
+	sort.Slice(bottomMenuResponse, func(i, j int) bool {
+		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
+	})
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menuResponse{
+			Top:    topMenuResponse,
+			Bottom: bottomMenuResponse,
+		},
+	})
+}
+
 func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 	organizationID := context.Param("id")
 	if organizationID == "" {
@@ -115,26 +187,6 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		)
 		return
 	}
-
-	//user, err := receiver.GetUserFromToken(context)
-	//if err != nil {
-	//	context.JSON(http.StatusInternalServerError, response.FailedResponse{
-	//		Code:  http.StatusForbidden,
-	//		Error: err.Error(),
-	//	})
-	//	return
-	//}
-	//
-	//present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-	//	return org.ID == int64(id)
-	//})
-	//if !present {
-	//	context.JSON(http.StatusForbidden, response.FailedResponse{
-	//		Code:  http.StatusForbidden,
-	//		Error: "access denied",
-	//	})
-	//	return
-	//}
 
 	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
 	if err != nil {
@@ -149,6 +201,88 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 	topMenuResponse := make([]componentResponse, 0)
 	bottomMenuResponse := make([]componentResponse, 0)
 	for _, m := range menus {
+		switch m.Direction {
+		case menu.Top:
+			topMenuResponse = append(topMenuResponse, componentResponse{
+				ID:    m.Component.ID.String(),
+				Name:  m.Component.Name,
+				Type:  m.Component.Type.String(),
+				Key:   m.Component.Key,
+				Value: string(m.Component.Value),
+				Order: m.Order,
+			})
+		case menu.Bottom:
+			bottomMenuResponse = append(bottomMenuResponse, componentResponse{
+				ID:    m.Component.ID.String(),
+				Name:  m.Component.Name,
+				Type:  m.Component.Type.String(),
+				Key:   m.Component.Key,
+				Value: string(m.Component.Value),
+				Order: m.Order,
+			})
+		default:
+			continue
+		}
+	}
+
+	sort.Slice(topMenuResponse, func(i, j int) bool {
+		return topMenuResponse[i].Order < topMenuResponse[j].Order
+	})
+	sort.Slice(bottomMenuResponse, func(i, j int) bool {
+		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
+	})
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menuResponse{
+			Top:    topMenuResponse,
+			Bottom: bottomMenuResponse,
+		},
+	})
+}
+
+func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
+	organizationID := context.Param("id")
+	if organizationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	topMenuResponse := make([]componentResponse, 0)
+	bottomMenuResponse := make([]componentResponse, 0)
+	for _, m := range menus {
+
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
+
+		var compVal components.ComponentFullValue
+		if err := json.Unmarshal(normalizedValue, &compVal); err != nil {
+			log.Println("Unmarshal error:", err)
+			continue
+		}
+
+		// Bỏ qua nếu không visible
+		if !compVal.Visible {
+			continue
+		}
+
 		switch m.Direction {
 		case menu.Top:
 			topMenuResponse = append(topMenuResponse, componentResponse{
@@ -293,6 +427,65 @@ func (receiver *MenuController) GetUserMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetUserMenu4App(context *gin.Context) {
+	userID := context.Param("id")
+	if userID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetUserMenu(userID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	res := make([]componentResponse, 0)
+	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
+
+		var compVal components.ComponentFullValue
+		if err := json.Unmarshal(normalizedValue, &compVal); err != nil {
+			log.Println("Unmarshal error:", err)
+			continue
+		}
+
+		// Bỏ qua nếu không visible
+		if !compVal.Visible {
+			continue
+		}
+		res = append(res, componentResponse{
+			ID:    m.Component.ID.String(),
+			Name:  m.Component.Name,
+			Type:  m.Component.Type.String(),
+			Key:   m.Component.Key,
+			Value: string(normalizedValue),
+			Order: m.Order,
+		})
+	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Order < res[j].Order
+	})
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
 func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 	deviceID := context.Param("id")
 	if deviceID == "" {
@@ -326,6 +519,82 @@ func (receiver *MenuController) GetDeviceMenu(context *gin.Context) {
 		if err != nil {
 			log.Println("Normalize error:", err)
 		}
+		key := m.OrganizationID.String()
+		resMap[key] = append(resMap[key], componentResponse{
+			ID:    m.Component.ID.String(),
+			Name:  m.Component.Name,
+			Type:  m.Component.Type.String(),
+			Key:   m.Component.Key,
+			Value: string(normalizedValue),
+			Order: m.Order,
+		})
+	}
+
+	for key := range resMap {
+		sort.Slice(resMap[key], func(i, j int) bool {
+			return resMap[key][i].Order < resMap[key][j].Order
+		})
+	}
+
+	// Convert map to slice
+	res := make([]deviceComponentResponse, 0, len(resMap))
+	for key, components := range resMap {
+		res = append(res, deviceComponentResponse{
+			OrganizationID: key,
+			Components:     components,
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *MenuController) GetDeviceMenu4App(context *gin.Context) {
+	deviceID := context.Param("id")
+	if deviceID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetDeviceMenu(deviceID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	type deviceComponentResponse struct {
+		OrganizationID string              `json:"organization_id"`
+		Components     []componentResponse `json:"components"`
+	}
+
+	resMap := make(map[string][]componentResponse)
+	for _, m := range menus {
+		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
+		var compVal components.ComponentFullValue
+		if err := json.Unmarshal(normalizedValue, &compVal); err != nil {
+			log.Println("Unmarshal error:", err)
+			continue
+		}
+
+		// Bỏ qua nếu không visible
+		if !compVal.Visible {
+			continue
+		}
+
 		key := m.OrganizationID.String()
 		resMap[key] = append(resMap[key], componentResponse{
 			ID:    m.Component.ID.String(),

@@ -397,6 +397,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.PUT("/child", menuController.UpdateIsShowChildMenu)
 		menu.PUT("/student", menuController.UpdateIsShowStudentMenu)
 		menu.PUT("/teacher", menuController.UpdateIsShowTeacherMenu)
+
+		// get user menu
+		menu.GET("/user/:id", menuController.GetUserMenu)
 	}
 
 	// user
