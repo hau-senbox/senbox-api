@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"sen-global-api/internal/domain/entity"
 
 	"gorm.io/gorm"
@@ -63,4 +64,27 @@ func (r *UserImagesRepository) GetByOwnerAndRole(ownerID string, ownerRole strin
 		return nil, err
 	}
 	return userImages, nil
+}
+
+func (r *UserImagesRepository) GetByOwnerRoleAndIndex(ownerID string, ownerRole string, index int) (*entity.UserImages, error) {
+	var userImage entity.UserImages
+	err := r.DBConn.Where("owner_id = ? AND owner_role = ? AND `index` = ?", ownerID, ownerRole, index).
+		First(&userImage).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &userImage, nil
+}
+
+func (r *UserImagesRepository) ResetIsMain(ownerID string, ownerRole string) error {
+	err := r.DBConn.Model(&entity.UserImages{}).
+		Where("owner_id = ? AND owner_role = ?", ownerID, ownerRole).
+		Update("is_main", false).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

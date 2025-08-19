@@ -124,3 +124,31 @@ func (uc *UserImagesUsecase) Get4Owner(ownerID string, ownerRole value.OwnerRole
 
 	return avatars, nil
 }
+
+func (uc *UserImagesUsecase) UpdateIsMain(request request.UpdateIsMainAvatar) error {
+	// B1: Tìm ảnh theo ownerID, ownerRole và index
+	userImage, err := uc.Repo.GetByOwnerRoleAndIndex(request.OwnerID, string(request.OwnerRole), request.Index)
+	if err != nil {
+		return fmt.Errorf("failed to find user image: %w", err)
+	}
+	if userImage == nil {
+		return fmt.Errorf("user image not found for owner=%s role=%s index=%d", request.OwnerID, request.OwnerRole, request.Index)
+	}
+
+	// B2: Set tất cả ảnh khác về false
+	if err := uc.Repo.ResetIsMain(request.OwnerID, string(request.OwnerRole)); err != nil {
+		return fmt.Errorf("failed to reset is_main: %w", err)
+	}
+
+	// B3: Set ảnh được chọn là true
+	userImage.IsMain = true
+	if err := uc.Repo.Update(userImage); err != nil {
+		return fmt.Errorf("failed to update user image: %w", err)
+	}
+
+	return nil
+}
+
+// func (uc *UserImagesUsecase) GetImgKey4Ownewr(owernID string, ownerRole value.OwnerRole) (string, error) {
+
+// }

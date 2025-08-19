@@ -2041,3 +2041,30 @@ func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
 		Data:    nil,
 	})
 }
+
+func (receiver *UserEntityController) UpdateIsMain(context *gin.Context) {
+	var req request.UpdateIsMainAvatar
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := receiver.UserImagesUsecase.UpdateIsMain(req); err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to update main avatar",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Main avatar updated successfully",
+	})
+
+}
