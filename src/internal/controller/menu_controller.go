@@ -31,6 +31,7 @@ type MenuController struct {
 	*usecase.StudentApplicationUseCase
 	*usecase.TeacherMenuUseCase
 	*usecase.DeviceMenuUseCase
+	*usecase.GetOrganizationUseCase
 }
 
 type componentResponse struct {
@@ -44,7 +45,7 @@ type componentResponse struct {
 }
 
 type menuResponse struct {
-	MenuIconKey string              `json:"menu_icon_key,omitempty"`
+	MenuIconKey string              `json:"menu_icon_key"`
 	Top         []componentResponse `json:"top"`
 	Bottom      []componentResponse `json:"bottom"`
 }
@@ -315,13 +316,15 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
 	})
 
-	// get menu icon key
+	// get menu icon key -> org avatar
+	orgInfo, _ := receiver.GetOrganizationUseCase.GetByID(organizationID)
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: menuResponse{
-			Top:    topMenuResponse,
-			Bottom: bottomMenuResponse,
+			MenuIconKey: orgInfo.Avatar,
+			Top:         topMenuResponse,
+			Bottom:      bottomMenuResponse,
 		},
 	})
 }
@@ -578,6 +581,7 @@ func (receiver *MenuController) GetDeviceMenu4App(context *gin.Context) {
 
 	type deviceComponentResponse struct {
 		OrganizationID string              `json:"organization_id"`
+		MenuIconKey    string              `json:"menu_icon_key"`
 		Components     []componentResponse `json:"components"`
 	}
 
@@ -618,8 +622,11 @@ func (receiver *MenuController) GetDeviceMenu4App(context *gin.Context) {
 	// Convert map to slice
 	res := make([]deviceComponentResponse, 0, len(resMap))
 	for key, components := range resMap {
+		// get menu icon key -> org avatar
+		orgInfo, _ := receiver.GetOrganizationUseCase.GetByID(key)
 		res = append(res, deviceComponentResponse{
 			OrganizationID: key,
+			MenuIconKey:    orgInfo.Avatar,
 			Components:     components,
 		})
 	}

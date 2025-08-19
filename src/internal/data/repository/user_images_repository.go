@@ -88,3 +88,13 @@ func (r *UserImagesRepository) ResetIsMain(ownerID string, ownerRole string) err
 	}
 	return nil
 }
+
+func (r *UserImagesRepository) GetByOwnerAndRoleIsMain(ownerID string, ownerRole string) (*entity.UserImages, error) {
+	var userImage entity.UserImages
+	if err := r.DBConn.
+		Where("owner_id = ? AND owner_role = ? AND is_main = ?", ownerID, ownerRole, true).
+		First(&userImage).Error; err != nil {
+		return nil, err
+	}
+	return &userImage, nil
+}

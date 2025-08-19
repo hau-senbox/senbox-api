@@ -149,6 +149,8 @@ func (uc *UserImagesUsecase) UpdateIsMain(request request.UpdateIsMainAvatar) er
 	return nil
 }
 
-// func (uc *UserImagesUsecase) GetImgKey4Ownewr(owernID string, ownerRole value.OwnerRole) (string, error) {
+// func (uc *UserImagesUsecase) GetImgKey4Ownewr(ownerID string, ownerRole value.OwnerRole) (string, error) {
+// 	userImage, _ := uc.Repo.GetByOwnerAndRoleIsMain(ownerID, string(ownerRole))
+// 	// get img key
 
 // }

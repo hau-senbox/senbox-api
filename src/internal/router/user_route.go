@@ -261,6 +261,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
 			ComponentRepository: &repository.ComponentRepository{DBConn: dbConn},
 		},
+		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
 	}
 
 	componentController := &controller.ComponentController{

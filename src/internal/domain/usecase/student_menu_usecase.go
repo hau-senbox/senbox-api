@@ -18,6 +18,7 @@ type StudentMenuUseCase struct {
 	ComponentRepo        *repository.ComponentRepository
 	UserEntityRepo       *repository.UserEntityRepository
 	GetUserEntityUseCase *GetUserEntityUseCase
+	UserImagesUsecase    *UserImagesUsecase
 }
 
 func NewStudentMenuUseCase(repo *repository.StudentMenuRepository) *StudentMenuUseCase {
@@ -85,6 +86,8 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string, isApp bool) (resp
 			IsShow: componentIsShowMap[comp.ID],
 		})
 	}
+
+	// get menu icon key
 
 	return response.GetStudentMenuResponse{
 		StudentID:   studentID,
