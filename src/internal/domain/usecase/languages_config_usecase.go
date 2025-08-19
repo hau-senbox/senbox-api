@@ -34,13 +34,13 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 		return errors.New("owner id and Owner role is required")
 	}
 
-	if len(spokenLang) == 0 {
-		return errors.New("spoken Language not empty")
-	}
+	// if len(spokenLang) == 0 {
+	// 	return errors.New("spoken Language not empty")
+	// }
 
-	if len(studyLang) == 0 {
-		return errors.New("study Language not empty")
-	}
+	// if len(studyLang) == 0 {
+	// 	return errors.New("study language not empty")
+	// }
 
 	// Check tồn tại
 	existing, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
