@@ -13,6 +13,7 @@ import (
 	"sen-global-api/pkg/job"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
+	"sen-global-api/pkg/uploader"
 	"time"
 
 	firebase "firebase.google.com/go/v4"
@@ -419,6 +420,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.LanguagesConfigUsecase{
 			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
 		},
+		&usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+		},
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -447,6 +452,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.LanguagesConfigUsecase{
 			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
 		},
+	)
+
+	s3Provider := uploader.NewS3Provider(
+		config.S3.SenboxFormSubmitBucket.AccessKey,
+		config.S3.SenboxFormSubmitBucket.SecretKey,
+		config.S3.SenboxFormSubmitBucket.BucketName,
+		config.S3.SenboxFormSubmitBucket.Region,
+		config.S3.SenboxFormSubmitBucket.Domain,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -491,6 +506,18 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},
+		UploadImageUseCase: &usecase.UploadImageUseCase{
+			UploadProvider:  s3Provider,
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			DeleteImageUsecase: &usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+		},
 	}
 
 	userBlockSettingController := &controller.BlockSettingController{
@@ -521,6 +548,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			block.POST("/student", userBlockSettingController.UpsertStudentBlockSetting)
 			block.GET("/student/:student_id", userBlockSettingController.GetByStudentID)
 		}
+		// avatar
+		user.POST("/avatar", userEntityController.UploadAvatarV2)
 	}
 
 	// application

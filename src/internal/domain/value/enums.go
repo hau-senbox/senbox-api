@@ -1305,3 +1305,13 @@ func IsValidSearchUserStatus(status string) bool {
 	}
 	return false
 }
+
+type OwnerRole string
+
+const (
+	OwnerRoleUser    OwnerRole = "user"
+	OwnerRoleTeacher OwnerRole = "teacher"
+	OwnerRoleStaff   OwnerRole = "staff"
+	OwnerRoleStudent OwnerRole = "student"
+	OnwerRoleChild   OwnerRole = "child"
+)

@@ -165,3 +165,76 @@ func (receiver *UploadImageUseCase) UploadImage(
 
 	return url, &img, nil
 }
+
+func (receiver *UploadImageUseCase) UploadImagev2(
+	data []byte,
+	folder, fileName, imageName string,
+	mode uploader.UploadMode,
+) (*string, *entity.SImage, error) {
+
+	fileExt := strings.ToLower(path.Ext(fileName))
+
+	if !isImage(fileExt) {
+		return nil, nil, fmt.Errorf("file extension %s is not supported", fileExt)
+	}
+
+	// Generate the new filename
+	timestamp := time.Now().UnixNano()
+	finalFileName := fmt.Sprintf("%s_%d%s", imageName, timestamp, fileExt)
+
+	if strings.TrimSpace(folder) == "" {
+		folder = "img"
+	}
+
+	// Determine dimensions only for raster images
+	var width, height int
+	var err error
+	if supportedRasterImageExts[fileExt] {
+		width, height, err = getImageDimensions(data)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get image dimensions: %w", err)
+		}
+	}
+
+	// Upload the image
+	uploadPath := fmt.Sprintf("%s/%s", folder, finalFileName)
+	url, err := receiver.UploadProvider.SaveFileUploaded(context.Background(), data, uploadPath, mode)
+	if err != nil {
+		log.Errorf("error uploading file to S3: %v", err)
+		return nil, nil, err
+	}
+
+	// Create SImage entity
+	img := entity.SImage{
+		ImageName: imageName,
+		Folder:    folder,
+		Key:       uploadPath,
+		Width:     width,
+		Height:    height,
+		Extension: fileExt,
+	}
+
+	// Save image metadata
+	err = receiver.ImageRepository.CreateImage(&img)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Optionally create public image
+	if mode == uploader.UploadPublic {
+		err = receiver.ImageRepository.CreatePublicImage(entity.PublicImage{
+			ImageName: imageName,
+			Folder:    folder,
+			Key:       uploadPath,
+			URL:       *url,
+			Width:     width,
+			Height:    height,
+			Extension: fileExt,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return url, &img, nil
+}

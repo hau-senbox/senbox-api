@@ -24,6 +24,7 @@ type StudentApplicationUseCase struct {
 	DeviceRepo                 *repository.DeviceRepository
 	StudentBlockSettingUsecase *StudentBlockSettingUsecase
 	LanguagesConfigUsecase     *LanguagesConfigUsecase
+	UserImagesUsecase          *UserImagesUsecase
 }
 
 func NewStudentApplicationUseCase(
@@ -35,6 +36,7 @@ func NewStudentApplicationUseCase(
 	organizationRepo *repository.OrganizationRepository,
 	studentBlockSettingUsecase *StudentBlockSettingUsecase,
 	languagesConfigUsecase *LanguagesConfigUsecase,
+	userImagesUsecase *UserImagesUsecase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:             studentRepo,
@@ -45,6 +47,7 @@ func NewStudentApplicationUseCase(
 		OrganizationRepo:           organizationRepo,
 		StudentBlockSettingUsecase: studentBlockSettingUsecase,
 		LanguagesConfigUsecase:     languagesConfigUsecase,
+		UserImagesUsecase:          userImagesUsecase,
 	}
 }
 
@@ -124,6 +127,9 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	// get languages config
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(studentID, value.OwnerRoleLangStudent)
 
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.Get4Owner(studentID, value.OwnerRoleStudent)
+
 	return &response.StudentResponseBase{
 		StudentID:      studentID,
 		StudentName:    studentApp.StudentName,
@@ -134,16 +140,11 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		CustomID:       studentApp.CustomID,
 		StudentBlock:   studentBlockSetting,
 		LanguageConfig: languageConfig,
+		Avatars:        avatars,
 	}, nil
 }
 
 func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string, deviceID string) (*response.StudentResponseBase, error) {
-	// user, err := uc.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// orgIDs := user.GetOrganizationIDsFromPreloaded()
 
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if err != nil {

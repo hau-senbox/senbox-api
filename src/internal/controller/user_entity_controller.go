@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/uploader"
 	"strconv"
 	"strings"
 
@@ -47,6 +48,8 @@ type UserEntityController struct {
 	*usecase.ParentUseCase
 	*usecase.StudentBlockSettingUsecase
 	*usecase.GetUserOrganizationActiveUsecase
+	*usecase.UploadImageUseCase
+	*usecase.UserImagesUsecase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -1923,4 +1926,118 @@ func (receiver *UserEntityController) AddCustomID2User(context *gin.Context) {
 		Data: "Updated",
 	})
 
+}
+
+func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ownerID := c.PostForm("owner_id")
+	if ownerID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "owner id is required",
+		})
+		return
+	}
+
+	ownerRole := c.PostForm("owner_role")
+	if ownerRole == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "owner role is required",
+		})
+		return
+	}
+
+	fileName := c.PostForm("file_name")
+	if fileName == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "file name is required",
+		})
+		return
+	}
+
+	indexStr := c.PostForm("index")
+	if indexStr == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "index is required",
+		})
+		return
+	}
+
+	index, err := strconv.Atoi(indexStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid index",
+		})
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	dataBytes := make([]byte, fileHeader.Size)
+	if _, err := bufio.NewReader(file).Read(dataBytes); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// 1. Gọi usecase upload image
+	_, img, err := receiver.UploadImageUseCase.UploadImagev2(
+		dataBytes,
+		"avatar",
+		fileHeader.Filename,
+		fileName,
+		uploader.UploadPublic,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// 2. Gọi usecase lưu vào user_images
+	req := request.UploadAvatarRequest{
+		OwnerID:   ownerID,
+		OwnerRole: value.OwnerRole(ownerRole),
+		ImageID:   img.ID,
+		Index:     index,
+	}
+
+	if err := receiver.UserImagesUsecase.UploadAvt(req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// 3. Trả về response
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "avatar was create successfully",
+		Data:    nil,
+	})
 }

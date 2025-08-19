@@ -87,6 +87,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.LanguagesConfig{},
 		&entity.OrganizationNewsSetting{},
 		&entity.MenuUploadLog{},
+		&entity.UserImages{},
 	)
 
 	// Seed

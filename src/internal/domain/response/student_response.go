@@ -10,4 +10,5 @@ type StudentResponseBase struct {
 	CustomID       string                       `json:"custom_id"`
 	StudentBlock   *StudentBlockSettingResponse `json:"student_block"`
 	LanguageConfig *LanguagesConfigResponse     `json:"language_config"`
+	Avatars        []Avatar                     `json:"avatars"`
 }
