@@ -40,9 +40,6 @@ func (receiver *UploadUserAvatarUseCase) UploadAvatar(userID string, data []byte
 		fmt.Sprintf("%s_avatar", helper.Slugify(user.Username)),
 		uploader.UploadPrivate,
 		nil,
-		nil,
-		nil,
-		nil,
 	)
 	if err != nil {
 		return nil, nil, err

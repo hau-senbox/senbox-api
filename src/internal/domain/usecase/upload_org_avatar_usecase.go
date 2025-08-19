@@ -39,9 +39,6 @@ func (receiver *UploadOrgAvatarUseCase) UploadAvatar(orgID string, data []byte, 
 		fmt.Sprintf("%s_avatar", helper.Slugify(org.OrganizationName)),
 		uploader.UploadPrivate,
 		nil,
-		nil,
-		nil,
-		nil,
 	)
 	if err != nil {
 		return nil, nil, err

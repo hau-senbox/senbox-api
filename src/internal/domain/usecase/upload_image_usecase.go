@@ -60,9 +60,6 @@ func (receiver *UploadImageUseCase) UploadImage(
 	folder, fileName, imageName string,
 	mode uploader.UploadMode,
 	topicID *string,
-	userID *string,
-	studentID *string,
-	teacherID *string,
 ) (*string, *entity.SImage, error) {
 
 	fileExt := strings.ToLower(path.Ext(fileName))
@@ -136,32 +133,32 @@ func (receiver *UploadImageUseCase) UploadImage(
 		}
 	}
 
-	go func(imgID uint64, userID *string, studentID *string, teacherID *string) {
-		// Gán giá trị chuỗi rỗng nếu nil
-		var uid, sid, tid string
+	// go func(imgID uint64, userID *string, studentID *string, teacherID *string) {
+	// 	// Gán giá trị chuỗi rỗng nếu nil
+	// 	var uid, sid, tid string
 
-		if userID != nil {
-			uid = *userID
-		}
-		if studentID != nil {
-			sid = *studentID
-		}
-		if teacherID != nil {
-			tid = *teacherID
-		}
+	// 	if userID != nil {
+	// 		uid = *userID
+	// 	}
+	// 	if studentID != nil {
+	// 		sid = *studentID
+	// 	}
+	// 	if teacherID != nil {
+	// 		tid = *teacherID
+	// 	}
 
-		userImage := &entity.SUserImage{
-			ImageID:   imgID,
-			UserID:    uid,
-			StudentID: sid,
-			TeacherID: tid,
-		}
+	// 	userImage := &entity.SUserImage{
+	// 		ImageID:   imgID,
+	// 		UserID:    uid,
+	// 		StudentID: sid,
+	// 		TeacherID: tid,
+	// 	}
 
-		err := receiver.UserImageRepository.Create(userImage)
-		if err != nil {
-			log.Errorf("error creating user image link: %v", err)
-		}
-	}(img.ID, userID, studentID, teacherID)
+	// 	err := receiver.UserImageRepository.Create(userImage)
+	// 	if err != nil {
+	// 		log.Errorf("error creating user image link: %v", err)
+	// 	}
+	// }(img.ID, userID, studentID, teacherID)
 
 	return url, &img, nil
 }

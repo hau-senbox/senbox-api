@@ -137,23 +137,23 @@ func (receiver *ImageController) GetIconByKey(context *gin.Context) {
 }
 
 func (receiver *ImageController) CreateImage(context *gin.Context) {
-	userIDRaw, exists := context.Get("user_id")
-	if !exists {
-		context.JSON(http.StatusUnauthorized, response.FailedResponse{
-			Code:  http.StatusUnauthorized,
-			Error: "Unauthorized: user_id not found",
-		})
-		return
-	}
+	// userIDRaw, exists := context.Get("user_id")
+	// if !exists {
+	// 	context.JSON(http.StatusUnauthorized, response.FailedResponse{
+	// 		Code:  http.StatusUnauthorized,
+	// 		Error: "Unauthorized: user_id not found",
+	// 	})
+	// 	return
+	// }
 
-	userID, ok := userIDRaw.(string)
-	if !ok {
-		context.JSON(http.StatusUnauthorized, response.FailedResponse{
-			Code:  http.StatusUnauthorized,
-			Error: "Unauthorized: user_id is not a valid string",
-		})
-		return
-	}
+	// userID, ok := userIDRaw.(string)
+	// if !ok {
+	// 	context.JSON(http.StatusUnauthorized, response.FailedResponse{
+	// 		Code:  http.StatusUnauthorized,
+	// 		Error: "Unauthorized: user_id is not a valid string",
+	// 	})
+	// 	return
+	// }
 
 	fileHeader, err := context.FormFile("file")
 	if err != nil {
@@ -208,19 +208,19 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		topicID = &topicIDRaw
 	}
 
-	studentIDRaw := context.PostForm("student_id")
-	var studentID *string
-	if strings.TrimSpace(studentIDRaw) != "" {
-		studentID = &studentIDRaw
-	}
+	// studentIDRaw := context.PostForm("student_id")
+	// var studentID *string
+	// if strings.TrimSpace(studentIDRaw) != "" {
+	// 	studentID = &studentIDRaw
+	// }
 
-	teacherIDRaw := context.PostForm("teacher_id")
-	var teacherID *string
-	if strings.TrimSpace(teacherIDRaw) != "" {
-		teacherID = &teacherIDRaw
-	}
+	// teacherIDRaw := context.PostForm("teacher_id")
+	// var teacherID *string
+	// if strings.TrimSpace(teacherIDRaw) != "" {
+	// 	teacherID = &teacherIDRaw
+	// }
 
-	url, img, err := receiver.UploadImageUseCase.UploadImage(dataBytes, folder, fileHeader.Filename, fileName, mode, topicID, &userID, studentID, teacherID)
+	url, img, err := receiver.UploadImageUseCase.UploadImage(dataBytes, folder, fileHeader.Filename, fileName, mode, topicID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

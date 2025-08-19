@@ -44,8 +44,9 @@ type componentResponse struct {
 }
 
 type menuResponse struct {
-	Top    []componentResponse `json:"top"`
-	Bottom []componentResponse `json:"bottom"`
+	MenuIconKey string              `json:"menu_icon_key,omitempty"`
+	Top         []componentResponse `json:"top"`
+	Bottom      []componentResponse `json:"bottom"`
 }
 
 func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
@@ -313,6 +314,8 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 	sort.Slice(bottomMenuResponse, func(i, j int) bool {
 		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
 	})
+
+	// get menu icon key
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
