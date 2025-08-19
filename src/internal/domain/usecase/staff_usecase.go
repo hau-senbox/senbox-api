@@ -23,6 +23,7 @@ type StaffApplicationUseCase struct {
 	GetUserEntityUseCase   *GetUserEntityUseCase
 	UserEntityRepository   *repository.UserEntityRepository
 	LanguagesConfigUsecase *LanguagesConfigUsecase
+	UserImagesUsecase      *UserImagesUsecase
 }
 
 func NewStaffApplicationUseCase(
@@ -34,6 +35,7 @@ func NewStaffApplicationUseCase(
 	getUserEntityUseCase *GetUserEntityUseCase,
 	userEntityResitory *repository.UserEntityRepository,
 	languagesConfigUsecase *LanguagesConfigUsecase,
+	userImagesUsecase *UserImagesUsecase,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
 		StaffAppRepo:           staffRepo,
@@ -44,6 +46,7 @@ func NewStaffApplicationUseCase(
 		GetUserEntityUseCase:   getUserEntityUseCase,
 		UserEntityRepository:   userEntityResitory,
 		LanguagesConfigUsecase: languagesConfigUsecase,
+		UserImagesUsecase:      userImagesUsecase,
 	}
 }
 
@@ -274,6 +277,9 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 	// get languages config
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(staffID, value.OwnerRoleLangStaff)
 
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.Get4Owner(staffID, value.OwnerRoleStaff)
+
 	return &response.StaffResponseBase{
 		StaffID:        staffID,
 		UserID:         userEntity.ID.String(),
@@ -284,6 +290,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 		Menus:          menus,
 		IsUserBlock:    userEntity.IsBlocked,
 		LanguageConfig: languageConfig,
+		Avatars:        avatars,
 	}, nil
 }
 

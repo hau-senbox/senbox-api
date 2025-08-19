@@ -1314,4 +1314,5 @@ const (
 	OwnerRoleStaff   OwnerRole = "staff"
 	OwnerRoleStudent OwnerRole = "student"
 	OnwerRoleChild   OwnerRole = "child"
+	OwnerRoleParent  OwnerRole = "parent"
 )

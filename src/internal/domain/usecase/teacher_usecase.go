@@ -23,6 +23,7 @@ type TeacherApplicationUseCase struct {
 	RoleOrgRepo            *repository.RoleOrgSignUpRepository
 	OrganizationRepo       *repository.OrganizationRepository
 	LanguagesConfigUsecase *LanguagesConfigUsecase
+	UserImagesUsecase      *UserImagesUsecase
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -237,6 +238,9 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	// get languages config
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(teacherID, value.OwnerRoleLangTeacher)
 
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.Get4Owner(teacherID, value.OwnerRoleTeacher)
+
 	return &response.TeacherResponseBase{
 		TeacherID:      teacherID,
 		UserID:         userEntity.ID.String(),
@@ -247,6 +251,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		Menus:          menus,
 		IsUserBlock:    userEntity.IsBlocked,
 		LanguageConfig: languageConfig,
+		Avatars:        avatars,
 	}, nil
 }
 

@@ -10,4 +10,5 @@ type StaffResponseBase struct {
 	Menus          []ComponentResponse      `json:"components"`
 	IsUserBlock    bool                     `json:"is_block"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
+	Avatars        []Avatar                 `json:"avatars"`
 }

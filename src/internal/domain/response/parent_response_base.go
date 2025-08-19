@@ -8,4 +8,5 @@ type ParentResponseBase struct {
 	Menus          []ComponentResponse      `json:"components"`
 	CustomID       string                   `json:"custom_id"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
+	Avatars        []Avatar                 `json:"avatars"`
 }

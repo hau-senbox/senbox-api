@@ -15,6 +15,7 @@ type ParentUseCase struct {
 	ParentMenuRepo         *repository.ParentMenuRepository
 	ComponentRepo          *repository.ComponentRepository
 	LanguagesConfigUsecase *LanguagesConfigUsecase
+	UserImagesUsecase      *UserImagesUsecase
 }
 
 func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentResponseBase, error) {
@@ -67,6 +68,9 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 	// get languages config
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(parentID, value.OwnerRoleLangParent)
 
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.Get4Owner(parentID, value.OwnerRoleParent)
+
 	return &response.ParentResponseBase{
 		ParentID:       parentID,
 		ParentName:     parent.Nickname,
@@ -75,5 +79,6 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		Menus:          menus,
 		CustomID:       parent.CustomID,
 		LanguageConfig: languageConfig,
+		Avatars:        avatars,
 	}, nil
 }

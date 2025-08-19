@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -116,7 +117,10 @@ func (uc *UserImagesUsecase) Get4Owner(ownerID string, ownerRole value.OwnerRole
 		})
 	}
 
-	// sort by index in avatars
+	// Sort by Index (tăng dần)
+	sort.Slice(avatars, func(i, j int) bool {
+		return avatars[i].Index < avatars[j].Index
+	})
 
 	return avatars, nil
 }

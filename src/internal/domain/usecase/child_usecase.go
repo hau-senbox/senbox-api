@@ -16,12 +16,14 @@ import (
 )
 
 type ChildUseCase struct {
-	childRepo            *repository.ChildRepository
-	userRepo             *repository.UserEntityRepository
-	componentRepo        *repository.ComponentRepository
-	childMenuRepo        *repository.ChildMenuRepository
-	roleOrgRepo          *repository.RoleOrgSignUpRepository
-	getUserEntityUseCase *GetUserEntityUseCase
+	childRepo              *repository.ChildRepository
+	userRepo               *repository.UserEntityRepository
+	componentRepo          *repository.ComponentRepository
+	childMenuRepo          *repository.ChildMenuRepository
+	roleOrgRepo            *repository.RoleOrgSignUpRepository
+	getUserEntityUseCase   *GetUserEntityUseCase
+	userImagesUsecase      *UserImagesUsecase
+	languagesConfigUsecase *LanguagesConfigUsecase
 }
 
 func NewChildUseCase(
@@ -31,14 +33,18 @@ func NewChildUseCase(
 	childMenuRepo *repository.ChildMenuRepository,
 	roleOrgRepo *repository.RoleOrgSignUpRepository,
 	getUserEntityUseCase *GetUserEntityUseCase,
+	languagesConfigUsecase *LanguagesConfigUsecase,
+	userImagesUsecase *UserImagesUsecase,
 ) *ChildUseCase {
 	return &ChildUseCase{
-		childRepo:            childRepo,
-		userRepo:             userRepo,
-		componentRepo:        componentRepo,
-		childMenuRepo:        childMenuRepo,
-		roleOrgRepo:          roleOrgRepo,
-		getUserEntityUseCase: getUserEntityUseCase,
+		childRepo:              childRepo,
+		userRepo:               userRepo,
+		componentRepo:          componentRepo,
+		childMenuRepo:          childMenuRepo,
+		roleOrgRepo:            roleOrgRepo,
+		getUserEntityUseCase:   getUserEntityUseCase,
+		userImagesUsecase:      userImagesUsecase,
+		languagesConfigUsecase: languagesConfigUsecase,
 	}
 }
 
@@ -224,6 +230,13 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		return nil, err
 	}
 	formProfile := childRoleOrg.OrgProfile + ":" + child.ID.String()
+
+	// get languages config
+	languageConfig, _ := uc.languagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(childID, value.OwnerRoleLangChild)
+
+	// get avts
+	avatars, _ := uc.userImagesUsecase.Get4Owner(childID, value.OnwerRoleChild)
+
 	// Trả về kết quả
 	return &response.ChildResponse{
 		ChildID:       child.ID.String(),
@@ -232,7 +245,9 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		AvatarURL:     "", // Có thể generate từ link
 		QrFormProfile: formProfile,
 		// Parent:    *parent,
-		Menus: menus,
+		Menus:          menus,
+		LanguageConfig: languageConfig,
+		Avatars:        avatars,
 	}, nil
 }
 
