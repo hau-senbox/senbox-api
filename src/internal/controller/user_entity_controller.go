@@ -2069,7 +2069,7 @@ func (receiver *UserEntityController) UpdateIsMain(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "Main avatar updated successfully",
+		Message: "Update main avatar successfully",
 	})
 
 }

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"sen-global-api/internal/data/repository"
@@ -34,13 +35,13 @@ func (uc *LanguagesConfigUsecase) UploadLanguagesConfig(
 		return errors.New("owner id and Owner role is required")
 	}
 
-	// if len(spokenLang) == 0 {
-	// 	return errors.New("spoken Language not empty")
-	// }
-
-	// if len(studyLang) == 0 {
-	// 	return errors.New("study language not empty")
-	// }
+	// Validate tổng percent
+	if sum := spokenLang.TotalPercent(); sum > 100 {
+		return fmt.Errorf("spoken languages percent exceeded 100 (got %d)", sum)
+	}
+	if sum := studyLang.TotalPercent(); sum > 100 {
+		return fmt.Errorf("study languages percent exceeded 100 (got %d)", sum)
+	}
 
 	// Check tồn tại
 	existing, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)

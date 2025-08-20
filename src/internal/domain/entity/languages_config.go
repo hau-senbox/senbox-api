@@ -52,3 +52,11 @@ func (lc *LanguagesConfig) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 	return
 }
+
+func (l LanguageConfigList) TotalPercent() int {
+	total := 0
+	for _, cfg := range l {
+		total += cfg.Percent
+	}
+	return total
+}
