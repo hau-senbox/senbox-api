@@ -421,7 +421,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 		// get 4 app
 		childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String(), true)
 		// get menu icon key
-		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(child.ID.String(), value.OnwerRoleChild)
+		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(child.ID.String(), value.OwnerRoleChild)
 		menuIconKey := ""
 		if img != nil {
 			menuIconKey = img.Key

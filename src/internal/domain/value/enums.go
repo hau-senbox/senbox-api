@@ -1322,6 +1322,20 @@ const (
 	OwnerRoleTeacher OwnerRole = "teacher"
 	OwnerRoleStaff   OwnerRole = "staff"
 	OwnerRoleStudent OwnerRole = "student"
-	OnwerRoleChild   OwnerRole = "child"
+	OwnerRoleChild   OwnerRole = "child"
 	OwnerRoleParent  OwnerRole = "parent"
 )
+
+func (r OwnerRole) IsValid() bool {
+	switch r {
+	case OwnerRoleUser,
+		OwnerRoleTeacher,
+		OwnerRoleStaff,
+		OwnerRoleStudent,
+		OwnerRoleChild,
+		OwnerRoleParent:
+		return true
+	default:
+		return false
+	}
+}

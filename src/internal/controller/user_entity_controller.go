@@ -2073,3 +2073,57 @@ func (receiver *UserEntityController) UpdateIsMain(context *gin.Context) {
 	})
 
 }
+
+func (receiver *UserEntityController) DeleteUserAvatar(context *gin.Context) {
+	ownerID := context.Query("owner_id")
+	ownerRole := context.Query("owner_role")
+	indexStr := context.Query("index")
+
+	if ownerID == "" || ownerRole == "" || indexStr == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "owner_id, owner_role and index are required",
+		})
+		return
+	}
+
+	// validate owner role
+	role := value.OwnerRole(ownerRole)
+	if !role.IsValid() {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid owner role",
+		})
+		return
+	}
+	// Convert index về int
+	index, err := strconv.Atoi(indexStr)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "index must be a number",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	req := request.DeleteUserAvatarRequest{
+		OwnerID:   ownerID,
+		OwnerRole: role,
+		Index:     index,
+	}
+
+	if err := receiver.UserImagesUsecase.DeleteUserAvatar(req); err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to delete avatar",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Delete avatar successfully",
+	})
+}

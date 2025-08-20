@@ -586,6 +586,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		// avatar
 		user.POST("/avatar", userEntityController.UploadAvatarV2)
 		user.PUT("/avatar/is-main", userEntityController.UpdateIsMain)
+		user.DELETE("/avatar", userEntityController.DeleteUserAvatar)
 	}
 
 	// application

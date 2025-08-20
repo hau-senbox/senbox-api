@@ -35,7 +35,7 @@ func (uc *UserImagesUsecase) UploadAvt(req request.UploadAvatarRequest) error {
 		value.OwnerRoleTeacher,
 		value.OwnerRoleStaff,
 		value.OwnerRoleStudent,
-		value.OnwerRoleChild:
+		value.OwnerRoleChild:
 	default:
 		return fmt.Errorf("invalid owner_role: %s", req.OwnerRole)
 	}
@@ -161,4 +161,30 @@ func (uc *UserImagesUsecase) GetImg4Ownewr(ownerID string, ownerRole value.Owner
 	}
 	// get img
 	return uc.ImageRepo.GetByID(userImage.ImageID)
+}
+
+func (uc *UserImagesUsecase) DeleteUserAvatar(request request.DeleteUserAvatarRequest) error {
+	// B1: Tìm ảnh theo ownerID, ownerRole và index
+	userImage, err := uc.Repo.GetByOwnerRoleAndIndex(request.OwnerID, string(request.OwnerRole), request.Index)
+	if err != nil {
+		return fmt.Errorf("failed to find user image: %w", err)
+	}
+	if userImage == nil {
+		return fmt.Errorf("user image not found for owner=%s role=%s index=%d", request.OwnerID, request.OwnerRole, request.Index)
+	}
+
+	// tìm image metadata cũ
+	img, err := uc.ImageRepo.GetByID(uint64(userImage.ImageID))
+	if err == nil && img != nil {
+		if delErr := uc.DeleteImageUsecase.DeleteImage(img.Key); delErr != nil {
+			return fmt.Errorf("failed to delete old image: %w", delErr)
+		}
+	}
+
+	// xoa user image
+	if err := uc.Repo.Delete(userImage.ID.String()); err != nil {
+		return fmt.Errorf("failed to reset is_main: %w", err)
+	}
+
+	return nil
 }
