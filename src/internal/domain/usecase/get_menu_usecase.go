@@ -37,6 +37,7 @@ type GetMenuUseCase struct {
 	StaffApplicationRepo               *repository.StaffApplicationRepository
 	OrganizationMenuTemplateRepository *repository.OrganizationMenuTemplateRepository
 	ParentMenuUsecase                  *ParentMenuUseCase
+	UserImageUsecase                   *UserImagesUsecase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -54,10 +55,20 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 
 func (receiver *GetMenuUseCase) GetStudentMenu4App(studentID string) (response.GetStudentMenuResponse, error) {
 	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(studentID, true)
+
 	if err != nil {
 		return response.GetStudentMenuResponse{}, fmt.Errorf("failed to get student menu: %w", err)
 	}
 
+	// get menu icon key
+	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(studentID, value.OwnerRoleStudent)
+
+	menuIconKey := ""
+	if img != nil {
+		menuIconKey = img.Key
+	}
+
+	studentMenu.MenuIconKey = menuIconKey
 	return studentMenu, nil
 }
 
@@ -69,6 +80,15 @@ func (receiver *GetMenuUseCase) GetTeacherMenu4App(userID string) (response.GetT
 	if err != nil {
 		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
 	}
+
+	// get menu icon key
+	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(teacher.ID.String(), value.OwnerRoleTeacher)
+
+	menuIconKey := ""
+	if img != nil {
+		menuIconKey = img.Key
+	}
+	teacherMenu.MenuIconKey = menuIconKey
 
 	return teacherMenu, nil
 }
@@ -400,9 +420,16 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	for _, child := range children {
 		// get 4 app
 		childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String(), true)
+		// get menu icon key
+		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(child.ID.String(), value.OnwerRoleChild)
+		menuIconKey := ""
+		if img != nil {
+			menuIconKey = img.Key
+		}
 		if err == nil && len(childMenu.Components) > 0 {
 			result = append(result, response.GetMenuSectionResponse{
 				SectionName: child.ChildName,
+				MenuIconKey: menuIconKey,
 				Components:  childMenu.Components,
 			})
 		}
@@ -420,10 +447,17 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	for _, teacher := range teachers {
 		// get 4 app
 		teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String(), true)
+		// get menu icon key
+		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(teacher.ID.String(), value.OwnerRoleTeacher)
+		menuIconKey := ""
+		if img != nil {
+			menuIconKey = img.Key
+		}
 		if err == nil && len(teacherMenu.Components) > 0 {
 			result = append(result, response.GetMenuSectionResponse{
 				SectionName: teacherMenu.TeacherName,
 				SectionID:   teacherMenu.TeacherID,
+				MenuIconKey: menuIconKey,
 				Components:  teacherMenu.Components,
 			})
 		}
@@ -432,10 +466,17 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	for _, staff := range staffs {
 		// get 4 app
 		staffMenu, err := receiver.StaffMenuUsecase.GetByStaffID(staff.ID.String(), true)
+		// get menu icon key
+		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(staff.ID.String(), value.OwnerRoleStaff)
+		menuIconKey := ""
+		if img != nil {
+			menuIconKey = img.Key
+		}
 		if err == nil && len(staffMenu.Components) > 0 {
 			result = append(result, response.GetMenuSectionResponse{
 				SectionName: staffMenu.StaffName,
 				SectionID:   staffMenu.StaffID,
+				MenuIconKey: menuIconKey,
 				Components:  staffMenu.Components,
 			})
 		}
@@ -443,9 +484,16 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	// Get Parent Menu
 	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(userID)
+	// get menu icon key
+	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(userID, value.OwnerRoleParent)
+	menuIconKey := ""
+	if img != nil {
+		menuIconKey = img.Key
+	}
 	if err == nil && parentMenu.ParentID != "" && len(parentMenu.Components) > 0 {
 		result = append(result, response.GetMenuSectionResponse{
 			SectionName: "Parent Menu",
+			MenuIconKey: menuIconKey,
 			Components:  parentMenu.Components,
 		})
 	}

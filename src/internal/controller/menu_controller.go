@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 	"sort"
 
 	log "github.com/sirupsen/logrus"
@@ -32,6 +33,7 @@ type MenuController struct {
 	*usecase.TeacherMenuUseCase
 	*usecase.DeviceMenuUseCase
 	*usecase.GetOrganizationUseCase
+	*usecase.UserImagesUsecase
 }
 
 type componentResponse struct {
@@ -451,8 +453,12 @@ func (receiver *MenuController) GetUserMenu4App(context *gin.Context) {
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
-
 		return
+	}
+
+	type GetUserMenu4AppResponse struct {
+		MenuIconKey string              `json:"menu_icon_key"`
+		Menus       []componentResponse `json:"menus"`
 	}
 
 	res := make([]componentResponse, 0)
@@ -486,9 +492,23 @@ func (receiver *MenuController) GetUserMenu4App(context *gin.Context) {
 		return res[i].Order < res[j].Order
 	})
 
+	// get menu icon key
+	img, _ := receiver.UserImagesUsecase.GetImg4Ownewr(userID, value.OwnerRoleUser)
+
+	menuIconKey := ""
+	if img != nil {
+		menuIconKey = img.Key
+	}
+
+	// wrap response
+	resp := GetUserMenu4AppResponse{
+		MenuIconKey: menuIconKey,
+		Menus:       res,
+	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: resp,
 	})
 }
 

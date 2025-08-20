@@ -244,6 +244,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
 				UserRepo:      &repository.UserEntityRepository{DBConn: dbConn},
 			},
+			UserImageUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},
@@ -263,6 +267,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 		},
 	}
 
