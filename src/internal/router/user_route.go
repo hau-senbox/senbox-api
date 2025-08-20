@@ -48,6 +48,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 	)
 
@@ -148,6 +152,22 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			TeacherApplicationRepository: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffApplicationRepository:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
+		UploadImageUseCase: &usecase.UploadImageUseCase{
+			UploadProvider:  provider,
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			DeleteImageUsecase: &usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  provider,
+			},
+		},
 	}
 
 	userRoleController := &controller.RoleController{
@@ -247,6 +267,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			UserImageUsecase: &usecase.UserImagesUsecase{
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
 			},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
@@ -271,6 +295,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		UserImagesUsecase: &usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 	}
 

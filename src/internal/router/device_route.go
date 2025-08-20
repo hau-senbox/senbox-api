@@ -56,6 +56,9 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		&usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			// GetImageUseCase: &usecase.GetImageUseCase{
+			// 	UploadProvider: s3,
+			// },
 		},
 	)
 	deviceController := &controller.DeviceController{

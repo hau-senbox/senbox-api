@@ -135,7 +135,11 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 
 	}
 
+	// get is Deactive
 	isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(userEntity.ID.String())
+
+	// get avatars
+	avatars, _ := receiver.UserImagesUsecase.Get4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
@@ -159,6 +163,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			OrganizationAdmin: orgAdminResp,
 			IsDeactive:        isDeactive,
 			IsSuperAdmin:      userEntity.IsSuperAdmin(),
+			Avatars:           avatars,
 		},
 	})
 }
@@ -1296,14 +1301,14 @@ func (receiver *UserEntityController) UploadAvatar(context *gin.Context) {
 	if url == nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "avatar was not created",
+			Error: "Upload avatar fail",
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "avatar was create successfully",
+		Message: "Upload avatar successfully",
 		Data: response.ImageResponse{
 			ImageName: img.ImageName,
 			Key:       img.Key,
@@ -2037,7 +2042,7 @@ func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
 	// 3. Trả về response
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "avatar was create successfully",
+		Message: "Uopload avatar successfully",
 		Data:    nil,
 	})
 }

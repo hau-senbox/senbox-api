@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/uploader"
 	"sort"
 	"time"
 
@@ -17,6 +18,7 @@ type UserImagesUsecase struct {
 	Repo               *repository.UserImagesRepository
 	ImageRepo          *repository.ImageRepository
 	DeleteImageUsecase *DeleteImageUseCase
+	GetImageUseCase    *GetImageUseCase
 }
 
 // UploadAvt tạo avatar mới cho Owner
@@ -109,11 +111,14 @@ func (uc *UserImagesUsecase) Get4Owner(ownerID string, ownerRole value.OwnerRole
 	for _, img := range userImages {
 		// get img key by img id
 		imageEntity, _ := uc.ImageRepo.GetByID(img.ImageID)
+		// get img url
+		url, _ := uc.GetImageUseCase.GetUrlByKey(imageEntity.Key, uploader.UploadPrivate)
 		avatars = append(avatars, response.Avatar{
 			ImageID:  img.ImageID,
 			ImageKey: imageEntity.Key,
 			Index:    img.Index,
 			IsMain:   img.IsMain,
+			ImageUrl: *url,
 		})
 	}
 

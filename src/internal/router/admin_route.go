@@ -37,6 +37,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 	settingRepository := &repository.SettingRepository{DBConn: dbConn}
 
+	s3Provider := uploader.NewS3Provider(
+		config.S3.SenboxFormSubmitBucket.AccessKey,
+		config.S3.SenboxFormSubmitBucket.SecretKey,
+		config.S3.SenboxFormSubmitBucket.BucketName,
+		config.S3.SenboxFormSubmitBucket.Region,
+		config.S3.SenboxFormSubmitBucket.Domain,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
+		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
+	)
+
 	importFormsUseCase := &usecase.ImportFormsUseCase{
 		FormRepository:                  formRepo,
 		QuestionRepository:              &repository.QuestionRepository{DBConn: dbConn},
@@ -423,6 +433,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 	)
 
@@ -442,6 +456,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 	)
 
@@ -463,16 +481,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 		},
-	)
-
-	s3Provider := uploader.NewS3Provider(
-		config.S3.SenboxFormSubmitBucket.AccessKey,
-		config.S3.SenboxFormSubmitBucket.SecretKey,
-		config.S3.SenboxFormSubmitBucket.BucketName,
-		config.S3.SenboxFormSubmitBucket.Region,
-		config.S3.SenboxFormSubmitBucket.Domain,
-		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
-		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -500,6 +508,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserImagesUsecase: &usecase.UserImagesUsecase{
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  s3Provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
 			},
 		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
@@ -533,6 +545,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 			DeleteImageUsecase: &usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			GetImageUseCase: &usecase.GetImageUseCase{
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				UploadProvider:  s3Provider,
 			},

@@ -553,14 +553,14 @@ func (receiver OrganizationController) UploadAvatar(context *gin.Context) {
 	if url == nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "avatar was not created",
+			Error: "Upload avatar failed",
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "avatar was create successfully",
+		Message: "Upload avatar successfully",
 		Data: response.ImageResponse{
 			ImageName: img.ImageName,
 			Key:       img.Key,

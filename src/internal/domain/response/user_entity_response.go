@@ -48,6 +48,8 @@ type UserEntityResponseV2 struct {
 	Devices *[]string               `json:"devices"`
 
 	OrganizationAdmin *OrganizationAdmin `json:"organization_admin"`
+
+	Avatars []Avatar `json:"avatars"`
 }
 
 type UserEntityResponseData struct {
