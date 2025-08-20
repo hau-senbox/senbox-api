@@ -2013,7 +2013,7 @@ func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
 		"avatar",
 		fileHeader.Filename,
 		fileName,
-		uploader.UploadPublic,
+		uploader.UploadPrivate,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
