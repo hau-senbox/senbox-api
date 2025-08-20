@@ -530,6 +530,17 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 			formName = row[2].(string)
 			continue
 		} else if len(row) > 5 && cap(row) > 5 && index > 1 && row[3].(string) != "" {
+			question := ""
+			if len(row) > 4 {
+				question = row[4].(string)
+			}
+
+			qType := row[3].(string)
+			// Rule check: có Type nhưng không có Question
+			if len(qType) > 0 && len(strings.TrimSpace(question)) == 0 {
+				return fmt.Sprintf("Invalid data at row %d: Question is required when Type is provided", index+1),
+					fmt.Errorf("row %d: missing Question while Type = %s", index+1, qType)
+			}
 			additionalInfo := ""
 			if len(row) > 7 {
 				additionalInfo = row[7].(string)
@@ -549,8 +560,8 @@ func (receiver *ImportFormsUseCase) importForm(code string, spreadsheetUrl strin
 			item := parameters.RawQuestion{
 				// ID:        strings.ToUpper(code) + "_" + spreadsheetID + "_" + row[2].(string),
 				QuestionID:        uuid.NewString(),
-				Question:          row[4].(string),
-				Type:              row[3].(string),
+				Question:          question,
+				Type:              qType,
 				Attributes:        strings.ReplaceAll(row[5].(string), "\n", ""),
 				AnswerRequired:    required,
 				AnswerRemember:    remember,
