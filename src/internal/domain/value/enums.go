@@ -124,6 +124,8 @@ const (
 	OutNrAverageAll
 	OutNrLineGraph
 	HiddenMessageText
+
+	Timer
 )
 
 type DeviceStatus int
@@ -422,6 +424,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "out_nr_line_graph"
 	case HiddenMessageText:
 		return "hidden_message_text"
+	case Timer:
+		return "timer"
 	}
 
 	return ""
@@ -602,6 +606,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "out_nr_line_graph"
 	case HiddenMessageText:
 		return "hidden_message_text"
+	case Timer:
+		return "timer"
 	default:
 		return ""
 	}
@@ -827,6 +833,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return OutNrLineGraph, nil
 	case "hidden_message_text":
 		return HiddenMessageText, nil
+	case "timer":
+		return Timer, nil
 
 	default:
 		return 0, errors.New("invalid raw value")
@@ -925,7 +933,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OutListResponse,
 		OutNrAverageAll,
 		OutNrLineGraph,
-		HiddenMessageText:
+		HiddenMessageText,
+		Timer:
 		return true
 	default:
 		return false
