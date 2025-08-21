@@ -16,4 +16,5 @@ func Route(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadshe
 	setupToDoRoutes(engine, dbConn, appConfig)
 	setupUserRoutes(engine, dbConn, appConfig)
 	setupOrganizationRoutes(engine, dbConn, appConfig)
+	setupAppRoutes(engine, dbConn, appConfig)
 }

@@ -421,3 +421,8 @@ func FilterParentsByStatus(parents []response.ParentResponse, status value.Searc
 	}
 	return filtered
 }
+
+func AppConfigValueToJSON(v any) datatypes.JSON {
+	b, _ := json.Marshal(v)
+	return datatypes.JSON(b)
+}
