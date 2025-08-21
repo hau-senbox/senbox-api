@@ -372,6 +372,9 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 		})
 	}
 
+	// get avatars
+	avatars, _ := receiver.UserImagesUsecase.Get4Owner(userEntity.ID.String(), value.OwnerRoleUser)
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -393,6 +396,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			Devices:                &deviceListResponse,
 			CustomID:               userEntity.CustomID,
 			UserOrganizationActive: *userOrgActive,
+			Avatars:                avatars,
 		},
 	})
 }

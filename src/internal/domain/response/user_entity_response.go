@@ -23,6 +23,7 @@ type UserEntityResponse struct {
 	Devices *[]string               `json:"devices"`
 
 	UserOrganizationActive UserOrganizationActive `json:"user_organization_active"`
+	Avatars                []Avatar               `json:"avatars"`
 }
 
 type UserEntityResponseV2 struct {
