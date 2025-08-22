@@ -30,4 +30,5 @@ type SSubmission struct {
 	UpdatedAt       time.Time      `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	StudentCustomID string         `gorm:"column:student_custom_id;type:varchar(255);not null;default:''"`
 	UserCustomID    string         `gorm:"column:user_custom_id;type:varchar(255);not null;default:''"`
+	StudentID       string         `gorm:"column:student_id;type:varchar(255);not null;default:''"`
 }

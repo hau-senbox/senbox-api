@@ -94,6 +94,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 		OpenedAt:        req.OpenedAt,
 		StudentCustomID: req.StudentCustomID,
 		UserCustomID:    req.UserCustomID,
+		StudentID:       req.StudentID,
 	}
 	submissionID, err := receiver.CreateSubmission(createSubmissionParams)
 	if err != nil {
@@ -112,10 +113,6 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 	// tao anwser
 	for _, item := range submissionItems {
 
-		if item.Key == "" && item.DB == "" {
-			continue
-		}
-
 		ansJSON, _ := json.Marshal(item.Answer)
 
 		answer := &entity.SAnswer{
@@ -125,6 +122,7 @@ func (receiver *SubmitFormUseCase) answerFormSaveToFormOutputSheet(form *entity.
 			Key:          item.Key,
 			DB:           item.DB,
 			Response:     json.RawMessage(ansJSON),
+			StudentID:    req.StudentID,
 		}
 
 		err := receiver.AnswerRepository.Create(answer)

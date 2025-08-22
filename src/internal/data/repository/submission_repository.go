@@ -39,6 +39,7 @@ type CreateSubmissionParams struct {
 	OpenedAt        time.Time
 	StudentCustomID *string
 	UserCustomID    *string
+	StudentID       string
 }
 
 type GetSubmissionByConditionParam struct {
@@ -97,6 +98,7 @@ func (receiver *SubmissionRepository) CreateSubmission(params CreateSubmissionPa
 		OpenedAt:        params.OpenedAt,
 		StudentCustomID: studentCustomID,
 		UserCustomID:    userCustomID,
+		StudentID:       params.StudentID,
 	}
 
 	if err := receiver.DBConn.Create(&submission).Error; err != nil {

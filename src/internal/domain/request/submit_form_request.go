@@ -10,4 +10,5 @@ type SubmitFormRequest struct {
 	ChildID         *string `json:"child_id"`
 	StudentCustomID *string `json:"student_custom_id"`
 	UserCustomID    *string `json:"user_custom_id"`
+	StudentID       string  `json:"student_id"`
 }

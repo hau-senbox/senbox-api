@@ -10,6 +10,7 @@ import (
 type SAnswer struct {
 	ID           uuid.UUID       `gorm:"type:char(36);primary_key"`
 	UserID       string          `gorm:"type:varchar(255);not null;default:''"`
+	StudentID    string          `gorm:"type:varchar(255);not null;default:''"`
 	SubmissionID uint64          `gorm:"not null"`
 	Response     json.RawMessage `gorm:"type:json" json:"response"`
 	Key          string          `gorm:"type:varchar(255);not null;default:''"`
