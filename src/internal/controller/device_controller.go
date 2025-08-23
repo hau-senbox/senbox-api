@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"sort"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -198,6 +199,11 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 			DeviceNickName: infoDeviceOrg.DeviceNickName,
 		})
 	}
+
+	// sort by CreatedIndex asc
+	sort.Slice(deviceResponse, func(i, j int) bool {
+		return deviceResponse[i].CreatedIndex < deviceResponse[j].CreatedIndex
+	})
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
