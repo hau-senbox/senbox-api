@@ -46,6 +46,7 @@ func (uc *UserImagesUsecase) UploadAvt(req request.UploadAvatarRequest) error {
 		OwnerRole: req.OwnerRole,
 		ImageID:   req.ImageID,
 		Index:     req.Index,
+		Feature:   string(value.ImageFeatureAvatar),
 	}
 
 	// kiểm tra xem đã có avatar ở index này chưa
@@ -99,9 +100,9 @@ func (uc *UserImagesUsecase) Delete(id string) error {
 	return uc.Repo.Delete(id)
 }
 
-func (uc *UserImagesUsecase) Get4Owner(ownerID string, ownerRole value.OwnerRole) ([]response.Avatar, error) {
+func (uc *UserImagesUsecase) GetAvt4Owner(ownerID string, ownerRole value.OwnerRole) ([]response.Avatar, error) {
 	// Lấy danh sách ảnh từ DB
-	userImages, err := uc.Repo.GetByOwnerAndRole(ownerID, string(ownerRole))
+	userImages, err := uc.Repo.GetAvtByOwnerRole(ownerID, string(ownerRole), value.ImageFeatureAvatar)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get images for owner %s: %w", ownerID, err)
 	}

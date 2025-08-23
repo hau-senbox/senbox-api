@@ -139,7 +139,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(userEntity.ID.String())
 
 	// get avatars
-	avatars, _ := receiver.UserImagesUsecase.Get4Owner(userEntity.ID.String(), value.OwnerRoleUser)
+	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
@@ -373,7 +373,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	}
 
 	// get avatars
-	avatars, _ := receiver.UserImagesUsecase.Get4Owner(userEntity.ID.String(), value.OwnerRoleUser)
+	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,

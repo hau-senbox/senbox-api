@@ -1315,6 +1315,7 @@ func IsValidSearchUserStatus(status string) bool {
 	return false
 }
 
+// user image role
 type OwnerRole string
 
 const (
@@ -1339,3 +1340,12 @@ func (r OwnerRole) IsValid() bool {
 		return false
 	}
 }
+
+// user image feature
+type ImageFeature string
+
+const (
+	ImageFeatureGeneral    ImageFeature = "general"
+	ImageFeatureAvatar     ImageFeature = "avatar" // use for user avatar
+	ImageFeatureSubmission ImageFeature = "submission"
+)

@@ -235,7 +235,7 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	languageConfig, _ := uc.languagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(childID, value.OwnerRoleLangChild)
 
 	// get avts
-	avatars, _ := uc.userImagesUsecase.Get4Owner(childID, value.OwnerRoleChild)
+	avatars, _ := uc.userImagesUsecase.GetAvt4Owner(childID, value.OwnerRoleChild)
 
 	// Trả về kết quả
 	return &response.ChildResponse{

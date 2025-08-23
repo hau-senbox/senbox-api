@@ -15,6 +15,7 @@ type UserImages struct {
 	ImageID   uint64          `json:"image_id" gorm:"not null"`
 	Index     int             `json:"index" gorm:"not null;default:0"`
 	IsMain    bool            `json:"is_main" gorm:"not null;default:false"`
+	Feature   string          `json:"feature" gorm:"type:varchar(100);not null;default:'general'"`
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 }

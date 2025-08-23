@@ -69,7 +69,7 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(parentID, value.OwnerRoleLangParent)
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.Get4Owner(parentID, value.OwnerRoleParent)
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(parentID, value.OwnerRoleParent)
 
 	return &response.ParentResponseBase{
 		ParentID:       parentID,

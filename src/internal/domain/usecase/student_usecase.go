@@ -128,7 +128,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(studentID, value.OwnerRoleLangStudent)
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.Get4Owner(studentID, value.OwnerRoleStudent)
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(studentID, value.OwnerRoleStudent)
 
 	return &response.StudentResponseBase{
 		StudentID:      studentID,

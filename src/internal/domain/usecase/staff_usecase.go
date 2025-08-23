@@ -278,7 +278,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(staffID, value.OwnerRoleLangStaff)
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.Get4Owner(staffID, value.OwnerRoleStaff)
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(staffID, value.OwnerRoleStaff)
 
 	return &response.StaffResponseBase{
 		StaffID:        staffID,

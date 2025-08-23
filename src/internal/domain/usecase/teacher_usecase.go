@@ -239,7 +239,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(teacherID, value.OwnerRoleLangTeacher)
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.Get4Owner(teacherID, value.OwnerRoleTeacher)
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(teacherID, value.OwnerRoleTeacher)
 
 	return &response.TeacherResponseBase{
 		TeacherID:      teacherID,

@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
 )
@@ -97,4 +98,14 @@ func (r *UserImagesRepository) GetByOwnerAndRoleIsMain(ownerID string, ownerRole
 		return nil, err
 	}
 	return &userImage, nil
+}
+
+func (r *UserImagesRepository) GetAvtByOwnerRole(ownerID string, ownerRole string, feature value.ImageFeature) ([]entity.UserImages, error) {
+	var userImages []entity.UserImages
+	if err := r.DBConn.
+		Where("owner_id = ? AND owner_role = ? AND feature = ?", ownerID, ownerRole, feature).
+		Find(&userImages).Error; err != nil {
+		return nil, err
+	}
+	return userImages, nil
 }
