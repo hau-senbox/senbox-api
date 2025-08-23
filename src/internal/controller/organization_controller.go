@@ -574,14 +574,14 @@ func (receiver OrganizationController) UploadAvatar(context *gin.Context) {
 
 func (receiver OrganizationController) UploadOrgSetting(c *gin.Context) {
 	var req request.UploadOrgSettingRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, response.FailedResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid request payload",
-			Error:   err.Error(),
-		})
-		return
-	}
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	c.JSON(http.StatusBadRequest, response.FailedResponse{
+	// 		Code:    http.StatusBadRequest,
+	// 		Message: "Invalid request payload",
+	// 		Error:   err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	err := receiver.OrganizationSettingUsecase.UploadOrgSetting(req)
 	if err != nil {
