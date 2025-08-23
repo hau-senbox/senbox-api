@@ -21,7 +21,6 @@ import (
 type UploadImageUseCase struct {
 	uploader.UploadProvider
 	*repository.ImageRepository
-	*repository.UserImageRepository
 }
 
 func getImageDimensions(data []byte) (int, int, error) {
@@ -132,33 +131,6 @@ func (receiver *UploadImageUseCase) UploadImage(
 			return nil, nil, err
 		}
 	}
-
-	// go func(imgID uint64, userID *string, studentID *string, teacherID *string) {
-	// 	// Gán giá trị chuỗi rỗng nếu nil
-	// 	var uid, sid, tid string
-
-	// 	if userID != nil {
-	// 		uid = *userID
-	// 	}
-	// 	if studentID != nil {
-	// 		sid = *studentID
-	// 	}
-	// 	if teacherID != nil {
-	// 		tid = *teacherID
-	// 	}
-
-	// 	userImage := &entity.SUserImage{
-	// 		ImageID:   imgID,
-	// 		UserID:    uid,
-	// 		StudentID: sid,
-	// 		TeacherID: tid,
-	// 	}
-
-	// 	err := receiver.UserImageRepository.Create(userImage)
-	// 	if err != nil {
-	// 		log.Errorf("error creating user image link: %v", err)
-	// 	}
-	// }(img.ID, userID, studentID, teacherID)
 
 	return url, &img, nil
 }
