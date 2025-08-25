@@ -1,7 +1,5 @@
 package request
 
-import "github.com/google/uuid"
-
 type UploadOrgSettingRequest struct {
 	OrganizationID     string                      `json:"organization_id"`
 	DeviceID           string                      `json:"device_id"`
@@ -18,7 +16,7 @@ type UploadOrgSettingRequest struct {
 }
 
 type UploadOrgSettingMenuRequest struct {
-	ID     *uuid.UUID                `json:"id"`
+	ID     string                    `json:"id"`
 	Name   string                    `json:"name"`
 	Type   string                    `json:"type"`
 	Key    string                    `json:"key" default:""`

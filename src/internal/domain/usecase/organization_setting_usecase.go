@@ -68,7 +68,7 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	isNewComp := false
 
 	// Xử lý component nếu có
-	if req.Component.Name != "" || (req.Component.ID != nil && *req.Component.ID != uuid.Nil) {
+	if req.Component.Name != "" || req.Component.ID != "" {
 		valueJSON, err := json.Marshal(req.Component.Value)
 		if err != nil {
 			tx.Rollback()
@@ -82,9 +82,9 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			Value: datatypes.JSON(valueJSON),
 		}
 
-		if req.Component.ID != nil && *req.Component.ID != uuid.Nil {
+		if req.Component.ID != "" {
 			// Update component
-			component.ID = *req.Component.ID
+			component.ID = uuid.MustParse(req.Component.ID)
 			existingComp, err := u.ComponentRepo.GetByID(component.ID.String())
 			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				tx.Rollback()
@@ -120,7 +120,6 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		IsViewMessageBox:   req.IsViewMessageBox,
 		IsShowMessage:      req.IsShowMessage,
 		MessageBox:         req.MessageBox,
-		IsShowSpecialBtn:   *req.IsShowSpecialBtn,
 		IsDeactiveApp:      req.IsDeactiveApp,
 		MessageDeactiveApp: req.MessageDeactiveApp,
 		IsDeactiveTopMenu:  req.IsDeactiveTopMenu,
@@ -130,6 +129,10 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 
 	if componentID != "" {
 		setting.ComponentID = componentID
+	}
+
+	if req.IsShowSpecialBtn != nil {
+		setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
 	}
 
 	existingSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
