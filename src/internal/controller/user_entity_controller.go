@@ -2131,3 +2131,30 @@ func (receiver *UserEntityController) DeleteUserAvatar(context *gin.Context) {
 		Message: "Delete avatar successfully",
 	})
 }
+
+func (receiver *UserEntityController) GetStudent4Gateway(context *gin.Context) {
+	studentID := context.Param("id")
+	if studentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing child ID",
+		})
+		return
+	}
+
+	student, err := receiver.StudentApplicationUseCase.GetStudent4Gateway(studentID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get student",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: student,
+	})
+}

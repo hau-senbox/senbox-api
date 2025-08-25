@@ -12,3 +12,9 @@ type StudentResponseBase struct {
 	LanguageConfig *LanguagesConfigResponse     `json:"language_config"`
 	Avatars        []Avatar                     `json:"avatars"`
 }
+
+type GetStudent4Gateway struct {
+	StudentID      string `json:"id"`
+	OrganizationID string `json:"organization_id"`
+	StudentName    string `json:"student_name"`
+}

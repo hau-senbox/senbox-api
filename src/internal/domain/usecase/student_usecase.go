@@ -144,6 +144,22 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 	}, nil
 }
 
+func (uc *StudentApplicationUseCase) GetStudent4Gateway(studentID string) (*response.GetStudent4Gateway, error) {
+	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
+	if err != nil {
+		return nil, err
+	}
+	if studentApp == nil {
+		return nil, errors.New("student not found")
+	}
+
+	return &response.GetStudent4Gateway{
+		StudentID:      studentID,
+		OrganizationID: studentApp.OrganizationID.String(),
+		StudentName:    studentApp.StudentName,
+	}, nil
+}
+
 func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string, deviceID string) (*response.StudentResponseBase, error) {
 
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
