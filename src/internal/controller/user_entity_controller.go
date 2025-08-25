@@ -50,6 +50,7 @@ type UserEntityController struct {
 	*usecase.GetUserOrganizationActiveUsecase
 	*usecase.UploadImageUseCase
 	*usecase.UserImagesUsecase
+	*usecase.LanguagesConfigUsecase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -2244,5 +2245,32 @@ func (receiver *UserEntityController) GetUser4Gateway(context *gin.Context) {
 			UserName: userEntity.Nickname,
 			Avatars:  avatars,
 		},
+	})
+}
+
+func (receiver *UserEntityController) GetStudentStudyLanguageConfig(context *gin.Context) {
+	studentID := context.Param("id")
+	if studentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing student ID",
+		})
+		return
+	}
+
+	studyLangConfig, err := receiver.LanguagesConfigUsecase.GetStudentStudyLangConfig(context, studentID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get student study language config",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: studyLangConfig,
 	})
 }

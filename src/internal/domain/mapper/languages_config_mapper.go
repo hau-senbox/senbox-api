@@ -18,6 +18,18 @@ func ToLanguagesConfigResponse(lc *entity.LanguagesConfig) *response.LanguagesCo
 	}
 }
 
+func ToStudyLanguagesConfigResponse(lc *entity.LanguagesConfig) *response.LanguagesConfigResponse {
+	if lc == nil {
+		return nil
+	}
+
+	return &response.LanguagesConfigResponse{
+		OwnerID:   lc.OwnerID,
+		OwnerRole: string(lc.OwnerRole),
+		StudyLang: toLangItemList(lc.StudyLang),
+	}
+}
+
 func toLangItemList(items []entity.LanguageConfig) []entity.LanguageConfig {
 	result := make([]entity.LanguageConfig, len(items))
 	for i, item := range items {

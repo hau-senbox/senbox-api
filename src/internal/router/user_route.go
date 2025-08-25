@@ -168,6 +168,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				UploadProvider:  provider,
 			},
 		},
+		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
 	}
 
 	userRoleController := &controller.RoleController{
@@ -405,6 +408,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		studentApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockStudentFormApplication)
 		studentApplication.PUT("/", secureMiddleware.Secured(), userEntityController.UpdateStudent4App)
 		studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudent4App)
+		studentApplication.GET("/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentStudyLanguageConfig)
 	}
 
 	userRole := engine.Group("v1/user-role", secureMiddleware.Secured())

@@ -113,3 +113,12 @@ func (uc *LanguagesConfigUsecase) UpdateLanguagesConfig(ctx context.Context, lc 
 func (uc *LanguagesConfigUsecase) DeleteLanguagesConfig(ctx context.Context, id string) error {
 	return uc.Repo.Delete(ctx, id)
 }
+
+func (uc *LanguagesConfigUsecase) GetStudentStudyLangConfig(ctx context.Context, studentID string) (*response.LanguagesConfigResponse, error) {
+
+	lc, err := uc.Repo.GetByOwner(ctx, studentID, value.OwnerRoleLangStudent)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToStudyLanguagesConfigResponse(lc), nil
+}
