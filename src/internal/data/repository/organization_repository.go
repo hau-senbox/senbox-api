@@ -397,3 +397,11 @@ func (receiver *OrganizationRepository) CreateOrgFormApplication(req request.Cre
 
 	return nil
 }
+
+func (r *OrganizationRepository) GetAll4Gateway() ([]entity.SOrganization, error) {
+	var orgs []entity.SOrganization
+	if err := r.DBConn.Find(&orgs).Error; err != nil {
+		return nil, err
+	}
+	return orgs, nil
+}

@@ -748,3 +748,22 @@ func (receiver *OrganizationController) GetOrgSettingNews(c *gin.Context) {
 		Data:    data,
 	})
 }
+
+// GetAllOrganizations4Gateway - Lấy tất cả tổ chức cho gateway
+func (receiver *OrganizationController) GetAllOrganizations4Gateway(c *gin.Context) {
+	orgs, err := receiver.GetOrganizationUseCase.GetAllOrganizations4Gateway()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get organizations",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    orgs,
+	})
+}

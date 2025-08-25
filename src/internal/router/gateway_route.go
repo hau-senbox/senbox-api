@@ -79,6 +79,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		},
 	}
 
+	// user entity ctl
 	userEntityCtrl := &controller.UserEntityController{
 		StudentApplicationUseCase: studentUsecase,
 		TeacherApplicationUseCase: teacherUsecase,
@@ -97,25 +98,44 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		},
 	}
 
+	// organization ctl
+	orgCtrl := &controller.OrganizationController{
+		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+	}
+
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
+
+		// user
 		user := api.Group("/users")
 		{
 			user.GET("/:user_id", userEntityCtrl.GetUser4Gateway)
 		}
+
+		// student
 		student := api.Group("/students")
 		{
 			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)
 		}
 
+		// teacher
 		teacher := api.Group("/teachers")
 		{
 			teacher.GET("/:teacher_id", userEntityCtrl.GetTeacher4Gateway)
 		}
 
+		// staff
 		staff := api.Group("/staffs")
 		{
 			staff.GET("/:staff_id", userEntityCtrl.GetStaff4Gateway)
+		}
+
+		// organization
+		org := api.Group("/organizations")
+		{
+			org.GET("", orgCtrl.GetAllOrganizations4Gateway)
 		}
 	}
 }

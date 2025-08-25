@@ -3,6 +3,7 @@ package usecase
 import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
 )
 
 type GetOrganizationUseCase struct {
@@ -38,4 +39,26 @@ func (receiver *GetOrganizationUseCase) CheckDeviceInOrg4App(deviceID string, or
 	}
 
 	return found, nil
+}
+
+func (receiver *GetOrganizationUseCase) GetAllOrganizations4Gateway() ([]response.OrganizationResponse, error) {
+	orgs, err := receiver.OrganizationRepository.GetAll4Gateway()
+	if err != nil {
+		return nil, err
+	}
+
+	// map sang response
+	responses := make([]response.OrganizationResponse, 0, len(orgs))
+	for _, org := range orgs {
+		responses = append(responses, response.OrganizationResponse{
+			ID:               org.ID.String(),
+			OrganizationName: org.OrganizationName,
+			Avatar:           org.Avatar,
+			AvatarURL:        org.AvatarURL,
+			Address:          org.Address,
+			Description:      org.Description,
+		})
+	}
+
+	return responses, nil
 }
