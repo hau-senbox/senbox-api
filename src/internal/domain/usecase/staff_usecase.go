@@ -319,3 +319,23 @@ func (uc *StaffApplicationUseCase) GetDetailStaffApplication(ctx *gin.Context, a
 		OrganizationName: orgStaff.OrganizationName,
 	}, nil
 }
+
+func (uc *StaffApplicationUseCase) GetStaff4Gateway(staffID string) (*response.GetStaff4Gateway, error) {
+	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
+	if err != nil {
+		return nil, err
+	}
+	if staff == nil {
+		return nil, errors.New("staff not found")
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: staff.UserID.String(),
+	})
+
+	return &response.GetStaff4Gateway{
+		StaffID:        staffID,
+		OrganizationID: staff.OrganizationID.String(),
+		StaffName:      userEntity.Nickname,
+	}, nil
+}

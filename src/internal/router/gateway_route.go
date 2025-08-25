@@ -22,15 +22,47 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 	}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
+	userEntityRepository := &repository.UserEntityRepository{DBConn: dbConn}
+
+	// student
 	studentRepo := &repository.StudentApplicationRepository{DB: dbConn}
 	studentUsecase := &usecase.StudentApplicationUseCase{StudentAppRepo: studentRepo}
-	userEntityCtrl := &controller.UserEntityController{StudentApplicationUseCase: studentUsecase}
+
+	// teacher
+	teacherRepo := &repository.TeacherApplicationRepository{DBConn: dbConn}
+	teacherUsecase := &usecase.TeacherApplicationUseCase{
+		TeacherRepo:          teacherRepo,
+		UserEntityRepository: userEntityRepository,
+	}
+
+	// staff
+	staffRepo := &repository.StaffApplicationRepository{DBConn: dbConn}
+	staffUsecase := &usecase.StaffApplicationUseCase{
+		StaffAppRepo:         staffRepo,
+		UserEntityRepository: userEntityRepository,
+	}
+
+	userEntityCtrl := &controller.UserEntityController{
+		StudentApplicationUseCase: studentUsecase,
+		TeacherApplicationUseCase: teacherUsecase,
+		StaffApplicationUseCase:   staffUsecase,
+	}
 
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
-		configs := api.Group("/students")
+		student := api.Group("/students")
 		{
-			configs.GET("/:id", userEntityCtrl.GetStudent4Gateway)
+			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)
+		}
+
+		teacher := api.Group("/teachers")
+		{
+			teacher.GET("/:teacher_id", userEntityCtrl.GetTeacher4Gateway)
+		}
+
+		staff := api.Group("/staffs")
+		{
+			staff.GET("/:staff_id", userEntityCtrl.GetStaff4Gateway)
 		}
 	}
 }

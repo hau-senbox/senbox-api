@@ -28,7 +28,7 @@ func (r *TeacherApplicationRepository) GetByID(id uuid.UUID) (*entity.STeacherFo
 	err := r.DBConn.Where("id = ?", id).First(&app).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
+		return nil, errors.New("teacher not found")
 	}
 	if err != nil {
 		return nil, err

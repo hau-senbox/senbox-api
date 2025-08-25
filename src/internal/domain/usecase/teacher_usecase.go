@@ -394,3 +394,23 @@ func (uc *TeacherApplicationUseCase) GetDetailTeacherApplication(ctx *gin.Contex
 		OrganizationName: orgTeacher.OrganizationName,
 	}, nil
 }
+
+func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*response.GetTeacher4Gateway, error) {
+	teacher, err := uc.TeacherRepo.GetByID(uuid.MustParse(teacherID))
+	if err != nil {
+		return nil, err
+	}
+	if teacher == nil {
+		return nil, errors.New("teacher not found")
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: teacher.UserID.String(),
+	})
+
+	return &response.GetTeacher4Gateway{
+		TeacherID:      teacherID,
+		OrganizationID: teacher.OrganizationID.String(),
+		TeacherName:    userEntity.Username,
+	}, nil
+}

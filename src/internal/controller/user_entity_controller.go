@@ -2133,11 +2133,11 @@ func (receiver *UserEntityController) DeleteUserAvatar(context *gin.Context) {
 }
 
 func (receiver *UserEntityController) GetStudent4Gateway(context *gin.Context) {
-	studentID := context.Param("id")
+	studentID := context.Param("student_id")
 	if studentID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Missing child ID",
+			Message: "Missing student ID",
 		})
 		return
 	}
@@ -2156,5 +2156,59 @@ func (receiver *UserEntityController) GetStudent4Gateway(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: student,
+	})
+}
+
+func (receiver *UserEntityController) GetTeacher4Gateway(context *gin.Context) {
+	teacherID := context.Param("teacher_id")
+	if teacherID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing teacher ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacher4Gateway(teacherID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get teacher",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
+	})
+}
+
+func (receiver *UserEntityController) GetStaff4Gateway(context *gin.Context) {
+	staffID := context.Param("staff_id")
+	if staffID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing staff ID",
+		})
+		return
+	}
+
+	staff, err := receiver.StaffApplicationUseCase.GetStaff4Gateway(staffID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get staff",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: staff,
 	})
 }
