@@ -81,6 +81,7 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		OrganizationID: orgDevice.OrganizationID.String(),
 		DeviceName:     orgDevice.DeviceName,
 		DeviceNickName: orgDevice.DeviceNickName,
+		CreatedIndex:   orgDevice.CreatedIndex,
 	}
 
 	// B2: Lấy menu (không để lỗi menu làm fail hàm)

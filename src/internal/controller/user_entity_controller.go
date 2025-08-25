@@ -2212,3 +2212,37 @@ func (receiver *UserEntityController) GetStaff4Gateway(context *gin.Context) {
 		Data: staff,
 	})
 }
+
+func (receiver *UserEntityController) GetUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	userEntity, err := receiver.GetUserByID(request.GetUserEntityByIDRequest{ID: userID})
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: "Failed to get user: " + err.Error(),
+		})
+
+		return
+	}
+
+	// get avatars
+	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: response.GetUser4Gateway{
+			UserID:   userEntity.ID.String(),
+			UserName: userEntity.Nickname,
+			Avatars:  avatars,
+		},
+	})
+}

@@ -83,10 +83,26 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		StudentApplicationUseCase: studentUsecase,
 		TeacherApplicationUseCase: teacherUsecase,
 		StaffApplicationUseCase:   staffUsecase,
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
+		user := api.Group("/users")
+		{
+			user.GET("/:user_id", userEntityCtrl.GetUser4Gateway)
+		}
 		student := api.Group("/students")
 		{
 			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)

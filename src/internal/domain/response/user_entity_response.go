@@ -90,3 +90,9 @@ type UserOrganizationActive struct {
 // type OrganizationIdActive struct {
 // 	OrgTeacher
 // }
+
+type GetUser4Gateway struct {
+	UserID   string   `json:"id"`
+	UserName string   `json:"name"`
+	Avatars  []Avatar `json:"avatars"`
+}
