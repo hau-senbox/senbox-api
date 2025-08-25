@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/uploader"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,17 +23,45 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 	}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
+	s3Provider := uploader.NewS3Provider(
+		appCfg.S3.SenboxFormSubmitBucket.AccessKey,
+		appCfg.S3.SenboxFormSubmitBucket.SecretKey,
+		appCfg.S3.SenboxFormSubmitBucket.BucketName,
+		appCfg.S3.SenboxFormSubmitBucket.Region,
+		appCfg.S3.SenboxFormSubmitBucket.Domain,
+		appCfg.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
+		appCfg.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
+	)
+
 	userEntityRepository := &repository.UserEntityRepository{DBConn: dbConn}
 
 	// student
 	studentRepo := &repository.StudentApplicationRepository{DB: dbConn}
-	studentUsecase := &usecase.StudentApplicationUseCase{StudentAppRepo: studentRepo}
+	studentUsecase := &usecase.StudentApplicationUseCase{
+		StudentAppRepo: studentRepo,
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
+	}
 
 	// teacher
 	teacherRepo := &repository.TeacherApplicationRepository{DBConn: dbConn}
 	teacherUsecase := &usecase.TeacherApplicationUseCase{
 		TeacherRepo:          teacherRepo,
 		UserEntityRepository: userEntityRepository,
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	// staff
@@ -40,6 +69,14 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 	staffUsecase := &usecase.StaffApplicationUseCase{
 		StaffAppRepo:         staffRepo,
 		UserEntityRepository: userEntityRepository,
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	userEntityCtrl := &controller.UserEntityController{

@@ -408,9 +408,13 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*resp
 		ID: teacher.UserID.String(),
 	})
 
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(teacherID, value.OwnerRoleTeacher)
+
 	return &response.GetTeacher4Gateway{
 		TeacherID:      teacherID,
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Username,
+		Avatars:        avatars,
 	}, nil
 }

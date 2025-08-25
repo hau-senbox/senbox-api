@@ -152,11 +152,14 @@ func (uc *StudentApplicationUseCase) GetStudent4Gateway(studentID string) (*resp
 	if studentApp == nil {
 		return nil, errors.New("student not found")
 	}
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(studentID, value.OwnerRoleStudent)
 
 	return &response.GetStudent4Gateway{
 		StudentID:      studentID,
 		OrganizationID: studentApp.OrganizationID.String(),
 		StudentName:    studentApp.StudentName,
+		Avatars:        avatars,
 	}, nil
 }
 
