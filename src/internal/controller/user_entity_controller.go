@@ -1748,7 +1748,7 @@ func (receiver *UserEntityController) GetStaff4WebAdmin(context *gin.Context) {
 	if staffID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Missing teacher ID",
+			Message: "Missing staff ID",
 		})
 		return
 	}
