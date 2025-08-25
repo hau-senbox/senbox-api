@@ -109,3 +109,13 @@ func (r *UserImagesRepository) GetAvtByOwnerRole(ownerID string, ownerRole strin
 	}
 	return userImages, nil
 }
+
+func (r *UserImagesRepository) GetAvtIsMainByOwnerRole(ownerID string, ownerRole string, feature value.ImageFeature) (*entity.UserImages, error) {
+	var userImages *entity.UserImages
+	if err := r.DBConn.
+		Where("owner_id = ? AND owner_role = ? AND feature = ? AND is_main = ?", ownerID, ownerRole, feature, true).
+		First(&userImages).Error; err != nil {
+		return nil, err
+	}
+	return userImages, nil
+}

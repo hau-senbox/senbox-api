@@ -2235,7 +2235,7 @@ func (receiver *UserEntityController) GetUser4Gateway(context *gin.Context) {
 	}
 
 	// get avatars
-	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
+	avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
 	// Thành công
 	context.JSON(http.StatusOK, response.SucceedResponse{
@@ -2243,7 +2243,7 @@ func (receiver *UserEntityController) GetUser4Gateway(context *gin.Context) {
 		Data: response.GetUser4Gateway{
 			UserID:   userEntity.ID.String(),
 			UserName: userEntity.Nickname,
-			Avatars:  avatars,
+			Avatar:   avatar,
 		},
 	})
 }

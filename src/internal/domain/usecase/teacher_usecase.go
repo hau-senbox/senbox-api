@@ -409,12 +409,12 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*resp
 	})
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(teacherID, value.OwnerRoleTeacher)
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacherID, value.OwnerRoleTeacher)
 
 	return &response.GetTeacher4Gateway{
 		TeacherID:      teacherID,
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Username,
-		Avatars:        avatars,
+		Avatar:         avatar,
 	}, nil
 }

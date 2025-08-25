@@ -14,8 +14,8 @@ type TeacherResponseBase struct {
 }
 
 type GetTeacher4Gateway struct {
-	TeacherID      string   `json:"id"`
-	OrganizationID string   `json:"organization_id"`
-	TeacherName    string   `json:"name"`
-	Avatars        []Avatar `json:"avatars"`
+	TeacherID      string `json:"id"`
+	OrganizationID string `json:"organization_id"`
+	TeacherName    string `json:"name"`
+	Avatar         Avatar `json:"avatar"`
 }

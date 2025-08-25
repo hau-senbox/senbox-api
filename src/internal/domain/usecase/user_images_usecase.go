@@ -200,3 +200,26 @@ func (uc *UserImagesUsecase) DeleteUserAvatar(request request.DeleteUserAvatarRe
 
 	return nil
 }
+
+func (uc *UserImagesUsecase) GetAvtIsMain4Owner(ownerID string, ownerRole value.OwnerRole) (response.Avatar, error) {
+	// Lấy danh sách ảnh từ DB
+	userImages, err := uc.Repo.GetAvtIsMainByOwnerRole(ownerID, string(ownerRole), value.ImageFeatureAvatar)
+	if err != nil {
+		return response.Avatar{}, fmt.Errorf("failed to get images for owner %s: %w", ownerID, err)
+	}
+
+	// get img key by img id
+	imageEntity, _ := uc.ImageRepo.GetByID(userImages.ImageID)
+	// get img url
+	url, _ := uc.GetImageUseCase.GetUrlByKey(imageEntity.Key, uploader.UploadPrivate)
+
+	avatar := response.Avatar{
+		ImageID:  userImages.ImageID,
+		ImageKey: imageEntity.Key,
+		Index:    userImages.Index,
+		IsMain:   userImages.IsMain,
+		ImageUrl: *url,
+	}
+
+	return avatar, nil
+}

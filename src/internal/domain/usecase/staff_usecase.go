@@ -334,12 +334,12 @@ func (uc *StaffApplicationUseCase) GetStaff4Gateway(staffID string) (*response.G
 	})
 
 	// get avts
-	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(staffID, value.OwnerRoleStaff)
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staffID, value.OwnerRoleStaff)
 
 	return &response.GetStaff4Gateway{
 		StaffID:        staffID,
 		OrganizationID: staff.OrganizationID.String(),
 		StaffName:      userEntity.Nickname,
-		Avatars:        avatars,
+		Avatar:         avatar,
 	}, nil
 }

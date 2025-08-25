@@ -14,8 +14,8 @@ type StudentResponseBase struct {
 }
 
 type GetStudent4Gateway struct {
-	StudentID      string   `json:"id"`
-	OrganizationID string   `json:"organization_id"`
-	StudentName    string   `json:"name"`
-	Avatars        []Avatar `json:"avatars"`
+	StudentID      string `json:"id"`
+	OrganizationID string `json:"organization_id"`
+	StudentName    string `json:"name"`
+	Avatar         Avatar `json:"avatar"`
 }

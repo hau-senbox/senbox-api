@@ -14,8 +14,8 @@ type StaffResponseBase struct {
 }
 
 type GetStaff4Gateway struct {
-	StaffID        string   `json:"id"`
-	OrganizationID string   `json:"organization_id"`
-	StaffName      string   `json:"name"`
-	Avatars        []Avatar `json:"avatars"`
+	StaffID        string `json:"id"`
+	OrganizationID string `json:"organization_id"`
+	StaffName      string `json:"name"`
+	Avatar         Avatar `json:"avatar"`
 }

@@ -92,7 +92,7 @@ type UserOrganizationActive struct {
 // }
 
 type GetUser4Gateway struct {
-	UserID   string   `json:"id"`
-	UserName string   `json:"name"`
-	Avatars  []Avatar `json:"avatars"`
+	UserID   string `json:"id"`
+	UserName string `json:"name"`
+	Avatar   Avatar `json:"avatar"`
 }
