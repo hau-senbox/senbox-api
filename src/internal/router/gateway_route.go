@@ -124,6 +124,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		teacher := api.Group("/teachers")
 		{
 			teacher.GET("/:teacher_id", userEntityCtrl.GetTeacher4Gateway)
+			teacher.GET("/get-by-user/:user_id", userEntityCtrl.GetTeacherByUser4Gateway)
 		}
 
 		// staff

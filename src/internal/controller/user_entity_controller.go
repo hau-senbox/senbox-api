@@ -2274,3 +2274,30 @@ func (receiver *UserEntityController) GetStudentLanguageConfig(context *gin.Cont
 		Data: studentLangConfig,
 	})
 }
+
+func (receiver *UserEntityController) GetTeacherByUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByUser4Gateway(userID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get teacher",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
+	})
+}
