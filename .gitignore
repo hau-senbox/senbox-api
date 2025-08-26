@@ -7,3 +7,6 @@ src/.DS_Store
 # Ignore local config file
 src/config/config.yaml
 src/config/config_dev.yaml
+
+# ignore debug
+__debug_bin*
