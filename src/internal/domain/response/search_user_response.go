@@ -13,15 +13,15 @@ type UserResponse struct {
 	ID         string `json:"id"`
 	Username   string `json:"username"`
 	Nickname   string `json:"nickname"`
-	Avatar     string `json:"avatar"`
-	AvatarURL  string `json:"avatar_url"`
 	IsDeactive bool   `json:"is_deactive"`
+	Avatar     Avatar `json:"avatar"`
 }
 
 type ChildrenResponse struct {
 	ChildID      string `json:"id"`
 	ChildName    string `json:"nickname"`
 	CreatedIndex int    `json:"created_index"`
+	Avatar       Avatar `json:"avatar"`
 }
 
 type StudentResponse struct {
@@ -29,6 +29,7 @@ type StudentResponse struct {
 	StudentName  string `json:"nickname"`
 	IsDeactive   bool   `json:"is_deactive"`
 	CreatedIndex int    `json:"created_index"`
+	Avatar       Avatar `json:"avatar"`
 }
 
 type TeacherResponse struct {
@@ -36,6 +37,7 @@ type TeacherResponse struct {
 	TeacherName  string `json:"nickname"`
 	IsDeactive   bool   `json:"is_deactive"`
 	CreatedIndex int    `json:"created_index"`
+	Avatar       Avatar `json:"avatar"`
 }
 
 type StaffResponse struct {
@@ -43,6 +45,7 @@ type StaffResponse struct {
 	StaffName    string `json:"nickname"`
 	IsDeactive   bool   `json:"is_deactive"`
 	CreatedIndex int    `json:"created_index"`
+	Avatar       Avatar `json:"avatar"`
 }
 
 type ParentResponse struct {
@@ -50,4 +53,5 @@ type ParentResponse struct {
 	ParentName   string `json:"nickname"`
 	IsDeactive   bool   `json:"is_deactive"`
 	CreatedIndex int    `json:"created_index"`
+	Avatar       Avatar `json:"avatar"`
 }

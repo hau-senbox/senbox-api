@@ -1468,52 +1468,60 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				ID:         u.ID.String(),
 				Username:   u.Username,
 				Nickname:   u.Nickname,
-				Avatar:     u.Avatar,
-				AvatarURL:  u.AvatarURL,
 				IsDeactive: isDeactive,
 			})
 		}
 		for _, c := range rawChildren {
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(c.ID.String(), value.OwnerRoleChild)
 			children = append(children, response.ChildrenResponse{
 				ChildID:      c.ID.String(),
 				ChildName:    c.ChildName,
 				CreatedIndex: c.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		for _, s := range rawStudents {
 			isDeactive, _ := receiver.StudentBlockSettingUsecase.GetDeactive4Student(s.StudentID)
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StudentID, value.OwnerRoleStudent)
 			students = append(students, response.StudentResponse{
 				StudentID:    s.StudentID,
 				StudentName:  s.StudentName,
 				IsDeactive:   isDeactive,
 				CreatedIndex: s.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		for _, t := range rawTeachers {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
 			teachers = append(teachers, response.TeacherResponse{
 				TeacherID:    t.TeacherID,
 				TeacherName:  t.TeacherName,
 				IsDeactive:   isDeactive,
 				CreatedIndex: t.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		for _, s := range rawStaffs {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
 			staffs = append(staffs, response.StaffResponse{
 				StaffID:      s.StaffID,
 				StaffName:    s.StaffName,
 				IsDeactive:   isDeactive,
 				CreatedIndex: s.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		for _, p := range rawParents {
 			// get is_deactive
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
 				ParentID:   p.ID.String(),
 				ParentName: p.Nickname,
 				IsDeactive: isDeactive,
+				Avatar:     avatar,
 			})
 		}
 
@@ -1566,10 +1574,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	case value.RoleChild:
 		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
 		for _, c := range rawChildren {
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(c.ID.String(), value.OwnerRoleChild)
 			children = append(children, response.ChildrenResponse{
 				ChildID:      c.ID.String(),
 				ChildName:    c.ChildName,
 				CreatedIndex: c.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		children = helper.FilterChildrenByName(children, name)
@@ -1577,10 +1587,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	case value.RoleStudent:
 		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		for _, s := range rawStudents {
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StudentID, value.OwnerRoleStudent)
 			students = append(students, response.StudentResponse{
 				StudentID:    s.StudentID,
 				StudentName:  s.StudentName,
 				CreatedIndex: s.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		students = helper.FilterStudentByName(students, name)
@@ -1589,11 +1601,13 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 		for _, t := range rawTeachers {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
 			teachers = append(teachers, response.TeacherResponse{
 				TeacherID:    t.TeacherID,
 				TeacherName:  t.TeacherName,
 				IsDeactive:   isDeactive,
 				CreatedIndex: t.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		teachers = helper.FilterTeacherByName(teachers, name)
@@ -1603,11 +1617,13 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
 		for _, s := range rawStaffs {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
 			staffs = append(staffs, response.StaffResponse{
 				StaffID:      s.StaffID,
 				StaffName:    s.StaffName,
 				IsDeactive:   isDeactive,
 				CreatedIndex: s.CreatedIndex,
+				Avatar:       avatar,
 			})
 		}
 		staffs = helper.FilterStaffByName(staffs, name)
@@ -1618,13 +1634,13 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		for _, u := range rawUsers {
 			// get is_deactive
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(u.ID.String(), value.OwnerRoleUser)
 			users = append(users, response.UserResponse{
 				ID:         u.ID.String(),
 				Username:   u.Username,
 				Nickname:   u.Nickname,
-				Avatar:     u.Avatar,
-				AvatarURL:  u.AvatarURL,
 				IsDeactive: isDeactive,
+				Avatar:     avatar,
 			})
 		}
 		users = helper.FilterUsersByName(users, name)
@@ -1634,10 +1650,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawParents, _ := receiver.GetAllParents4Search(c)
 		for _, p := range rawParents {
 			isDeactive, _ := receiver.GetDeactive4User(p.ID.String())
+			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
 				ParentID:   p.ID.String(),
 				ParentName: p.Nickname,
 				IsDeactive: isDeactive,
+				Avatar:     avatar,
 			})
 		}
 		parents = helper.FilterParentByName(parents, name)
