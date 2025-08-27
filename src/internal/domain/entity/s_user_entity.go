@@ -92,3 +92,12 @@ func (user *SUserEntity) GetOrganizationIDsFromPreloaded() []string {
 	}
 	return orgIDs
 }
+
+func (user *SUserEntity) GetOrganizations(db *gorm.DB) ([]SOrganization, error) {
+	var orgs []SOrganization
+	err := db.Model(user).Association("Organizations").Find(&orgs)
+	if err != nil {
+		return nil, err
+	}
+	return orgs, nil
+}

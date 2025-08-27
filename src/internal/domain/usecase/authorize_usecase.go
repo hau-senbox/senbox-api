@@ -15,6 +15,8 @@ type AuthorizeUseCase struct {
 	*repository.UserEntityRepository
 	*repository.DeviceRepository
 	repository.SessionRepository
+	*repository.OrganizationRepository
+	UserEntityUseCase *UserEntityUseCase
 }
 
 func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*response.LoginResponseData, error) {
@@ -81,4 +83,29 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserID)
 	return token, nil
+}
+
+func (receiver AuthorizeUseCase) SwitchToOrganizationAdmin(organizationID string) (*response.SwitchToOrganizationResponse, error) {
+	// lấy thông tin manager theo organizationID
+	manager, err := receiver.OrganizationRepository.GetManagerByOrganizationID(organizationID)
+	if err != nil {
+		log.Error("AuthorizeUseCase.SwitchToOrganizationAdmin: " + err.Error())
+		return nil, errors.New("failed to get organization manager")
+	}
+
+	// sinh token cho manager
+	tokenData, err := receiver.GenerateToken(manager.User) // manager.User là SUserEntity
+	if err != nil {
+		log.Error("AuthorizeUseCase.SwitchToOrganizationAdmin.GenerateToken: " + err.Error())
+		return nil, errors.New("cannot generate token for manager")
+	}
+
+	// map sang response
+	user, _ := receiver.UserEntityUseCase.MapUserInfoToResponse(manager.User)
+
+	return &response.SwitchToOrganizationResponse{
+		Token:   tokenData.Token,
+		Expired: tokenData.Expired,
+		User:    *user,
+	}, nil
 }

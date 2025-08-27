@@ -25,6 +25,7 @@ type OrganizationController struct {
 	*usecase.CreateOrgFormApplicationUseCase
 	*usecase.UploadOrgAvatarUseCase
 	*usecase.OrganizationSettingUsecase
+	*usecase.AuthorizeUseCase
 }
 
 func (receiver OrganizationController) GetAllOrganization(context *gin.Context) {
@@ -765,5 +766,31 @@ func (receiver *OrganizationController) GetAllOrganizations4Gateway(c *gin.Conte
 		Code:    http.StatusOK,
 		Message: "Success",
 		Data:    orgs,
+	})
+}
+
+func (ctrl *OrganizationController) SwitchToOrganizationAdmin(ctx *gin.Context) {
+	organizationID := ctx.Param("organization_id")
+	if organizationID == "" {
+		ctx.JSON(400, response.FailedResponse{
+			Code:  400,
+			Error: "Organization ID is required",
+		})
+		return
+	}
+
+	res, err := ctrl.AuthorizeUseCase.SwitchToOrganizationAdmin(organizationID)
+	if err != nil {
+		ctx.JSON(500, response.FailedResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    res,
 	})
 }

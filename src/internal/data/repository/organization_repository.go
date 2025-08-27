@@ -405,3 +405,19 @@ func (r *OrganizationRepository) GetAll4Gateway() ([]entity.SOrganization, error
 	}
 	return orgs, nil
 }
+
+func (receiver *OrganizationRepository) GetManagerByOrganizationID(organizationID string) (*entity.SUserOrg, error) {
+	var manager entity.SUserOrg
+	err := receiver.DBConn.
+		Preload("User").
+		Preload("Organization").
+		Where("organization_id = ? AND is_manager = 1", organizationID).
+		First(&manager).Error
+
+	if err != nil {
+		log.Error("OrganizationRepository.GetManagerByOrganizationID: " + err.Error())
+		return nil, errors.New("failed to get manager by organization id")
+	}
+
+	return &manager, nil
+}

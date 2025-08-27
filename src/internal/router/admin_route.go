@@ -663,7 +663,6 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		application.GET("/staff/:id", applicationController.GetDetailStaffApplication)
 		application.PUT("/staff/approve/:id", applicationController.ApproveStaffApplication)
 		application.PUT("/staff/block/:id", applicationController.BlockStaffApplication)
-
 	}
 
 	// organization
@@ -672,6 +671,25 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		OrganizationSettingUsecase: &usecase.OrganizationSettingUsecase{
 			Repo:          &repository.OrganizationSettingRepository{DBConn: dbConn},
 			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
+		},
+		AuthorizeUseCase: &usecase.AuthorizeUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			SessionRepository:      sessionRepository,
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			UserEntityUseCase: &usecase.UserEntityUseCase{
+				DBConn: dbConn,
+				UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+					Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+				},
+				UserImagesUsecase: &usecase.UserImagesUsecase{
+					Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+					ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+					GetImageUseCase: &usecase.GetImageUseCase{
+						UploadProvider:  s3Provider,
+						ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+					},
+				},
+			},
 		},
 	}
 
@@ -768,6 +786,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.POST("/:organization_id/setting/portal/news", orgController.UploadOrgSettingNewsPortal)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
 		org.PUT("/:organization_id/device/:device_id", deviceController.UploadDeviceByOrg4Web)
+		// switch to organization admin
+		org.GET("/switch/:organization_id", secureMiddleware.ValidateSuperAdminRole(), orgController.SwitchToOrganizationAdmin)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
