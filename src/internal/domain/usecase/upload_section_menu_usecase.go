@@ -34,6 +34,7 @@ type UploadSectionMenuUseCase struct {
 	*repository.StaffApplicationRepository
 	*repository.DeviceMenuRepository
 	*repository.ParentMenuRepository
+	*repository.TeacherMenuOrganizationRepository
 }
 
 // func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, childIDs []uuid.UUID) error {
@@ -1270,5 +1271,156 @@ func (receiver *UploadSectionMenuUseCase) createParentMenu(tx *gorm.DB, componen
 			return fmt.Errorf("create teacher menu fail: %w", err)
 		}
 	}
+	return nil
+}
+
+// teacher menu by organization
+func (receiver *UploadSectionMenuUseCase) UploadTeacherMenuOrganization(ctx *gin.Context, req request.UploadSectionMenuTeacherOrganizationRequest) error {
+	tx := receiver.MenuRepository.DBConn.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
+	}
+
+	rolledBack := false
+	defer func() {
+		if !rolledBack {
+			tx.Rollback()
+		}
+	}()
+
+	// 1. Xóa component nếu có trong danh sách delete_component_ids
+	if len(req.DeleteComponentIDs) > 0 {
+		for _, compID := range req.DeleteComponentIDs {
+			if err := receiver.DeleteSectionMenu(compID); err != nil {
+				logrus.Error("Rollback by error deleting section menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("Delete section menu failed: %w", err)
+			}
+		}
+	}
+
+	// 2. Lấy role teacher trong org
+	roleOrgTeacher, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+	if err != nil {
+		logrus.Error("Rollback by error getting role by role name:", err)
+		tx.Rollback()
+		rolledBack = true
+		return fmt.Errorf("Get role by role name failed: %w", err)
+	}
+
+	// 3. Duyệt qua danh sách component
+	for _, compReq := range req.Components {
+		var componentID uuid.UUID
+
+		component := &components.Component{
+			Name:      compReq.Name,
+			Type:      components.ComponentType(compReq.Type),
+			Key:       compReq.Key,
+			Value:     datatypes.JSON([]byte(compReq.Value)),
+			SectionID: roleOrgTeacher.ID.String(),
+		}
+
+		if compReq.ID != nil && *compReq.ID != uuid.Nil {
+			// Update flow
+			componentID = *compReq.ID
+			component.ID = componentID
+
+			existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("query component fail: %w", err)
+			}
+
+			if existingComponent != nil {
+				if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("update component fail: %w", err)
+				}
+			} else {
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
+			}
+		} else {
+			// Create flow
+			component.ID = uuid.New()
+			componentID = component.ID
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail: %w", err)
+			}
+		}
+
+		// 5. Tạo TeacherMenuOrganization
+		if err := receiver.createTeacherMenuOrganization(
+			tx,
+			componentID.String(),
+			compReq.Order,
+			req.TeacherID,
+			req.OrganizationID,
+		); err != nil {
+			logrus.Error("rollback by error create teacher menu organization:", err)
+			tx.Rollback()
+			rolledBack = true
+			return err
+		}
+	}
+
+	// 6. Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		logrus.Error("Error committing transaction:", err)
+		rolledBack = true
+		return fmt.Errorf("commit transaction failed: %s", err.Error())
+	}
+
+	rolledBack = true
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createTeacherMenuOrganization(
+	tx *gorm.DB,
+	componentID string,
+	order int,
+	teacherID string,
+	orgID string,
+) error {
+
+	existing, err := receiver.TeacherMenuOrganizationRepository.GetByTeacherOrgAndComponentID(
+		tx,
+		teacherID,
+		orgID,
+		componentID,
+	)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get teacher menu organization fail: %w", err)
+	}
+
+	if existing != nil {
+		// Đã tồn tại → update order
+		existing.Order = order
+		if err := receiver.TeacherMenuOrganizationRepository.UpdateWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update teacher menu organization fail: %w", err)
+		}
+	} else {
+		// Không tồn tại → create
+		menuOrg := &entity.TeacherMenuOrganization{
+			TeacherID:      teacherID,
+			OrganizationID: orgID,
+			ComponentID:    componentID,
+			Order:          order,
+		}
+		if err := receiver.TeacherMenuOrganizationRepository.CreateWithTx(tx, menuOrg); err != nil {
+			return fmt.Errorf("create teacher menu organization fail: %w", err)
+		}
+	}
+
 	return nil
 }
