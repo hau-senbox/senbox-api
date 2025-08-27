@@ -395,6 +395,11 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete staff menu failed: %w", err)
 	}
 
+	// Xóa teacher menu organization
+	if err := receiver.TeacherMenuOrganizationRepository.DeleteByComponentID(componentID); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete teacher menu organization failed: %w", err)
+	}
+
 	// Xóa OrganizationMenuTemplate
 	if err := receiver.OrganizationMenuTemplateRepository.DeleteByComponentID(componentID); err != nil {
 		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization menu template failed: %w", err)

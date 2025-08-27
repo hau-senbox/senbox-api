@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"sen-global-api/internal/domain/entity"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -52,4 +54,13 @@ func (r *TeacherMenuOrganizationRepository) CreateWithTx(
 	menuOrg *entity.TeacherMenuOrganization,
 ) error {
 	return tx.Create(menuOrg).Error
+}
+
+func (r *TeacherMenuOrganizationRepository) DeleteByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&entity.TeacherMenuOrganization{}).Error
+	if err != nil {
+		log.Error("DeviceMenuRepository.DeleteByComponentID: " + err.Error())
+		return errors.New("failed to delete teacher menu org by component ID")
+	}
+	return nil
 }
