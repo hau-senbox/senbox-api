@@ -141,3 +141,9 @@ func (r *TeacherApplicationRepository) GetAllTeacherIDs() ([]uuid.UUID, error) {
 
 	return ids, nil
 }
+
+func (r *TeacherApplicationRepository) GetByUserIDAndOrgID(userID string, orgID string) (entity.STeacherFormApplication, error) {
+	var app entity.STeacherFormApplication
+	err := r.DBConn.Where("user_id = ? AND organization_id = ? AND status = ?", userID, orgID, value.Approved).First(&app).Error
+	return app, err
+}

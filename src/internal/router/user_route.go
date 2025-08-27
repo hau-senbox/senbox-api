@@ -306,6 +306,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		TeacherMenuOrganizationUseCase: &usecase.TeacherMenuOrganizationUseCase{
 			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
 			ComponentRepo:                     &repository.ComponentRepository{DBConn: dbConn},
+			TeacherRepo:                       &repository.TeacherApplicationRepository{DBConn: dbConn},
 		},
 	}
 
@@ -471,7 +472,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.POST("/device", menuController.UploadDeviceMenu)
 		userMenu.GET("/common", menuController.GetCommonMenu)
 		userMenu.GET("/common-by-user", menuController.GetCommonMenuByUser)
-		userMenu.GET("/teacher/organization/:teacher_id/:organization_id", menuController.GetTeacherMenuOrganization4App)
+		userMenu.GET("/teacher/organization/:user_id/:organization_id", menuController.GetTeacherMenuOrganization4App)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())

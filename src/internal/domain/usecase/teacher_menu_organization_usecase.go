@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
 
@@ -11,6 +12,7 @@ import (
 type TeacherMenuOrganizationUseCase struct {
 	TeacherMenuOrganizationRepository *repository.TeacherMenuOrganizationRepository
 	ComponentRepo                     *repository.ComponentRepository
+	TeacherRepo                       *repository.TeacherApplicationRepository
 }
 
 // Lấy danh sách menu component của giáo viên theo organization
@@ -61,9 +63,15 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4Admin(ctx context.Co
 	return menus, nil
 }
 
-func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, teacherID, orgID string) ([]response.ComponentResponse, error) {
-	// 1. Lấy danh sách menu của giáo viên trong org
-	teacherMenus, err := uc.TeacherMenuOrganizationRepository.GetAllByTeacherAndOrg(ctx, teacherID, orgID)
+func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, userID, orgID string) ([]response.ComponentResponse, error) {
+	// get teacher by user ID
+	teacher, err := uc.TeacherRepo.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lấy danh sách menu của giáo viên trong org
+	teacherMenus, err := uc.TeacherMenuOrganizationRepository.GetAllByTeacherAndOrg(ctx, teacher.ID.String(), orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +107,7 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 			Name:  comp.Name,
 			Type:  comp.Type.String(),
 			Key:   comp.Key,
-			Value: string(comp.Value),
+			Value: helper.BuildSectionValueMenu(string(comp.Value), comp),
 			Order: componentOrderMap[comp.ID],
 		}
 		menus = append(menus, menu)
