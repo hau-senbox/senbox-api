@@ -20,9 +20,11 @@ import (
 )
 
 type SyncDataUsecase struct {
-	SheetService   *sheets.Service
-	SubmissionRepo *repository.SubmissionRepository
-	SyncQueueRepo  *repository.SyncQueueRepository
+	SheetService       *sheets.Service
+	SubmissionRepo     *repository.SubmissionRepository
+	SyncQueueRepo      *repository.SyncQueueRepository
+	SettingRepository  *repository.SettingRepository
+	ImportFormsUseCase *ImportFormsUseCase
 }
 
 type CreateFormAnswerRequest struct {
@@ -374,6 +376,65 @@ func (uc *SyncDataUsecase) StartAutoSyncScheduler() {
 	// if err != nil {
 	// 	log.Fatalf("Failed to add every-second job: %v", err)
 	// }
+
+	c.Start()
+}
+
+/////////// AUTO SYNC FORMS ///////////
+
+func (uc *SyncDataUsecase) AutoSyncForm2() {
+	log.Debug("Start AutoSyncForm2")
+
+	// Cấu hình import
+	type ImportSetting struct {
+		SpreadSheetUrl string `json:"spreadsheet_url"`
+		AutoImport     bool   `json:"auto"`
+		Interval       uint64 `json:"interval"`
+	}
+
+	// 1. Lấy form settings từ repository
+	formSettings, err := uc.SettingRepository.GetFormSettings2()
+	if err != nil {
+		log.Error("AutoSyncForm2 - failed to get form settings: ", err)
+		return
+	}
+	log.Debug("FormSettings: ", formSettings)
+
+	// 2. Parse JSON settings -> ImportSetting
+	var importSetting ImportSetting
+	if err := json.Unmarshal([]byte(formSettings.Settings), &importSetting); err != nil {
+		log.Error("AutoSyncForm2 - failed to unmarshal settings: ", err)
+		return
+	}
+
+	// 3. Gọi usecase import forms
+	req := request.ImportFormRequest{
+		SpreadsheetUrl: importSetting.SpreadSheetUrl,
+		AutoImport:     importSetting.AutoImport,
+		Interval:       importSetting.Interval,
+	}
+
+	if err := uc.ImportFormsUseCase.SyncForms(req); err != nil {
+		log.Error("AutoSyncForm2 - SyncForms failed: ", err)
+		return
+	}
+
+	log.Info("AutoSyncForm2 completed successfully at ", time.Now().Format(time.RFC3339))
+}
+
+func (uc *SyncDataUsecase) StartAutoSyncForm2Scheduler() {
+	// Khởi tạo cron với độ chính xác theo giây
+	c := cron.New(cron.WithSeconds())
+
+	// Job chạy lúc 05:00:00 hằng ngày
+	_, err := c.AddFunc("0 0 5 * * *", func() {
+		log.Println("[CRON] Running AutoSyncForm2 at", time.Now().Format(time.RFC3339))
+		uc.AutoSyncForm2()
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to add AutoSyncForm2 cron job: %v", err)
+	}
 
 	c.Start()
 }
