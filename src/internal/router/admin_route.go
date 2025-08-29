@@ -422,6 +422,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu)
 		menu.POST("/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuTop)
 		menu.POST("/bottom", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuBottom)
+		// organization admin menu
+		menu.GET("/organization/:id", secureMiddleware.ValidateSuperAdminRole(), menuController.GetOrgMenu)
+		menu.POST("/organization/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadOrganizationAdminMenuTop)
+		menu.POST("/organization/bottom", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadOrganizationAdminMenuBottom)
 	}
 
 	// user

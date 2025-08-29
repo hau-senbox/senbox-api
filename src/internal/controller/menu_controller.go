@@ -1434,3 +1434,57 @@ func (receiver *MenuController) UploadSuperAdminMenuBottom(context *gin.Context)
 		Message: "Super admin menu was upload successfully",
 	})
 }
+
+func (receiver *MenuController) UploadOrganizationAdminMenuTop(context *gin.Context) {
+	var req request.UploadSectionOrganizationAdminMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.Direction = menu.Top
+
+	err := receiver.UploadSectionMenuUseCase.UploadOrganizationAdminMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Super admin menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) UploadOrganizationAdminMenuBottom(context *gin.Context) {
+	var req request.UploadSectionOrganizationAdminMenuRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	req.Direction = menu.Bottom
+
+	err := receiver.UploadSectionMenuUseCase.UploadOrganizationAdminMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Super admin menu was upload successfully",
+	})
+}

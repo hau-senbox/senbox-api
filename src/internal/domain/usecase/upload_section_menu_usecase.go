@@ -401,6 +401,16 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete teacher menu organization failed: %w", err)
 	}
 
+	// Xóa super admin menu
+	if err := receiver.MenuRepository.DeleteSuperAdminMenuByComponentID(componentID); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete super admin menu failed: %w", err)
+	}
+
+	// Xóa Organization admin menu
+	if err := receiver.MenuRepository.DeleteOrganizationAdminMenuByComponentID(componentID); err != nil {
+		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization admin menu failed: %w", err)
+	}
+
 	// Xóa OrganizationMenuTemplate
 	if err := receiver.OrganizationMenuTemplateRepository.DeleteByComponentID(componentID); err != nil {
 		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization menu template failed: %w", err)
@@ -1425,6 +1435,7 @@ func (receiver *UploadSectionMenuUseCase) createTeacherMenuOrganization(tx *gorm
 	return nil
 }
 
+// super admin menu
 func (receiver *UploadSectionMenuUseCase) UploadSuperAdminMenu(ctx *gin.Context, req request.UploadSectionSuperAdminMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
@@ -1540,6 +1551,128 @@ func (receiver *UploadSectionMenuUseCase) createSuperAdminMenu(tx *gorm.DB, comp
 		}
 		if err := receiver.MenuRepository.CreateSuperAdminWithTx(tx, superAdminMenu); err != nil {
 			return fmt.Errorf("create super admin menu fail: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// organization admin menu
+func (receiver *UploadSectionMenuUseCase) UploadOrganizationAdminMenu(ctx *gin.Context, req request.UploadSectionOrganizationAdminMenuRequest) error {
+	tx := receiver.MenuRepository.DBConn.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
+	}
+
+	rolledBack := false
+	defer func() {
+		if !rolledBack {
+			tx.Rollback()
+		}
+	}()
+
+	// 2. Upsert component và tạo menu theo role
+	// dau tien xoa component, child menu, student menu neu co mang delete_component_ids
+	if len(req.DeleteComponentIDs) > 0 {
+		for _, compID := range req.DeleteComponentIDs {
+			if err := receiver.DeleteSectionMenu(compID); err != nil {
+				logrus.Error("Rollback by error deleting section menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("Delete section menu failed: %w", err)
+			}
+		}
+	}
+
+	for _, compReq := range req.Components {
+		var componentID uuid.UUID
+
+		component := &components.Component{
+			Name:  compReq.Name,
+			Type:  components.ComponentType(compReq.Type),
+			Key:   compReq.Key,
+			Value: datatypes.JSON([]byte(compReq.Value)),
+		}
+
+		if compReq.ID != nil && *compReq.ID != uuid.Nil {
+			// Nếu có ID truyền lên
+			componentID = *compReq.ID
+			component.ID = componentID
+
+			existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("query component fail: %w", err)
+			}
+
+			if existingComponent != nil {
+				// Update
+				if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("update component fail: %w", err)
+				}
+			} else {
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
+			}
+		} else {
+			// Tạo mới
+			component.ID = uuid.New()
+			componentID = component.ID
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail: %w", err)
+			}
+		}
+
+		if err := receiver.createOrganizationAdminMenu(tx, componentID.String(), compReq.Order, req.Direction, req.OrganizationID); err != nil {
+			logrus.Error("rollback by error create super admin menu:", err)
+			tx.Rollback()
+			rolledBack = true
+			return err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		logrus.Error("Error committing transaction:", err)
+		rolledBack = true
+		return fmt.Errorf("commit transaction failed: %s", err.Error())
+	}
+
+	rolledBack = true
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createOrganizationAdminMenu(tx *gorm.DB, componentID string, order int, direction menu.Direction, organizationID string) error {
+
+	existing, err := receiver.MenuRepository.GetOrganizationAdminMenuByComponentID(componentID, organizationID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get organization admin menu fail: %w", err)
+	}
+
+	if existing != nil {
+		// Đã tồn tại → update order
+		existing.Order = order
+		if err := receiver.MenuRepository.UpdateOrganizationAdminWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update organization admin menu fail: %w", err)
+		}
+	} else {
+		// Không tồn tại → create
+		organizationAdminMenu := &menu.OrgMenu{
+			Direction:   direction,
+			ComponentID: uuid.MustParse(componentID),
+			Order:       order,
+		}
+		if err := receiver.MenuRepository.CreateOrganizationAdminWithTx(tx, organizationAdminMenu); err != nil {
+			return fmt.Errorf("create organization admin menu fail: %w", err)
 		}
 	}
 

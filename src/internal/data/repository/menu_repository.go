@@ -297,6 +297,7 @@ func (receiver *MenuRepository) DeleteDeviceMenu(organizationID string, tx *gorm
 	return nil
 }
 
+// Get super admin menu
 func (receiver *MenuRepository) GetSuperAdminMenuByComponentID(componentID string) (*menu.SuperAdminMenu, error) {
 	var menuItem menu.SuperAdminMenu
 	err := receiver.DBConn.
@@ -326,6 +327,58 @@ func (receiver *MenuRepository) CreateSuperAdminWithTx(tx *gorm.DB, menuItem *me
 	if err != nil {
 		log.Error("MenuRepository.CreateSuperAdminWithTx: " + err.Error())
 		return errors.New("failed to create super admin menu")
+	}
+	return nil
+}
+
+func (r *MenuRepository) DeleteSuperAdminMenuByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&menu.SuperAdminMenu{}).Error
+	if err != nil {
+		log.Error("MenuRepository.DeleteSuperAdminMenuByComponentID: " + err.Error())
+		return errors.New("failed to super admin menu by component ID")
+	}
+	return nil
+}
+
+// Organization admin menu
+func (receiver *MenuRepository) GetOrganizationAdminMenuByComponentID(componentID string, organizationID string) (*menu.OrgMenu, error) {
+	var menuItem menu.OrgMenu
+	err := receiver.DBConn.
+		Where("component_id = ? AND organization_id = ?", componentID, organizationID).
+		First(&menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.GetOrganizationAdminMenuByComponentID: " + err.Error())
+		return nil, err
+	}
+
+	return &menuItem, nil
+}
+
+func (receiver *MenuRepository) UpdateOrganizationAdminWithTx(tx *gorm.DB, menuItem *menu.OrgMenu) error {
+	err := tx.Model(&menu.OrgMenu{}).
+		Where("organization_id = ? AND component_id = ?", menuItem.OrganizationID, menuItem.ComponentID).
+		Updates(menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.UpdateOrganizationAdminWithTx: " + err.Error())
+		return errors.New("failed to update organization admin menu by component_id")
+	}
+	return nil
+}
+
+func (receiver *MenuRepository) CreateOrganizationAdminWithTx(tx *gorm.DB, menuItem *menu.OrgMenu) error {
+	err := tx.Create(menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.CreateOrganizationAdminWithTx: " + err.Error())
+		return errors.New("failed to create organization admin menu")
+	}
+	return nil
+}
+
+func (r *MenuRepository) DeleteOrganizationAdminMenuByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&menu.OrgMenu{}).Error
+	if err != nil {
+		log.Error("MenuRepository.DeleteOrganizationAdminMenuByComponentID: " + err.Error())
+		return errors.New("failed to organization admin menu by component ID")
 	}
 	return nil
 }
