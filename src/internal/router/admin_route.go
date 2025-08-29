@@ -604,13 +604,16 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	sheetsService, _ := helper.GetSheetsService("credentials/uploader_service_account.json")
 
 	syncDataUsecase := &usecase.SyncDataUsecase{
-		SheetService:   sheetsService,
-		SubmissionRepo: &repository.SubmissionRepository{DBConn: dbConn},
-		SyncQueueRepo:  &repository.SyncQueueRepository{DBConn: dbConn},
+		SheetService:       sheetsService,
+		SubmissionRepo:     &repository.SubmissionRepository{DBConn: dbConn},
+		SyncQueueRepo:      &repository.SyncQueueRepository{DBConn: dbConn},
+		SettingRepository:  &repository.SettingRepository{DBConn: dbConn},
+		ImportFormsUseCase: importFormsUseCase,
 	}
 
 	// call schedule sync cron job
 	syncDataUsecase.StartAutoSyncScheduler()
+	syncDataUsecase.StartAutoSyncForm2Scheduler()
 
 	applicationController := &controller.ApplicationController{
 		StaffAppUsecase: &usecase.StaffApplicationUseCase{
