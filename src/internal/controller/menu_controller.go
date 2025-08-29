@@ -67,10 +67,10 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 	topMenuResponse := make([]componentResponse, 0)
 	bottomMenuResponse := make([]componentResponse, 0)
 	for _, m := range menus {
-		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
-		if err != nil {
-			log.Println("Normalize error:", err)
-		}
+		//normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		// if err != nil {
+		// 	log.Println("Normalize error:", err)
+		// }
 		switch m.Direction {
 		case menu.Top:
 			topMenuResponse = append(topMenuResponse, componentResponse{
@@ -78,7 +78,7 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(normalizedValue),
+				Value: helper.BuildSectionValueMenu(m.Component.Value.String(), m.Component),
 				Order: m.Order,
 			})
 		case menu.Bottom:
@@ -87,7 +87,7 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(normalizedValue),
+				Value: helper.BuildSectionValueMenu(m.Component.Value.String(), m.Component),
 				Order: m.Order,
 			})
 		default:
