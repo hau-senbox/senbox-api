@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -17,6 +18,7 @@ type AuthorizeUseCase struct {
 	repository.SessionRepository
 	*repository.OrganizationRepository
 	UserEntityUseCase *UserEntityUseCase
+	DBConn            *gorm.DB
 }
 
 func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*response.LoginResponseData, error) {
@@ -41,6 +43,36 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 		return nil, errors.New("cannot generate token")
 	}
 
+	// get organization_admin
+	var orgAdminResp *response.OrganizationAdmin
+	if len(user.Organizations) > 0 {
+		// Lấy danh sách OrgID mà user là manager
+		managedOrgIDs, err := user.GetManagedOrganizationIDs(receiver.DBConn)
+		if err != nil {
+			orgAdminResp = nil
+		}
+
+		// So sánh với các org đã preload, map sang OrganizationAdmin nếu khớp
+		if len(managedOrgIDs) > 0 {
+			for _, org := range user.Organizations {
+				if lo.Contains(managedOrgIDs, org.ID.String()) {
+					orgAdminResp = &response.OrganizationAdmin{
+						ID:               org.ID.String(),
+						OrganizationName: org.OrganizationName,
+						Avatar:           org.Avatar,
+						AvatarURL:        org.AvatarURL,
+						Address:          org.Address,
+						Description:      org.Description,
+						CreatedAt:        org.CreatedAt,
+						UpdatedAt:        org.UpdatedAt,
+					}
+					break
+				}
+			}
+		}
+
+	}
+	token.OrganizationAdmin = orgAdminResp
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserID)
 	return token, nil

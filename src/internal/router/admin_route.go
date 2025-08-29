@@ -79,6 +79,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 				SessionRepository:    sessionRepository,
+				DBConn:               dbConn,
 			},
 		}
 		v1.POST("/login", loginController.Login)
