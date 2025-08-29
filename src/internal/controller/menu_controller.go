@@ -1355,18 +1355,17 @@ func (receiver *MenuController) GetTeacherMenuOrganization4Admin(c *gin.Context)
 }
 
 func (receiver *MenuController) GetTeacherMenuOrganization4App(c *gin.Context) {
-	userID := c.Param("user_id")
-	orgID := c.Param("organization_id")
 
-	if userID == "" || orgID == "" {
+	var req request.GetTeacherOrganizationMenuRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
-			Error: "teacher_id and organization_id are required",
+			Error: err.Error(),
 		})
 		return
 	}
 
-	menus, err := receiver.TeacherMenuOrganizationUseCase.GetTeacherMenuOrg4App(c, userID, orgID)
+	menus, err := receiver.TeacherMenuOrganizationUseCase.GetTeacherMenuOrg4App(c, req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

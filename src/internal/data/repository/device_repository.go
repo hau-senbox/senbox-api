@@ -523,3 +523,13 @@ func (r *DeviceRepository) UpdateDeviceNickNameByOrgIDAndDeviceID(orgID string, 
 	orgDevice.DeviceNickName = deviceNickName
 	return r.DBConn.Save(&orgDevice).Error
 }
+
+func (r *DeviceRepository) CheckDeviceExistInOrganization(deviceID string, organizationID string) (bool, error) {
+	var count int64
+	if err := r.DBConn.Model(&entity.SOrgDevices{}).
+		Where("organization_id = ? AND device_id = ?", organizationID, deviceID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
