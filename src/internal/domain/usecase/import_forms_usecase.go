@@ -344,8 +344,8 @@ func (receiver *ImportFormsUseCase) ImportForms(req request.ImportFormRequest, u
 	switch uploaderIndex {
 	case FormsUploaderIndexFirst:
 		receiver.TimeMachine.ScheduleSyncForms(interval)
-	case FormsUploaderIndexSecond:
-		receiver.TimeMachine.ScheduleSyncForms2(interval)
+	// case FormsUploaderIndexSecond:
+	// 	receiver.TimeMachine.ScheduleSyncForms2(interval)
 	case FormsUploaderIndexThird:
 		receiver.TimeMachine.ScheduleSyncForms3(interval)
 	case FormsUploaderIndexFourth:

@@ -15,7 +15,7 @@ func New() *TimeMachine {
 	once.Do(func() {
 		instantiated = new(TimeMachine)
 		instantiated.formExecutors = make([]IntervalTaskExecutor, 0)
-		instantiated.form2Executors = make([]IntervalTaskExecutor, 0)
+		// instantiated.form2Executors = make([]IntervalTaskExecutor, 0)
 		instantiated.form3Executors = make([]IntervalTaskExecutor, 0)
 		instantiated.form4Executors = make([]IntervalTaskExecutor, 0)
 		instantiated.urlExecutors = make([]IntervalTaskExecutor, 0)
@@ -37,8 +37,8 @@ func New() *TimeMachine {
 }
 
 type TimeMachine struct {
-	formExecutors               []IntervalTaskExecutor
-	form2Executors              []IntervalTaskExecutor
+	formExecutors []IntervalTaskExecutor
+	// form2Executors              []IntervalTaskExecutor
 	form3Executors              []IntervalTaskExecutor
 	form4Executors              []IntervalTaskExecutor
 	urlExecutors                []IntervalTaskExecutor
@@ -59,7 +59,7 @@ type TimeMachine struct {
 
 type IntervalTaskExecutor interface {
 	ExecuteSyncForms()
-	ExecuteSyncForms2()
+	// ExecuteSyncForms2()
 	ExecuteSyncForms3()
 	ExecuteSyncForms4()
 	ExecuteSyncUrls()
@@ -69,7 +69,7 @@ type IntervalTaskExecutor interface {
 
 func (receiver *TimeMachine) Start(formInterval uint64, urlInterval uint64, todoInterval uint64, formInterval2 uint64, formInterval3 uint64, formInterval4 uint64) {
 	receiver.ScheduleSyncForms(formInterval)
-	receiver.ScheduleSyncForms2(formInterval2)
+	// receiver.ScheduleSyncForms2(formInterval2)
 	receiver.ScheduleSyncForms3(formInterval3)
 	receiver.ScheduleSyncForms4(formInterval4)
 	receiver.ScheduleSyncUrls(urlInterval)
@@ -93,9 +93,9 @@ func (receiver *TimeMachine) SubscribeFormsExec(exec IntervalTaskExecutor) {
 	receiver.formExecutors = append(receiver.formExecutors, exec)
 }
 
-func (receiver *TimeMachine) SubscribeForms2Exec(exec IntervalTaskExecutor) {
-	receiver.form2Executors = append(receiver.form2Executors, exec)
-}
+// func (receiver *TimeMachine) SubscribeForms2Exec(exec IntervalTaskExecutor) {
+// 	receiver.form2Executors = append(receiver.form2Executors, exec)
+// }
 
 func (receiver *TimeMachine) SubscribeForms3Exec(exec IntervalTaskExecutor) {
 	receiver.form3Executors = append(receiver.form3Executors, exec)
@@ -146,30 +146,30 @@ func (receiver *TimeMachine) ScheduleSyncForms(interval uint64) {
 	receiver.formCron.StartAsync()
 }
 
-func (receiver *TimeMachine) ScheduleSyncForms2(interval uint64) {
-	if interval == 0 {
-		return
-	}
-	receiver.form2Cron.Clear()
+// func (receiver *TimeMachine) ScheduleSyncForms2(interval uint64) {
+// 	if interval == 0 {
+// 		return
+// 	}
+// 	receiver.form2Cron.Clear()
 
-	now := time.Now()
-	startAt := now.Add(time.Duration(interval) * time.Minute)
-	task, err := receiver.form2Cron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
-		for _, executor := range receiver.form2Executors {
-			executor.ExecuteSyncForms2()
-		}
-	})
-	if err != nil {
-		log.Error(err)
-		panic(err)
-	} else if task.Error() != nil {
-		log.Error(task.Error())
-		panic(task.Error())
-	} else if task != nil && task.Error() == nil {
-		log.Info("Schedule sync form2Cron every ", interval, " minutes [ERROR]? ", task.Error())
-	}
-	receiver.form2Cron.StartAsync()
-}
+// 	now := time.Now()
+// 	startAt := now.Add(time.Duration(interval) * time.Minute)
+// 	task, err := receiver.form2Cron.Every(int(interval)).Minutes().StartAt(startAt).Do(func() {
+// 		for _, executor := range receiver.form2Executors {
+// 			executor.ExecuteSyncForms2()
+// 		}
+// 	})
+// 	if err != nil {
+// 		log.Error(err)
+// 		panic(err)
+// 	} else if task.Error() != nil {
+// 		log.Error(task.Error())
+// 		panic(task.Error())
+// 	} else if task != nil && task.Error() == nil {
+// 		log.Info("Schedule sync form2Cron every ", interval, " minutes [ERROR]? ", task.Error())
+// 	}
+// 	receiver.form2Cron.StartAsync()
+// }
 
 func (receiver *TimeMachine) ScheduleSyncForms3(interval uint64) {
 	if interval == 0 {

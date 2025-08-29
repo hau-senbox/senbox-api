@@ -902,7 +902,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	usecase.TheTimeMachine.Start(formInterval, redirectInterval, toDosInterval, formInterval2, formInterval3, formInterval4)
 
 	usecase.TheTimeMachine.SubscribeFormsExec(executor)
-	usecase.TheTimeMachine.SubscribeForms2Exec(executor)
+	// usecase.TheTimeMachine.SubscribeForms2Exec(executor)
 	usecase.TheTimeMachine.SubscribeForms3Exec(executor)
 	usecase.TheTimeMachine.SubscribeForms4Exec(executor)
 	usecase.TheTimeMachine.SubscribeUrlsExec(executor)
@@ -980,37 +980,37 @@ func (t *TimeMachineSubscriber) ExecuteSyncForms() {
 	}
 }
 
-func (t *TimeMachineSubscriber) ExecuteSyncForms2() {
-	log.Debug("Start sync forms")
-	type ImportSetting struct {
-		SpreadSheetUrl string `json:"spreadsheet_url"`
-		AutoImport     bool   `json:"auto"`
-		Interval       uint64 `json:"interval"`
-	}
+// func (t *TimeMachineSubscriber) ExecuteSyncForms2() {
+// 	log.Debug("Start sync forms")
+// 	type ImportSetting struct {
+// 		SpreadSheetUrl string `json:"spreadsheet_url"`
+// 		AutoImport     bool   `json:"auto"`
+// 		Interval       uint64 `json:"interval"`
+// 	}
 
-	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
-	formSettings, err := t.GetFormSettings2()
-	if err != nil {
-		log.Error(err)
-		return
-	} else {
-		log.Debug(formSettings)
-		var importSetting ImportSetting
-		err = json.Unmarshal([]byte(formSettings.Settings), &importSetting)
-		if err != nil {
-			log.Error(err)
-		} else {
-			err = t.SyncForms(request.ImportFormRequest{
-				SpreadsheetUrl: importSetting.SpreadSheetUrl,
-				AutoImport:     importSetting.AutoImport,
-				Interval:       importSetting.Interval,
-			})
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-}
+// 	log.Debug("TimeMachineSubscriber: ExecuteSyncForms")
+// 	formSettings, err := t.GetFormSettings2()
+// 	if err != nil {
+// 		log.Error(err)
+// 		return
+// 	} else {
+// 		log.Debug(formSettings)
+// 		var importSetting ImportSetting
+// 		err = json.Unmarshal([]byte(formSettings.Settings), &importSetting)
+// 		if err != nil {
+// 			log.Error(err)
+// 		} else {
+// 			err = t.SyncForms(request.ImportFormRequest{
+// 				SpreadsheetUrl: importSetting.SpreadSheetUrl,
+// 				AutoImport:     importSetting.AutoImport,
+// 				Interval:       importSetting.Interval,
+// 			})
+// 			if err != nil {
+// 				log.Error(err)
+// 			}
+// 		}
+// 	}
+// }
 
 func (t *TimeMachineSubscriber) ExecuteSyncForms3() {
 	log.Debug("Start sync forms")
