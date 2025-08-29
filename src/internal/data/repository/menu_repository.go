@@ -296,3 +296,36 @@ func (receiver *MenuRepository) DeleteDeviceMenu(organizationID string, tx *gorm
 
 	return nil
 }
+
+func (receiver *MenuRepository) GetSuperAdminMenuByComponentID(componentID string) (*menu.SuperAdminMenu, error) {
+	var menuItem menu.SuperAdminMenu
+	err := receiver.DBConn.
+		Where("component_id = ?", componentID).
+		First(&menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.GetSuperAdminMenuByComponentID: " + err.Error())
+		return nil, err
+	}
+
+	return &menuItem, nil
+}
+
+func (receiver *MenuRepository) UpdateSuperAdminWithTx(tx *gorm.DB, menuItem *menu.SuperAdminMenu) error {
+	err := tx.Model(&menu.SuperAdminMenu{}).
+		Where("component_id = ?", menuItem.ComponentID).
+		Updates(menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.UpdateSuperAdminWithTx: " + err.Error())
+		return errors.New("failed to update super admin menu by component_id")
+	}
+	return nil
+}
+
+func (receiver *MenuRepository) CreateSuperAdminWithTx(tx *gorm.DB, menuItem *menu.SuperAdminMenu) error {
+	err := tx.Create(menuItem).Error
+	if err != nil {
+		log.Error("MenuRepository.CreateSuperAdminWithTx: " + err.Error())
+		return errors.New("failed to create super admin menu")
+	}
+	return nil
+}
