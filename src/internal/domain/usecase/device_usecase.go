@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -61,9 +63,17 @@ func (receiver *DeviceUsecase) GetDeviceInfoFromOrg4App(deviceID string) ([]resp
 	// Build list response
 	responses := make([]response.GetDeviceInfoResponse, 0, len(orgDevices))
 	for _, orgDevice := range orgDevices {
+		cleanDeviceName := strings.ReplaceAll(orgDevice.DeviceName, "NICKNAME", "")
+
+		cleanDeviceName = strings.ReplaceAll(cleanDeviceName, "\t", " ")
+		cleanDeviceName = strings.Join(strings.Fields(cleanDeviceName), " ")
+
+		if orgDevice.DeviceNickName != "" {
+			cleanDeviceName = fmt.Sprintf("%s %s", cleanDeviceName, orgDevice.DeviceNickName)
+		}
+
 		responses = append(responses, response.GetDeviceInfoResponse{
-			DeviceName: orgDevice.DeviceName,
-			// Nếu có thêm field nào trong GetDeviceInfoResponse, map ở đây
+			DeviceName: cleanDeviceName,
 		})
 	}
 
