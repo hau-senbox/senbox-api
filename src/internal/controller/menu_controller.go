@@ -295,7 +295,7 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
+				Value: helper.BuildSectionValueMenu(m.Component.Value.String(), m.Component),
 				Order: m.Order,
 			})
 		case menu.Bottom:
@@ -304,7 +304,7 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 				Name:  m.Component.Name,
 				Type:  m.Component.Type.String(),
 				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
+				Value: helper.BuildSectionValueMenu(m.Component.Value.String(), m.Component),
 				Order: m.Order,
 			})
 		default:
