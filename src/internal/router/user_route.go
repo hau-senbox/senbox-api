@@ -316,6 +316,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
 

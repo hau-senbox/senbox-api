@@ -17,6 +17,7 @@ type TeacherMenuOrganizationUseCase struct {
 	TeacherRepo                       *repository.TeacherApplicationRepository
 	DeviceRepository                  *repository.DeviceRepository
 	UserImagesUsecase                 *UserImagesUsecase
+	OrganizationRepository            *repository.OrganizationRepository
 }
 
 // Lấy danh sách menu component của giáo viên theo organization
@@ -67,14 +68,14 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4Admin(ctx context.Co
 	return menus, nil
 }
 
-func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, req request.GetTeacherOrganizationMenuRequest) ([]response.GetTeacherOrganizationMenuResponse, error) {
+func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, req request.GetTeacherOrganizationMenuRequest) (*response.GetTeacherOrganizationMenuResponse, error) {
 	// kiem tra device dang co nam trong org hay khong
 	isExist, err := uc.DeviceRepository.CheckDeviceExistInOrganization(req.DeviceID, req.OrganizationID)
 	if err != nil {
-		return []response.GetTeacherOrganizationMenuResponse{}, err
+		return nil, err
 	}
 	if !isExist {
-		return []response.GetTeacherOrganizationMenuResponse{}, nil
+		return nil, nil
 	}
 	// get teacher by user ID
 	teacher, err := uc.TeacherRepo.GetByUserID(req.UserID)
@@ -89,7 +90,7 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 	}
 
 	if len(teacherMenus) == 0 {
-		return []response.GetTeacherOrganizationMenuResponse{}, nil
+		return nil, nil
 	}
 
 	// 2. Chuẩn bị danh sách componentID + mapping order
@@ -132,12 +133,13 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 	if img != nil {
 		menuIconKey = img.Key
 	}
-	teacherOrgMenus := []response.GetTeacherOrganizationMenuResponse{
-		{
-			Section:     "Teacher Menu At Organization",
-			MenuIconKey: menuIconKey,
-			Components:  menus,
-		},
+
+	// get organization
+	orgInfo, _ := uc.OrganizationRepository.GetByID(req.OrganizationID)
+	teacherOrgMenus := &response.GetTeacherOrganizationMenuResponse{
+		Section:     "Teacher Menu At " + orgInfo.OrganizationName,
+		MenuIconKey: menuIconKey,
+		Components:  menus,
 	}
 
 	return teacherOrgMenus, nil
