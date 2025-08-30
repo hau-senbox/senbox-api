@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -17,8 +18,9 @@ type AuthorizeUseCase struct {
 	*repository.DeviceRepository
 	repository.SessionRepository
 	*repository.OrganizationRepository
-	UserEntityUseCase *UserEntityUseCase
-	DBConn            *gorm.DB
+	UserEntityUseCase      *UserEntityUseCase
+	DBConn                 *gorm.DB
+	ManageUserLoginUseCase *ManageUserLoginUseCase
 }
 
 func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*response.LoginResponseData, error) {
@@ -87,17 +89,26 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 		return nil, err
 	}
 
-	reqRegisterDevice := request.RegisterDeviceRequest{
-		DeviceUUID: req.DeviceUUID,
-		InputMode:  string(value.InfoInputTypeBarcode),
-	}
+	// reqRegisterDevice := request.RegisterDeviceRequest{
+	// 	DeviceUUID: req.DeviceUUID,
+	// 	InputMode:  string(value.InfoInputTypeBarcode),
+	// }
 
-	if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
-		UserID:   user.ID.String(),
-		DeviceID: req.DeviceUUID,
-	}); err == nil {
-		_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
+	// if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
+	// 	UserID:   user.ID.String(),
+	// 	DeviceID: req.DeviceUUID,
+	// }); err == nil {
+	// 	_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// check user device login
+	if req.DeviceUUID != "" {
+		err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogin(user.ID.String(), req.DeviceUUID)
 		if err != nil {
+			log.Error("AuthorizeUseCase.UserLoginUsecase.HandleUserDeviceLogin: " + err.Error())
 			return nil, err
 		}
 	}
@@ -140,4 +151,20 @@ func (receiver AuthorizeUseCase) SwitchToOrganizationAdmin(organizationID string
 		Expired: tokenData.Expired,
 		User:    *user,
 	}, nil
+}
+
+func (receiver AuthorizeUseCase) UserLogoutUsecase(c *gin.Context, req request.UserLogoutReqeust) error {
+
+	// get user id by context
+	userIDRaw, exists := c.Get("user_id")
+	if !exists {
+		return errors.New("user_id not found")
+	}
+	// xoa user device login
+	err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogout(userIDRaw.(string), req.DeviceUUID)
+	if err != nil {
+		log.Error("AuthorizeUseCase.UserLogoutUsecase.ManageUserDeviceLogout: " + err.Error())
+		return err
+	}
+	return nil
 }

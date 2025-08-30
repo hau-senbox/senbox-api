@@ -342,9 +342,23 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 				SessionRepository:    sessionRepository,
+				ManageUserLoginUseCase: &usecase.ManageUserLoginUseCase{
+					UserDevicesLoginRepository: &repository.UserDevicesLoginRepository{DBConn: dbConn},
+				},
+			},
+		}
+		logoutController := &controller.LogoutController{
+			AuthorizeUseCase: &usecase.AuthorizeUseCase{
+				UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
+				SessionRepository:    sessionRepository,
+				ManageUserLoginUseCase: &usecase.ManageUserLoginUseCase{
+					UserDevicesLoginRepository: &repository.UserDevicesLoginRepository{DBConn: dbConn},
+				},
 			},
 		}
 		userAccess.POST("/login", loginController.UserLogin)
+		userAccess.POST("/logout", secureMiddleware.Secured(), logoutController.UserLogout)
 	}
 
 	// block setting
