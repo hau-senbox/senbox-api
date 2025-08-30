@@ -297,6 +297,8 @@ func (receiver *QuestionRepository) unmarshalDurationForwardQuestion(param Creat
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
 		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
 	}
 
 	return &question, nil
@@ -477,6 +479,8 @@ func (receiver *QuestionRepository) unmarshalNumberQuestion(param CreateQuestion
 		Status:           status,
 		EnableOnMobile:   param.EnableOnMobile,
 		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
 	}
 
 	return &question, nil
