@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
 )
@@ -15,6 +16,7 @@ type TeacherMenuOrganizationUseCase struct {
 	ComponentRepo                     *repository.ComponentRepository
 	TeacherRepo                       *repository.TeacherApplicationRepository
 	DeviceRepository                  *repository.DeviceRepository
+	UserImagesUsecase                 *UserImagesUsecase
 }
 
 // Lấy danh sách menu component của giáo viên theo organization
@@ -65,14 +67,14 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4Admin(ctx context.Co
 	return menus, nil
 }
 
-func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, req request.GetTeacherOrganizationMenuRequest) ([]response.ComponentResponse, error) {
+func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, req request.GetTeacherOrganizationMenuRequest) ([]response.GetTeacherOrganizationMenuResponse, error) {
 	// kiem tra device dang co nam trong org hay khong
 	isExist, err := uc.DeviceRepository.CheckDeviceExistInOrganization(req.DeviceID, req.OrganizationID)
 	if err != nil {
-		return []response.ComponentResponse{}, err
+		return []response.GetTeacherOrganizationMenuResponse{}, err
 	}
 	if !isExist {
-		return []response.ComponentResponse{}, nil
+		return []response.GetTeacherOrganizationMenuResponse{}, nil
 	}
 	// get teacher by user ID
 	teacher, err := uc.TeacherRepo.GetByUserID(req.UserID)
@@ -87,7 +89,7 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 	}
 
 	if len(teacherMenus) == 0 {
-		return []response.ComponentResponse{}, nil
+		return []response.GetTeacherOrganizationMenuResponse{}, nil
 	}
 
 	// 2. Chuẩn bị danh sách componentID + mapping order
@@ -123,5 +125,21 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 		menus = append(menus, menu)
 	}
 
-	return menus, nil
+	// get menu icon key
+	img, _ := uc.UserImagesUsecase.GetImg4Ownewr(teacher.ID.String(), value.OwnerRoleTeacher)
+
+	menuIconKey := ""
+	if img != nil {
+		menuIconKey = img.Key
+	}
+	teacherOrgMenus := []response.GetTeacherOrganizationMenuResponse{
+		{
+			Section:     "Teacher Menu At Organization",
+			MenuIconKey: menuIconKey,
+			Components:  menus,
+		},
+	}
+
+	return teacherOrgMenus, nil
+
 }

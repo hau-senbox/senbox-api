@@ -308,6 +308,14 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			ComponentRepo:                     &repository.ComponentRepository{DBConn: dbConn},
 			TeacherRepo:                       &repository.TeacherApplicationRepository{DBConn: dbConn},
 			DeviceRepository:                  &repository.DeviceRepository{DBConn: dbConn},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
 		},
 	}
 
