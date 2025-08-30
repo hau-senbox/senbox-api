@@ -12,5 +12,5 @@ type UserLoginRequest struct {
 }
 
 type UserLogoutReqeust struct {
-	DeviceUUID string `json:"device_uuid" binding:"required"`
+	DeviceID string `json:"device_id" binding:"required"`
 }

@@ -161,7 +161,7 @@ func (receiver AuthorizeUseCase) UserLogoutUsecase(c *gin.Context, req request.U
 		return errors.New("user_id not found")
 	}
 	// xoa user device login
-	err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogout(userIDRaw.(string), req.DeviceUUID)
+	err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogout(userIDRaw.(string), req.DeviceID)
 	if err != nil {
 		log.Error("AuthorizeUseCase.UserLogoutUsecase.ManageUserDeviceLogout: " + err.Error())
 		return err

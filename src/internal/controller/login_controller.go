@@ -41,6 +41,7 @@ func (receiver LoginController) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
 		Data: data,
 	})
 }

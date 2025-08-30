@@ -38,6 +38,7 @@ func (receiver LogoutController) UserLogout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
 		Message: "Logout successfully",
 	})
 }
