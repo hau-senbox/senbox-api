@@ -347,6 +347,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				SessionRepository:    sessionRepository,
 				ManageUserLoginUseCase: &usecase.ManageUserLoginUseCase{
 					UserDevicesLoginRepository: &repository.UserDevicesLoginRepository{DBConn: dbConn},
+					UserSettingRepositotry:     &repository.UserSettingRepository{DBConn: dbConn},
 				},
 			},
 		}

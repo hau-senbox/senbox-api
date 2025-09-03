@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/value"
 
 	"gorm.io/gorm"
 )
@@ -54,4 +55,12 @@ func (r *UserSettingRepository) GetByOwner(ownerID string) ([]*entity.UserSettin
 		return nil, err
 	}
 	return settings, nil
+}
+
+func (r *UserSettingRepository) GetLoginDeviceLimit(ownerID string) (*entity.UserSetting, error) {
+	var setting entity.UserSetting
+	if err := r.DBConn.Where("owner_id = ? AND `key` = ?", ownerID, string(value.UserSettingLoginDeviceLimit)).First(&setting).Error; err != nil {
+		return nil, err
+	}
+	return &setting, nil
 }

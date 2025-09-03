@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 
 type ManageUserLoginUseCase struct {
 	UserDevicesLoginRepository *repository.UserDevicesLoginRepository
+	UserSettingRepositotry     *repository.UserSettingRepository
 }
 
 // ManageUserDeviceLogin tạo mới login cho user
@@ -23,12 +25,22 @@ func (uc *ManageUserLoginUseCase) ManageUserDeviceLogin(userID, deviceID string)
 		return uc.UserDevicesLoginRepository.Update(existing)
 	}
 
+	// get user setting login device limit
+	limit := 2
+	loginDeviceLimit, err := uc.UserSettingRepositotry.GetLoginDeviceLimit(userID)
+	if err == nil && loginDeviceLimit != nil {
+		var v int
+		if err := json.Unmarshal(loginDeviceLimit.Value, &v); err == nil {
+			limit = v
+		}
+	}
+
 	// Đếm số device hiện tại (ngoại trừ deviceID này)
 	count, err := uc.UserDevicesLoginRepository.CountDevicesByUserExcludeDevice(userID, deviceID)
 	if err != nil {
 		return err
 	}
-	if count >= 2 {
+	if count >= int64(limit) {
 		return errors.New("maximum user limit has been reached")
 	}
 

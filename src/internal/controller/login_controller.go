@@ -75,8 +75,9 @@ func (receiver LoginController) UserLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest, response.FailedResponse{
-				Code:  http.StatusBadRequest,
-				Error: err.Error(),
+				Code:    http.StatusBadRequest,
+				Message: err.Error(),
+				Error:   err.Error(),
 			},
 		)
 		return
