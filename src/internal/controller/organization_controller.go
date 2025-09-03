@@ -114,6 +114,16 @@ func (receiver OrganizationController) Check4App(context *gin.Context) {
 		return
 	}
 
+	if !isOK {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "device is not in organization",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: isOK,
