@@ -26,15 +26,16 @@ func (application *SStudentFormApplication) BeforeCreate(tx *gorm.DB) (err error
 	// Luôn set trạng thái Pending khi tạo mới
 	application.Status = value.Pending
 
-	// Tính CreatedIndex = tổng số record hiện tại + 1 theo organization_id
-	var count int64
+	// Tính CreatedIndex = MAX(created_index) + 1 theo organization_id
+	var maxIndex int
 	if err := tx.Model(&SStudentFormApplication{}).
 		Where("organization_id = ?", application.OrganizationID).
-		Count(&count).Error; err != nil {
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
 		return err
 	}
 
-	application.CreatedIndex = int(count) + 1
+	application.CreatedIndex = maxIndex + 1
 
 	return nil
 }

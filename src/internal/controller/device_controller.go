@@ -1588,3 +1588,44 @@ func (receiver *DeviceController) UploadDeviceByOrg4Web(c *gin.Context) {
 		Data: res,
 	})
 }
+
+func (receiver *DeviceController) DeleteDeviceByOrgID(c *gin.Context) {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "device id is required",
+			},
+		)
+		return
+	}
+
+	organizationId := c.Param("organization_id")
+	if organizationId == "" {
+		c.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: "organization id is required",
+			},
+		)
+		return
+	}
+
+	err := receiver.DeviceUsecase.DeleteDeviceByOrg(deviceID, organizationId)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:  http.StatusInternalServerError,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Delete device successfully",
+		Data:    nil,
+	})
+}

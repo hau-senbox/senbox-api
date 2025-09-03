@@ -38,12 +38,14 @@ func (organization *SOrganization) BeforeCreate(tx *gorm.DB) (err error) {
 		organization.Password = string(encryptedPwdData)
 	}
 
-	// Tính CreatedIndex = tổng số record + 1
-	var count int64
-	if err := tx.Model(&SOrganization{}).Count(&count).Error; err != nil {
+	// Tính CreatedIndex = MAX(created_index) + 1
+	var maxIndex int
+	if err := tx.Model(&SOrganization{}).
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
 		return err
 	}
-	organization.CreatedIndex = int(count) + 1
+	organization.CreatedIndex = maxIndex + 1
 
 	return nil
 }

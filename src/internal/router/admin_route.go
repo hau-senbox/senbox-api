@@ -816,6 +816,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.PUT("/:organization_id/device/:device_id", deviceController.UploadDeviceByOrg4Web)
 		// switch to organization admin
 		org.GET("/switch/:organization_id", secureMiddleware.ValidateSuperAdminRole(), orgController.SwitchToOrganizationAdmin)
+		// delete device by org
+		org.DELETE("/:organization_id/device/:device_id", deviceController.DeleteDeviceByOrgID)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())

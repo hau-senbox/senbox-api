@@ -124,3 +124,7 @@ func (receiver *DeviceUsecase) UploadDeviceNickName4Web(orgID string, deviceID s
 
 	return updatedDevice, nil
 }
+
+func (receiver *DeviceUsecase) DeleteDeviceByOrg(orgID string, deviceID string) error {
+	return receiver.DeviceRepository.DeleteDeviceByOrg(orgID, deviceID)
+}

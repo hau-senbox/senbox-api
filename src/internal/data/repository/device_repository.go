@@ -405,9 +405,10 @@ func (receiver *DeviceRepository) RegisteringDeviceForOrg(org *entity.SOrganizat
 	}
 
 	// Get device name
-	listDeviceByOrg, _ := receiver.GetDeviceListByOrgID(org.ID.String())
-	count := len(listDeviceByOrg) // số thiết bị hiện có
-	deviceName := fmt.Sprintf("%s	Device :[O.D.%d] NICKNAME", org.OrganizationName, count+1)
+	// listDeviceByOrg, _ := receiver.GetDeviceListByOrgID(org.ID.String())
+	// count := len(listDeviceByOrg) // số thiết bị hiện có
+	max, _ := receiver.GetMaxCreatedIndexByOrgID(org.ID.String())
+	deviceName := fmt.Sprintf("%s	Device :[O.D.%d] NICKNAME", org.OrganizationName, max+1)
 
 	err = receiver.DBConn.Transaction(func(tx *gorm.DB) error {
 		if device != nil {
@@ -532,4 +533,24 @@ func (r *DeviceRepository) CheckDeviceExistInOrganization(deviceID string, organ
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *DeviceRepository) DeleteDeviceByOrg(deviceID string, organizationID string) error {
+	if err := r.DBConn.
+		Where("organization_id = ? AND device_id = ?", organizationID, deviceID).
+		Delete(&entity.SOrgDevices{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *DeviceRepository) GetMaxCreatedIndexByOrgID(organizationID string) (int, error) {
+	var maxIndex int
+	if err := r.DBConn.Model(&entity.SOrgDevices{}).
+		Where("organization_id = ?", organizationID).
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
+		return 0, err
+	}
+	return maxIndex, nil
 }

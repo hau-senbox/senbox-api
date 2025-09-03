@@ -16,12 +16,15 @@ type SOrgDevices struct {
 }
 
 func (d *SOrgDevices) BeforeCreate(tx *gorm.DB) (err error) {
-	var count int64
+	var maxIndex int
 	if err = tx.Model(&SOrgDevices{}).
 		Where("organization_id = ?", d.OrganizationID).
-		Count(&count).Error; err != nil {
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
 		return err
 	}
-	d.CreatedIndex = int(count) + 1
+
+	// Gán created_index = max + 1
+	d.CreatedIndex = maxIndex + 1
 	return nil
 }

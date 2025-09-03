@@ -23,16 +23,16 @@ func (application *STeacherFormApplication) BeforeCreate(tx *gorm.DB) (err error
 	// Default status
 	application.Status = value.Pending
 
-	// Đếm số record hiện có theo OrganizationID
-	var count int64
-	err = tx.Model(&STeacherFormApplication{}).
+	// Tính CreatedIndex = MAX(created_index) + 1 theo organization_id
+	var maxIndex int
+	if err := tx.Model(&STeacherFormApplication{}).
 		Where("organization_id = ?", application.OrganizationID).
-		Count(&count).Error
-	if err != nil {
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
 		return err
 	}
 
-	application.CreatedIndex = int(count) + 1
+	application.CreatedIndex = maxIndex + 1
 
 	return nil
 }
