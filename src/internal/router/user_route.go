@@ -171,6 +171,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
 			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
 		},
+		UserSettingUseCase: &usecase.UserSettingUseCase{
+			Repo: &repository.UserSettingRepository{DBConn: dbConn},
+		},
 	}
 
 	userRoleController := &controller.RoleController{

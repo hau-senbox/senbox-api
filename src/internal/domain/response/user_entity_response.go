@@ -1,6 +1,8 @@
 package response
 
-import "time"
+import (
+	"time"
+)
 
 type UserEntityResponse struct {
 	ID           string   `json:"id"`
@@ -24,6 +26,7 @@ type UserEntityResponse struct {
 
 	UserOrganizationActive UserOrganizationActive `json:"user_organization_active"`
 	Avatars                []Avatar               `json:"avatars"`
+	Settings               []*UserSettingResponse `json:"settings"`
 }
 
 type UserEntityResponseV2 struct {

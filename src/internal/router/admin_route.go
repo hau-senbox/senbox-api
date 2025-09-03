@@ -586,6 +586,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	}
 
+	userSettingController := &controller.UserSettingController{
+		UserSettingUsecase: &usecase.UserSettingUseCase{
+			Repo: &repository.UserSettingRepository{DBConn: dbConn},
+		},
+	}
+
 	user := engine.Group("/v1/admin/user", secureMiddleware.Secured())
 	{
 		user.GET("/search", userEntityController.SearchUser4WebAdmin)
@@ -607,6 +613,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.POST("/avatar", userEntityController.UploadAvatarV2)
 		user.PUT("/avatar/is-main", userEntityController.UpdateIsMain)
 		user.DELETE("/avatar", userEntityController.DeleteUserAvatar)
+
+		// setting
+		user.POST("/setting", secureMiddleware.ValidateSuperAdminRole(), userSettingController.UploadUserSetting)
 	}
 
 	// application

@@ -1356,3 +1356,21 @@ const (
 	ImageFeatureAvatar     ImageFeature = "avatar" // use for user avatar
 	ImageFeatureSubmission ImageFeature = "submission"
 )
+
+// user setting key
+type UserSettingKey string
+
+const (
+	UserSettingLoginDeviceLimit UserSettingKey = "login-device-limit"
+	UserSettingTest             UserSettingKey = "test"
+)
+
+func (k UserSettingKey) IsValid() bool {
+	switch k {
+	case UserSettingLoginDeviceLimit,
+		UserSettingTest:
+		return true
+	default:
+		return false
+	}
+}

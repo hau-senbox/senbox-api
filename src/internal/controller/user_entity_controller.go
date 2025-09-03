@@ -51,6 +51,7 @@ type UserEntityController struct {
 	*usecase.UploadImageUseCase
 	*usecase.UserImagesUsecase
 	*usecase.LanguagesConfigUsecase
+	*usecase.UserSettingUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -376,6 +377,9 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	// get avatars
 	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
+	// get user setting
+	settings, _ := receiver.UserSettingUseCase.GetByOwner(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -398,6 +402,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			CustomID:               userEntity.CustomID,
 			UserOrganizationActive: *userOrgActive,
 			Avatars:                avatars,
+			Settings:               settings,
 		},
 	})
 }
