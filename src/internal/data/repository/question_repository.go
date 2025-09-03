@@ -192,6 +192,10 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 		return receiver.unmarshalQRCodeGeneratorQuestion(param)
 	case value.MemoryText:
 		return receiver.unmarshalMemoryTextQuestion(param)
+	case value.Chart:
+		return receiver.unmarshalChartQuestion(param)
+	case value.Timer:
+		return receiver.unmarshalTimerQuestion(param)
 	default:
 		return receiver.unmarshalUserQuestion(param)
 	}
@@ -1128,6 +1132,46 @@ func (receiver *QuestionRepository) unmarshalQRCodeGeneratorQuestion(param Creat
 }
 
 func (receiver *QuestionRepository) unmarshalMemoryTextQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
+	status, err := value.GetStatusFromString(param.Status)
+	if err != nil {
+		return nil, err
+	}
+	var question = entity.SQuestion{
+		ID:               uuid.MustParse(param.ID),
+		Question:         param.Question,
+		QuestionType:     param.QuestionType,
+		Attributes:       datatypes.JSON(param.Attributes),
+		Status:           status,
+		EnableOnMobile:   param.EnableOnMobile,
+		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
+	}
+
+	return &question, nil
+}
+
+func (receiver *QuestionRepository) unmarshalChartQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
+	status, err := value.GetStatusFromString(param.Status)
+	if err != nil {
+		return nil, err
+	}
+	var question = entity.SQuestion{
+		ID:               uuid.MustParse(param.ID),
+		Question:         param.Question,
+		QuestionType:     param.QuestionType,
+		Attributes:       datatypes.JSON(param.Attributes),
+		Status:           status,
+		EnableOnMobile:   param.EnableOnMobile,
+		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
+	}
+
+	return &question, nil
+}
+
+func (receiver *QuestionRepository) unmarshalTimerQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
 	status, err := value.GetStatusFromString(param.Status)
 	if err != nil {
 		return nil, err
