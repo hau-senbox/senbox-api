@@ -29,7 +29,7 @@ func (uc *ManageUserLoginUseCase) ManageUserDeviceLogin(userID, deviceID string)
 		return err
 	}
 	if count >= 2 {
-		return errors.New("user has already logged in with the maximum of 2 devices")
+		return errors.New("maximum user limit has been reached")
 	}
 
 	// add device ?
