@@ -126,6 +126,7 @@ const (
 	HiddenMessageText
 
 	Timer
+	Chart
 )
 
 type DeviceStatus int
@@ -426,6 +427,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "hidden_message_text"
 	case Timer:
 		return "timer"
+	case Chart:
+		return "chart"
 	}
 
 	return ""
@@ -608,6 +611,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "hidden_message_text"
 	case Timer:
 		return "timer"
+	case Chart:
+		return "chart"
 	default:
 		return ""
 	}
@@ -835,7 +840,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return HiddenMessageText, nil
 	case "timer":
 		return Timer, nil
-
+	case "chart":
+		return Chart, nil
 	default:
 		return 0, errors.New("invalid raw value")
 	}
@@ -934,7 +940,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OutNrAverageAll,
 		OutNrLineGraph,
 		HiddenMessageText,
-		Timer:
+		Timer,
+		Chart:
 		return true
 	default:
 		return false
