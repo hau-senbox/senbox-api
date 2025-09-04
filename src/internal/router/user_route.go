@@ -76,6 +76,11 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 			DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 			SessionRepository:    sessionRepository,
+			DBConn:               dbConn,
+			ManageUserLoginUseCase: &usecase.ManageUserLoginUseCase{
+				UserDevicesLoginRepository: &repository.UserDevicesLoginRepository{DBConn: dbConn},
+				UserSettingRepositotry:     &repository.UserSettingRepository{DBConn: dbConn},
+			},
 		},
 		UpdateUserOrgInfoUseCase: &usecase.UpdateUserOrgInfoUseCase{
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
