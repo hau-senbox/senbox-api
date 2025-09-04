@@ -89,20 +89,20 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 		return nil, err
 	}
 
-	// reqRegisterDevice := request.RegisterDeviceRequest{
-	// 	DeviceUUID: req.DeviceUUID,
-	// 	InputMode:  string(value.InfoInputTypeBarcode),
-	// }
+	reqRegisterDevice := request.RegisterDeviceRequest{
+		DeviceUUID: req.DeviceUUID,
+		InputMode:  string(value.InfoInputTypeBarcode),
+	}
 
-	// if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
-	// 	UserID:   user.ID.String(),
-	// 	DeviceID: req.DeviceUUID,
-	// }); err == nil {
-	// 	_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	if err := receiver.CheckUserDeviceExist(request.RegisteringDeviceForUser{
+		UserID:   user.ID.String(),
+		DeviceID: req.DeviceUUID,
+	}); err == nil {
+		_, err = receiver.RegisteringDeviceForUser(user, reqRegisterDevice)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// check user device login
 	if req.DeviceUUID != "" {
