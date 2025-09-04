@@ -1794,7 +1794,7 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenu(tx *gorm.DB, comp
 		// Không tồn tại → create
 		menu := &entity.DepartmentMenu{
 			ID:           uuid.New(),
-			DepartmentID: uuid.MustParse(departmentID),
+			DepartmentID: departmentID,
 			ComponentID:  uuid.MustParse(componentID),
 			Order:        order,
 		}
