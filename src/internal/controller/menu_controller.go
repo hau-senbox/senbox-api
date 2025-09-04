@@ -35,6 +35,7 @@ type MenuController struct {
 	*usecase.GetOrganizationUseCase
 	*usecase.UserImagesUsecase
 	*usecase.TeacherMenuOrganizationUseCase
+	*usecase.DepartmentMenuUseCase
 }
 
 type componentResponse struct {
@@ -1485,5 +1486,55 @@ func (receiver *MenuController) UploadOrganizationAdminMenuBottom(context *gin.C
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Super admin menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) UploadDepartmentMenu(context *gin.Context) {
+	var req request.UploadSectionMenuDepartmentRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadSectionMenuUseCase.UploadDepartmentMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) GetDepartmentMenu4GW(context *gin.Context) {
+	departmentID := context.Param("department_id")
+	if departmentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "department_id is required",
+		})
+		return
+	}
+
+	res, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4GW(departmentID, false)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
 	})
 }

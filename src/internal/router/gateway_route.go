@@ -105,6 +105,35 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		},
 	}
 
+	// menu ctl
+	menuController := &controller.MenuController{
+		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
+			MenuRepository:                     &repository.MenuRepository{DBConn: dbConn},
+			ComponentRepository:                &repository.ComponentRepository{DBConn: dbConn},
+			ChildMenuRepository:                &repository.ChildMenuRepository{DBConn: dbConn},
+			ChildRepository:                    &repository.ChildRepository{DB: dbConn},
+			RoleOrgSignUpRepository:            &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			StudentMenuRepository:              &repository.StudentMenuRepository{DBConn: dbConn},
+			StudentApplicationRepository:       &repository.StudentApplicationRepository{DB: dbConn},
+			OrganizationMenuTemplateRepository: &repository.OrganizationMenuTemplateRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+			TeacherApplicationRepository:      &repository.TeacherApplicationRepository{DBConn: dbConn},
+			TeacherMenuRepository:             &repository.TeacherMenuRepository{DBConn: dbConn},
+			StaffMenuRepository:               &repository.StaffMenuRepository{DBConn: dbConn},
+			StaffApplicationRepository:        &repository.StaffApplicationRepository{DBConn: dbConn},
+			DeviceMenuRepository:              &repository.DeviceMenuRepository{DBConn: dbConn},
+			ParentMenuRepository:              &repository.ParentMenuRepository{DBConn: dbConn},
+			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
+		},
+		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
+			DepartmentMenuRepository: &repository.DepartmentRepository{DBConn: dbConn},
+			ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
 
@@ -137,6 +166,13 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		org := api.Group("/organizations")
 		{
 			org.GET("", orgCtrl.GetAllOrganizations4Gateway)
+		}
+
+		// menu
+		menu := api.Group("/menus")
+		{
+			menu.POST("/department", menuController.UploadDepartmentMenu)
+			menu.GET("/department/:department_id", menuController.GetDepartmentMenu4GW)
 		}
 	}
 }
