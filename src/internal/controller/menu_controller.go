@@ -1458,7 +1458,7 @@ func (receiver *MenuController) UploadOrganizationAdminMenuTop(context *gin.Cont
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "Super admin menu was upload successfully",
+		Message: "Organization admin menu was upload successfully",
 	})
 }
 
@@ -1485,7 +1485,7 @@ func (receiver *MenuController) UploadOrganizationAdminMenuBottom(context *gin.C
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
-		Message: "Super admin menu was upload successfully",
+		Message: "Organization admin menu was upload successfully",
 	})
 }
 

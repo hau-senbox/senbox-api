@@ -1672,9 +1672,10 @@ func (receiver *UploadSectionMenuUseCase) createOrganizationAdminMenu(tx *gorm.D
 	} else {
 		// Không tồn tại → create
 		organizationAdminMenu := &menu.OrgMenu{
-			Direction:   direction,
-			ComponentID: uuid.MustParse(componentID),
-			Order:       order,
+			OrganizationID: uuid.MustParse(organizationID),
+			Direction:      direction,
+			ComponentID:    uuid.MustParse(componentID),
+			Order:          order,
 		}
 		if err := receiver.MenuRepository.CreateOrganizationAdminWithTx(tx, organizationAdminMenu); err != nil {
 			return fmt.Errorf("create organization admin menu fail: %w", err)
