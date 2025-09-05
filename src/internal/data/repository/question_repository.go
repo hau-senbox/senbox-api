@@ -1222,7 +1222,7 @@ func (r *QuestionRepository) GetByKeyAndDB(key string, db string) (*entity.SQues
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil // Không tìm thấy thì trả nil
+			return nil, nil
 		}
 		log.Error("QuestionRepository.GetByKeyAndDB: " + err.Error())
 		return nil, errors.New("failed to get question by key and db")
