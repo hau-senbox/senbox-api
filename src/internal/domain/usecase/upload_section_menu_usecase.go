@@ -369,57 +369,57 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) error {
 	// Xóa component
 	if err := receiver.ComponentRepository.DeleteComponent(componentID, nil); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete component failed: %w", err)
+		return nil
 	}
 
 	// Xóa child menu
 	if err := receiver.ChildMenuRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete child menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa student menu
 	if err := receiver.StudentMenuRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete student menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa teacher menu
 	if err := receiver.TeacherMenuRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete teacher menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa staff menu
 	if err := receiver.StaffMenuRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete staff menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa device menu
 	if err := receiver.DeviceMenuRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete staff menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa teacher menu organization
 	if err := receiver.TeacherMenuOrganizationRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete teacher menu organization failed: %w", err)
+		return nil
 	}
 
 	// Xóa super admin menu
 	if err := receiver.MenuRepository.DeleteSuperAdminMenuByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete super admin menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa Organization admin menu
 	if err := receiver.MenuRepository.DeleteOrganizationAdminMenuByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization admin menu failed: %w", err)
+		return nil
 	}
 
 	// Xóa OrganizationMenuTemplate
 	if err := receiver.OrganizationMenuTemplateRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete organization menu template failed: %w", err)
+		return nil
 	}
 
 	// Xóa Department menu
 	if err := receiver.DepartmentRepository.DeleteByComponentID(componentID); err != nil {
-		return fmt.Errorf("UploadSectionMenuUseCase.DeleteSectionMenu: delete department menu failed: %w", err)
+		return nil
 	}
 	return nil
 }
