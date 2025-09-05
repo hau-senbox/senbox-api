@@ -41,7 +41,7 @@ func (r *StaffMenuRepository) GetByStaffID(staffID string) ([]entity.StaffMenu, 
 
 func (r *StaffMenuRepository) GetByStaffIDActive(staffID string) ([]entity.StaffMenu, error) {
 	var result []entity.StaffMenu
-	err := r.DBConn.Where("staff_id = ? AND is_show = ?", staffID, true).Find(&result).Error
+	err := r.DBConn.Where("staff_id = ?", staffID).Find(&result).Error
 	return result, err
 }
 

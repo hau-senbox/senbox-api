@@ -81,7 +81,7 @@ func (r *ParentMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.ParentMenu
 
 func (r *ParentMenuRepository) GetByParentIDActive(parentID string) ([]entity.ParentMenu, error) {
 	var result []entity.ParentMenu
-	err := r.DBConn.Where("parent_id = ? AND is_show = ?", parentID, true).Find(&result).Error
+	err := r.DBConn.Where("parent_id = ?", parentID).Find(&result).Error
 	return result, err
 }
 

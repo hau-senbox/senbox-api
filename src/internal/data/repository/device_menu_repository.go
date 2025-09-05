@@ -81,7 +81,7 @@ func (r *DeviceMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.SDeviceMen
 
 func (r *DeviceMenuRepository) GetByDeviceIDActive(deviceID string) ([]entity.SDeviceMenuV2, error) {
 	var result []entity.SDeviceMenuV2
-	err := r.DBConn.Where("device_id = ? AND is_show = ?", deviceID, true).Find(&result).Error
+	err := r.DBConn.Where("device_id = ?", deviceID).Find(&result).Error
 	return result, err
 }
 

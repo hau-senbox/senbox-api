@@ -38,7 +38,7 @@ func (r *StudentMenuRepository) GetByStudentID(studentID string) ([]entity.Stude
 
 func (r *StudentMenuRepository) GetByStudentIDActive(studentID string) ([]entity.StudentMenu, error) {
 	var result []entity.StudentMenu
-	err := r.DBConn.Where("student_id = ? AND is_show = ?", studentID, true).Find(&result).Error
+	err := r.DBConn.Where("student_id = ?", studentID).Find(&result).Error
 	return result, err
 }
 

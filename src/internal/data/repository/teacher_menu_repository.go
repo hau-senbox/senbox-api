@@ -42,7 +42,7 @@ func (r *TeacherMenuRepository) GetByTeacherID(teacherID string) ([]entity.Teach
 
 func (r *TeacherMenuRepository) GetByTeacherIDActive(teacherID string) ([]entity.TeacherMenu, error) {
 	var result []entity.TeacherMenu
-	err := r.DBConn.Where("teacher_id = ? AND is_show = ?", teacherID, true).Find(&result).Error
+	err := r.DBConn.Where("teacher_id = ?", teacherID).Find(&result).Error
 	return result, err
 }
 
