@@ -134,6 +134,22 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		},
 	}
 
+	// image ctl
+	imageController := &controller.ImageController{
+		GetImageUseCase: &usecase.GetImageUseCase{
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			UploadProvider:  s3Provider,
+		},
+		UploadImageUseCase: &usecase.UploadImageUseCase{
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			UploadProvider:  s3Provider,
+		},
+		DeleteImageUseCase: &usecase.DeleteImageUseCase{
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			UploadProvider:  s3Provider,
+		},
+	}
+
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
 
@@ -173,6 +189,12 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		{
 			menu.POST("/department", menuController.UploadDepartmentMenu)
 			menu.GET("/department/:department_id", menuController.GetDepartmentMenu4GW)
+		}
+
+		// image
+		image := api.Group("/images")
+		{
+			image.POST("/get-url", imageController.GetUrlByKey)
 		}
 	}
 }
