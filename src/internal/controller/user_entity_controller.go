@@ -52,6 +52,7 @@ type UserEntityController struct {
 	*usecase.UserImagesUsecase
 	*usecase.LanguagesConfigUsecase
 	*usecase.UserSettingUseCase
+	*usecase.OwnerAssignUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -2322,5 +2323,32 @@ func (receiver *UserEntityController) GetTeacherByUser4Gateway(context *gin.Cont
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: teacher,
+	})
+}
+
+func (receiver *UserEntityController) GetListOwner2Assign(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+
+	listOwner, err := receiver.OwnerAssignUseCase.GetListOwner2Assign(context, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get list owner",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: listOwner,
 	})
 }

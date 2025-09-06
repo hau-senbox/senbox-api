@@ -573,6 +573,19 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UploadProvider:  s3Provider,
 			},
 		},
+		OwnerAssignUseCase: &usecase.OwnerAssignUseCase{
+			TeacherRepo:    &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:      &repository.StaffApplicationRepository{DBConn: dbConn},
+			UserEntityRepo: &repository.UserEntityRepository{DBConn: dbConn},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  s3Provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+		},
 	}
 
 	userBlockSettingController := &controller.BlockSettingController{
@@ -616,6 +629,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// setting
 		user.POST("/setting", secureMiddleware.ValidateSuperAdminRole(), userSettingController.UploadUserSetting)
+
+		// assign department list
+		user.GET("/organization/:organization_id/owners-assign", userEntityController.GetListOwner2Assign)
 	}
 
 	// application
