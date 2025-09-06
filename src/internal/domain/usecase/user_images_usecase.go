@@ -223,3 +223,11 @@ func (uc *UserImagesUsecase) GetAvtIsMain4Owner(ownerID string, ownerRole value.
 
 	return avatar, nil
 }
+
+func (uc *UserImagesUsecase) GetUrlIsMain4Owner(ownerID string, ownerRole value.OwnerRole) (*string, error) {
+	avatar, err := uc.GetAvtIsMain4Owner(ownerID, ownerRole)
+	if err != nil {
+		return nil, err
+	}
+	return &avatar.ImageUrl, nil
+}

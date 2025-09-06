@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
 	"strings"
@@ -17,6 +18,7 @@ type ImageController struct {
 	*usecase.GetImageUseCase
 	*usecase.UploadImageUseCase
 	*usecase.DeleteImageUseCase
+	*usecase.UserImagesUsecase
 }
 
 type getUrlByKeyRequest struct {
@@ -273,5 +275,40 @@ func (receiver *ImageController) DeleteImage(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "image deleted successfully",
+	})
+}
+
+func (receiver *ImageController) GetUrlIsMain4Owner(context *gin.Context) {
+	var req request.GetUrlIsMain4OwnerRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// check owner role valid
+	if !value.OwnerRole(req.OwnerRole).IsValid() {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "Invalid owner role",
+		})
+		return
+	}
+
+	url, err := receiver.UserImagesUsecase.GetUrlIsMain4Owner(req.OwnerID, value.OwnerRole(req.OwnerRole))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "image was get successfully",
+		Data:    url,
 	})
 }

@@ -148,6 +148,14 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			UploadProvider:  s3Provider,
 		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
@@ -195,6 +203,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		image := api.Group("/images")
 		{
 			image.POST("/get-url", imageController.GetUrlByKey)
+			image.POST("/avatar/get-url", imageController.GetUrlIsMain4Owner)
 		}
 	}
 }
