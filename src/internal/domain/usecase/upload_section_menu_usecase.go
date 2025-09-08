@@ -393,6 +393,11 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 		return nil
 	}
 
+	// Xóa parent menu
+	if err := receiver.ParentMenuRepository.DeleteByComponentID(componentID); err != nil {
+		return nil
+	}
+
 	// Xóa device menu
 	if err := receiver.DeviceMenuRepository.DeleteByComponentID(componentID); err != nil {
 		return nil
