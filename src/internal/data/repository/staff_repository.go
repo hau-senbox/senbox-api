@@ -134,3 +134,9 @@ func (r *StaffApplicationRepository) CheckStaffBelongsToOrganizations(tx *gorm.D
 		Count(&count).Error
 	return count > 0, err
 }
+
+func (r *StaffApplicationRepository) GetByUserID(userID string) (entity.SStaffFormApplication, error) {
+	var app entity.SStaffFormApplication
+	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).First(&app).Error
+	return app, err
+}

@@ -343,3 +343,24 @@ func (uc *StaffApplicationUseCase) GetStaff4Gateway(staffID string) (*response.G
 		Avatar:         avatar,
 	}, nil
 }
+
+func (uc *StaffApplicationUseCase) GetStaffByUser4Gateway(userID string) (*response.GetStaff4Gateway, error) {
+	staff, err := uc.StaffAppRepo.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: userID,
+	})
+
+	// get avts
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
+
+	return &response.GetStaff4Gateway{
+		StaffID:        staff.ID.String(),
+		OrganizationID: staff.OrganizationID.String(),
+		StaffName:      userEntity.Username,
+		Avatar:         avatar,
+	}, nil
+}
