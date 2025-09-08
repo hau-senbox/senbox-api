@@ -74,7 +74,7 @@ func (r *StaffApplicationRepository) GetByUserIDApproved(userID string) ([]entit
 // Get by OrganizationID
 func (r *StaffApplicationRepository) GetByOrganizationID(orgID string) ([]entity.SStaffFormApplication, error) {
 	var apps []entity.SStaffFormApplication
-	err := r.DBConn.Where("organization_id = ?", orgID).Find(&apps).Error
+	err := r.DBConn.Where("organization_id = ? AND status = ?", orgID, value.Approved).Find(&apps).Error
 	return apps, err
 }
 
@@ -138,5 +138,11 @@ func (r *StaffApplicationRepository) CheckStaffBelongsToOrganizations(tx *gorm.D
 func (r *StaffApplicationRepository) GetByUserID(userID string) (entity.SStaffFormApplication, error) {
 	var app entity.SStaffFormApplication
 	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).First(&app).Error
+	return app, err
+}
+
+func (r *StaffApplicationRepository) GetAllByUserID(userID string) ([]entity.SStaffFormApplication, error) {
+	var app []entity.SStaffFormApplication
+	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).Find(&app).Error
 	return app, err
 }

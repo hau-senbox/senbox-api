@@ -364,3 +364,31 @@ func (uc *StaffApplicationUseCase) GetStaffByUser4Gateway(userID string) (*respo
 		Avatar:         avatar,
 	}, nil
 }
+
+func (uc *StaffApplicationUseCase) GetStaffsByUser4Gateway(userID string) ([]*response.GetStaff4Gateway, error) {
+	// Lấy tất cả teacher application đã được duyệt theo userID
+	staffs, err := uc.StaffAppRepo.GetAllByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lấy thông tin userEntity
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: userID,
+	})
+
+	var result []*response.GetStaff4Gateway
+	for _, staff := range staffs {
+		// Lấy avatar cho từng teacher
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
+
+		result = append(result, &response.GetStaff4Gateway{
+			StaffID:        staff.ID.String(),
+			OrganizationID: staff.OrganizationID.String(),
+			StaffName:      userEntity.Username,
+			Avatar:         avatar,
+		})
+	}
+
+	return result, nil
+}

@@ -439,3 +439,31 @@ func (uc *TeacherApplicationUseCase) GetTeacherByUser4Gateway(userID string) (*r
 		Avatar:         avatar,
 	}, nil
 }
+
+func (uc *TeacherApplicationUseCase) GetTeachersByUser4Gateway(userID string) ([]*response.GetTeacher4Gateway, error) {
+	// Lấy tất cả teacher application đã được duyệt theo userID
+	teachers, err := uc.TeacherRepo.GetAllByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lấy thông tin userEntity
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: userID,
+	})
+
+	var result []*response.GetTeacher4Gateway
+	for _, teacher := range teachers {
+		// Lấy avatar cho từng teacher
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleTeacher)
+
+		result = append(result, &response.GetTeacher4Gateway{
+			TeacherID:      teacher.ID.String(),
+			OrganizationID: teacher.OrganizationID.String(),
+			TeacherName:    userEntity.Username,
+			Avatar:         avatar,
+		})
+	}
+
+	return result, nil
+}

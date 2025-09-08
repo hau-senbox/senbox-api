@@ -77,10 +77,17 @@ func (r *TeacherApplicationRepository) GetByUserID(userID string) (entity.STeach
 	return app, err
 }
 
+// Get all by UserID
+func (r *TeacherApplicationRepository) GetAllByUserID(userID string) ([]entity.STeacherFormApplication, error) {
+	var app []entity.STeacherFormApplication
+	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).Find(&app).Error
+	return app, err
+}
+
 // Get by OrganizationID
 func (r *TeacherApplicationRepository) GetByOrganizationID(orgID string) ([]entity.STeacherFormApplication, error) {
 	var apps []entity.STeacherFormApplication
-	err := r.DBConn.Where("organization_id = ?", orgID).Find(&apps).Error
+	err := r.DBConn.Where("organization_id = ? AND status = ?", orgID, value.Approved).Find(&apps).Error
 	return apps, err
 }
 

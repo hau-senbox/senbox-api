@@ -2326,6 +2326,33 @@ func (receiver *UserEntityController) GetTeacherByUser4Gateway(context *gin.Cont
 	})
 }
 
+func (receiver *UserEntityController) GetTeachersByUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeachersByUser4Gateway(userID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get teacher",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
+	})
+}
+
 func (receiver *UserEntityController) GetStaffByUser4Gateway(context *gin.Context) {
 	userID := context.Param("user_id")
 	if userID == "" {
@@ -2337,6 +2364,33 @@ func (receiver *UserEntityController) GetStaffByUser4Gateway(context *gin.Contex
 	}
 
 	staff, err := receiver.StaffApplicationUseCase.GetStaffByUser4Gateway(userID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get staff",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: staff,
+	})
+}
+
+func (receiver *UserEntityController) GetStaffsByUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	staff, err := receiver.StaffApplicationUseCase.GetStaffsByUser4Gateway(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
