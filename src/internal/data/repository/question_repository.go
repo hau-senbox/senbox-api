@@ -198,6 +198,8 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 		return receiver.unmarshalTimerQuestion(param)
 	case value.WaterCup:
 		return receiver.unmarshalWaterCupQuestion(param)
+	case value.Body:
+		return receiver.unmarshalBodyQuestion(param)
 	default:
 		return receiver.unmarshalUserQuestion(param)
 	}
@@ -1194,6 +1196,26 @@ func (receiver *QuestionRepository) unmarshalTimerQuestion(param CreateQuestionP
 }
 
 func (receiver *QuestionRepository) unmarshalWaterCupQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
+	status, err := value.GetStatusFromString(param.Status)
+	if err != nil {
+		return nil, err
+	}
+	var question = entity.SQuestion{
+		ID:               uuid.MustParse(param.ID),
+		Question:         param.Question,
+		QuestionType:     param.QuestionType,
+		Attributes:       datatypes.JSON(param.Attributes),
+		Status:           status,
+		EnableOnMobile:   param.EnableOnMobile,
+		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
+	}
+
+	return &question, nil
+}
+
+func (receiver *QuestionRepository) unmarshalBodyQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
 	status, err := value.GetStatusFromString(param.Status)
 	if err != nil {
 		return nil, err

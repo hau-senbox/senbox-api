@@ -127,6 +127,7 @@ const (
 
 	Timer
 	Chart
+	Body
 )
 
 type DeviceStatus int
@@ -429,6 +430,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "timer"
 	case Chart:
 		return "chart"
+	case Body:
+		return "body"
 	}
 
 	return ""
@@ -613,6 +616,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "timer"
 	case Chart:
 		return "chart"
+	case Body:
+		return "body"
 	default:
 		return ""
 	}
@@ -842,6 +847,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return Timer, nil
 	case "chart":
 		return Chart, nil
+	case "body":
+		return Body, nil
 	default:
 		return 0, errors.New("invalid raw value")
 	}
@@ -941,7 +948,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		OutNrLineGraph,
 		HiddenMessageText,
 		Timer,
-		Chart:
+		Chart,
+		Body:
 		return true
 	default:
 		return false
