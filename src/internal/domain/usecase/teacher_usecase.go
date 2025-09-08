@@ -467,3 +467,28 @@ func (uc *TeacherApplicationUseCase) GetTeachersByUser4Gateway(userID string) ([
 
 	return result, nil
 }
+
+func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(userID string, organizationID string) (*response.GetTeacher4Gateway, error) {
+	teacher, err := uc.TeacherRepo.GetByUserIDAndOrgID(userID, organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if teacher == nil {
+		return nil, errors.New("teacher not found")
+	}
+
+	userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
+		ID: userID,
+	})
+
+	// get avts
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleTeacher)
+
+	return &response.GetTeacher4Gateway{
+		TeacherID:      teacher.ID.String(),
+		OrganizationID: teacher.OrganizationID.String(),
+		TeacherName:    userEntity.Username,
+		Avatar:         avatar,
+	}, nil
+}

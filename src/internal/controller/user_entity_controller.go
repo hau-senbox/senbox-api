@@ -2433,3 +2433,75 @@ func (receiver *UserEntityController) GetListOwner2Assign(context *gin.Context) 
 		Data: listOwner,
 	})
 }
+
+func (receiver *UserEntityController) GetTeacherByOrgAndUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByOrgAndUser4Gateway(userID, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get teacher",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
+	})
+}
+
+func (receiver *UserEntityController) GetStaffByOrgAndUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	teacher, err := receiver.StaffApplicationUseCase.GetStaffByOrgAndUser4Gateway(userID, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get staff",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: teacher,
+	})
+}

@@ -146,3 +146,9 @@ func (r *StaffApplicationRepository) GetAllByUserID(userID string) ([]entity.SSt
 	err := r.DBConn.Where("user_id = ? AND status = ?", userID, value.Approved).Find(&app).Error
 	return app, err
 }
+
+func (r *StaffApplicationRepository) GetByUserIDAndOrgID(userID string, orgID string) (*entity.SStaffFormApplication, error) {
+	var app *entity.SStaffFormApplication
+	err := r.DBConn.Where("user_id = ? AND organization_id = ? AND status = ?", userID, orgID, value.Approved).First(&app).Error
+	return app, err
+}
