@@ -92,6 +92,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.UserDevicesLogin{},
 		&entity.UserSetting{},
 		&entity.DepartmentMenu{},
+		&entity.DepartmentMenuOrganization{},
 	)
 
 	// Seed
