@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type DepartmentMenuOrganization struct {
@@ -14,4 +15,12 @@ type DepartmentMenuOrganization struct {
 	Order          int       `json:"order" gorm:"not null"`
 	CreatedAt      time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt      time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+// BeforeCreate hook -> generate UUID tự động
+func (dmo *DepartmentMenuOrganization) BeforeCreate(tx *gorm.DB) (err error) {
+	if dmo.ID == uuid.Nil {
+		dmo.ID = uuid.New()
+	}
+	return
 }

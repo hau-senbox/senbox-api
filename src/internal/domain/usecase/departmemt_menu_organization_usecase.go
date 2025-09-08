@@ -36,9 +36,6 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4GW(ctx *gin.Co
 
 	for _, cm := range departmentMenusOrg {
 		compID := cm.ComponentID
-		if err != nil {
-			continue // skip nếu ComponentID không hợp lệ
-		}
 		componentIDs = append(componentIDs, compID)
 		componentOrderMap[compID] = cm.Order
 	}
@@ -66,7 +63,7 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4GW(ctx *gin.Co
 	return menus, nil
 }
 
-func (uc *DepartmentMenuOrganizationUseCase) GetTeacherMenuOrg4App(
+func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(
 	ctx *gin.Context,
 	req request.GetDepartmentMenuOrganizationRequest,
 ) ([]*response.GetDepartmentMenuOrganizationResponse, error) {

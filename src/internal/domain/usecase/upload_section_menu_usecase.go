@@ -1919,14 +1919,14 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenuOrganization(tx *g
 		componentID,
 	)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("get teacher menu organization fail: %w", err)
+		return fmt.Errorf("get department menu organization fail: %w", err)
 	}
 
 	if existing != nil {
 		// Đã tồn tại → update order
 		existing.Order = order
 		if err := receiver.DepartmentMenuOrganizationRepository.UpdateWithTx(tx, existing); err != nil {
-			return fmt.Errorf("update teacher menu organization fail: %w", err)
+			return fmt.Errorf("update department menu organization fail: %w", err)
 		}
 	} else {
 		// Không tồn tại → create
@@ -1937,7 +1937,7 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenuOrganization(tx *g
 			Order:          order,
 		}
 		if err := receiver.DepartmentMenuOrganizationRepository.CreateWithTx(tx, menuOrg); err != nil {
-			return fmt.Errorf("create teacher menu organization fail: %w", err)
+			return fmt.Errorf("create department menu organization fail: %w", err)
 		}
 	}
 
