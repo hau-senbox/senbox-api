@@ -6,14 +6,16 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/consul/api"
 	"gorm.io/gorm"
 )
 
-func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig) {
+func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig, consulClient *api.Client) {
 	// init repository + usecase
 	sessionRepository := repository.SessionRepository{
 		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
@@ -22,6 +24,9 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		TokenExpireTimeInHour: time.Duration(appCfg.TokenExpireDurationInHour),
 	}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
+
+	// department gateway init
+	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 
 	s3Provider := uploader.NewS3Provider(
 		appCfg.S3.SenboxFormSubmitBucket.AccessKey,
@@ -120,17 +125,26 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
-			TeacherApplicationRepository:      &repository.TeacherApplicationRepository{DBConn: dbConn},
-			TeacherMenuRepository:             &repository.TeacherMenuRepository{DBConn: dbConn},
-			StaffMenuRepository:               &repository.StaffMenuRepository{DBConn: dbConn},
-			StaffApplicationRepository:        &repository.StaffApplicationRepository{DBConn: dbConn},
-			DeviceMenuRepository:              &repository.DeviceMenuRepository{DBConn: dbConn},
-			ParentMenuRepository:              &repository.ParentMenuRepository{DBConn: dbConn},
-			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
+			TeacherApplicationRepository:         &repository.TeacherApplicationRepository{DBConn: dbConn},
+			TeacherMenuRepository:                &repository.TeacherMenuRepository{DBConn: dbConn},
+			StaffMenuRepository:                  &repository.StaffMenuRepository{DBConn: dbConn},
+			StaffApplicationRepository:           &repository.StaffApplicationRepository{DBConn: dbConn},
+			DeviceMenuRepository:                 &repository.DeviceMenuRepository{DBConn: dbConn},
+			ParentMenuRepository:                 &repository.ParentMenuRepository{DBConn: dbConn},
+			TeacherMenuOrganizationRepository:    &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
+			DepartmentMenuRepository:             &repository.DepartmentMenuRepository{DBConn: dbConn},
+			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
 		},
 		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
 			DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
 			ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
+		},
+		DepartmentMenuOrganizationUseCase: &usecase.DepartmentMenuOrganizationUseCase{
+			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
+			ComponentRepo:                        &repository.ComponentRepository{DBConn: dbConn},
+			OrganizationRepository:               &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:                     &repository.DeviceRepository{DBConn: dbConn},
+			DepartmentGateway:                    departmentGW,
 		},
 	}
 
@@ -198,8 +212,12 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 		// menu
 		menu := api.Group("/menus")
 		{
+			// department menu
 			menu.POST("/department", menuController.UploadDepartmentMenu)
 			menu.GET("/department/:department_id", menuController.GetDepartmentMenu4GW)
+			// deparment org menu
+			menu.POST("/department/organization", menuController.UploadDepartmentMenuOrganization)
+			menu.GET("/department/:department_id/organization/:organization_id", menuController.GetDepartmentMenuOrganization4GW)
 		}
 
 		// image

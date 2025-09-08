@@ -36,6 +36,7 @@ type MenuController struct {
 	*usecase.UserImagesUsecase
 	*usecase.TeacherMenuOrganizationUseCase
 	*usecase.DepartmentMenuUseCase
+	*usecase.DepartmentMenuOrganizationUseCase
 }
 
 type componentResponse struct {
@@ -1524,7 +1525,66 @@ func (receiver *MenuController) GetDepartmentMenu4GW(context *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4GW(departmentID, false)
+	res, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4GW(departmentID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *MenuController) UploadDepartmentMenuOrganization(context *gin.Context) {
+	var req request.UploadDepartmentMenuOrganizationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadSectionMenuUseCase.UploadDepartmentMenuOrganization(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) GetDepartmentMenuOrganization4GW(context *gin.Context) {
+	departmentID := context.Param("department_id")
+	if departmentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "department_id is required",
+		})
+		return
+	}
+
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "organization_id is required",
+		})
+		return
+	}
+
+	res, err := receiver.DepartmentMenuOrganizationUseCase.GetDepartmentMenuOrg4GW(context, departmentID, organizationID)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

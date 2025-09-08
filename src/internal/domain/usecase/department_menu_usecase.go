@@ -13,7 +13,7 @@ type DepartmentMenuUseCase struct {
 	ComponentRepository      *repository.ComponentRepository
 }
 
-func (uc *DepartmentMenuUseCase) GetDepartmentMenu4GW(departmentID string, isApp bool) (response.GetDepartmentMenuResponse, error) {
+func (uc *DepartmentMenuUseCase) GetDepartmentMenu4GW(departmentID string) (response.GetDepartmentMenuResponse, error) {
 
 	// B1: Lấy các bản ghi teacher_menu
 	departmentMenus, err := uc.DepartmentMenuRepository.GetByDepartmentID(departmentID)
