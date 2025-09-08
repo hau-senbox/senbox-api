@@ -7,15 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type DepartmentRepository struct {
+type DepartmentMenuRepository struct {
 	DBConn *gorm.DB
 }
 
-func (r *DepartmentRepository) CreateWithTx(tx *gorm.DB, menu *entity.DepartmentMenu) error {
+func (r *DepartmentMenuRepository) CreateWithTx(tx *gorm.DB, menu *entity.DepartmentMenu) error {
 	return tx.Create(menu).Error
 }
 
-func (r *DepartmentRepository) UpdateWithTx(tx *gorm.DB, menu *entity.DepartmentMenu) error {
+func (r *DepartmentMenuRepository) UpdateWithTx(tx *gorm.DB, menu *entity.DepartmentMenu) error {
 	return tx.Model(&entity.DepartmentMenu{}).
 		Where("id = ?", menu.ID).
 		Updates(map[string]interface{}{
@@ -23,7 +23,7 @@ func (r *DepartmentRepository) UpdateWithTx(tx *gorm.DB, menu *entity.Department
 		}).Error
 }
 
-func (r *DepartmentRepository) DeleteByComponentID(componentID string) error {
+func (r *DepartmentMenuRepository) DeleteByComponentID(componentID string) error {
 	err := r.DBConn.Where("component_id = ?", componentID).Delete(&entity.DepartmentMenu{}).Error
 	if err != nil {
 		return errors.New("failed to delete department menu by component ID")
@@ -31,7 +31,7 @@ func (r *DepartmentRepository) DeleteByComponentID(componentID string) error {
 	return nil
 }
 
-func (r *DepartmentRepository) GetByDepartmentIDAndComponentID(tx *gorm.DB, departmentID string, componentID string) (*entity.DepartmentMenu, error) {
+func (r *DepartmentMenuRepository) GetByDepartmentIDAndComponentID(tx *gorm.DB, departmentID string, componentID string) (*entity.DepartmentMenu, error) {
 	var menu entity.DepartmentMenu
 	err := tx.
 		Where("department_id = ? AND component_id = ?", departmentID, componentID).
@@ -45,7 +45,7 @@ func (r *DepartmentRepository) GetByDepartmentIDAndComponentID(tx *gorm.DB, depa
 	return &menu, nil
 }
 
-func (r *DepartmentRepository) GetByDepartmentID(departmentID string) ([]*entity.DepartmentMenu, error) {
+func (r *DepartmentMenuRepository) GetByDepartmentID(departmentID string) ([]*entity.DepartmentMenu, error) {
 	var menus []*entity.DepartmentMenu
 	err := r.DBConn.
 		Where("department_id = ?", departmentID).

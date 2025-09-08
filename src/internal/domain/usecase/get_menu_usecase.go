@@ -11,6 +11,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,6 +39,8 @@ type GetMenuUseCase struct {
 	OrganizationMenuTemplateRepository *repository.OrganizationMenuTemplateRepository
 	ParentMenuUsecase                  *ParentMenuUseCase
 	UserImageUsecase                   *UserImagesUsecase
+	DepartmentGateway                  gateway.DepartmentGateway
+	DepartmentMenuUseCase              *DepartmentMenuUseCase
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -484,7 +487,6 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	// Get Parent Menu
 	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(userID)
-	// get menu icon key
 	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(userID, value.OwnerRoleParent)
 	menuIconKey := ""
 	if img != nil {
@@ -497,5 +499,20 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 			Components:  parentMenu.Components,
 		})
 	}
+
+	// get department menu
+	departments, _ := receiver.DepartmentGateway.GetDepartmentsByUser(context)
+	for _, department := range departments {
+		departmentMenu, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4App(department.ID)
+		if err == nil && len(departmentMenu.Components) > 0 {
+			result = append(result, response.GetMenuSectionResponse{
+				SectionName: department.Name,
+				SectionID:   department.ID,
+				MenuIconKey: department.Icon,
+				Components:  departmentMenu.Components,
+			})
+		}
+	}
+
 	return result, nil
 }

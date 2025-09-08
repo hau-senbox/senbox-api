@@ -36,7 +36,7 @@ type UploadSectionMenuUseCase struct {
 	*repository.DeviceMenuRepository
 	*repository.ParentMenuRepository
 	*repository.TeacherMenuOrganizationRepository
-	*repository.DepartmentRepository
+	*repository.DepartmentMenuRepository
 }
 
 // func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, childIDs []uuid.UUID) error {
@@ -418,7 +418,7 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 	}
 
 	// Xóa Department menu
-	if err := receiver.DepartmentRepository.DeleteByComponentID(componentID); err != nil {
+	if err := receiver.DepartmentMenuRepository.DeleteByComponentID(componentID); err != nil {
 		return nil
 	}
 	return nil
@@ -1780,7 +1780,7 @@ func (receiver *UploadSectionMenuUseCase) UploadDepartmentMenu(ctx *gin.Context,
 
 func (receiver *UploadSectionMenuUseCase) createDepartmentMenu(tx *gorm.DB, componentID string, departmentID string, order int) error {
 
-	existing, err := receiver.DepartmentRepository.GetByDepartmentIDAndComponentID(tx, departmentID, componentID)
+	existing, err := receiver.DepartmentMenuRepository.GetByDepartmentIDAndComponentID(tx, departmentID, componentID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("get department menu fail: %w", err)
 	}
@@ -1788,7 +1788,7 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenu(tx *gorm.DB, comp
 	if existing != nil {
 		// Đã tồn tại → update
 		existing.Order = order
-		if err := receiver.DepartmentRepository.UpdateWithTx(tx, existing); err != nil {
+		if err := receiver.DepartmentMenuRepository.UpdateWithTx(tx, existing); err != nil {
 			return fmt.Errorf("update department menu fail: %w", err)
 		}
 	} else {
@@ -1799,7 +1799,7 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenu(tx *gorm.DB, comp
 			ComponentID:  uuid.MustParse(componentID),
 			Order:        order,
 		}
-		if err := receiver.DepartmentRepository.CreateWithTx(tx, menu); err != nil {
+		if err := receiver.DepartmentMenuRepository.CreateWithTx(tx, menu); err != nil {
 			return fmt.Errorf("create department menu fail: %w", err)
 		}
 	}

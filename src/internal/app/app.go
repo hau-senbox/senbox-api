@@ -46,25 +46,20 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	//Establish connection to database
+	// 1. Database
 	dbConn, err := mysql.Establish(*appConfig)
 	if err != nil {
 		log.Fatal("Could not connect to database ", err)
 	}
-	//err = migrations.MigrateDevices(dbConn)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 
 	err = database.Seed(dbConn, appConfig.Config, "/internal/database/seed.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//Establish connection to google sheet
+	// 2. Spreadsheet
 	ctx := context.Background()
 	userSpreadsheet, err := sheet.NewUserSpreadsheet(*appConfig, ctx)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,37 +69,18 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 		log.Fatal(err)
 	}
 
-	//Initial server
-	handler := gin.New()
-	handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
-	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm)
-
-	docs.SwaggerInfo.BasePath = "/"
-	handler.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	httpServer := common.NewServer(handler, common.Port(appConfig.Config.HTTP.Port))
-
-	log.Debug(fmt.Sprintf("Starting HTTP server on port %s", appConfig.Config.HTTP.Port))
-	log.Info(fmt.Sprintf("Starting HTTP server on port %s", appConfig.Config.HTTP.Port))
-
-	// Waiting signal
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
+	// 3. Consul client setup
 	consulHost := appConfig.Config.Consul.Host
 	if consulHost == "" {
-		// Fallback to localhost if the host is not set in the config
 		consulHost = "localhost"
 	}
 
-	// Consul client setup
 	client, err := api.NewClient(&api.Config{
-		Address: fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port), // Consul server address
+		Address: fmt.Sprintf("%s:%s", consulHost, appConfig.Config.Consul.Port),
 		HttpClient: &http.Client{
-			Timeout: 30 * time.Second, // Increase timeout to 30 seconds
+			Timeout: 30 * time.Second,
 		},
 	})
-
 	if err != nil {
 		log.Fatalf("Failed to create Consul client: %v", err)
 	}
@@ -112,7 +88,21 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	setupConsul(client, consulHost, appConfig)
 	go updateHealthCheck(client)
 	usecase.ConsulClient = client
+
+	// 4. Init server & routes
+	handler := gin.New()
+	handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
+	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm, client)
+
+	docs.SwaggerInfo.BasePath = "/"
+	handler.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	handler.GET("/health", healthCheck)
+
+	httpServer := common.NewServer(handler, common.Port(appConfig.Config.HTTP.Port))
+
+	// 5. Wait signals
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
@@ -123,7 +113,7 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 		deregisterConsul(client)
 	}
 
-	// Shutdown
+	// 6. Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
 		log.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))

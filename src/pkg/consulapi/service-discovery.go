@@ -6,26 +6,30 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"sen-global-api/internal/domain/usecase"
 	"sync"
 	"time"
 
 	"github.com/hashicorp/consul/api"
 )
 
-// ServiceDiscovery - Struct to hold the Consul client and service name.
-type ServiceDiscovery struct {
-	ConsulClient *api.Client
-	ServiceName  string
+type ServiceDiscovery interface {
+	DiscoverService() (*api.CatalogService, error)
+	CallAPI(service *api.CatalogService, endpoint, method string, body []byte, headers map[string]string) (string, error)
+}
+
+// serviceDiscovery - Struct to hold the Consul client and service name.
+type serviceDiscovery struct {
+	consulClient *api.Client
+	serviceName  string
 	once         sync.Once
 }
 
-// ServiceDiscoveryMap - A map to store ServiceDiscovery instances for each service name.
-var serviceDiscoveryMap = make(map[string]*ServiceDiscovery)
+// serviceDiscoveryMap - A map to store serviceDiscovery instances for each service name.
+var serviceDiscoveryMap = make(map[string]*serviceDiscovery)
 var mapMutex sync.Mutex
 
-// NewServiceDiscovery - Constructor to initialize the ServiceDiscovery with Consul client and service name.
-func NewServiceDiscovery(serviceName string) (*ServiceDiscovery, error) {
+// NewServiceDiscovery - Constructor to initialize the serviceDiscovery with Consul client and service name.
+func NewServiceDiscovery(client *api.Client, serviceName string) (*serviceDiscovery, error) {
 	// Lock the map to avoid race condition while checking or inserting
 	mapMutex.Lock()
 	defer mapMutex.Unlock()
@@ -35,13 +39,13 @@ func NewServiceDiscovery(serviceName string) (*ServiceDiscovery, error) {
 		return sd, nil // Return existing instance
 	}
 
-	if usecase.ConsulClient == nil {
+	if client == nil {
 		return nil, fmt.Errorf("error while creating Consul client")
 	}
 
-	sd := &ServiceDiscovery{ConsulClient: usecase.ConsulClient, ServiceName: serviceName}
+	sd := &serviceDiscovery{consulClient: client, serviceName: serviceName}
 
-	// Use sync.Once to ensure that the ServiceDiscovery setup runs only once
+	// Use sync.Once to ensure that the serviceDiscovery setup runs only once
 	sd.once.Do(func() {
 		// Store the instance in the map
 		serviceDiscoveryMap[serviceName] = sd
@@ -51,15 +55,15 @@ func NewServiceDiscovery(serviceName string) (*ServiceDiscovery, error) {
 }
 
 // DiscoverService - Function to discover a service from Consul.
-func (sd *ServiceDiscovery) DiscoverService() (*api.CatalogService, error) {
+func (sd *serviceDiscovery) DiscoverService() (*api.CatalogService, error) {
 	// Query the service in Consul
-	services, _, err := sd.ConsulClient.Catalog().Service(sd.ServiceName, "", nil)
+	services, _, err := sd.consulClient.Catalog().Service(sd.serviceName, "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching service: %v", err)
 	}
 
 	if len(services) == 0 {
-		return nil, fmt.Errorf("service %s not found in Consul", sd.ServiceName)
+		return nil, fmt.Errorf("service %s not found in Consul", sd.serviceName)
 	}
 
 	// Randomly select one service instance (can be enhanced for load balancing)
@@ -69,10 +73,9 @@ func (sd *ServiceDiscovery) DiscoverService() (*api.CatalogService, error) {
 }
 
 // CallAPI - Function to send an HTTP request to the discovered service (supports GET, PUT, PATCH, DELETE, POST, etc.).
-func CallAPI(service *api.CatalogService, endpoint, method string, body []byte, headers map[string]string) (string, error) {
+func (sd *serviceDiscovery) CallAPI(service *api.CatalogService, endpoint, method string, body []byte, headers map[string]string) (string, error) {
 	// Build the API URL using service address and port
 	url := fmt.Sprintf("http://%s:%d%s", service.ServiceAddress, service.ServicePort, endpoint)
-
 	// Create a new HTTP request
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {

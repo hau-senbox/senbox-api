@@ -37,6 +37,7 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 				context.AbortWithStatus(http.StatusForbidden)
 			}
 			context.Set("user_id", *userID)
+			context.Set("token", tokenString)
 			context.Next()
 		} else {
 			context.AbortWithStatus(http.StatusUnauthorized)

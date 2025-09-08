@@ -129,7 +129,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig)
 			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
 		},
 		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
-			DepartmentMenuRepository: &repository.DepartmentRepository{DBConn: dbConn},
+			DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
 			ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
 		},
 	}

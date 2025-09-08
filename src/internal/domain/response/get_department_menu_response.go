@@ -1,5 +1,7 @@
 package response
 
 type GetDepartmentMenuResponse struct {
-	Components []ComponentResponse `json:"components"`
+	DepartmentID   string              `json:"department_id,omitempty"`
+	DepartmentName string              `json:"department_name,omitempty"`
+	Components     []ComponentResponse `json:"components"`
 }

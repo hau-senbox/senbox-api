@@ -6,14 +6,16 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/consul/api"
 	"gorm.io/gorm"
 )
 
-func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig) {
+func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, consulClient *api.Client) {
 	sessionRepository := repository.SessionRepository{
 		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		AuthorizeEncryptKey:    config.AuthorizeEncryptKey,
@@ -31,6 +33,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		config.S3.SenboxFormSubmitBucket.CloudfrontKeyGroupID,
 		config.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
+
+	// department gateway init
+	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 
 	childUsecase := usecase.NewChildUseCase(
 		&repository.ChildRepository{DB: dbConn},
@@ -282,6 +287,11 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 					UploadProvider:  provider,
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
+			},
+			DepartmentGateway: departmentGW,
+			DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
+				DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
+				ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
 			},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
