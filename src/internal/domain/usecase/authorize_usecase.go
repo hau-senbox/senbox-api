@@ -105,7 +105,7 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	}
 
 	// check user device login
-	if req.DeviceUUID != "" {
+	if req.DeviceUUID != "" && req.Type == "attendance" {
 		err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogin(user.ID.String(), req.DeviceUUID)
 		if err != nil {
 			log.Error("AuthorizeUseCase.UserLoginUsecase.HandleUserDeviceLogin: " + err.Error())

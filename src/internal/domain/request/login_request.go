@@ -1,6 +1,7 @@
 package request
 
 type UserLoginFromDeviceReqest struct {
+	Type       string `json:"type"`
 	Username   string `json:"username" binding:"required"`
 	Password   string `json:"password" binding:"required"`
 	DeviceUUID string `json:"device_uuid" binding:"required"`
