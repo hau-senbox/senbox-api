@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -105,7 +106,7 @@ func (receiver AuthorizeUseCase) UserLoginUsecase(req request.UserLoginFromDevic
 	}
 
 	// check user device login
-	if req.DeviceUUID != "" && req.Type == "attendance" {
+	if req.DeviceUUID != "" && strings.TrimSpace(strings.ToLower(req.Type)) != "attendance" {
 		err := receiver.ManageUserLoginUseCase.ManageUserDeviceLogin(user.ID.String(), req.DeviceUUID)
 		if err != nil {
 			log.Error("AuthorizeUseCase.UserLoginUsecase.HandleUserDeviceLogin: " + err.Error())
