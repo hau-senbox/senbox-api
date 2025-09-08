@@ -200,6 +200,14 @@ func (receiver *DeviceController) GetAllDeviceByOrgID(c *gin.Context) {
 		})
 	}
 
+	// Lọc theo nick_name nếu có
+	searchNickName := c.Query("nick_name")
+	if searchNickName != "" {
+		deviceResponse = lo.Filter(deviceResponse, func(d response.DeviceResponseV2, _ int) bool {
+			return strings.Contains(strings.ToLower(d.DeviceNickName), strings.ToLower(searchNickName))
+		})
+	}
+
 	// sort by CreatedIndex asc
 	sort.Slice(deviceResponse, func(i, j int) bool {
 		return deviceResponse[i].CreatedIndex < deviceResponse[j].CreatedIndex
