@@ -19,9 +19,10 @@ type AuthorizeUseCase struct {
 	*repository.DeviceRepository
 	repository.SessionRepository
 	*repository.OrganizationRepository
-	UserEntityUseCase      *UserEntityUseCase
-	DBConn                 *gorm.DB
-	ManageUserLoginUseCase *ManageUserLoginUseCase
+	UserEntityUseCase       *UserEntityUseCase
+	DBConn                  *gorm.DB
+	ManageUserLoginUseCase  *ManageUserLoginUseCase
+	UpdateUserEntityUseCase *UpdateUserEntityUseCase
 }
 
 func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*response.LoginResponseData, error) {
@@ -78,6 +79,9 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	token.OrganizationAdmin = orgAdminResp
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserID)
+
+	// set relogin false sau
+	receiver.UpdateUserEntityUseCase.UpdateReLogin(user.ID.String(), false)
 	return token, nil
 }
 

@@ -80,6 +80,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				DeviceRepository:     &repository.DeviceRepository{DBConn: dbConn},
 				SessionRepository:    sessionRepository,
 				DBConn:               dbConn,
+				UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
+					UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+				},
 			},
 		}
 		v1.POST("/login", loginController.Login)
@@ -636,7 +639,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/organization/:organization_id/owners-assign", userEntityController.GetListOwner2Assign)
 
 		// re logimn
-		user.PUT("/re-login", userEntityController.UpdateReLoginWeb)
+		user.PUT("/set-relogin", userEntityController.SetReLogin)
 	}
 
 	// application

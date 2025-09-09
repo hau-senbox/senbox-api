@@ -1205,13 +1205,30 @@ func (r *UserEntityRepository) UpdateCustomIDByUserID(userID uuid.UUID, customID
 	return nil
 }
 
-func (r *UserEntityRepository) UpdateReLoginWeb(userID string, relogin *bool) error {
+func (r *UserEntityRepository) SetReLogin() error {
+	result := r.DBConn.Session(&gorm.Session{AllowGlobalUpdate: true}).
+		Model(&entity.SUserEntity{}).
+		Update("re_login_web", true)
+
+	if result.Error != nil {
+		log.Error("UserEntityRepository.UpdateReLoginWeb: " + result.Error.Error())
+		return errors.New("failed to update custom_id")
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("no rows affected; user not found")
+	}
+
+	return nil
+}
+
+func (r *UserEntityRepository) UpdateReLogin(userID string, relogin *bool) error {
 	result := r.DBConn.Model(&entity.SUserEntity{}).
 		Where("id = ?", userID).
 		Update("re_login_web", relogin)
 
 	if result.Error != nil {
-		log.Error("UserEntityRepository.UpdateReLoginWeb: " + result.Error.Error())
+		log.Error("UserEntityRepository.UpdateReLogin: " + result.Error.Error())
 		return errors.New("failed to update custom_id")
 	}
 
