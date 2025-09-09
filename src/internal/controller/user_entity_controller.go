@@ -171,6 +171,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			IsSuperAdmin:        userEntity.IsSuperAdmin(),
 			Avatars:             avatars,
 			StudentOrganization: studentOrgs,
+			ReLoginWeb:          userEntity.ReLoginWeb,
 		},
 	})
 }

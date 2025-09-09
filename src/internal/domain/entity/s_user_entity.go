@@ -12,22 +12,23 @@ import (
 )
 
 type SUserEntity struct {
-	ID        uuid.UUID `gorm:"type:char(36);primary_key"`
-	Username  string    `gorm:"type:varchar(255);not null;default:''"`
-	Fullname  string    `gorm:"type:varchar(255);not null;default:''"`
-	Nickname  string    `gorm:"type:varchar(255);not null;default:''"`
-	Phone     string    `gorm:"type:varchar(255);not null;default:''"`
-	Email     string    `gorm:"type:varchar(255);not null;default:''"`
-	Birthday  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
-	QRLogin   string    `gorm:"type:varchar(255);not null;default:''"`
-	Avatar    string    `gorm:"type:varchar(255);not null;default:''"`
-	AvatarURL string    `gorm:"type:longtext;not null;default:''"`
-	Password  string    `gorm:"type:varchar(255);not null;default:''"`
-	IsBlocked bool      `gorm:"type:tinyint;not null;default:0"`
-	BlockedAt time.Time `gorm:"type:datetime"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
-	CustomID  string    `gorm:"column:custom_id;type:varchar(255);not null;default:''"`
+	ID         uuid.UUID `gorm:"type:char(36);primary_key"`
+	Username   string    `gorm:"type:varchar(255);not null;default:''"`
+	Fullname   string    `gorm:"type:varchar(255);not null;default:''"`
+	Nickname   string    `gorm:"type:varchar(255);not null;default:''"`
+	Phone      string    `gorm:"type:varchar(255);not null;default:''"`
+	Email      string    `gorm:"type:varchar(255);not null;default:''"`
+	Birthday   time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	QRLogin    string    `gorm:"type:varchar(255);not null;default:''"`
+	Avatar     string    `gorm:"type:varchar(255);not null;default:''"`
+	AvatarURL  string    `gorm:"type:longtext;not null;default:''"`
+	Password   string    `gorm:"type:varchar(255);not null;default:''"`
+	IsBlocked  bool      `gorm:"type:tinyint;not null;default:0"`
+	BlockedAt  time.Time `gorm:"type:datetime"`
+	CreatedAt  time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	UpdatedAt  time.Time `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CustomID   string    `gorm:"column:custom_id;type:varchar(255);not null;default:''"`
+	ReLoginWeb bool      `gorm:"column:re_login_web;type:tinyint;not null;default:0"`
 
 	// Many-to-many relationship with roles
 	Roles []SRole `gorm:"many2many:s_user_roles;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:role_id"`

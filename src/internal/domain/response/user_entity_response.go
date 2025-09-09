@@ -56,6 +56,7 @@ type UserEntityResponseV2 struct {
 	Avatars []Avatar `json:"avatars"`
 
 	StudentOrganization []StudentOrganization `json:"student_organization"`
+	ReLoginWeb          bool                  `json:"re_login_web"`
 }
 
 type UserEntityResponseData struct {
