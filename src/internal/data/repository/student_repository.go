@@ -60,8 +60,8 @@ func (r *StudentApplicationRepository) Update(app *entity.SStudentFormApplicatio
 }
 
 // Delete by ID
-func (r *StudentApplicationRepository) Delete(id int64) error {
-	return r.DB.Delete(&entity.SStudentFormApplication{}, id).Error
+func (r *StudentApplicationRepository) DeleteByOrganizationID(studentID string, organizationID string) error {
+	return r.DB.Where("student_id = ? AND organization_id = ?", studentID, organizationID).Delete(&entity.SStudentFormApplication{}).Error
 }
 
 // Get by UserID
