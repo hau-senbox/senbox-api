@@ -422,10 +422,22 @@ func (uc *StudentApplicationUseCase) GetStudentOrganizationsByUser(userID string
 	}
 
 	res := make([]response.StudentOrganization, 0, len(students))
+	seen := make(map[string]bool) // track org.ID đã thêm
+
 	for _, s := range students {
 		org, _ := uc.OrganizationRepo.GetByID(s.OrganizationID.String())
+		if org == nil {
+			continue
+		}
+
+		orgID := org.ID.String()
+		if seen[orgID] {
+			continue
+		}
+		seen[orgID] = true
+
 		res = append(res, response.StudentOrganization{
-			ID:               org.ID.String(),
+			ID:               orgID,
 			OrganizationName: org.OrganizationName,
 			AvatarURL:        org.AvatarURL,
 		})
