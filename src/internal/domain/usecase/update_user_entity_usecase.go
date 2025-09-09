@@ -30,3 +30,7 @@ func (uc *UpdateUserEntityUseCase) UpdateCustomIDByUserID(req request.AddCustomI
 
 	return uc.UserEntityRepository.UpdateCustomIDByUserID(userUUID, req.CustomID)
 }
+
+func (uc *UpdateUserEntityUseCase) UpdateReLoginWeb(req request.UpdateReLoginWebRequest) error {
+	return uc.UserEntityRepository.UpdateReLoginWeb(req.UserID, req.ReLogin)
+}

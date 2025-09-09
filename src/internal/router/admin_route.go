@@ -634,6 +634,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// assign department list
 		user.GET("/organization/:organization_id/owners-assign", userEntityController.GetListOwner2Assign)
+
+		// re logimn
+		user.PUT("/re-login", userEntityController.UpdateReLoginWeb)
 	}
 
 	// application

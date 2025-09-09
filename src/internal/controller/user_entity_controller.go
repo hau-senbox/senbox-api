@@ -2510,3 +2510,27 @@ func (receiver *UserEntityController) GetStaffByOrgAndUser4Gateway(context *gin.
 		Data: teacher,
 	})
 }
+
+func (receiver *UserEntityController) UpdateReLoginWeb(context *gin.Context) {
+	var req request.UpdateReLoginWebRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UpdateUserEntityUseCase.UpdateReLoginWeb(req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+	})
+}
