@@ -386,6 +386,9 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	// get user setting
 	settings, _ := receiver.UserSettingUseCase.GetByOwner(userEntity.ID.String())
 
+	// get org name of student for parent
+	studentOrgs, _ := receiver.StudentApplicationUseCase.GetStudentOrganizationsByUser(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -409,6 +412,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			UserOrganizationActive: *userOrgActive,
 			Avatars:                avatars,
 			Settings:               settings,
+			StudentOrganization:    studentOrgs,
 		},
 	})
 }

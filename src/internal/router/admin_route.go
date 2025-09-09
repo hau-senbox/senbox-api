@@ -639,7 +639,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.GET("/organization/:organization_id/owners-assign", userEntityController.GetListOwner2Assign)
 
 		// re logimn
-		user.PUT("/set-relogin", userEntityController.SetReLogin)
+		user.PUT("/set-relogin", secureMiddleware.ValidateSuperAdminRole(), userEntityController.SetReLogin)
 	}
 
 	// application
