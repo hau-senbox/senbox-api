@@ -144,29 +144,33 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	// get avatars
 	avatars, _ := receiver.UserImagesUsecase.GetAvt4Owner(userEntity.ID.String(), value.OwnerRoleUser)
 
+	// get org name of student for parent
+	studentOrgs, _ := receiver.StudentApplicationUseCase.GetStudentOrganizationsByUser(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
-			ID:                userEntity.ID.String(),
-			Username:          userEntity.Username,
-			Fullname:          userEntity.Fullname,
-			Nickname:          userEntity.Nickname,
-			Phone:             userEntity.Phone,
-			Email:             userEntity.Email,
-			Dob:               userEntity.Birthday.Format("2006-01-02"),
-			QRLogin:           userEntity.QRLogin,
-			Avatar:            userEntity.Avatar,
-			AvatarURL:         userEntity.AvatarURL,
-			IsBlocked:         userEntity.IsBlocked,
-			BlockedAt:         userEntity.BlockedAt.Format("2006-01-02"),
-			Organization:      organizations,
-			CreatedAt:         userEntity.CreatedAt.Format("2006-01-02"),
-			Roles:             &roleListResponse,
-			Devices:           &deviceListResponse,
-			OrganizationAdmin: orgAdminResp,
-			IsDeactive:        isDeactive,
-			IsSuperAdmin:      userEntity.IsSuperAdmin(),
-			Avatars:           avatars,
+			ID:                  userEntity.ID.String(),
+			Username:            userEntity.Username,
+			Fullname:            userEntity.Fullname,
+			Nickname:            userEntity.Nickname,
+			Phone:               userEntity.Phone,
+			Email:               userEntity.Email,
+			Dob:                 userEntity.Birthday.Format("2006-01-02"),
+			QRLogin:             userEntity.QRLogin,
+			Avatar:              userEntity.Avatar,
+			AvatarURL:           userEntity.AvatarURL,
+			IsBlocked:           userEntity.IsBlocked,
+			BlockedAt:           userEntity.BlockedAt.Format("2006-01-02"),
+			Organization:        organizations,
+			CreatedAt:           userEntity.CreatedAt.Format("2006-01-02"),
+			Roles:               &roleListResponse,
+			Devices:             &deviceListResponse,
+			OrganizationAdmin:   orgAdminResp,
+			IsDeactive:          isDeactive,
+			IsSuperAdmin:        userEntity.IsSuperAdmin(),
+			Avatars:             avatars,
+			StudentOrganization: studentOrgs,
 		},
 	})
 }

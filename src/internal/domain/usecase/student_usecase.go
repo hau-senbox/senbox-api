@@ -410,3 +410,26 @@ func (uc *StudentApplicationUseCase) AddCustomID(req request.AddCustomId2Student
 	// Lưu lại
 	return uc.StudentAppRepo.Update(student)
 }
+
+func (uc *StudentApplicationUseCase) GetStudentsByUser(userID string) ([]entity.SStudentFormApplication, error) {
+	return uc.StudentAppRepo.GetByUserIDApproved(userID)
+}
+
+func (uc *StudentApplicationUseCase) GetStudentOrganizationsByUser(userID string) ([]response.StudentOrganization, error) {
+	students, err := uc.GetStudentsByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]response.StudentOrganization, 0, len(students))
+	for _, s := range students {
+		org, _ := uc.OrganizationRepo.GetByID(s.OrganizationID.String())
+		res = append(res, response.StudentOrganization{
+			ID:               org.ID.String(),
+			OrganizationName: org.OrganizationName,
+			AvatarURL:        org.AvatarURL,
+		})
+	}
+
+	return res, nil
+}

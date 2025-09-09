@@ -54,6 +54,8 @@ type UserEntityResponseV2 struct {
 	OrganizationAdmin *OrganizationAdmin `json:"organization_admin"`
 
 	Avatars []Avatar `json:"avatars"`
+
+	StudentOrganization []StudentOrganization `json:"student_organization"`
 }
 
 type UserEntityResponseData struct {
@@ -98,4 +100,11 @@ type GetUser4Gateway struct {
 	UserID   string `json:"id"`
 	UserName string `json:"name"`
 	Avatar   Avatar `json:"avatar"`
+}
+
+type StudentOrganization struct {
+	ID               string `json:"id"`
+	OrganizationName string `json:"organization_name"`
+	Avatar           string `json:"avatar"`
+	AvatarURL        string `json:"avatar_url"`
 }

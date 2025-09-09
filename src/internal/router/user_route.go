@@ -150,7 +150,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
-			DeviceRepo: &repository.DeviceRepository{DBConn: dbConn},
+			DeviceRepo:       &repository.DeviceRepository{DBConn: dbConn},
+			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 		UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
