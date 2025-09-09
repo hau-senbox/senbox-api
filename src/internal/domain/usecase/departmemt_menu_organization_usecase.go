@@ -63,10 +63,7 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4GW(ctx *gin.Co
 	return menus, nil
 }
 
-func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(
-	ctx *gin.Context,
-	req request.GetDepartmentMenuOrganizationRequest,
-) ([]*response.GetDepartmentMenuOrganizationResponse, error) {
+func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.Context, req request.GetDepartmentMenuOrganizationRequest) ([]*response.GetDepartmentMenuOrganizationResponse, error) {
 
 	// 1. Kiểm tra device có trong org hay không
 	isExist, err := uc.DeviceRepository.CheckDeviceExistInOrganization(req.DeviceID, req.OrganizationID)
@@ -123,7 +120,7 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(
 		orgInfo, _ := uc.OrganizationRepository.GetByID(req.OrganizationID)
 
 		departmentOrgMenus := &response.GetDepartmentMenuOrganizationResponse{
-			Section:     department.ID + " Menu At " + orgInfo.OrganizationName,
+			Section:     department.Name + " Menu At " + orgInfo.OrganizationName,
 			MenuIconKey: department.Icon,
 			Components:  menus,
 		}

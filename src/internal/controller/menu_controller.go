@@ -1598,3 +1598,53 @@ func (receiver *MenuController) GetDepartmentMenuOrganization4GW(context *gin.Co
 		Data: res,
 	})
 }
+
+func (receiver *MenuController) GetDepartmentMenuOrganization4App(context *gin.Context) {
+	var req request.GetDepartmentMenuOrganizationRequest
+
+	userId, exists := context.Get("user_id")
+	if !exists {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "user_id is required",
+		})
+		return
+	}
+
+	deviceID := context.Param("device_id")
+	if deviceID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "device_id is required",
+		})
+		return
+	}
+
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "organization_id is required",
+		})
+		return
+	}
+
+	// add to request
+	req.UserID = userId.(string)
+	req.DeviceID = deviceID
+	req.OrganizationID = organizationID
+
+	res, err := receiver.DepartmentMenuOrganizationUseCase.GetDepartmentMenuOrg4App(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}

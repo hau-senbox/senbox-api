@@ -336,6 +336,17 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
+			DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
+			ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
+		},
+		DepartmentMenuOrganizationUseCase: &usecase.DepartmentMenuOrganizationUseCase{
+			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
+			ComponentRepo:                        &repository.ComponentRepository{DBConn: dbConn},
+			DeviceRepository:                     &repository.DeviceRepository{DBConn: dbConn},
+			OrganizationRepository:               &repository.OrganizationRepository{DBConn: dbConn},
+			DepartmentGateway:                    departmentGW,
+		},
 	}
 
 	componentController := &controller.ComponentController{
@@ -516,6 +527,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/common", menuController.GetCommonMenu)
 		userMenu.GET("/common-by-user", menuController.GetCommonMenuByUser)
 		userMenu.POST("/teacher/organization", menuController.GetTeacherMenuOrganization4App)
+		// department menu org
+		userMenu.GET("/department/device/:device_id/organization/:organization_id", menuController.GetDepartmentMenuOrganization4App)
 	}
 
 	component := engine.Group("v1/component", secureMiddleware.Secured())
