@@ -102,29 +102,40 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			}
 		} else {
 			// Create component mới
-			component.ID = uuid.New()
+			componentID = uuid.New().String()
+			component.ID = uuid.MustParse(componentID)
 			if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
 				tx.Rollback()
 				return fmt.Errorf("create component fail: %w", err)
 			}
 			isNewComp = true
 		}
-
-		componentID = component.ID.String()
 	}
 
 	// Upsert organization setting
 	setting := &entity.OrganizationSetting{
 		OrganizationID:     req.OrganizationID,
 		DeviceID:           req.DeviceID,
-		IsViewMessageBox:   req.IsViewMessageBox,
-		IsShowMessage:      req.IsShowMessage,
 		MessageBox:         req.MessageBox,
-		IsDeactiveApp:      req.IsDeactiveApp,
 		MessageDeactiveApp: req.MessageDeactiveApp,
-		IsDeactiveTopMenu:  req.IsDeactiveTopMenu,
 		MessageTopMenu:     req.MessageTopMenu,
 		TopMenuPassword:    req.TopMenuPassword,
+	}
+
+	if req.IsViewMessageBox != nil {
+		setting.IsViewMessageBox = *req.IsViewMessageBox
+	}
+	if req.IsShowMessage != nil {
+		setting.IsShowMessage = *req.IsShowMessage
+	}
+	if req.IsDeactiveApp != nil {
+		setting.IsDeactiveApp = *req.IsDeactiveApp
+	}
+	if req.IsDeactiveTopMenu != nil {
+		setting.IsDeactiveTopMenu = *req.IsDeactiveTopMenu
+	}
+	if req.IsShowSpecialBtn != nil {
+		setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
 	}
 
 	if componentID != "" {
@@ -143,37 +154,53 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 
 	if existingSetting != nil {
 		setting.ID = existingSetting.ID
-		// Merge dữ liệu
-		if req.IsViewMessageBox == false && req.IsShowMessage == false && req.MessageBox == "" {
-			setting.IsViewMessageBox = existingSetting.IsViewMessageBox
-			setting.IsShowMessage = existingSetting.IsShowMessage
-			setting.MessageBox = existingSetting.MessageBox
+		if req.IsViewMessageBox != nil {
+			existingSetting.IsViewMessageBox = *req.IsViewMessageBox
+
+		}
+		if req.IsShowMessage != nil {
+			existingSetting.IsShowMessage = *req.IsShowMessage
+		}
+
+		if req.MessageBox != "" {
+			existingSetting.MessageBox = req.MessageBox
 		}
 
 		if req.IsShowSpecialBtn != nil {
-			setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
+			existingSetting.IsShowSpecialBtn = *req.IsShowSpecialBtn
 		}
 
-		if req.IsDeactiveApp == false && req.MessageDeactiveApp == "" {
-			setting.IsDeactiveApp = existingSetting.IsDeactiveApp
-			setting.MessageDeactiveApp = existingSetting.MessageDeactiveApp
+		if req.IsDeactiveApp != nil {
+			existingSetting.IsDeactiveApp = *req.IsDeactiveApp
 		}
 
-		if req.IsDeactiveTopMenu == false && req.MessageTopMenu == "" && req.TopMenuPassword == "" {
-			setting.IsDeactiveTopMenu = existingSetting.IsDeactiveTopMenu
-			setting.MessageTopMenu = existingSetting.MessageTopMenu
-			setting.TopMenuPassword = existingSetting.TopMenuPassword
+		if req.MessageDeactiveApp != "" {
+			existingSetting.MessageDeactiveApp = req.MessageDeactiveApp
+		}
+
+		if req.IsDeactiveTopMenu != nil {
+			existingSetting.IsDeactiveTopMenu = *req.IsDeactiveTopMenu
+		}
+
+		if req.MessageTopMenu != "" {
+			existingSetting.MessageTopMenu = req.MessageTopMenu
+		}
+
+		if req.TopMenuPassword != "" {
+			existingSetting.TopMenuPassword = req.TopMenuPassword
 		}
 
 		// Merge component
-		if !isNewComp && componentID == "" {
-			setting.ComponentID = existingSetting.ComponentID
+		if isNewComp && componentID != "" {
+			existingSetting.ComponentID = componentID
 		}
-		if err := u.Repo.UpdateWithTx(tx, setting); err != nil {
+
+		if err := u.Repo.UpdateWithTx(tx, existingSetting); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("update organization setting fail: %w", err)
 		}
 	} else {
+		setting.CreatedAt = time.Now()
 		if err := u.Repo.CreateWithTx(tx, setting); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("create organization setting fail: %w", err)

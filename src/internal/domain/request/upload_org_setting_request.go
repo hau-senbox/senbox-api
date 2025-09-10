@@ -3,13 +3,13 @@ package request
 type UploadOrgSettingRequest struct {
 	OrganizationID     string                      `json:"organization_id"`
 	DeviceID           string                      `json:"device_id"`
-	IsViewMessageBox   bool                        `json:"is_view_message_box"`
-	IsShowMessage      bool                        `json:"is_show_message"`
+	IsViewMessageBox   *bool                       `json:"is_view_message_box"`
+	IsShowMessage      *bool                       `json:"is_show_message"`
 	MessageBox         string                      `json:"message_box"`
 	IsShowSpecialBtn   *bool                       `json:"is_show_special_btn"`
-	IsDeactiveApp      bool                        `json:"is_deactive_app"`
+	IsDeactiveApp      *bool                       `json:"is_deactive_app"`
 	MessageDeactiveApp string                      `json:"message_deactive_app"`
-	IsDeactiveTopMenu  bool                        `json:"is_deactive_top_menu"`
+	IsDeactiveTopMenu  *bool                       `json:"is_deactive_top_menu"`
 	MessageTopMenu     string                      `json:"message_top_menu"`
 	TopMenuPassword    string                      `json:"top_menu_password"`
 	Component          UploadOrgSettingMenuRequest `json:"component"`
