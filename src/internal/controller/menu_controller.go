@@ -1648,3 +1648,28 @@ func (receiver *MenuController) GetDepartmentMenuOrganization4App(context *gin.C
 		Data: res,
 	})
 }
+
+func (receiver *MenuController) UploadClassroomMenu(context *gin.Context) {
+	var req request.UploadSectionMenuClassroomRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadSectionMenuUseCase.UploadClassroomMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}

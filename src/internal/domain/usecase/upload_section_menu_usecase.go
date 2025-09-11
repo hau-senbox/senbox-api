@@ -1952,7 +1952,7 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenuOrganization(tx *g
 }
 
 // classroom menu
-func (receiver *UploadSectionMenuUseCase) UploadClassroomtMenu(ctx *gin.Context, req request.UploadSectionMenuClassroomRequest) error {
+func (receiver *UploadSectionMenuUseCase) UploadClassroomMenu(ctx *gin.Context, req request.UploadSectionMenuClassroomRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())

@@ -356,6 +356,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherMenuOrganizationRepository:    &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
 			DepartmentMenuRepository:             &repository.DepartmentMenuRepository{DBConn: dbConn},
 			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
+			ClassroomMenuRepository:              &repository.ClassroomMenuRepository{DBConn: dbConn},
 		},
 		ChildMenuUseCase: &usecase.ChildMenuUseCase{
 			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
@@ -432,6 +433,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("/organization/:id", menuController.GetOrgMenu)
 		menu.POST("/organization/top", menuController.UploadOrganizationAdminMenuTop)
 		menu.POST("/organization/bottom", menuController.UploadOrganizationAdminMenuBottom)
+
+		// classroom menu
+		menu.POST("/classroom", menuController.UploadClassroomMenu)
 	}
 
 	// user
