@@ -57,6 +57,11 @@ func (uc *UserSettingUseCase) UploadUserSetting(req request.UploadUserSettingReq
 		return nil, errors.New("invalid user setting key")
 	}
 
+	// neu setting limit deive logn thi chi co owner role = user
+	if req.Key == string(value.UserSettingLoginDeviceLimit) && req.OwnerRole != string(value.OwnerRoleUser) {
+		return nil, errors.New("only user can set login device limit")
+	}
+
 	valueBytes, err := json.Marshal(req.Value)
 	if err != nil {
 		return nil, errors.New("invalid value format")
