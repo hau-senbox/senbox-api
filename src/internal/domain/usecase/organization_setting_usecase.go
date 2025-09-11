@@ -114,12 +114,8 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 
 	// Upsert organization setting
 	setting := &entity.OrganizationSetting{
-		OrganizationID:     req.OrganizationID,
-		DeviceID:           req.DeviceID,
-		MessageBox:         req.MessageBox,
-		MessageDeactiveApp: req.MessageDeactiveApp,
-		MessageTopMenu:     req.MessageTopMenu,
-		TopMenuPassword:    req.TopMenuPassword,
+		OrganizationID: req.OrganizationID,
+		DeviceID:       req.DeviceID,
 	}
 
 	if req.IsViewMessageBox != nil {
@@ -146,6 +142,20 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
 	}
 
+	// text
+	if req.MessageBox != nil {
+		setting.MessageBox = *req.MessageBox
+	}
+	if req.MessageDeactiveApp != nil {
+		setting.MessageDeactiveApp = *req.MessageDeactiveApp
+	}
+	if req.MessageTopMenu != nil {
+		setting.MessageTopMenu = *req.MessageTopMenu
+	}
+	if req.TopMenuPassword != nil {
+		setting.TopMenuPassword = *req.TopMenuPassword
+	}
+
 	existingSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		tx.Rollback()
@@ -156,14 +166,13 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		setting.ID = existingSetting.ID
 		if req.IsViewMessageBox != nil {
 			existingSetting.IsViewMessageBox = *req.IsViewMessageBox
-
 		}
 		if req.IsShowMessage != nil {
 			existingSetting.IsShowMessage = *req.IsShowMessage
 		}
 
-		if req.MessageBox != "" {
-			existingSetting.MessageBox = req.MessageBox
+		if req.MessageBox != nil {
+			existingSetting.MessageBox = *req.MessageBox
 		}
 
 		if req.IsShowSpecialBtn != nil {
@@ -174,20 +183,20 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			existingSetting.IsDeactiveApp = *req.IsDeactiveApp
 		}
 
-		if req.MessageDeactiveApp != "" {
-			existingSetting.MessageDeactiveApp = req.MessageDeactiveApp
+		if req.MessageDeactiveApp != nil {
+			existingSetting.MessageDeactiveApp = *req.MessageDeactiveApp
 		}
 
 		if req.IsDeactiveTopMenu != nil {
 			existingSetting.IsDeactiveTopMenu = *req.IsDeactiveTopMenu
 		}
 
-		if req.MessageTopMenu != "" {
-			existingSetting.MessageTopMenu = req.MessageTopMenu
+		if req.MessageTopMenu != nil {
+			existingSetting.MessageTopMenu = *req.MessageTopMenu
 		}
 
-		if req.TopMenuPassword != "" {
-			existingSetting.TopMenuPassword = req.TopMenuPassword
+		if req.TopMenuPassword != nil {
+			existingSetting.TopMenuPassword = *req.TopMenuPassword
 		}
 
 		// Merge component
