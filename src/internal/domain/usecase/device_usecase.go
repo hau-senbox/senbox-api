@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/response"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 type DeviceUsecase struct {
 	*repository.DeviceRepository
 	*DeviceMenuUseCase
+	*repository.ValuesAppCurrentRepository
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -81,7 +83,7 @@ func (receiver *DeviceUsecase) GetDeviceInfoFromOrg4App(deviceID string) ([]resp
 }
 
 func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) (*response.GetDeviceInfoResponse, error) {
-	// B1: Lấy thông tin org device
+	// : Lấy thông tin org device
 	orgDevice, err := receiver.GetOrgDeviceByDeviceIdAndOrgID(orgID, deviceID)
 	if err != nil {
 		return nil, err
@@ -94,12 +96,17 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		CreatedIndex:   orgDevice.CreatedIndex,
 	}
 
-	// B2: Lấy menu (không để lỗi menu làm fail hàm)
+	// : Lấy menu (không để lỗi menu làm fail hàm)
 	if menus, err := receiver.DeviceMenuUseCase.GetByDeviceID(deviceID); err == nil {
 		resp.Components = menus.Components
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		// Nếu là lỗi khác thì log lại để debug, nhưng không return
 		log.Printf("GetDeviceMenu error for device %s: %v", deviceID, err)
+	}
+
+	// get values app current
+	if values, err := receiver.ValuesAppCurrentRepository.FindByDeviceID(deviceID); err == nil {
+		resp.ValuesAppCurrent = mapper.ToGetValuesAppCurrentResponse(values)
 	}
 
 	return resp, nil

@@ -829,6 +829,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
 				DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
 			},
+			ValuesAppCurrentRepository: &repository.ValuesAppCurrentRepository{DBConn: dbConn},
 		},
 	}
 
