@@ -154,6 +154,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		DeviceUsecase: &usecase.DeviceUsecase{
 			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
 		},
+		ValuesAppCurrentUseCase: &usecase.ValuesAppCurrentUseCase{
+			Repo:       &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			DeviceRepo: deviceRepository,
+		},
 	}
 
 	answerRepo := repository.AnswerRepository{DBConn: dbConn}
@@ -270,6 +274,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		v1.GET("/sign-up/pre-set-2", deviceController.GetPreset2)
 
 		v1.GET("/sign-up/pre-set-1", deviceController.GetPreset1)
+
+		v1.POST("/values-current", deviceController.UploadValuesCurrent)
 	}
 
 	form := engine.Group("v1/form", secureMiddleware.Secured())

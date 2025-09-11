@@ -48,6 +48,7 @@ type DeviceController struct {
 	*usecase.GetSubmission4MemoriesFormUseCase
 	*usecase.ChildUseCase
 	*usecase.DeviceUsecase
+	*usecase.ValuesAppCurrentUseCase
 }
 
 func (receiver *DeviceController) GetDeviceByID(c *gin.Context) {
@@ -1634,6 +1635,36 @@ func (receiver *DeviceController) DeleteDeviceByOrgID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Delete device successfully",
+		Data:    nil,
+	})
+}
+
+func (receiver *DeviceController) UploadValuesCurrent(c *gin.Context) {
+	var req request.UploadValuesAppCurrentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Error:   err.Error(),
+			Message: "Upload values log failed",
+		})
+		return
+	}
+
+	err := receiver.ValuesAppCurrentUseCase.Upload(req)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:    http.StatusInternalServerError,
+				Error:   err.Error(),
+				Message: "Upload values log failed",
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Upload values log successfully",
 		Data:    nil,
 	})
 }
