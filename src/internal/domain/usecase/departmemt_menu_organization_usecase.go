@@ -63,7 +63,10 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4GW(ctx *gin.Co
 	return menus, nil
 }
 
-func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.Context, req request.GetDepartmentMenuOrganizationRequest) ([]*response.GetDepartmentMenuOrganizationResponse, error) {
+func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(
+	ctx *gin.Context,
+	req request.GetDepartmentMenuOrganizationRequest,
+) (*response.GetDepartmentMenuOrganizationResponse, error) {
 
 	// 1. Kiểm tra device có trong org hay không
 	isExist, err := uc.DeviceRepository.CheckDeviceExistInOrganization(req.DeviceID, req.OrganizationID)
@@ -75,35 +78,32 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.C
 	}
 
 	// 2. Lấy danh sách department từ gateway
-	departments, _ := uc.DepartmentGateway.GetDepartmentsByUser(ctx)
+	departments, err := uc.DepartmentGateway.GetDepartmentsByUser(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	deptOrgMenus := make([]*response.GetDepartmentMenuOrganizationResponse, 0)
-
+	// 3. Duyệt department
 	for _, department := range departments {
-		// 2.1 Lấy department menu trong org
 		departmentMenusOrg, err := uc.DepartmentMenuOrganizationRepository.
 			GetAllByDepartmentAndOrg(ctx, department.ID, req.OrganizationID)
-		if err != nil {
-			continue // skip nếu lỗi
+		if err != nil || len(departmentMenusOrg) == 0 {
+			continue
 		}
 
-		// 2.2 Chuẩn bị componentIDs + mapping order
+		// Chuẩn bị componentIDs + mapping order
 		componentIDs := make([]uuid.UUID, 0, len(departmentMenusOrg))
 		componentOrderMap := make(map[uuid.UUID]int)
-
 		for _, cm := range departmentMenusOrg {
-			compID := cm.ComponentID
-			componentIDs = append(componentIDs, compID)
-			componentOrderMap[compID] = cm.Order
+			componentIDs = append(componentIDs, cm.ComponentID)
+			componentOrderMap[cm.ComponentID] = cm.Order
 		}
 
-		// 2.3 Lấy components theo ID
 		components, err := uc.ComponentRepo.GetByIDs(componentIDs)
 		if err != nil {
 			return nil, err
 		}
 
-		// 2.4 Build component responses
 		menus := make([]response.ComponentResponse, 0, len(components))
 		for _, comp := range components {
 			menus = append(menus, response.ComponentResponse{
@@ -116,17 +116,15 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.C
 			})
 		}
 
-		// 2.5 Build department menu response
 		orgInfo, _ := uc.OrganizationRepository.GetByID(req.OrganizationID)
 
-		departmentOrgMenus := &response.GetDepartmentMenuOrganizationResponse{
+		// return ngay department đầu tiên có menu
+		return &response.GetDepartmentMenuOrganizationResponse{
 			Section:     department.Name + " Menu At " + orgInfo.OrganizationName,
 			MenuIconKey: department.Icon,
 			Components:  menus,
-		}
-
-		deptOrgMenus = append(deptOrgMenus, departmentOrgMenus)
+		}, nil
 	}
 
-	return deptOrgMenus, nil
+	return nil, nil // không có department nào có menu
 }
