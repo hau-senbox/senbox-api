@@ -46,7 +46,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 			ID: t.UserID.String(),
 		})
 		// get avatar key & url
-		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(t.UserID.String(), value.OwnerRoleTeacher)
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(t.ID.String(), value.OwnerRoleTeacher)
 		listResp.Teachers = append(listResp.Teachers,
 			mapper.MapTeacherToOwnerAssignResponse(&t, user.Nickname, avatar.ImageKey, avatar.ImageUrl),
 		)
@@ -59,7 +59,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 			ID: s.UserID.String(),
 		})
 		// get avatar key & url
-		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.UserID.String(), value.OwnerRoleStaff)
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStaff)
 		listResp.Staffs = append(listResp.Staffs,
 			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl),
 		)

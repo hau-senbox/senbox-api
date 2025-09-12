@@ -640,7 +640,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.POST("/setting", secureMiddleware.ValidateSuperAdminRole(), userSettingController.UploadUserSetting)
 
 		// assign department list
-		user.GET("/organization/:organization_id/owners-assign", userEntityController.GetListOwner2Assign)
+		user.GET("/organization/:organization_id/assigned-owners", userEntityController.GetListOwner2Assign)
 
 		// re logimn
 		user.PUT("/set-relogin", secureMiddleware.ValidateSuperAdminRole(), userEntityController.SetReLogin)
