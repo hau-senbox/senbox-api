@@ -13,4 +13,5 @@ type OwnerAssignResponse struct {
 type ListOwnerAssignResponse struct {
 	Teachers []*OwnerAssignResponse `json:"teachers"`
 	Staffs   []*OwnerAssignResponse `json:"staffs"`
+	Students []*OwnerAssignResponse `json:"students"`
 }

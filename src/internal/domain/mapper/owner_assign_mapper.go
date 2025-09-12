@@ -25,3 +25,13 @@ func MapStaffToOwnerAssignResponse(staff *entity.SStaffFormApplication, name str
 		AvatarUrl: avatarUrl,
 	}
 }
+
+func MapStudentToOwnerAssignResponse(student *entity.SStudentFormApplication, name string, avatarKey string, avatarUrl string) *response.OwnerAssignResponse {
+	return &response.OwnerAssignResponse{
+		OwnerID:   student.ID.String(),
+		OwnerRole: value.OwnerRoleStudent,
+		Name:      name,
+		AvatarKey: avatarKey,
+		AvatarUrl: avatarUrl,
+	}
+}

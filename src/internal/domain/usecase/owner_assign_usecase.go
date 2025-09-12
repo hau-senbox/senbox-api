@@ -13,6 +13,7 @@ import (
 type OwnerAssignUseCase struct {
 	TeacherRepo       *repository.TeacherApplicationRepository
 	StaffRepo         *repository.StaffApplicationRepository
+	StudentRepo       *repository.StudentApplicationRepository
 	UserEntityRepo    *repository.UserEntityRepository
 	UserImagesUsecase *UserImagesUsecase
 }
@@ -34,9 +35,16 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		return nil, err
 	}
 
+	// get list students by org
+	students, err := uc.StudentRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
 	listResp := &response.ListOwnerAssignResponse{
 		Teachers: []*response.OwnerAssignResponse{},
 		Staffs:   []*response.OwnerAssignResponse{},
+		Students: []*response.OwnerAssignResponse{},
 	}
 
 	// loop teachers
@@ -62,6 +70,15 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStaff)
 		listResp.Staffs = append(listResp.Staffs,
 			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl),
+		)
+	}
+
+	// loop students
+	for _, s := range students {
+		// get avatar key & url
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStudent)
+		listResp.Students = append(listResp.Students,
+			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl),
 		)
 	}
 

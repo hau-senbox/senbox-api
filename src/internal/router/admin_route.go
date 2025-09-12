@@ -585,6 +585,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		OwnerAssignUseCase: &usecase.OwnerAssignUseCase{
 			TeacherRepo:    &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:      &repository.StaffApplicationRepository{DBConn: dbConn},
+			StudentRepo:    &repository.StudentApplicationRepository{DB: dbConn},
 			UserEntityRepo: &repository.UserEntityRepository{DBConn: dbConn},
 			UserImagesUsecase: &usecase.UserImagesUsecase{
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
