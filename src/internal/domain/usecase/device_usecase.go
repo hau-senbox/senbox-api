@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/pkg/uploader"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,7 @@ type DeviceUsecase struct {
 	*repository.DeviceRepository
 	*DeviceMenuUseCase
 	*repository.ValuesAppCurrentRepository
+	*GetImageUseCase
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -106,7 +108,9 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 
 	// get values app current
 	if values, err := receiver.ValuesAppCurrentRepository.FindByDeviceID(deviceID); err == nil {
-		resp.ValuesAppCurrent = mapper.ToGetValuesAppCurrentResponse(values)
+		//get image url
+		url, _ := receiver.GetImageUseCase.GetUrlByKey(values.ImageKey, uploader.UploadPrivate)
+		resp.ValuesAppCurrent = mapper.ToGetValuesAppCurrentResponse(values, url)
 	}
 
 	return resp, nil

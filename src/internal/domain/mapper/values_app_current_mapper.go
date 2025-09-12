@@ -5,11 +5,12 @@ import (
 	"sen-global-api/internal/domain/response"
 )
 
-func ToGetValuesAppCurrentResponse(values *entity.ValuesAppCurrent) *response.GetValuesAppCurrentResponse {
+func ToGetValuesAppCurrentResponse(values *entity.ValuesAppCurrent, imageUrl *string) *response.GetValuesAppCurrentResponse {
 	return &response.GetValuesAppCurrentResponse{
 		Value1:   values.Value1,
 		Value2:   values.Value2,
 		Value3:   values.Value3,
 		ImageKey: values.ImageKey,
+		ImageUrl: imageUrl,
 	}
 }

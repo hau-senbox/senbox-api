@@ -831,6 +831,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
 			},
 			ValuesAppCurrentRepository: &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
 		},
 	}
 
