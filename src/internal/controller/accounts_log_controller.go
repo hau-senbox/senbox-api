@@ -26,9 +26,6 @@ func (c *AccountsLogController) CreateAccountsLog(ctx *gin.Context) {
 		return
 	}
 
-	req.Method = ctx.Request.Method
-	req.Endpoint = ctx.FullPath()
-
 	err := c.AccountsLogUseCase.CreateAccountsLog(req)
 	if err != nil {
 		ctx.JSON(

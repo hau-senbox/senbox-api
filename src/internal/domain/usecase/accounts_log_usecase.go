@@ -23,8 +23,6 @@ func (u *AccountsLogUseCase) CreateAccountsLog(req request.CreateAccountsLogRequ
 		UserID:         req.UserID,
 		DeviceID:       req.DeviceID,
 		OrganizationID: req.OrganizationID,
-		Endpoint:       req.Endpoint,
-		Method:         req.Method,
 	}
 	return u.AccountsLogRepository.Create(accountsLog)
 }
