@@ -1390,3 +1390,27 @@ func (k UserSettingKey) IsValid() bool {
 		return false
 	}
 }
+
+// accounts log type
+type AccountsLogType string
+
+const (
+	AccountsLogTypeLogin  AccountsLogType = "login"
+	AccountsLogTypeLogout AccountsLogType = "logout"
+	AccountsLogSetValue1  AccountsLogType = "set-value-1"
+	AccountsLogSetValue2  AccountsLogType = "set-value-2"
+	AccountsLogSetValue3  AccountsLogType = "set-value-3"
+)
+
+func (k AccountsLogType) IsValid() bool {
+	switch k {
+	case AccountsLogTypeLogin,
+		AccountsLogTypeLogout,
+		AccountsLogSetValue1,
+		AccountsLogSetValue2,
+		AccountsLogSetValue3:
+		return true
+	default:
+		return false
+	}
+}

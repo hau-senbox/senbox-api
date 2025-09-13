@@ -404,6 +404,13 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 	}
 
+	// accounts log
+	accountsLogController := &controller.AccountsLogController{
+		AccountsLogUseCase: &usecase.AccountsLogUseCase{
+			AccountsLogRepository: &repository.AccountsLogRepository{DBConn: dbConn},
+		},
+	}
+
 	user := engine.Group("v1/user")
 	{
 		user.GET("/current-user", secureMiddleware.Secured(), userEntityController.GetCurrentUser)
@@ -436,6 +443,11 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		block := user.Group("/block")
 		{
 			block.GET("/:user_id", userBlockSettingController.GetByUserID)
+		}
+
+		aacountsLog := user.Group("/accounts-log")
+		{
+			aacountsLog.POST("", secureMiddleware.Secured(), accountsLogController.CreateAccountsLog)
 		}
 	}
 
