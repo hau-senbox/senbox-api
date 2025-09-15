@@ -578,3 +578,32 @@ func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]r
 
 	return result, nil
 }
+
+func (receiver *GetMenuUseCase) GetEmergencyMenu4App(ctx *gin.Context, organizationID string) ([]response.GetMenuSectionResponse, error) {
+	menus, err := receiver.OrganizationEmergencyMenuRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []response.GetMenuSectionResponse
+	for _, menu := range menus {
+		comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
+
+		components := []response.ComponentResponse{{
+			ID:    menu.ComponentID.String(),
+			Name:  comp.Name,
+			Key:   comp.Key,
+			Type:  comp.Type.String(),
+			Value: helper.BuildSectionValueMenu(string(comp.Value), *comp),
+			Order: menu.Order,
+		}}
+
+		result = append(result, response.GetMenuSectionResponse{
+			SectionName: "Emergency Menu",
+			MenuIconKey: "",
+			Components:  components,
+		})
+	}
+
+	return result, nil
+}

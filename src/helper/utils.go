@@ -133,6 +133,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		FormQR       string `json:"form_qr"`
 		ShowedTop    bool   `json:"showed_top"`
 		ShowedBottom bool   `json:"showed_bottom"`
+		Emergency    string `json:"emergency"`
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
@@ -151,6 +152,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		"visible":       old.Visible,
 		"showed_top":    old.ShowedTop,
 		"showed_bottom": old.ShowedBottom,
+		"emergency":     old.Emergency,
 	}
 	if isButtonForm {
 		newVal["form_qr"] = old.FormQR
@@ -170,6 +172,7 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		"value":         newVal,
 		"showed_top":    old.ShowedTop,
 		"showed_bottom": old.ShowedBottom,
+		"emergency":     old.Emergency,
 	}
 
 	// field chính ở ngoài: form_qr hoặc url

@@ -1691,3 +1691,29 @@ func (receiver *MenuController) GetEmergencyMenu4WebAdmin(context *gin.Context) 
 		Data: menus,
 	})
 }
+
+func (receiver *MenuController) GetEmergencyMenu4App(context *gin.Context) {
+
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "organization_id is required",
+		})
+		return
+	}
+	menus, err := receiver.GetMenuUseCase.GetEmergencyMenu4App(context, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
