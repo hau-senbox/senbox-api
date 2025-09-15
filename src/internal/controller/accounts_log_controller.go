@@ -19,12 +19,26 @@ func (c *AccountsLogController) CreateAccountsLog(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
-				Code:  http.StatusInternalServerError,
-				Error: err.Error(),
+				Code:    http.StatusInternalServerError,
+				Error:   err.Error(),
+				Message: "Invalid request body",
 			},
 		)
 		return
 	}
+
+	userID, ok := ctx.Get("user_id")
+	if !ok {
+		ctx.JSON(
+			http.StatusInternalServerError, response.FailedResponse{
+				Code:    http.StatusInternalServerError,
+				Error:   "user_id not found",
+				Message: "Failed to create accounts log",
+			},
+		)
+		return
+	}
+	req.UserID = userID.(string)
 
 	err := c.AccountsLogUseCase.CreateAccountsLog(req)
 	if err != nil {
@@ -40,8 +54,9 @@ func (c *AccountsLogController) CreateAccountsLog(ctx *gin.Context) {
 
 	ctx.JSON(
 		http.StatusOK, response.SucceedResponse{
-			Code: http.StatusOK,
-			Data: "Accounts log created successfully",
+			Code:    http.StatusOK,
+			Message: "Accounts log created successfully",
+			Data:    nil,
 		},
 	)
 }
