@@ -38,7 +38,8 @@ type UploadSectionMenuUseCase struct {
 	*repository.TeacherMenuOrganizationRepository
 	*repository.DepartmentMenuRepository
 	*repository.DepartmentMenuOrganizationRepository
-	*repository.ClassroomMenuRepository
+	*repository.SuperAdminEmergencyMenuRepository
+	*repository.OrganizationEmergencyMenuRepository
 }
 
 // func (receiver *UploadSectionMenuUseCase) createChildMenus(tx *gorm.DB, componentID uuid.UUID, visible bool, order int, childIDs []uuid.UUID) error {
@@ -434,8 +435,13 @@ func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) 
 		return nil
 	}
 
-	// Xóa Classroom menu
-	if err := receiver.ClassroomMenuRepository.DeleteByComponentID(componentID); err != nil {
+	// Xóa super admin emergency menu
+	if err := receiver.SuperAdminEmergencyMenuRepository.DeleteByComponentID(componentID); err != nil {
+		return nil
+	}
+
+	// Xóa organization emergency menu
+	if err := receiver.OrganizationEmergencyMenuRepository.DeleteByComponentID(componentID); err != nil {
 		return nil
 	}
 
@@ -1951,8 +1957,8 @@ func (receiver *UploadSectionMenuUseCase) createDepartmentMenuOrganization(tx *g
 	return nil
 }
 
-// classroom menu
-func (receiver *UploadSectionMenuUseCase) UploadClassroomMenu(ctx *gin.Context, req request.UploadSectionMenuClassroomRequest) error {
+// superadmin, organization emergency menu
+func (receiver *UploadSectionMenuUseCase) UploadEmergencyMenu(ctx *gin.Context, req request.UploadEmergencyMenuRequest) error {
 	tx := receiver.MenuRepository.DBConn.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
@@ -1975,6 +1981,12 @@ func (receiver *UploadSectionMenuUseCase) UploadClassroomMenu(ctx *gin.Context, 
 				return fmt.Errorf("Delete section menu failed: %w", err)
 			}
 		}
+	}
+
+	// dau tien kiem tra user dang la quan ly cua organization nao
+	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return err
 	}
 
 	for _, compReq := range req.Components {
@@ -2026,12 +2038,34 @@ func (receiver *UploadSectionMenuUseCase) UploadClassroomMenu(ctx *gin.Context, 
 			}
 		}
 
-		if err := receiver.createClassroommentMenu(tx, componentID.String(), req.ClassroomID, compReq.Order); err != nil {
-			logrus.Error("rollback by error create department menu:", err)
-			tx.Rollback()
-			rolledBack = true
-			return err
+		if user.IsSuperAdmin() {
+			if err := receiver.createSuperAdminEmergencyMenu(tx, componentID.String(), compReq.Order); err != nil {
+				logrus.Error("rollback by error create superadmin emergency menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return err
+			}
+		} else {
+			// Nếu không phải SuperAdmin → lấy danh sách org mà user quản lý
+			if len(user.Organizations) == 0 {
+				return errors.New("user does not belong to any organization")
+			}
+
+			orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
+			if err != nil {
+				return err
+			}
+			if len(orgIDsManaged) == 0 {
+				return errors.New("user does not manage any organization")
+			}
+			if err := receiver.createOrganizationEmergencyMenu(tx, orgIDsManaged[0], componentID.String(), compReq.Order); err != nil {
+				logrus.Error("rollback by error create superadmin emergency menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return err
+			}
 		}
+
 	}
 
 	if err := tx.Commit().Error; err != nil {
@@ -2044,29 +2078,56 @@ func (receiver *UploadSectionMenuUseCase) UploadClassroomMenu(ctx *gin.Context, 
 	return nil
 }
 
-func (receiver *UploadSectionMenuUseCase) createClassroommentMenu(tx *gorm.DB, componentID string, classroomID string, order int) error {
+func (receiver *UploadSectionMenuUseCase) createSuperAdminEmergencyMenu(tx *gorm.DB, componentID string, order int) error {
 
-	existing, err := receiver.ClassroomMenuRepository.GetByClassroomIDAndComponentID(tx, classroomID, componentID)
+	existing, err := receiver.SuperAdminEmergencyMenuRepository.GetByComponentID(componentID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("get classroom menu fail: %w", err)
+		return fmt.Errorf("get super admin emergency menu fail: %w", err)
 	}
 
 	if existing != nil {
 		// Đã tồn tại → update
 		existing.Order = order
-		if err := receiver.ClassroomMenuRepository.UpdateWithTx(tx, existing); err != nil {
-			return fmt.Errorf("update classroom menu fail: %w", err)
+		if err := receiver.SuperAdminEmergencyMenuRepository.UpdateWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update emergency menu fail: %w", err)
 		}
 	} else {
 		// Không tồn tại → create
-		menu := &entity.ClassroomMenu{
+		menu := &entity.SuperAdminEmergencyMenu{
 			ID:          uuid.New(),
-			ClassroomID: classroomID,
 			ComponentID: uuid.MustParse(componentID),
 			Order:       order,
 		}
-		if err := receiver.ClassroomMenuRepository.CreateWithTx(tx, menu); err != nil {
-			return fmt.Errorf("create classroom menu fail: %w", err)
+		if err := receiver.SuperAdminEmergencyMenuRepository.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("create emergency menu fail: %w", err)
+		}
+	}
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createOrganizationEmergencyMenu(tx *gorm.DB, organizationID string, componentID string, order int) error {
+
+	existing, err := receiver.OrganizationEmergencyMenuRepository.GetByOrganizationIDAndComponentID(organizationID, componentID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get organization emergency menu fail: %w", err)
+	}
+
+	if existing != nil {
+		// Đã tồn tại → update
+		existing.Order = order
+		if err := receiver.OrganizationEmergencyMenuRepository.UpdateWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update organization emergency menu fail: %w", err)
+		}
+	} else {
+		// Không tồn tại → create
+		menu := &entity.OrganizationEmergencyMenu{
+			ID:             uuid.New(),
+			ComponentID:    uuid.MustParse(componentID),
+			OrganizationID: organizationID,
+			Order:          order,
+		}
+		if err := receiver.OrganizationEmergencyMenuRepository.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("create emergency menu fail: %w", err)
 		}
 	}
 	return nil

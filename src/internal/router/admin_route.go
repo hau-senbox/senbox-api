@@ -333,6 +333,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 			OrganizationMenuTemplateRepository: &repository.OrganizationMenuTemplateRepository{DBConn: dbConn},
 			StudentAppRepo:                     &repository.StudentApplicationRepository{DB: dbConn},
+			SuperAdminEmergencyMenuRepo:        &repository.SuperAdminEmergencyMenuRepository{DBConn: dbConn},
+			OrganizationEmergencyMenuRepo:      &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
 			MenuRepository:                     &repository.MenuRepository{DBConn: dbConn},
@@ -356,7 +358,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherMenuOrganizationRepository:    &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
 			DepartmentMenuRepository:             &repository.DepartmentMenuRepository{DBConn: dbConn},
 			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
-			ClassroomMenuRepository:              &repository.ClassroomMenuRepository{DBConn: dbConn},
+			SuperAdminEmergencyMenuRepository:    &repository.SuperAdminEmergencyMenuRepository{DBConn: dbConn},
+			OrganizationEmergencyMenuRepository:  &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
 		},
 		ChildMenuUseCase: &usecase.ChildMenuUseCase{
 			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
@@ -434,8 +437,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.POST("/organization/top", menuController.UploadOrganizationAdminMenuTop)
 		menu.POST("/organization/bottom", menuController.UploadOrganizationAdminMenuBottom)
 
-		// classroom menu
-		menu.POST("/classroom", menuController.UploadClassroomMenu)
+		// emergency menu
+		menu.POST("/emergency", menuController.UploadEmergencyMenu)
+		menu.GET("/emergency", menuController.GetEmergencyMenu4WebAdmin)
 	}
 
 	// user

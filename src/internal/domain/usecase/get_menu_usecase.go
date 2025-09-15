@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
@@ -41,6 +42,8 @@ type GetMenuUseCase struct {
 	UserImageUsecase                   *UserImagesUsecase
 	DepartmentGateway                  gateway.DepartmentGateway
 	DepartmentMenuUseCase              *DepartmentMenuUseCase
+	SuperAdminEmergencyMenuRepo        *repository.SuperAdminEmergencyMenuRepository
+	OrganizationEmergencyMenuRepo      *repository.OrganizationEmergencyMenuRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -510,6 +513,73 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 				SectionID:   department.ID,
 				MenuIconKey: department.Icon,
 				Components:  departmentMenu.Components,
+			})
+		}
+	}
+
+	return result, nil
+}
+
+func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]response.GetEmergencyMenu4Admin, error) {
+	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]response.GetEmergencyMenu4Admin, 0)
+
+	if user.IsSuperAdmin() {
+		menus, err := receiver.SuperAdminEmergencyMenuRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+		for _, menu := range menus {
+			// get component
+			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
+			result = append(result, response.GetEmergencyMenu4Admin{
+				Components: []response.ComponentResponse{
+					{
+						ID:    menu.ComponentID.String(),
+						Name:  comp.Name,
+						Key:   comp.Key,
+						Type:  comp.Type.String(),
+						Value: comp.Value.String(),
+						Order: menu.Order,
+					},
+				},
+			})
+		}
+	} else {
+		if len(user.Organizations) == 0 {
+			return result, errors.New("user does not belong to any organization")
+		}
+
+		orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
+		if err != nil {
+			return result, err
+		}
+		if len(orgIDsManaged) == 0 {
+			return result, errors.New("user does not manage any organization")
+		}
+		menus, err := receiver.OrganizationEmergencyMenuRepo.GetByOrganizationID(orgIDsManaged[0])
+		if err != nil {
+			return result, err
+		}
+
+		for _, menu := range menus {
+			// get component
+			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
+			result = append(result, response.GetEmergencyMenu4Admin{
+				Components: []response.ComponentResponse{
+					{
+						ID:    menu.ComponentID.String(),
+						Name:  comp.Name,
+						Key:   comp.Key,
+						Type:  comp.Type.String(),
+						Value: comp.Value.String(),
+						Order: menu.Order,
+					},
+				},
 			})
 		}
 	}

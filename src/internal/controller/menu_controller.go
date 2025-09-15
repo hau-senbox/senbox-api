@@ -1649,8 +1649,8 @@ func (receiver *MenuController) GetDepartmentMenuOrganization4App(context *gin.C
 	})
 }
 
-func (receiver *MenuController) UploadClassroomMenu(context *gin.Context) {
-	var req request.UploadSectionMenuClassroomRequest
+func (receiver *MenuController) UploadEmergencyMenu(context *gin.Context) {
+	var req request.UploadEmergencyMenuRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -1659,7 +1659,7 @@ func (receiver *MenuController) UploadClassroomMenu(context *gin.Context) {
 		return
 	}
 
-	err := receiver.UploadSectionMenuUseCase.UploadClassroomMenu(context, req)
+	err := receiver.UploadSectionMenuUseCase.UploadEmergencyMenu(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -1671,5 +1671,23 @@ func (receiver *MenuController) UploadClassroomMenu(context *gin.Context) {
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "Section menu was upload successfully",
+	})
+}
+
+func (receiver *MenuController) GetEmergencyMenu4WebAdmin(context *gin.Context) {
+
+	menus, err := receiver.GetMenuUseCase.GetEmergencyMenu4WebAdmin(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
 	})
 }
