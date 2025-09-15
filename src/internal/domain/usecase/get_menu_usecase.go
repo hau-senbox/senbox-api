@@ -520,13 +520,13 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	return result, nil
 }
 
-func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]response.GetEmergencyMenu4Admin, error) {
+func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]response.ComponentResponse, error) {
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]response.GetEmergencyMenu4Admin, 0)
+	result := make([]response.ComponentResponse, 0)
 
 	if user.IsSuperAdmin() {
 		menus, err := receiver.SuperAdminEmergencyMenuRepo.GetAll()
@@ -536,17 +536,13 @@ func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]r
 		for _, menu := range menus {
 			// get component
 			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
-			result = append(result, response.GetEmergencyMenu4Admin{
-				Components: []response.ComponentResponse{
-					{
-						ID:    menu.ComponentID.String(),
-						Name:  comp.Name,
-						Key:   comp.Key,
-						Type:  comp.Type.String(),
-						Value: comp.Value.String(),
-						Order: menu.Order,
-					},
-				},
+			result = append(result, response.ComponentResponse{
+				ID:    menu.ComponentID.String(),
+				Name:  comp.Name,
+				Key:   comp.Key,
+				Type:  comp.Type.String(),
+				Value: comp.Value.String(),
+				Order: menu.Order,
 			})
 		}
 	} else {
@@ -569,17 +565,13 @@ func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]r
 		for _, menu := range menus {
 			// get component
 			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
-			result = append(result, response.GetEmergencyMenu4Admin{
-				Components: []response.ComponentResponse{
-					{
-						ID:    menu.ComponentID.String(),
-						Name:  comp.Name,
-						Key:   comp.Key,
-						Type:  comp.Type.String(),
-						Value: comp.Value.String(),
-						Order: menu.Order,
-					},
-				},
+			result = append(result, response.ComponentResponse{
+				ID:    menu.ComponentID.String(),
+				Name:  comp.Name,
+				Key:   comp.Key,
+				Type:  comp.Type.String(),
+				Value: comp.Value.String(),
+				Order: menu.Order,
 			})
 		}
 	}
