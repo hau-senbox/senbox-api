@@ -202,6 +202,8 @@ func (receiver *QuestionRepository) unmarshalQuestion(param CreateQuestionParams
 		return receiver.unmarshalBodyQuestion(param)
 	case value.CalendarBooking:
 		return receiver.unmarshalCalendarBookingQuestion(param)
+	case value.RollingNumber:
+		return receiver.unmarshalRollingNumberQuestion(param)
 	default:
 		return receiver.unmarshalUserQuestion(param)
 	}
@@ -1238,6 +1240,26 @@ func (receiver *QuestionRepository) unmarshalBodyQuestion(param CreateQuestionPa
 }
 
 func (receiver *QuestionRepository) unmarshalCalendarBookingQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
+	status, err := value.GetStatusFromString(param.Status)
+	if err != nil {
+		return nil, err
+	}
+	var question = entity.SQuestion{
+		ID:               uuid.MustParse(param.ID),
+		Question:         param.Question,
+		QuestionType:     param.QuestionType,
+		Attributes:       datatypes.JSON(param.Attributes),
+		Status:           status,
+		EnableOnMobile:   param.EnableOnMobile,
+		QuestionUniqueID: param.QuestionUniqueID,
+		Key:              param.Key,
+		DB:               param.DB,
+	}
+
+	return &question, nil
+}
+
+func (receiver *QuestionRepository) unmarshalRollingNumberQuestion(param CreateQuestionParams) (*entity.SQuestion, error) {
 	status, err := value.GetStatusFromString(param.Status)
 	if err != nil {
 		return nil, err
