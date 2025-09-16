@@ -1993,10 +1993,11 @@ func (receiver *UploadSectionMenuUseCase) UploadEmergencyMenu(ctx *gin.Context, 
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:  compReq.Name,
-			Type:  components.ComponentType(compReq.Type),
-			Key:   compReq.Key,
-			Value: datatypes.JSON([]byte(compReq.Value)),
+			Name:     compReq.Name,
+			Type:     components.ComponentType(compReq.Type),
+			Key:      compReq.Key,
+			Value:    datatypes.JSON([]byte(compReq.Value)),
+			Language: req.Language,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
