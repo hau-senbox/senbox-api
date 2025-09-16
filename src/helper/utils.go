@@ -126,14 +126,14 @@ func GetVisibleToValueComponent(value string) (bool, error) {
 
 func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 	var old struct {
-		Visible      bool   `json:"visible"`
-		Icon         string `json:"icon"`
-		Color        string `json:"color"`
-		URL          string `json:"url"`
-		FormQR       string `json:"form_qr"`
-		ShowedTop    bool   `json:"showed_top"`
-		ShowedBottom bool   `json:"showed_bottom"`
-		Emergency    string `json:"emergency"`
+		Visible      bool            `json:"visible"`
+		Icon         string          `json:"icon"`
+		Color        string          `json:"color"`
+		URL          string          `json:"url"`
+		FormQR       string          `json:"form_qr"`
+		ShowedTop    bool            `json:"showed_top"`
+		ShowedBottom bool            `json:"showed_bottom"`
+		Emergency    json.RawMessage `json:"emergency"`
 	}
 
 	err := json.Unmarshal([]byte(oldValue), &old)
@@ -152,12 +152,14 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		"visible":       old.Visible,
 		"showed_top":    old.ShowedTop,
 		"showed_bottom": old.ShowedBottom,
-		"emergency":     old.Emergency,
 	}
 	if isButtonForm {
 		newVal["form_qr"] = old.FormQR
 	} else {
 		newVal["url"] = old.URL
+	}
+	if old.Emergency != nil {
+		newVal["emergency"] = old.Emergency
 	}
 
 	// Build object ngoài
@@ -172,7 +174,6 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		"value":         newVal,
 		"showed_top":    old.ShowedTop,
 		"showed_bottom": old.ShowedBottom,
-		"emergency":     old.Emergency,
 	}
 
 	// field chính ở ngoài: form_qr hoặc url
@@ -180,6 +181,9 @@ func BuildSectionValueMenu(oldValue string, comp components.Component) string {
 		wrapped["form_qr"] = old.FormQR
 	} else {
 		wrapped["url"] = old.URL
+	}
+	if old.Emergency != nil {
+		wrapped["emergency"] = old.Emergency
 	}
 
 	jsonBytes, err := json.Marshal(wrapped)
