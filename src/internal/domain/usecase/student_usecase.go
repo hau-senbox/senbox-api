@@ -141,6 +141,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		StudentBlock:   studentBlockSetting,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
+		CreatedIndex:   studentApp.CreatedIndex,
 	}, nil
 }
 

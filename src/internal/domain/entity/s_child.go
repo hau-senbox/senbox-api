@@ -17,12 +17,15 @@ type SChild struct {
 	CreatedIndex int       `json:"created_index" gorm:"column:created_index;not null;default:0"`
 }
 
-// BeforeCreate hook -> auto generate CreatedIndex = count + 1 (toàn bảng)
 func (c *SChild) BeforeCreate(tx *gorm.DB) (err error) {
-	var count int64
-	if err = tx.Model(&SChild{}).Count(&count).Error; err != nil {
+	// Tính CreatedIndex = MAX(created_index) + 1 theo OrganizationID
+	var maxIndex int
+	if err := tx.Model(&SChild{}).
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
 		return err
 	}
-	c.CreatedIndex = int(count) + 1
-	return
+	c.CreatedIndex = maxIndex + 1
+
+	return nil
 }

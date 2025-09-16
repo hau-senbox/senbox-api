@@ -252,6 +252,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		IsUserBlock:    userEntity.IsBlocked,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
+		CreatedIndex:   teacherApp.CreatedIndex,
 	}, nil
 }
 

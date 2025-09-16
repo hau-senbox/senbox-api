@@ -12,4 +12,5 @@ type ChildResponse struct {
 	Menus          []ComponentResponse      `json:"components"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
 	Avatars        []Avatar                 `json:"avatars"`
+	CreatedIndex   int                      `json:"created_index"`
 }
