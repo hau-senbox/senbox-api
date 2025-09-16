@@ -9,6 +9,7 @@ import (
 type UploadSectionMenuStaffRequest StaffSectionMenuItem
 
 type StaffSectionMenuItem struct {
+	Language           uint                         `json:"language" binding:"required"`
 	StaffID            string                       `json:"staff_id"`
 	DeleteComponentIDs []string                     `json:"delete_component_ids"`
 	Components         []CreateMenuComponentRequest `json:"components"`
