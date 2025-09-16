@@ -35,3 +35,11 @@ func (r *LanguageSettingRepository) GetAll() ([]entity.LanguageSetting, error) {
 func (r *LanguageSettingRepository) DeleteAll() error {
 	return r.DBConn.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&entity.LanguageSetting{}).Error
 }
+
+func (r *LanguageSettingRepository) Delete(id uint) error {
+	return r.DBConn.Delete(&entity.LanguageSetting{}, id).Error
+}
+
+func (r *LanguageSettingRepository) DeleteMany(ids []uint) error {
+	return r.DBConn.Where("id IN ?", ids).Delete(&entity.LanguageSetting{}).Error
+}

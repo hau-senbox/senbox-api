@@ -246,6 +246,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 			UpdateSettingNameUseCase:    usecase.NewUpdateSettingNameUseCase(dbConn),
 			UpdateApiDistributorUseCase: usecase.NewUpdateApiDistributorUseCase(dbConn, userSpreadsheet.Reader, userSpreadsheet.Writer),
+			LanguageSettingUseCase: &usecase.LanguageSettingUseCase{
+				LanguageSettingRepository: &repository.LanguageSettingRepository{DBConn: dbConn},
+			},
 		}
 		system.GET("/", systemController.GetSettings)
 
@@ -289,6 +292,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		system.POST("/logo-refresh-interval", systemController.SetupLogoRefreshInterval)
 		system.GET("/logo-refresh-interval", systemController.GetLogoRefreshInterval)
+
+		// language setting
+		system.POST("/language", systemController.UploadLanguageSetting)
+		system.GET("/language", systemController.GetLanguageSettings)
 	}
 
 	monitoring := engine.Group("/v1/admin/monitor")

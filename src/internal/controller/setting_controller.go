@@ -19,6 +19,7 @@ type SettingController struct {
 	*usecase.AdminSignUpUseCases
 	*usecase.UpdateSettingNameUseCase
 	*usecase.UpdateApiDistributorUseCase
+	*usecase.LanguageSettingUseCase
 }
 
 // Get Settings godoc
@@ -1082,5 +1083,45 @@ func (receiver *SettingController) GetLogoRefreshInterval(context *gin.Context) 
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Data: getLogoRefreshIntervalResponse{Interval: interval.IntegerValue, Title: interval.SettingName},
+	})
+}
+
+func (receiver *SettingController) UploadLanguageSetting(context *gin.Context) {
+	var req request.UploadLanguageSettingRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Error:   err.Error(),
+			Message: "Invalid request body",
+		})
+	}
+
+	if err := receiver.LanguageSettingUseCase.Upload(req); err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   err.Error(),
+			Message: "Failed to upload language setting",
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Language Setting has been uploaded successfully",
+	})
+}
+
+func (receiver *SettingController) GetLanguageSettings(context *gin.Context) {
+	settings, err := receiver.LanguageSettingUseCase.GetAll()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   err.Error(),
+			Message: "Failed to get language settings",
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: settings,
 	})
 }
