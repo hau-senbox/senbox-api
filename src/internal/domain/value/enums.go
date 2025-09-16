@@ -129,6 +129,7 @@ const (
 	Chart
 	Body
 	CalendarBooking
+	RollingNumber
 )
 
 type DeviceStatus int
@@ -435,6 +436,8 @@ func GetRawValue(questionType QuestionType) string {
 		return "body"
 	case CalendarBooking:
 		return "calendar_booking"
+	case RollingNumber:
+		return "rolling_number"
 	}
 
 	return ""
@@ -623,6 +626,8 @@ func GetStringValue(questionType QuestionType) string {
 		return "body"
 	case CalendarBooking:
 		return "calendar_booking"
+	case RollingNumber:
+		return "rolling_number"
 	default:
 		return ""
 	}
@@ -856,6 +861,8 @@ func GetQuestionType(rawValue string) (QuestionType, error) {
 		return Body, nil
 	case "calendar_booking":
 		return CalendarBooking, nil
+	case "rolling_number":
+		return RollingNumber, nil
 	default:
 		return 0, errors.New("invalid raw value")
 	}
@@ -957,7 +964,8 @@ func IsGeneralQuestionType(questionType QuestionType) bool {
 		Timer,
 		Chart,
 		Body,
-		CalendarBooking:
+		CalendarBooking,
+		RollingNumber:
 		return true
 	default:
 		return false
