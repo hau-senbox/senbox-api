@@ -11,6 +11,7 @@ type StaffResponseBase struct {
 	IsUserBlock    bool                     `json:"is_block"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
 	Avatars        []Avatar                 `json:"avatars"`
+	CreatedIndex   int                      `json:"created_index"`
 }
 
 type GetStaff4Gateway struct {

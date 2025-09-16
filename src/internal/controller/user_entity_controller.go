@@ -413,6 +413,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			Avatars:                avatars,
 			Settings:               settings,
 			StudentOrganization:    studentOrgs,
+			CreatedIndex:           userEntity.CreatedIndex,
 		},
 	})
 }

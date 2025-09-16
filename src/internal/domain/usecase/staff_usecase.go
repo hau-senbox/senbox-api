@@ -291,6 +291,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 		IsUserBlock:    userEntity.IsBlocked,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
+		CreatedIndex:   staff.CreatedIndex,
 	}, nil
 }
 

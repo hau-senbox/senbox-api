@@ -20,6 +20,7 @@ type UserEntityResponse struct {
 	Organization []string `json:"organizations"`
 	CreatedAt    string   `json:"created_at"`
 	CustomID     string   `json:"custom_id"`
+	CreatedIndex int      `json:"created_index"`
 
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`

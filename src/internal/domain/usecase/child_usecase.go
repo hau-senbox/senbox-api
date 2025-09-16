@@ -248,6 +248,7 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		Menus:          menus,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
+		CreatedIndex:   child.CreatedIndex,
 	}, nil
 }
 

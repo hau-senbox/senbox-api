@@ -9,4 +9,5 @@ type ParentResponseBase struct {
 	CustomID       string                   `json:"custom_id"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
 	Avatars        []Avatar                 `json:"avatars"`
+	CreatedIndex   int                      `json:"created_index"`
 }

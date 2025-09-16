@@ -11,6 +11,7 @@ type StudentResponseBase struct {
 	StudentBlock   *StudentBlockSettingResponse `json:"student_block"`
 	LanguageConfig *LanguagesConfigResponse     `json:"language_config"`
 	Avatars        []Avatar                     `json:"avatars"`
+	CreatedIndex   int                          `json:"created_index"`
 }
 
 type GetStudent4Gateway struct {

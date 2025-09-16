@@ -80,5 +80,6 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		CustomID:       parent.CustomID,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
+		CreatedIndex:   parent.CreatedIndex,
 	}, nil
 }
