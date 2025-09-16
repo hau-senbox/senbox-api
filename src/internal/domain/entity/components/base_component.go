@@ -30,6 +30,7 @@ type Component struct {
 	Key        string         `gorm:"type:varchar(255);not null;default:''" json:"key"`
 	Value      datatypes.JSON `gorm:"type:json;not null;default:'{}'" json:"value"`
 	SectionID  string         `gorm:"type:varchar(255);not null;default:''" json:"section_id"`
+	Language   uint           `gorm:"type:int;not null;default:1" json:"language"`
 }
 
 func (component *Component) GetID() uuid.UUID {
