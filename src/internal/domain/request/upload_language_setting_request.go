@@ -2,12 +2,12 @@ package request
 
 type UploadLanguageSettingRequest struct {
 	LanguageSettings []LanguageSettingRequest `json:"language_settings"`
-	DeleteIDs        []string                 `json:"delete_ids"`
+	DeleteIDs        []uint                   `json:"delete_ids"`
 }
 
 type LanguageSettingRequest struct {
 	ID          *uint  `json:"id"`
-	LangKey     string `json:"lang_key" binding:"required"`
-	RegionKey   string `json:"region_key" binding:"required"`
+	LangKey     string `json:"lang_key"`
+	RegionKey   string `json:"region_key"`
 	IsPublished bool   `json:"is_published"`
 }
