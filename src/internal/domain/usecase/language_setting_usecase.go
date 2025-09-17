@@ -9,6 +9,7 @@ import (
 
 type LanguageSettingUseCase struct {
 	LanguageSettingRepository *repository.LanguageSettingRepository
+	ComponentRepository       *repository.ComponentRepository
 }
 
 func (l *LanguageSettingUseCase) GetAll() ([]entity.LanguageSetting, error) {
@@ -35,7 +36,7 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 			ids = append(ids, uint(id))
 		}
 
-		if err := tx.Where("id IN ?", ids).Delete(&entity.LanguageSetting{}).Error; err != nil {
+		if err := l.LanguageSettingRepository.DeleteByIDs(tx, ids, l.ComponentRepository); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -52,6 +53,7 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 			}
 			setting.LangKey = s.LangKey
 			setting.RegionKey = s.RegionKey
+			setting.IsPublished = s.IsPublished
 
 			if err := tx.Save(setting).Error; err != nil {
 				tx.Rollback()
@@ -60,8 +62,9 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 		} else {
 			// Create
 			setting := &entity.LanguageSetting{
-				LangKey:   s.LangKey,
-				RegionKey: s.RegionKey,
+				LangKey:     s.LangKey,
+				RegionKey:   s.RegionKey,
+				IsPublished: s.IsPublished,
 			}
 			if err := tx.Create(setting).Error; err != nil {
 				tx.Rollback()

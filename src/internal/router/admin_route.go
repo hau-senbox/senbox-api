@@ -204,52 +204,54 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		todo.POST("/import/partially", middleware.NewSecureAppMiddleware(dbConn).Secure(), todoController.ImportPartiallyTodos)
 	}
 
+	systemController := &controller.SettingController{
+		GetSettingsUseCase: &usecase.GetSettingsUseCase{
+			SettingRepository: settingRepository,
+		},
+		UpdateOutputSubmissionSettingUseCase: &usecase.UpdateOutputSubmissionSettingUseCase{
+			SettingRepository: settingRepository,
+		},
+		UpdateOutputSummarySettingUseCase: &usecase.UpdateOutputSummarySettingUseCase{
+			SettingRepository: settingRepository,
+		},
+		UpdateEmailHistorySettingUseCase: &usecase.UpdateEmailHistorySettingUseCase{
+			SettingRepository: settingRepository,
+		},
+		UpdateOutputTemplateSettingUseCase: &usecase.UpdateOutputTemplateSettingUseCase{
+			SettingRepository: settingRepository,
+			AppConfig:         config,
+		},
+		UpdateOutputTemplateSettingForTeacherUseCase: &usecase.UpdateOutputTemplateSettingForTeacherUseCase{
+			SettingRepository: settingRepository,
+			AppConfig:         config,
+		},
+		AdminSignUpUseCases: &usecase.AdminSignUpUseCases{
+			SettingRepository: settingRepository,
+			FormRepository:    formRepo,
+			SpreadsheetReader: uploaderSpreadsheet.Reader,
+			AppConfig:         config,
+			ImportFormsUseCase: &usecase.ImportFormsUseCase{
+				FormRepository:                  formRepo,
+				QuestionRepository:              &repository.QuestionRepository{DBConn: dbConn},
+				FormQuestionRepository:          &repository.FormQuestionRepository{DBConn: dbConn},
+				SpreadsheetReader:               uploaderSpreadsheet.Reader,
+				SpreadsheetWriter:               uploaderSpreadsheet.Writer,
+				SettingRepository:               settingRepository,
+				DefaultCronJobIntervalInMinutes: 0,
+				TimeMachine:                     nil,
+				AppConfig:                       config,
+			},
+		},
+		UpdateSettingNameUseCase:    usecase.NewUpdateSettingNameUseCase(dbConn),
+		UpdateApiDistributorUseCase: usecase.NewUpdateApiDistributorUseCase(dbConn, userSpreadsheet.Reader, userSpreadsheet.Writer),
+		LanguageSettingUseCase: &usecase.LanguageSettingUseCase{
+			LanguageSettingRepository: &repository.LanguageSettingRepository{DBConn: dbConn},
+			ComponentRepository:       &repository.ComponentRepository{DBConn: dbConn},
+		},
+	}
+
 	system := engine.Group("/v1/admin/settings", secureMiddleware.ValidateSuperAdminRole())
 	{
-		systemController := &controller.SettingController{
-			GetSettingsUseCase: &usecase.GetSettingsUseCase{
-				SettingRepository: settingRepository,
-			},
-			UpdateOutputSubmissionSettingUseCase: &usecase.UpdateOutputSubmissionSettingUseCase{
-				SettingRepository: settingRepository,
-			},
-			UpdateOutputSummarySettingUseCase: &usecase.UpdateOutputSummarySettingUseCase{
-				SettingRepository: settingRepository,
-			},
-			UpdateEmailHistorySettingUseCase: &usecase.UpdateEmailHistorySettingUseCase{
-				SettingRepository: settingRepository,
-			},
-			UpdateOutputTemplateSettingUseCase: &usecase.UpdateOutputTemplateSettingUseCase{
-				SettingRepository: settingRepository,
-				AppConfig:         config,
-			},
-			UpdateOutputTemplateSettingForTeacherUseCase: &usecase.UpdateOutputTemplateSettingForTeacherUseCase{
-				SettingRepository: settingRepository,
-				AppConfig:         config,
-			},
-			AdminSignUpUseCases: &usecase.AdminSignUpUseCases{
-				SettingRepository: settingRepository,
-				FormRepository:    formRepo,
-				SpreadsheetReader: uploaderSpreadsheet.Reader,
-				AppConfig:         config,
-				ImportFormsUseCase: &usecase.ImportFormsUseCase{
-					FormRepository:                  formRepo,
-					QuestionRepository:              &repository.QuestionRepository{DBConn: dbConn},
-					FormQuestionRepository:          &repository.FormQuestionRepository{DBConn: dbConn},
-					SpreadsheetReader:               uploaderSpreadsheet.Reader,
-					SpreadsheetWriter:               uploaderSpreadsheet.Writer,
-					SettingRepository:               settingRepository,
-					DefaultCronJobIntervalInMinutes: 0,
-					TimeMachine:                     nil,
-					AppConfig:                       config,
-				},
-			},
-			UpdateSettingNameUseCase:    usecase.NewUpdateSettingNameUseCase(dbConn),
-			UpdateApiDistributorUseCase: usecase.NewUpdateApiDistributorUseCase(dbConn, userSpreadsheet.Reader, userSpreadsheet.Writer),
-			LanguageSettingUseCase: &usecase.LanguageSettingUseCase{
-				LanguageSettingRepository: &repository.LanguageSettingRepository{DBConn: dbConn},
-			},
-		}
 		system.GET("/", systemController.GetSettings)
 
 		system.POST("/output-sheet", systemController.UpdateOutputSubmissionSettings)
@@ -295,7 +297,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// language setting
 		system.POST("/language", systemController.UploadLanguageSetting)
-		system.GET("/language", systemController.GetLanguageSettings)
+	}
+
+	publicSystem := engine.Group("/v1/admin/settings")
+	{
+		publicSystem.GET("/language", systemController.GetLanguageSettings)
 	}
 
 	monitoring := engine.Group("/v1/admin/monitor")
