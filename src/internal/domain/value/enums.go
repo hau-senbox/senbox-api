@@ -1387,6 +1387,7 @@ type UserSettingKey string
 const (
 	UserSettingLoginDeviceLimit UserSettingKey = "login-device-limit"
 	UserSettingTest             UserSettingKey = "test"
+	UserSettingLanguage         UserSettingKey = "language"
 )
 
 func (k UserSettingKey) IsValid() bool {
