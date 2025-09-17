@@ -337,3 +337,13 @@ func (r *ComponentRepository) UpdateWithTx(tx *gorm.DB, component *components.Co
 	}
 	return nil
 }
+
+func (r *ComponentRepository) CheckExistLanguage(tx *gorm.DB, languageID uint) (bool, error) {
+	var count int64
+	if err := tx.Model(&components.Component{}).
+		Where("language = ?", languageID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}

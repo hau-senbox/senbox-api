@@ -6,7 +6,8 @@ type UploadLanguageSettingRequest struct {
 }
 
 type LanguageSettingRequest struct {
-	ID        *uint  `json:"id"`
-	LangKey   string `json:"lang_key" binding:"required"`
-	RegionKey string `json:"region_key" binding:"required"`
+	ID          *uint  `json:"id"`
+	LangKey     string `json:"lang_key" binding:"required"`
+	RegionKey   string `json:"region_key" binding:"required"`
+	IsPublished bool   `json:"is_published"`
 }

@@ -2499,7 +2499,7 @@ func (receiver *UserEntityController) GetStaffByOrgAndUser4Gateway(context *gin.
 		return
 	}
 
-	teacher, err := receiver.StaffApplicationUseCase.GetStaffByOrgAndUser4Gateway(userID, organizationID)
+	staff, err := receiver.StaffApplicationUseCase.GetStaffByOrgAndUser4Gateway(userID, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -2512,7 +2512,7 @@ func (receiver *UserEntityController) GetStaffByOrgAndUser4Gateway(context *gin.
 	// Thành công
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: teacher,
+		Data: staff,
 	})
 }
 

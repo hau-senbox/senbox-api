@@ -394,8 +394,8 @@ func (uc *StaffApplicationUseCase) GetStaffsByUser4Gateway(userID string) ([]*re
 	return result, nil
 }
 
-func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(staffID string, organizationID string) (*response.GetStaff4Gateway, error) {
-	staff, err := uc.StaffAppRepo.GetByUserIDAndOrgID(staffID, organizationID)
+func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(userID string, organizationID string) (*response.GetStaff4Gateway, error) {
+	staff, err := uc.StaffAppRepo.GetByUserIDAndOrgID(userID, organizationID)
 	if err != nil {
 		return nil, err
 	}
@@ -408,10 +408,10 @@ func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(staffID string, 
 	})
 
 	// get avts
-	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staffID, value.OwnerRoleStaff)
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
 
 	return &response.GetStaff4Gateway{
-		StaffID:        staffID,
+		StaffID:        staff.ID.String(),
 		OrganizationID: staff.OrganizationID.String(),
 		StaffName:      userEntity.Nickname,
 		Avatar:         avatar,
