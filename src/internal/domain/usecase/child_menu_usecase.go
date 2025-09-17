@@ -69,13 +69,14 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string, isApp bool) (response.G
 			}
 		}
 		componentResponses = append(componentResponses, response.ComponentResponse{
-			ID:     comp.ID.String(),
-			Name:   comp.Name,
-			Type:   comp.Type.String(),
-			Key:    comp.Key,
-			Value:  helper.BuildSectionValueMenu(string(comp.Value), comp),
-			Order:  componentOrderMap[comp.ID],
-			IsShow: componentIsShowMap[comp.ID],
+			ID:       comp.ID.String(),
+			Name:     comp.Name,
+			Type:     comp.Type.String(),
+			Key:      comp.Key,
+			Value:    helper.BuildSectionValueMenu(string(comp.Value), comp),
+			Order:    componentOrderMap[comp.ID],
+			IsShow:   componentIsShowMap[comp.ID],
+			Language: comp.Language,
 		})
 	}
 

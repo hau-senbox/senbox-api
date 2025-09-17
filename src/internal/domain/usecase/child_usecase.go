@@ -213,13 +213,14 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	menus := make([]response.ComponentResponse, 0)
 	for _, comp := range components {
 		menu := response.ComponentResponse{
-			ID:     comp.ID.String(),
-			Name:   comp.Name,
-			Type:   comp.Type.String(),
-			Key:    comp.Key,
-			Value:  string(comp.Value),
-			Order:  componentOrderMap[comp.ID],
-			IsShow: componentIsShowMap[comp.ID],
+			ID:       comp.ID.String(),
+			Name:     comp.Name,
+			Type:     comp.Type.String(),
+			Key:      comp.Key,
+			Value:    string(comp.Value),
+			Order:    componentOrderMap[comp.ID],
+			IsShow:   componentIsShowMap[comp.ID],
+			Language: comp.Language,
 		}
 		menus = append(menus, menu)
 	}
