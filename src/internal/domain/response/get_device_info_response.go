@@ -6,5 +6,5 @@ type GetDeviceInfoResponse struct {
 	Components       []ComponentResponse          `json:"components"`
 	CreatedIndex     int                          `json:"created_index"`
 	DeviceNickName   string                       `json:"device_nick_name"`
-	ValuesAppCurrent *GetValuesAppCurrentResponse `json:"values_app_current"`
+	CurrentAppValues *GetValuesAppCurrentResponse `json:"current_app_values"`
 }
