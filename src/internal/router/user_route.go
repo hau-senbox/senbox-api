@@ -58,6 +58,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
 	)
 
 	userEntityController := &controller.UserEntityController{

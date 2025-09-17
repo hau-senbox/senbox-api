@@ -60,6 +60,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			// 	UploadProvider: s3,
 			// },
 		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
 	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,

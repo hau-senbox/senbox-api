@@ -497,6 +497,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

@@ -9,7 +9,7 @@ type ChildResponse struct {
 	AvatarURL      string                   `json:"avatar_url"`
 	Parent         *entity.SUserEntity      `json:"parent,omitempty"`
 	QrFormProfile  string                   `json:"qr_form"`
-	Menus          []ComponentResponse      `json:"components"`
+	Menus          []GetMenus4Web           `json:"components"`
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
 	Avatars        []Avatar                 `json:"avatars"`
 	CreatedIndex   int                      `json:"created_index"`

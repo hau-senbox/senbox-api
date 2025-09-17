@@ -1,5 +1,7 @@
 package response
 
+import "sen-global-api/internal/domain/entity"
+
 // common
 type GetCommonMenuResponse struct {
 	ChildID    string              `json:"child_id,omitempty"`
@@ -30,4 +32,9 @@ type GetCommonMenuByUserResponse struct {
 type ComponentCommonMenuByUser struct {
 	ChildID   string            `json:"child_id,omitempty"`
 	Component ComponentResponse `json:"component"`
+}
+
+type GetMenus4Web struct {
+	Language entity.LanguageSetting `json:"language"`
+	Menus    []ComponentResponse    `json:"menus"`
 }
