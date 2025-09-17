@@ -25,6 +25,7 @@ type StudentApplicationUseCase struct {
 	StudentBlockSettingUsecase *StudentBlockSettingUsecase
 	LanguagesConfigUsecase     *LanguagesConfigUsecase
 	UserImagesUsecase          *UserImagesUsecase
+	LanguageSettingRepo        *repository.LanguageSettingRepository
 }
 
 func NewStudentApplicationUseCase(
@@ -37,6 +38,7 @@ func NewStudentApplicationUseCase(
 	studentBlockSettingUsecase *StudentBlockSettingUsecase,
 	languagesConfigUsecase *LanguagesConfigUsecase,
 	userImagesUsecase *UserImagesUsecase,
+	languageSettingRepo *repository.LanguageSettingRepository,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:             studentRepo,
@@ -48,6 +50,7 @@ func NewStudentApplicationUseCase(
 		StudentBlockSettingUsecase: studentBlockSettingUsecase,
 		LanguagesConfigUsecase:     languagesConfigUsecase,
 		UserImagesUsecase:          userImagesUsecase,
+		LanguageSettingRepo:        languageSettingRepo,
 	}
 }
 
@@ -68,7 +71,85 @@ func (uc *StudentApplicationUseCase) GetAllStudents() ([]response.StudentRespons
 	return res, nil
 }
 
-func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response.StudentResponseBase, error) {
+// func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response.StudentResponseBase, error) {
+// 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if studentApp == nil {
+// 		return nil, errors.New("student not found")
+// 	}
+
+// 	// Lấy danh sách ChildMenu
+// 	studentMenus, err := uc.StudentMenuRepo.GetByStudentID(studentID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Tạo danh sách componentID để lấy Component
+// 	componentIDs := make([]uuid.UUID, 0, len(studentMenus))
+// 	componentOrderMap := make(map[uuid.UUID]int)
+// 	componentIsShowMap := make(map[uuid.UUID]bool)
+
+// 	for _, cm := range studentMenus {
+// 		componentIDs = append(componentIDs, cm.ComponentID)
+// 		componentOrderMap[cm.ComponentID] = cm.Order
+// 		componentIsShowMap[cm.ComponentID] = cm.IsShow
+// 	}
+
+// 	// Lấy tất cả components theo danh sách ID
+// 	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Build danh sách ComponentChildResponse
+// 	menus := make([]response.ComponentResponse, 0)
+// 	for _, comp := range components {
+// 		menu := response.ComponentResponse{
+// 			ID:       comp.ID.String(),
+// 			Name:     comp.Name,
+// 			Type:     comp.Type.String(),
+// 			Key:      comp.Key,
+// 			Value:    string(comp.Value),
+// 			Order:    componentOrderMap[comp.ID],
+// 			IsShow:   componentIsShowMap[comp.ID],
+// 			Language: comp.Language,
+// 		}
+// 		menus = append(menus, menu)
+// 	}
+// 	// lay qr profile form
+// 	studentRoleOrg, err := uc.RoleOrgRepo.GetByRoleName(string(value.RoleStudent))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	formProfile := studentRoleOrg.OrgProfile + ":" + studentApp.ID.String()
+
+// 	// get student block setting
+// 	studentBlockSetting, _ := uc.StudentBlockSettingUsecase.GetByStudentID(studentID)
+
+// 	// get languages config
+// 	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(studentID, value.OwnerRoleLangStudent)
+
+// 	// get avts
+// 	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(studentID, value.OwnerRoleStudent)
+
+// 	return &response.StudentResponseBase{
+// 		StudentID:      studentID,
+// 		StudentName:    studentApp.StudentName,
+// 		Avatar:         "",
+// 		AvatarURL:      "",
+// 		QrFormProfile:  formProfile,
+// 		Menus:          menus,
+// 		CustomID:       studentApp.CustomID,
+// 		StudentBlock:   studentBlockSetting,
+// 		LanguageConfig: languageConfig,
+// 		Avatars:        avatars,
+// 		CreatedIndex:   studentApp.CreatedIndex,
+// 	}, nil
+// }
+
+func (uc *StudentApplicationUseCase) GetByID4WebAdmin(studentID string) (*response.StudentResponseBase, error) {
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if err != nil {
 		return nil, err
@@ -100,8 +181,10 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		return nil, err
 	}
 
-	// Build danh sách ComponentChildResponse
-	menus := make([]response.ComponentResponse, 0)
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
 		menu := response.ComponentResponse{
 			ID:       comp.ID.String(),
@@ -113,8 +196,30 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 			IsShow:   componentIsShowMap[comp.ID],
 			Language: comp.Language,
 		}
-		menus = append(menus, menu)
+
+		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+
+		// nếu chưa có language trong cache -> query DB
+		if _, ok := langMap[comp.Language]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.Language)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.Language] = *langSetting
+			}
+		}
 	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
 	// lay qr profile form
 	studentRoleOrg, err := uc.RoleOrgRepo.GetByRoleName(string(value.RoleStudent))
 	if err != nil {
@@ -137,7 +242,7 @@ func (uc *StudentApplicationUseCase) GetStudentByID(studentID string) (*response
 		Avatar:         "",
 		AvatarURL:      "",
 		QrFormProfile:  formProfile,
-		Menus:          menus,
+		Menus:          getMenus,
 		CustomID:       studentApp.CustomID,
 		StudentBlock:   studentBlockSetting,
 		LanguageConfig: languageConfig,

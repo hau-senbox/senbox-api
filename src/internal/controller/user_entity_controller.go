@@ -1732,7 +1732,7 @@ func (receiver *UserEntityController) GetStudent4WebAdmin(context *gin.Context) 
 		return
 	}
 
-	student, err := receiver.StudentApplicationUseCase.GetStudentByID(studentID)
+	student, err := receiver.StudentApplicationUseCase.GetByID4WebAdmin(studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

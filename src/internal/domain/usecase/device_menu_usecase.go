@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
@@ -10,9 +9,10 @@ import (
 )
 
 type DeviceMenuUseCase struct {
-	Repo          *repository.DeviceMenuRepository
-	ComponentRepo *repository.ComponentRepository
-	DeviceRepo    *repository.DeviceRepository
+	Repo                *repository.DeviceMenuRepository
+	ComponentRepo       *repository.ComponentRepository
+	DeviceRepo          *repository.DeviceRepository
+	LanguageSettingRepo *repository.LanguageSettingRepository
 }
 
 func NewDeviceMenuUseCase(repo *repository.DeviceMenuRepository) *DeviceMenuUseCase {
@@ -61,23 +61,48 @@ func (uc *DeviceMenuUseCase) GetByDeviceID(deviceID string) (response.GetDeviceM
 		return response.GetDeviceMenuResponse{}, err
 	}
 
-	// B5: Map sang ComponentResponse
-	componentResponses := make([]response.ComponentResponse, 0, len(components))
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
-		componentResponses = append(componentResponses, response.ComponentResponse{
-			ID:     comp.ID.String(),
-			Name:   comp.Name,
-			Type:   comp.Type.String(),
-			Key:    comp.Key,
-			Value:  helper.BuildSectionValueMenu(string(comp.Value), comp),
-			Order:  componentOrderMap[comp.ID],
-			IsShow: componentIsShowMap[comp.ID],
+		menu := response.ComponentResponse{
+			ID:       comp.ID.String(),
+			Name:     comp.Name,
+			Type:     comp.Type.String(),
+			Key:      comp.Key,
+			Value:    string(comp.Value),
+			Order:    componentOrderMap[comp.ID],
+			IsShow:   componentIsShowMap[comp.ID],
+			Language: comp.Language,
+		}
+
+		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+
+		// nếu chưa có language trong cache -> query DB
+		if _, ok := langMap[comp.Language]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.Language)
+			if err != nil {
+				return response.GetDeviceMenuResponse{}, err
+			}
+			if langSetting != nil {
+				langMap[comp.Language] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
 		})
 	}
 
 	return response.GetDeviceMenuResponse{
 		DeviceID:   deviceID,
 		DeviceName: device.DeviceName, // giả sử entity.Device có DeviceName
-		Components: componentResponses,
+		Components: getMenus,
 	}, nil
 }

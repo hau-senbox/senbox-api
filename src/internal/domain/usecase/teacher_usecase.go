@@ -24,6 +24,7 @@ type TeacherApplicationUseCase struct {
 	OrganizationRepo       *repository.OrganizationRepository
 	LanguagesConfigUsecase *LanguagesConfigUsecase
 	UserImagesUsecase      *UserImagesUsecase
+	LanguageSettingRepo    *repository.LanguageSettingRepository
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -210,19 +211,43 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		return nil, err
 	}
 
-	// Build danh sách ComponentResponse
-	menus := make([]response.ComponentResponse, 0)
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
 		menu := response.ComponentResponse{
-			ID:     comp.ID.String(),
-			Name:   comp.Name,
-			Type:   comp.Type.String(),
-			Key:    comp.Key,
-			Value:  string(comp.Value),
-			Order:  componentOrderMap[comp.ID],
-			IsShow: componentIsShowMap[comp.ID],
+			ID:       comp.ID.String(),
+			Name:     comp.Name,
+			Type:     comp.Type.String(),
+			Key:      comp.Key,
+			Value:    string(comp.Value),
+			Order:    componentOrderMap[comp.ID],
+			IsShow:   componentIsShowMap[comp.ID],
+			Language: comp.Language,
 		}
-		menus = append(menus, menu)
+
+		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+
+		// nếu chưa có language trong cache -> query DB
+		if _, ok := langMap[comp.Language]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.Language)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.Language] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
 	}
 
 	// Tạo QR cho form profile
@@ -248,7 +273,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		Avatar:         "",
 		AvatarURL:      "",
 		QrFormProfile:  formProfile,
-		Menus:          menus,
+		Menus:          getMenus,
 		IsUserBlock:    userEntity.IsBlocked,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
