@@ -24,6 +24,7 @@ type ChildUseCase struct {
 	getUserEntityUseCase   *GetUserEntityUseCase
 	userImagesUsecase      *UserImagesUsecase
 	languagesConfigUsecase *LanguagesConfigUsecase
+	languageSettingRepo    *repository.LanguageSettingRepository
 }
 
 func NewChildUseCase(
@@ -35,6 +36,7 @@ func NewChildUseCase(
 	getUserEntityUseCase *GetUserEntityUseCase,
 	languagesConfigUsecase *LanguagesConfigUsecase,
 	userImagesUsecase *UserImagesUsecase,
+	languageSettingRepo *repository.LanguageSettingRepository,
 ) *ChildUseCase {
 	return &ChildUseCase{
 		childRepo:              childRepo,
@@ -45,6 +47,7 @@ func NewChildUseCase(
 		getUserEntityUseCase:   getUserEntityUseCase,
 		userImagesUsecase:      userImagesUsecase,
 		languagesConfigUsecase: languagesConfigUsecase,
+		languageSettingRepo:    languageSettingRepo,
 	}
 }
 
@@ -178,14 +181,6 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		return nil, errors.New("child not found")
 	}
 
-	// Lấy thông tin parent
-	// parent, err := uc.userRepo.GetByID(request.GetUserEntityByIDRequest{
-	// 	ID: child.ParentID.String(),
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	// Lấy danh sách ChildMenu
 	childMenus, err := uc.childMenuRepo.GetByChildID(childID)
 	if err != nil {
@@ -209,8 +204,10 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		return nil, err
 	}
 
-	// Build danh sách ComponentChildResponse
-	menus := make([]response.ComponentResponse, 0)
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
 		menu := response.ComponentResponse{
 			ID:       comp.ID.String(),
@@ -222,7 +219,28 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 			IsShow:   componentIsShowMap[comp.ID],
 			Language: comp.Language,
 		}
-		menus = append(menus, menu)
+
+		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+
+		// nếu chưa có language trong cache -> query DB
+		if _, ok := langMap[comp.Language]; !ok {
+			langSetting, err := uc.languageSettingRepo.GetByID(comp.Language)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.Language] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
 	}
 
 	// lay qr profile form
@@ -246,7 +264,7 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 		AvatarURL:     "", // Có thể generate từ link
 		QrFormProfile: formProfile,
 		// Parent:    *parent,
-		Menus:          menus,
+		Menus:          getMenus,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
 		CreatedIndex:   child.CreatedIndex,
