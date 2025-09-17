@@ -7,13 +7,14 @@ type GetCommonMenuResponse struct {
 }
 
 type ComponentResponse struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Type   string `json:"type"`
-	Key    string `json:"key"`
-	Value  string `json:"value"`
-	Order  int    `json:"order"`
-	IsShow bool   `json:"is_show"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	Order    int    `json:"order"`
+	IsShow   bool   `json:"is_show"`
+	Language uint   `json:"language"`
 }
 
 type ComponentCommonMenu struct {
