@@ -484,6 +484,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -532,6 +533,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -564,6 +566,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
+			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
@@ -584,6 +587,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 			},
+			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
@@ -849,9 +853,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		DeviceUsecase: &usecase.DeviceUsecase{
 			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
 			DeviceMenuUseCase: &usecase.DeviceMenuUseCase{
-				Repo:          &repository.DeviceMenuRepository{DBConn: dbConn},
-				ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
-				DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
+				Repo:                &repository.DeviceMenuRepository{DBConn: dbConn},
+				ComponentRepo:       &repository.ComponentRepository{DBConn: dbConn},
+				DeviceRepo:          &repository.DeviceRepository{DBConn: dbConn},
+				LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 			},
 			ValuesAppCurrentRepository: &repository.ValuesAppCurrentRepository{DBConn: dbConn},
 			GetImageUseCase: &usecase.GetImageUseCase{

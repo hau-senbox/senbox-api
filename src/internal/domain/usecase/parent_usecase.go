@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
@@ -16,6 +17,7 @@ type ParentUseCase struct {
 	ComponentRepo          *repository.ComponentRepository
 	LanguagesConfigUsecase *LanguagesConfigUsecase
 	UserImagesUsecase      *UserImagesUsecase
+	LanguageSettingRepo    *repository.LanguageSettingRepository
 }
 
 func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentResponseBase, error) {
@@ -50,19 +52,43 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		return nil, err
 	}
 
-	// Build danh sách ComponentChildResponse
-	menus := make([]response.ComponentResponse, 0)
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
 		menu := response.ComponentResponse{
-			ID:     comp.ID.String(),
-			Name:   comp.Name,
-			Type:   comp.Type.String(),
-			Key:    comp.Key,
-			Value:  string(comp.Value),
-			Order:  componentOrderMap[comp.ID],
-			IsShow: componentIsShowMap[comp.ID],
+			ID:       comp.ID.String(),
+			Name:     comp.Name,
+			Type:     comp.Type.String(),
+			Key:      comp.Key,
+			Value:    string(comp.Value),
+			Order:    componentOrderMap[comp.ID],
+			IsShow:   componentIsShowMap[comp.ID],
+			Language: comp.Language,
 		}
-		menus = append(menus, menu)
+
+		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+
+		// nếu chưa có language trong cache -> query DB
+		if _, ok := langMap[comp.Language]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.Language)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.Language] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
 	}
 
 	// get languages config
@@ -76,7 +102,7 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		ParentName:     parent.Nickname,
 		Avatar:         "",
 		AvatarURL:      "",
-		Menus:          menus,
+		Menus:          getMenus,
 		CustomID:       parent.CustomID,
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
