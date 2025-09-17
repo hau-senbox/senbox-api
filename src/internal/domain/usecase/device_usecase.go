@@ -110,7 +110,7 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 	if values, err := receiver.ValuesAppCurrentRepository.FindByDeviceID(deviceID); err == nil {
 		//get image url
 		url, _ := receiver.GetImageUseCase.GetUrlByKey(values.ImageKey, uploader.UploadPrivate)
-		resp.ValuesAppCurrent = mapper.ToGetValuesAppCurrentResponse(values, url)
+		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(values, url)
 	}
 
 	return resp, nil
