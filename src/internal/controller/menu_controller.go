@@ -1717,3 +1717,48 @@ func (receiver *MenuController) GetEmergencyMenu4App(context *gin.Context) {
 		Data: menus,
 	})
 }
+
+func (receiver *MenuController) UploadOrganizationDeviceMenu(context *gin.Context) {
+	var req request.UploadSectionDeviceMenuOrganizationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user, err := receiver.GetUserFromToken(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	present := lo.ContainsBy(user.Roles, func(org entity.SRole) bool {
+		return org.Role == entity.SuperAdmin || org.Role == entity.Admin
+	})
+	if !present {
+		context.JSON(http.StatusForbidden, response.FailedResponse{
+			Code:  http.StatusForbidden,
+			Error: "access denied",
+		})
+		return
+	}
+
+	err = receiver.UploadSectionMenuUseCase.UploadOrganizationDeviceMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Upload successfully",
+	})
+}
