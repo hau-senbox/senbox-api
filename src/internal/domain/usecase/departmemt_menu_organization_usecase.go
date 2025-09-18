@@ -98,7 +98,8 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.C
 		}
 
 		// 2.3 Lấy components theo ID
-		components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+		appLanguage, _ := ctx.Get("app_language")
+		components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 		if err != nil {
 			return nil, err
 		}

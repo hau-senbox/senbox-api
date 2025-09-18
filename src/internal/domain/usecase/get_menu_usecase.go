@@ -628,6 +628,7 @@ func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]r
 }
 
 func (receiver *GetMenuUseCase) GetEmergencyMenu4App(ctx *gin.Context, organizationID string) ([]response.GetMenuSectionResponse, error) {
+	appLanguage, _ := ctx.Get("app_language")
 	menus, err := receiver.OrganizationEmergencyMenuRepo.GetByOrganizationID(organizationID)
 	if err != nil {
 		return nil, err
@@ -635,17 +636,19 @@ func (receiver *GetMenuUseCase) GetEmergencyMenu4App(ctx *gin.Context, organizat
 
 	var result []response.GetMenuSectionResponse
 	for _, menu := range menus {
-		comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
+		comp, _ := receiver.ComponentRepository.GetByIDAndLanguage(menu.ComponentID.String(), appLanguage.(uint))
 
-		components := []response.ComponentResponse{{
-			ID:    menu.ComponentID.String(),
-			Name:  comp.Name,
-			Key:   comp.Key,
-			Type:  comp.Type.String(),
-			Value: helper.BuildSectionValueMenu(string(comp.Value), *comp),
-			Order: menu.Order,
-		}}
-
+		components := []response.ComponentResponse{}
+		if comp != nil {
+			components = append(components, response.ComponentResponse{
+				ID:    menu.ComponentID.String(),
+				Name:  comp.Name,
+				Key:   comp.Key,
+				Type:  comp.Type.String(),
+				Value: comp.Value.String(),
+				Order: menu.Order,
+			})
+		}
 		result = append(result, response.GetMenuSectionResponse{
 			SectionName: "Emergency Menu",
 			MenuIconKey: "",
