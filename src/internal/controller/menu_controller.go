@@ -114,7 +114,7 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
-	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu()
+	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu4App(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

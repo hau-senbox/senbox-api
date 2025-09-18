@@ -50,6 +50,11 @@ func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, erro
 	return receiver.MenuRepository.GetSuperAdminMenu()
 }
 
+func (receiver *GetMenuUseCase) GetSuperAdminMenu4App(ctx *gin.Context) ([]menu.SuperAdminMenu, error) {
+	appLanguage, _ := ctx.Get("app_language")
+	return receiver.MenuRepository.GetSuperAdminMenuByLanguage(appLanguage.(uint))
+}
+
 func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error) {
 	org, err := receiver.OrganizationRepository.GetByID(orgID)
 	if err != nil {
