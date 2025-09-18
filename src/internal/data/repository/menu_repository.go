@@ -382,3 +382,44 @@ func (r *MenuRepository) DeleteOrganizationAdminMenuByComponentID(componentID st
 	}
 	return nil
 }
+
+func (r *MenuRepository) CreateDeviceMenuOrganization(tx *gorm.DB, deviceMenu *menu.DeviceMenu) error {
+	err := tx.Create(deviceMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.CreateDeviceMenuOrganization: " + err.Error())
+		return errors.New("failed to create device menu organization")
+	}
+	return nil
+}
+
+func (r *MenuRepository) DeleteDeviceMenuOrganizationByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&menu.DeviceMenu{}).Error
+	if err != nil {
+		log.Error("MenuRepository.DeleteDeviceMenuOrganization: " + err.Error())
+		return errors.New("failed to delete device menu organization")
+	}
+	return nil
+}
+
+func (r *MenuRepository) GetDeviceMenuOrganization(organizationID string, componentID string) (*menu.DeviceMenu, error) {
+	var deviceMenu menu.DeviceMenu
+	err := r.DBConn.
+		Where("organization_id = ? AND component_id = ?", organizationID, componentID).
+		First(&deviceMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenuOrganization: " + err.Error())
+		return nil, err
+	}
+	return &deviceMenu, nil
+}
+
+func (r *MenuRepository) UpdateDeviceMenuOrganizationWithTx(tx *gorm.DB, deviceMenu *menu.DeviceMenu) error {
+	err := tx.Model(&menu.DeviceMenu{}).
+		Where("organization_id = ? AND component_id = ?", deviceMenu.OrganizationID, deviceMenu.ComponentID).
+		Updates(deviceMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.UpdateDeviceMenuOrganizationWithTx: " + err.Error())
+		return errors.New("failed to update device menu organization")
+	}
+	return nil
+}

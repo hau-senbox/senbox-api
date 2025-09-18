@@ -1717,3 +1717,28 @@ func (receiver *MenuController) GetEmergencyMenu4App(context *gin.Context) {
 		Data: menus,
 	})
 }
+
+func (receiver *MenuController) UploadOrganizationDeviceMenu(context *gin.Context) {
+	var req request.UploadSectionDeviceMenuOrganizationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	err := receiver.UploadSectionMenuUseCase.UploadOrganizationDeviceMenu(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Upload successfully",
+	})
+}

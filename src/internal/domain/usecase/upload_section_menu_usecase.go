@@ -338,6 +338,11 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 }
 
 func (receiver *UploadSectionMenuUseCase) DeleteSectionMenu(componentID string) error {
+	// Xóa organization device menu
+	if err := receiver.MenuRepository.DeleteDeviceMenuOrganizationByComponentID(componentID); err != nil {
+		return nil
+	}
+
 	// Xóa component
 	if err := receiver.ComponentRepository.DeleteComponent(componentID, nil); err != nil {
 		return nil
@@ -2110,5 +2115,129 @@ func (receiver *UploadSectionMenuUseCase) createOrganizationEmergencyMenu(tx *go
 			return fmt.Errorf("create emergency menu fail: %w", err)
 		}
 	}
+	return nil
+}
+
+// device menu by org
+func (receiver *UploadSectionMenuUseCase) UploadOrganizationDeviceMenu(ctx *gin.Context, req request.UploadSectionDeviceMenuOrganizationRequest) error {
+	tx := receiver.MenuRepository.DBConn.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("fail to create transaction: %s", tx.Error.Error())
+	}
+
+	rolledBack := false
+	defer func() {
+		if !rolledBack {
+			tx.Rollback()
+		}
+	}()
+
+	// 2. Upsert component và tạo menu theo role
+	if len(req.DeleteComponentIDs) > 0 {
+		for _, compID := range req.DeleteComponentIDs {
+			if err := receiver.DeleteSectionMenu(compID); err != nil {
+				logrus.Error("Rollback by error deleting section menu:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("Delete section menu failed: %w", err)
+			}
+		}
+	}
+
+	for _, compReq := range req.Components {
+		var componentID uuid.UUID
+
+		component := &components.Component{
+			Name:  compReq.Name,
+			Type:  components.ComponentType(compReq.Type),
+			Key:   compReq.Key,
+			Value: datatypes.JSON([]byte(compReq.Value)),
+		}
+
+		if compReq.ID != nil && *compReq.ID != uuid.Nil {
+			// Nếu có ID truyền lên
+			componentID = *compReq.ID
+			component.ID = componentID
+
+			existingComponent, err := receiver.ComponentRepository.GetByID(componentID.String())
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.Error("rollback by error query component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("query component fail: %w", err)
+			}
+
+			if existingComponent != nil {
+				// Update
+				if err := receiver.ComponentRepository.UpdateWithTx(tx, component); err != nil {
+					logrus.Error("rollback by error update component:", err)
+					tx.Rollback()
+					rolledBack = true
+					return fmt.Errorf("update component fail: %w", err)
+				}
+			} else {
+				logrus.Error("rollback by error create component (from non-existent id):", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail (Component ID wrong): %w", err)
+			}
+		} else {
+			// Tạo mới
+			component.ID = uuid.New()
+			componentID = component.ID
+			if err := receiver.ComponentRepository.CreateWithTx(tx, component); err != nil {
+				logrus.Error("rollback by error create component:", err)
+				tx.Rollback()
+				rolledBack = true
+				return fmt.Errorf("create component fail: %w", err)
+			}
+		}
+
+		if err := receiver.createDeviceMenuOrganization(tx, componentID.String(), req.OrganizationID, compReq.Order); err != nil {
+			logrus.Error("rollback by error create device menu organization:", err)
+			tx.Rollback()
+			rolledBack = true
+			return err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		logrus.Error("Error committing transaction:", err)
+		rolledBack = true
+		return fmt.Errorf("commit transaction failed: %s", err.Error())
+	}
+
+	rolledBack = true
+	return nil
+}
+
+func (receiver *UploadSectionMenuUseCase) createDeviceMenuOrganization(tx *gorm.DB, componentID string, organizationID string, order int) error {
+
+	existing, err := receiver.MenuRepository.GetDeviceMenuOrganization(
+		organizationID,
+		componentID,
+	)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get device menu organization fail: %w", err)
+	}
+
+	if existing != nil {
+		// Đã tồn tại → update order
+		existing.Order = order
+		if err := receiver.MenuRepository.UpdateDeviceMenuOrganizationWithTx(tx, existing); err != nil {
+			return fmt.Errorf("update device menu organization fail: %w", err)
+		}
+	} else {
+		// Không tồn tại → create
+		menu := &menu.DeviceMenu{
+			OrganizationID: uuid.MustParse(organizationID),
+			ComponentID:    uuid.MustParse(componentID),
+			Order:          order,
+		}
+		if err := receiver.MenuRepository.CreateDeviceMenuOrganization(tx, menu); err != nil {
+			return fmt.Errorf("create device menu organization fail: %w", err)
+		}
+	}
+
 	return nil
 }
