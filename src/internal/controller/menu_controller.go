@@ -1438,6 +1438,14 @@ func (receiver *MenuController) GetTeacherMenuOrganization4App(c *gin.Context) {
 		return
 	}
 
+	if len(menus.Components) == 0 {
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: nil,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: menus,

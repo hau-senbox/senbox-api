@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -68,7 +69,7 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4Admin(ctx context.Co
 	return menus, nil
 }
 
-func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Context, req request.GetTeacherOrganizationMenuRequest) (*response.GetTeacherOrganizationMenuResponse, error) {
+func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx *gin.Context, req request.GetTeacherOrganizationMenuRequest) (*response.GetTeacherOrganizationMenuResponse, error) {
 	// kiem tra device dang co nam trong org hay khong
 	isExist, err := uc.DeviceRepository.CheckDeviceExistInOrganization(req.DeviceID, req.OrganizationID)
 	if err != nil {
@@ -107,7 +108,8 @@ func (uc *TeacherMenuOrganizationUseCase) GetTeacherMenuOrg4App(ctx context.Cont
 	}
 
 	// 3. Lấy components theo ID
-	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 	if err != nil {
 		return nil, err
 	}
