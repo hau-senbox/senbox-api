@@ -423,3 +423,16 @@ func (r *MenuRepository) UpdateDeviceMenuOrganizationWithTx(tx *gorm.DB, deviceM
 	}
 	return nil
 }
+
+func (receiver *MenuRepository) GetSuperAdminMenuByLanguage(language uint) ([]menu.SuperAdminMenu, error) {
+	var menus []menu.SuperAdminMenu
+	err := receiver.DBConn.Model(&menu.SuperAdminMenu{}).
+		Preload("Component", "language = ?", language).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetSuperAdminMenuByLanguage: " + err.Error())
+		return nil, errors.New("failed to get super admin menu by language")
+	}
+
+	return menus, nil
+}
