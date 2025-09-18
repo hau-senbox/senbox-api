@@ -5,6 +5,7 @@ import "sen-global-api/internal/domain/entity/components"
 type OrgSettingResponse struct {
 	ID                 string                `json:"id"`
 	OrganizationID     string                `json:"organization_id" binding:"required"`
+	OrganizationName   string                `json:"organization_name"`
 	DeviceID           string                `json:"device_id" binding:"required"`
 	IsViewMessageBox   bool                  `json:"is_view_message_box"`
 	IsShowMessage      bool                  `json:"is_show_message"`
