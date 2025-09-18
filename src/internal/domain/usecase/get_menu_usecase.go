@@ -150,8 +150,23 @@ func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMen
 	return receiver.MenuRepository.GetDeviceMenu(device.ID)
 }
 
+func (receiver *GetMenuUseCase) GetDeviceMenu4App(ctx *gin.Context, deviceID string) ([]menu.DeviceMenu, error) {
+	device, err := receiver.DeviceRepository.GetDeviceByID(deviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+	return receiver.MenuRepository.GetDeviceMenuByLanguage(device.ID, appLanguage.(uint))
+}
+
 func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]menu.DeviceMenu, error) {
 	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
+}
+
+func (receiver *GetMenuUseCase) GetDeviceMenuByOrg4App(ctx *gin.Context, organizationID string) ([]menu.DeviceMenu, error) {
+	appLanguage, _ := ctx.Get("app_language")
+	return receiver.MenuRepository.GetDeviceMenuByOrgByLanguage(organizationID, appLanguage.(uint))
 }
 
 func (receiver *GetMenuUseCase) GetCommonMenu(ctx *gin.Context) response.GetCommonMenuResponse {

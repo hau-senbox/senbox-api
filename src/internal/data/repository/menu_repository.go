@@ -465,3 +465,37 @@ func (receiver *MenuRepository) GetUserMenuByLanguage(userID string, language ui
 
 	return menus, nil
 }
+
+func (receiver *MenuRepository) GetDeviceMenuByLanguage(deviceID string, language uint) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Preload("Component", "language = ?", language).
+		Joins("INNER JOIN s_organization o ON o.id = device_menu.organization_id").
+		Joins("INNER JOIN s_org_devices od ON od.organization_id = o.id").
+		Where("od.device_id = ?", deviceID).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
+
+func (receiver *MenuRepository) GetDeviceMenuByOrgByLanguage(organizationID string, language uint) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Joins("JOIN component c ON c.id = device_menu.component_id").
+		Where("device_menu.organization_id = ? AND c.language = ?", organizationID, language).
+		Preload("Component").
+		Find(&menus).Error
+
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
