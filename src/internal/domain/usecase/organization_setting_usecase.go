@@ -22,8 +22,9 @@ import (
 )
 
 type OrganizationSettingUsecase struct {
-	Repo          *repository.OrganizationSettingRepository
-	ComponentRepo *repository.ComponentRepository
+	Repo             *repository.OrganizationSettingRepository
+	ComponentRepo    *repository.ComponentRepository
+	OrganizationRepo *repository.OrganizationRepository
 }
 
 func NewOrganizationSettingUsecase(repo *repository.OrganizationSettingRepository) *OrganizationSettingUsecase {
@@ -243,7 +244,9 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.Or
 	// Lấy danh sách components
 	component, _ := u.ComponentRepo.GetByID(orgSetting.ComponentID)
 
-	resp := mapper.MapOrgSettingToResponse(orgSetting, component)
+	// ger org info
+	orgInfo, _ := u.OrganizationRepo.GetByID(orgSetting.OrganizationID)
+	resp := mapper.MapOrgSettingToResponse(orgSetting, component, orgInfo.OrganizationName)
 
 	return resp, nil
 }

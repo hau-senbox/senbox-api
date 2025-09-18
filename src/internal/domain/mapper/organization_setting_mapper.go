@@ -6,11 +6,12 @@ import (
 	"sen-global-api/internal/domain/response"
 )
 
-func MapOrgSettingToResponse(setting *entity.OrganizationSetting, comp *components.Component) response.OrgSettingResponse {
+func MapOrgSettingToResponse(setting *entity.OrganizationSetting, comp *components.Component, orgName string) response.OrgSettingResponse {
 
 	return response.OrgSettingResponse{
 		ID:                 setting.ID.String(),
 		OrganizationID:     setting.OrganizationID,
+		OrganizationName:   orgName,
 		DeviceID:           setting.DeviceID,
 		IsViewMessageBox:   setting.IsViewMessageBox,
 		IsShowMessage:      setting.IsShowMessage,
