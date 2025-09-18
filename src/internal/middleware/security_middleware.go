@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"sen-global-api/internal/data/repository"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,15 @@ type SecuredMiddleware struct {
 func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authorizationHeader := context.GetHeader("Authorization")
+		// get app language
+		appLanguage := uint(1) // default
+		if header := context.GetHeader("app_language"); header != "" {
+			if val, err := strconv.Atoi(header); err == nil {
+				appLanguage = uint(val)
+			}
+		}
+		context.Set("app_language", appLanguage)
+
 		if len(authorizationHeader) == 0 {
 			context.AbortWithStatus(http.StatusForbidden)
 			return

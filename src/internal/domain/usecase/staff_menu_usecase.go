@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -23,7 +24,7 @@ func NewStaffMenuUseCase(repo *repository.StaffMenuRepository) *StaffMenuUseCase
 	}
 }
 
-func (uc *StaffMenuUseCase) GetByStaffID(staffID string, isApp bool) (response.GetStaffMenuResponse, error) {
+func (uc *StaffMenuUseCase) GetByStaffID(ctx *gin.Context, staffID string, isApp bool) (response.GetStaffMenuResponse, error) {
 	// B0: Lấy thông tin staff
 	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
 	if staff == nil || err != nil {
@@ -48,7 +49,8 @@ func (uc *StaffMenuUseCase) GetByStaffID(staffID string, isApp bool) (response.G
 	}
 
 	// B3: Lấy danh sách component tương ứng
-	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 	if err != nil {
 		return response.GetStaffMenuResponse{}, err
 	}
