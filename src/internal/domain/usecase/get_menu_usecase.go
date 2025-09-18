@@ -64,11 +64,25 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 	return receiver.MenuRepository.GetOrgMenu(org.ID.String())
 }
 
-func (receiver *GetMenuUseCase) GetStudentMenu4App(studentID string) (response.GetStudentMenuResponse, error) {
-	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(studentID, true)
+func (receiver *GetMenuUseCase) GetOrgMenu4App(ctx *gin.Context, orgID string) ([]menu.OrgMenu, error) {
+	org, err := receiver.OrganizationRepository.GetByID(orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+	return receiver.MenuRepository.GetOrgMenuByLanguage(org.ID.String(), appLanguage.(uint))
+}
+
+func (receiver *GetMenuUseCase) GetStudentMenu4App(ctx *gin.Context, studentID string) (*response.GetStudentMenuResponse, error) {
+	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(ctx, studentID, true)
 
 	if err != nil {
-		return response.GetStudentMenuResponse{}, fmt.Errorf("failed to get student menu: %w", err)
+		return nil, fmt.Errorf("failed to get student menu: %w", err)
+	}
+
+	if len(studentMenu.Components) == 0 {
+		return nil, errors.New("student menu not found")
 	}
 
 	// get menu icon key
@@ -83,13 +97,17 @@ func (receiver *GetMenuUseCase) GetStudentMenu4App(studentID string) (response.G
 	return studentMenu, nil
 }
 
-func (receiver *GetMenuUseCase) GetTeacherMenu4App(ctx *gin.Context, userID string) (response.GetTeacherMenuResponse, error) {
+func (receiver *GetMenuUseCase) GetTeacherMenu4App(ctx *gin.Context, userID string) (*response.GetTeacherMenuResponse, error) {
 
 	teacher, _ := receiver.TeacherRepository.GetByUserID(userID)
 
 	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(ctx, teacher.ID.String(), true)
 	if err != nil {
-		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
+		return nil, fmt.Errorf("failed to get teacher menu: %w", err)
+	}
+
+	if len(teacherMenu.Components) == 0 {
+		return nil, errors.New("teacher menu not found")
 	}
 
 	// get menu icon key
@@ -101,7 +119,7 @@ func (receiver *GetMenuUseCase) GetTeacherMenu4App(ctx *gin.Context, userID stri
 	}
 	teacherMenu.MenuIconKey = menuIconKey
 
-	return teacherMenu, nil
+	return &teacherMenu, nil
 }
 
 func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, error) {
@@ -111,6 +129,16 @@ func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, err
 	}
 
 	return receiver.MenuRepository.GetUserMenu(user.ID.String())
+}
+
+func (receiver *GetMenuUseCase) GetUserMenu4App(ctx *gin.Context, userID string) ([]menu.UserMenu, error) {
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+	return receiver.MenuRepository.GetUserMenuByLanguage(user.ID.String(), appLanguage.(uint))
 }
 
 func (receiver *GetMenuUseCase) GetDeviceMenu(deviceID string) ([]menu.DeviceMenu, error) {
