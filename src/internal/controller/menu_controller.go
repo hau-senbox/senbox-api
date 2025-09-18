@@ -626,12 +626,19 @@ func (receiver *MenuController) GetDeviceMenu4App(context *gin.Context) {
 		}
 
 		key := m.OrganizationID.String()
+		comp := components.Component{
+			ID:    m.Component.ID,
+			Name:  m.Component.Name,
+			Type:  m.Component.Type,
+			Key:   m.Component.Key,
+			Value: m.Component.Value,
+		}
 		resMap[key] = append(resMap[key], componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
 			Key:   m.Component.Key,
-			Value: string(normalizedValue),
+			Value: helper.BuildSectionValueMenu(m.Component.Value.String(), comp),
 			Order: m.Order,
 		})
 	}
@@ -712,16 +719,23 @@ func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
 
 	res := make([]componentResponse, 0)
 	for _, m := range menus {
-		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		//normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
 		if err != nil {
 			log.Println("Normalize error:", err)
+		}
+		comp := components.Component{
+			ID:    m.Component.ID,
+			Name:  m.Component.Name,
+			Type:  m.Component.Type,
+			Key:   m.Component.Key,
+			Value: m.Component.Value,
 		}
 		res = append(res, componentResponse{
 			ID:    m.Component.ID.String(),
 			Name:  m.Component.Name,
 			Type:  m.Component.Type.String(),
 			Key:   m.Component.Key,
-			Value: string(normalizedValue),
+			Value: helper.BuildSectionValueMenu(m.Component.Value.String(), comp),
 			Order: m.Order,
 		})
 	}
