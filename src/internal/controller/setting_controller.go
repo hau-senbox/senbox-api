@@ -1094,6 +1094,7 @@ func (receiver *SettingController) UploadLanguageSetting(context *gin.Context) {
 			Error:   err.Error(),
 			Message: "Invalid request body",
 		})
+		return
 	}
 
 	if err := receiver.LanguageSettingUseCase.Upload(req); err != nil {
@@ -1102,6 +1103,7 @@ func (receiver *SettingController) UploadLanguageSetting(context *gin.Context) {
 			Error:   err.Error(),
 			Message: "Failed to upload language setting",
 		})
+		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{

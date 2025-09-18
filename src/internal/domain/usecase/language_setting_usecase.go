@@ -4,7 +4,6 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
-	"strconv"
 )
 
 type LanguageSettingUseCase struct {
@@ -26,17 +25,7 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 
 	// 1. Xóa theo DeleteIDs
 	if len(req.DeleteIDs) > 0 {
-		var ids []uint
-		for _, idStr := range req.DeleteIDs {
-			id, err := strconv.ParseUint(idStr, 10, 64)
-			if err != nil {
-				tx.Rollback()
-				return err
-			}
-			ids = append(ids, uint(id))
-		}
-
-		if err := l.LanguageSettingRepository.DeleteByIDs(tx, ids, l.ComponentRepository); err != nil {
+		if err := l.LanguageSettingRepository.DeleteByIDs(tx, req.DeleteIDs, l.ComponentRepository); err != nil {
 			tx.Rollback()
 			return err
 		}
