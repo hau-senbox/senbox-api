@@ -1386,14 +1386,13 @@ type UserSettingKey string
 
 const (
 	UserSettingLoginDeviceLimit UserSettingKey = "login-device-limit"
-	UserSettingTest             UserSettingKey = "test"
-	UserSettingLanguage         UserSettingKey = "language"
+	UserSettingLanguage         UserSettingKey = "app-language"
 )
 
 func (k UserSettingKey) IsValid() bool {
 	switch k {
 	case UserSettingLoginDeviceLimit,
-		UserSettingTest:
+		UserSettingLanguage:
 		return true
 	default:
 		return false

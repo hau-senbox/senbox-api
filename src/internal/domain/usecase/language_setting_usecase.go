@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -40,6 +41,19 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 				tx.Rollback()
 				return err
 			}
+			// kiem tra exist trong component (neu co) -> khong cho update
+			exist, err := l.ComponentRepository.CheckExistLanguage(tx, *s.ID)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			if exist {
+				if setting.LangKey != s.LangKey || setting.RegionKey != s.RegionKey {
+					tx.Rollback()
+					return fmt.Errorf("language setting ID %d is in use by components and cannot be updated", *s.ID)
+				}
+			}
+
 			setting.LangKey = s.LangKey
 			setting.RegionKey = s.RegionKey
 			setting.IsPublished = s.IsPublished
