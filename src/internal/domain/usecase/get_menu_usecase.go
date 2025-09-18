@@ -78,11 +78,11 @@ func (receiver *GetMenuUseCase) GetStudentMenu4App(studentID string) (response.G
 	return studentMenu, nil
 }
 
-func (receiver *GetMenuUseCase) GetTeacherMenu4App(userID string) (response.GetTeacherMenuResponse, error) {
+func (receiver *GetMenuUseCase) GetTeacherMenu4App(ctx *gin.Context, userID string) (response.GetTeacherMenuResponse, error) {
 
 	teacher, _ := receiver.TeacherRepository.GetByUserID(userID)
 
-	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String(), true)
+	teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(ctx, teacher.ID.String(), true)
 	if err != nil {
 		return response.GetTeacherMenuResponse{}, fmt.Errorf("failed to get teacher menu: %w", err)
 	}
@@ -425,7 +425,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	// Get menu
 	for _, child := range children {
 		// get 4 app
-		childMenu, err := receiver.ChildMenuUseCase.GetByChildID(child.ID.String(), true)
+		childMenu, err := receiver.ChildMenuUseCase.GetByChildID(context, child.ID.String(), true)
 		// get menu icon key
 		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(child.ID.String(), value.OwnerRoleChild)
 		menuIconKey := ""
@@ -452,7 +452,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	for _, teacher := range teachers {
 		// get 4 app
-		teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(teacher.ID.String(), true)
+		teacherMenu, err := receiver.TeacherMenuUseCase.GetByTeacherID(context, teacher.ID.String(), true)
 		// get menu icon key
 		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(teacher.ID.String(), value.OwnerRoleTeacher)
 		menuIconKey := ""
@@ -471,7 +471,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	for _, staff := range staffs {
 		// get 4 app
-		staffMenu, err := receiver.StaffMenuUsecase.GetByStaffID(staff.ID.String(), true)
+		staffMenu, err := receiver.StaffMenuUsecase.GetByStaffID(context, staff.ID.String(), true)
 		// get menu icon key
 		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(staff.ID.String(), value.OwnerRoleStaff)
 		menuIconKey := ""
@@ -489,7 +489,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	}
 
 	// Get Parent Menu
-	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(userID)
+	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(context, userID)
 	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(userID, value.OwnerRoleParent)
 	menuIconKey := ""
 	if img != nil {
@@ -506,7 +506,7 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	// get department menu
 	departments, _ := receiver.DepartmentGateway.GetDepartmentsByUser(context)
 	for _, department := range departments {
-		departmentMenu, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4App(department.ID)
+		departmentMenu, err := receiver.DepartmentMenuUseCase.GetDepartmentMenu4App(context, department.ID)
 		if err == nil && len(departmentMenu.Components) > 0 {
 			result = append(result, response.GetMenuSectionResponse{
 				SectionName: department.Name,

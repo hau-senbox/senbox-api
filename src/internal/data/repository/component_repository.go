@@ -347,3 +347,22 @@ func (r *ComponentRepository) CheckExistLanguage(tx *gorm.DB, languageID uint) (
 	}
 	return count > 0, nil
 }
+
+func (receiver *ComponentRepository) GetByIDsAndLanguage(componentIDs []uuid.UUID, Language uint) ([]components.Component, error) {
+	var components []components.Component
+
+	if len(componentIDs) == 0 {
+		return components, nil
+	}
+
+	err := receiver.DBConn.
+		Where("id IN ? AND language = ?", componentIDs, Language).
+		Find(&components).Error
+
+	if err != nil {
+		log.Error("ComponentRepository.GetByIDs: " + err.Error())
+		return nil, errors.New("failed to get components by IDs")
+	}
+
+	return components, nil
+}

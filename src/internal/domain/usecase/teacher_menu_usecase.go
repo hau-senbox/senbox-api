@@ -37,7 +37,7 @@ func (uc *TeacherMenuUseCase) BulkCreate(menus []entity.TeacherMenu) error {
 	return uc.TeacherMenuRepo.BulkCreate(menus)
 }
 
-func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string, isApp bool) (response.GetTeacherMenuResponse, error) {
+func (uc *TeacherMenuUseCase) GetByTeacherID(ctx *gin.Context, teacherID string, isApp bool) (response.GetTeacherMenuResponse, error) {
 	// B0: Lấy thông tin teacher
 	teacher, err := uc.TeacherAppRepo.GetByID(uuid.MustParse(teacherID))
 	if teacher == nil || err != nil {
@@ -62,7 +62,9 @@ func (uc *TeacherMenuUseCase) GetByTeacherID(teacherID string, isApp bool) (resp
 	}
 
 	// B3: Lấy danh sách component tương ứng
-	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
+	//components, err := uc.ComponentRepo.GetByIDs(componentIDs)
 	if err != nil {
 		return response.GetTeacherMenuResponse{}, err
 	}

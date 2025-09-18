@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -32,7 +33,7 @@ func (uc *ChildMenuUseCase) DeleteByChildID(childID string) error {
 	return uc.Repo.DeleteByChildID(childID)
 }
 
-func (uc *ChildMenuUseCase) GetByChildID(childID string, isApp bool) (response.GetChildMenuResponse, error) {
+func (uc *ChildMenuUseCase) GetByChildID(ctx *gin.Context, childID string, isApp bool) (response.GetChildMenuResponse, error) {
 	child, err := uc.ChildRepo.GetByID(childID)
 	if child == nil || err != nil {
 		return response.GetChildMenuResponse{}, err
@@ -54,7 +55,10 @@ func (uc *ChildMenuUseCase) GetByChildID(childID string, isApp bool) (response.G
 	}
 
 	// B2: Lấy danh sách Component theo IDs
-	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	// get app_language tu context
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
+
 	if err != nil {
 		return response.GetChildMenuResponse{}, err
 	}

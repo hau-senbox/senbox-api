@@ -374,7 +374,7 @@ func (receiver *MenuController) GetTeacherMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetTeacherMenu4App(userID)
+	menus, err := receiver.GetMenuUseCase.GetTeacherMenu4App(context, userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -1197,7 +1197,7 @@ func (receiver *MenuController) GetChildMenuByChildID(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.ChildMenuUseCase.GetByChildID(childID, false)
+	menus, err := receiver.ChildMenuUseCase.GetByChildID(context, childID, false)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/response"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -53,7 +54,7 @@ func (uc *DepartmentMenuUseCase) GetDepartmentMenu4GW(departmentID string) (resp
 	}, nil
 }
 
-func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(departmentID string) (response.GetDepartmentMenuResponse, error) {
+func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(ctx *gin.Context, departmentID string) (response.GetDepartmentMenuResponse, error) {
 
 	departmentMenus, err := uc.DepartmentMenuRepository.GetByDepartmentID(departmentID)
 	if err != nil {
@@ -70,7 +71,8 @@ func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(departmentID string) (res
 	}
 
 	// B2: Lấy danh sách Component theo IDs
-	components, err := uc.ComponentRepository.GetByIDs(componentIDs)
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepository.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 	if err != nil {
 		return response.GetDepartmentMenuResponse{}, err
 	}
