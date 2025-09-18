@@ -260,7 +260,7 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu4App(context, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -346,7 +346,7 @@ func (receiver *MenuController) GetStudentMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetStudentMenu4App(studentID)
+	menus, err := receiver.GetMenuUseCase.GetStudentMenu4App(context, studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -450,7 +450,7 @@ func (receiver *MenuController) GetUserMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetUserMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetUserMenu4App(context, userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

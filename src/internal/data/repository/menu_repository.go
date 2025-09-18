@@ -436,3 +436,32 @@ func (receiver *MenuRepository) GetSuperAdminMenuByLanguage(language uint) ([]me
 
 	return menus, nil
 }
+
+func (receiver *MenuRepository) GetOrgMenuByLanguage(orgID string, language uint) ([]menu.OrgMenu, error) {
+	var menus []menu.OrgMenu
+	err := receiver.DBConn.Model(&menu.OrgMenu{}).
+		Where("organization_id = ?", orgID).
+		Preload("Component", "language = ?", language).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetOrgMenu: " + err.Error())
+		return nil, errors.New("failed to get org menu")
+	}
+
+	return menus, nil
+}
+
+func (receiver *MenuRepository) GetUserMenuByLanguage(userID string, language uint) ([]menu.UserMenu, error) {
+	var menus []menu.UserMenu
+
+	err := receiver.DBConn.Model(&menu.UserMenu{}).
+		Where("user_id = ?", userID).
+		Preload("Component", "language = ?", language).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetUserMenu: " + err.Error())
+		return nil, errors.New("failed to get user menu")
+	}
+
+	return menus, nil
+}

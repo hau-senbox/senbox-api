@@ -37,17 +37,17 @@ func (uc *StudentMenuUseCase) DeleteByStudentID(studentID string) error {
 	return uc.StudentMenuRepo.DeleteByStudentID(studentID)
 }
 
-func (uc *StudentMenuUseCase) GetByStudentID(studentID string, isApp bool) (response.GetStudentMenuResponse, error) {
+func (uc *StudentMenuUseCase) GetByStudentID(ctx *gin.Context, studentID string, isApp bool) (*response.GetStudentMenuResponse, error) {
 	// B0: Lấy thông tin student
 	student, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if student == nil || err != nil {
-		return response.GetStudentMenuResponse{}, err
+		return nil, err
 	}
 
 	// B1: Lấy các bản ghi student_menu
 	studentMenus, err := uc.StudentMenuRepo.GetByStudentIDActive(studentID)
 	if err != nil {
-		return response.GetStudentMenuResponse{}, err
+		return nil, err
 	}
 
 	// B2: Lấy componentID từ student_menu
@@ -62,9 +62,10 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string, isApp bool) (resp
 	}
 
 	// B3: Lấy danh sách component tương ứng
-	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	appLanguage, _ := ctx.Get("app_language")
+	components, err := uc.ComponentRepo.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 	if err != nil {
-		return response.GetStudentMenuResponse{}, err
+		return nil, err
 	}
 
 	// B4: Build danh sách response
@@ -89,7 +90,7 @@ func (uc *StudentMenuUseCase) GetByStudentID(studentID string, isApp bool) (resp
 
 	// get menu icon key
 
-	return response.GetStudentMenuResponse{
+	return &response.GetStudentMenuResponse{
 		StudentID:   studentID,
 		StudentName: student.StudentName,
 		Components:  componentResponses,
