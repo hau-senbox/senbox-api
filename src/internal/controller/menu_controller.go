@@ -1728,27 +1728,7 @@ func (receiver *MenuController) UploadOrganizationDeviceMenu(context *gin.Contex
 		return
 	}
 
-	user, err := receiver.GetUserFromToken(context)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: err.Error(),
-		})
-		return
-	}
-
-	present := lo.ContainsBy(user.Roles, func(org entity.SRole) bool {
-		return org.Role == entity.SuperAdmin || org.Role == entity.Admin
-	})
-	if !present {
-		context.JSON(http.StatusForbidden, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: "access denied",
-		})
-		return
-	}
-
-	err = receiver.UploadSectionMenuUseCase.UploadOrganizationDeviceMenu(context, req)
+	err := receiver.UploadSectionMenuUseCase.UploadOrganizationDeviceMenu(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
