@@ -9,7 +9,7 @@ import (
 type UploadSectionMenuParentRequest ParentSectionMenuItem
 
 type ParentSectionMenuItem struct {
-	Language           uint                         `json:"language" binding:"required"`
+	LanguageID         uint                         `json:"language_id" binding:"required"`
 	ParentID           string                       `json:"parent_id"`
 	DeleteComponentIDs []string                     `json:"delete_component_ids"`
 	Components         []CreateMenuComponentRequest `json:"components"`
