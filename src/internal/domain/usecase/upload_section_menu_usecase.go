@@ -237,12 +237,12 @@ func (receiver *UploadSectionMenuUseCase) UploadSectionMenuV2(ctx *gin.Context, 
 			var componentID uuid.UUID
 
 			component := &components.Component{
-				Name:      compReq.Name,
-				Type:      components.ComponentType(compReq.Type),
-				Key:       compReq.Key,
-				Value:     datatypes.JSON([]byte(compReq.Value)),
-				SectionID: item.SectionID,
-				Language:  item.Language,
+				Name:       compReq.Name,
+				Type:       components.ComponentType(compReq.Type),
+				Key:        compReq.Key,
+				Value:      datatypes.JSON([]byte(compReq.Value)),
+				SectionID:  item.SectionID,
+				LanguageID: item.LanguageID,
 			}
 
 			if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -459,12 +459,12 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenu(ctx *gin.Context, re
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:      compReq.Name,
-			Type:      components.ComponentType(compReq.Type),
-			Key:       compReq.Key,
-			Value:     datatypes.JSON([]byte(compReq.Value)),
-			SectionID: roleOrgStudent.ID.String(),
-			Language:  req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			SectionID:  roleOrgStudent.ID.String(),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -612,12 +612,12 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenu(ctx *gin.Context, re
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:      compReq.Name,
-			Type:      components.ComponentType(compReq.Type),
-			Key:       compReq.Key,
-			Value:     datatypes.JSON([]byte(compReq.Value)),
-			SectionID: roleOrgTeacher.ID.String(),
-			Language:  req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			SectionID:  roleOrgTeacher.ID.String(),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -764,12 +764,12 @@ func (receiver *UploadSectionMenuUseCase) UploadStaffMenu(ctx *gin.Context, req 
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:      compReq.Name,
-			Type:      components.ComponentType(compReq.Type),
-			Key:       compReq.Key,
-			Value:     datatypes.JSON([]byte(compReq.Value)),
-			SectionID: roleOrgStaff.ID.String(),
-			Language:  req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			SectionID:  roleOrgStaff.ID.String(),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -908,11 +908,11 @@ func (receiver *UploadSectionMenuUseCase) UploadChildMenu(ctx *gin.Context, req 
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1051,11 +1051,11 @@ func (receiver *UploadSectionMenuUseCase) UploadDeviceMenu(ctx *gin.Context, req
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1194,11 +1194,11 @@ func (receiver *UploadSectionMenuUseCase) UploadParentMenu(ctx *gin.Context, req
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1338,12 +1338,12 @@ func (receiver *UploadSectionMenuUseCase) UploadTeacherMenuOrganization(ctx *gin
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:      compReq.Name,
-			Type:      components.ComponentType(compReq.Type),
-			Key:       compReq.Key,
-			Value:     datatypes.JSON([]byte(compReq.Value)),
-			SectionID: roleOrgTeacher.ID.String(),
-			Language:  req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			SectionID:  roleOrgTeacher.ID.String(),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1475,11 +1475,11 @@ func (receiver *UploadSectionMenuUseCase) UploadSuperAdminMenu(ctx *gin.Context,
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1598,11 +1598,11 @@ func (receiver *UploadSectionMenuUseCase) UploadOrganizationAdminMenu(ctx *gin.C
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1721,11 +1721,11 @@ func (receiver *UploadSectionMenuUseCase) UploadDepartmentMenu(ctx *gin.Context,
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1843,11 +1843,11 @@ func (receiver *UploadSectionMenuUseCase) UploadDepartmentMenuOrganization(ctx *
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
@@ -1977,11 +1977,11 @@ func (receiver *UploadSectionMenuUseCase) UploadEmergencyMenu(ctx *gin.Context, 
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:     compReq.Name,
-			Type:     components.ComponentType(compReq.Type),
-			Key:      compReq.Key,
-			Value:    datatypes.JSON([]byte(compReq.Value)),
-			Language: req.Language,
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
