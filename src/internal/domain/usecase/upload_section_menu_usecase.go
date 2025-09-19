@@ -2148,10 +2148,11 @@ func (receiver *UploadSectionMenuUseCase) UploadOrganizationDeviceMenu(ctx *gin.
 		var componentID uuid.UUID
 
 		component := &components.Component{
-			Name:  compReq.Name,
-			Type:  components.ComponentType(compReq.Type),
-			Key:   compReq.Key,
-			Value: datatypes.JSON([]byte(compReq.Value)),
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON([]byte(compReq.Value)),
+			LanguageID: req.LanguageID,
 		}
 
 		if compReq.ID != nil && *compReq.ID != uuid.Nil {
