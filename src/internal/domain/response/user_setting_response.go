@@ -3,6 +3,6 @@ package response
 import "gorm.io/datatypes"
 
 type UserSettingResponse struct {
-	Key   string         `json:"key"`
-	Value datatypes.JSON `json:"value"`
+	LimitDeviceLogin datatypes.JSON `json:"limit_device_login"`
+	AppLanguage      datatypes.JSON `json:"app_language"`
 }

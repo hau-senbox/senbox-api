@@ -91,11 +91,11 @@ func (uc *UserSettingUseCase) UploadUserSetting(req request.UploadUserSettingReq
 	return setting, nil
 }
 
-func (uc *UserSettingUseCase) GetByOwner(ownerID string) ([]*response.UserSettingResponse, error) {
+func (uc *UserSettingUseCase) GetByOwner(ownerID string) (*response.UserSettingResponse, error) {
 	settings, err := uc.Repo.GetByOwner(ownerID)
 	if err != nil {
 		return nil, err
 	}
 
-	return mapper.ToUserSettingResponses(settings), nil
+	return mapper.ToUserSettingResponse(settings), nil
 }
