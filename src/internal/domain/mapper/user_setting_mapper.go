@@ -3,27 +3,22 @@ package mapper
 import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
 )
 
 // Map 1 UserSetting entity -> UserSettingResponse
-func ToUserSettingResponse(e *entity.UserSetting) *response.UserSettingResponse {
-	if e == nil {
-		return nil
-	}
-	return &response.UserSettingResponse{
-		Key:   string(e.Key),
-		Value: e.Value,
-	}
-}
-
-// Map list UserSettings -> list UserSettingResponse
-func ToUserSettingResponses(list []*entity.UserSetting) []*response.UserSettingResponse {
+func ToUserSettingResponse(list []*entity.UserSetting) *response.UserSettingResponse {
 	if list == nil {
 		return nil
 	}
-	res := make([]*response.UserSettingResponse, 0, len(list))
+	res := &response.UserSettingResponse{}
 	for _, e := range list {
-		res = append(res, ToUserSettingResponse(e))
+		switch e.Key {
+		case value.UserSettingLoginDeviceLimit:
+			res.LimitDeviceLogin = e.Value
+		case value.UserSettingLanguage:
+			res.AppLanguage = e.Value
+		}
 	}
 	return res
 }
