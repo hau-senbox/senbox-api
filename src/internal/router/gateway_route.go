@@ -215,10 +215,10 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		menu := api.Group("/menus")
 		{
 			// department menu
-			menu.POST("/department", menuController.UploadDepartmentMenu)
+			menu.POST("/department", middleware.GeneralLoggerMiddleware(dbConn), menuController.UploadDepartmentMenu)
 			menu.GET("/department/:department_id", menuController.GetDepartmentMenu4GW)
 			// deparment org menu
-			menu.POST("/department/organization", menuController.UploadDepartmentMenuOrganization)
+			menu.POST("/department/organization", middleware.GeneralLoggerMiddleware(dbConn), menuController.UploadDepartmentMenuOrganization)
 			menu.GET("/department/:department_id/organization/:organization_id", menuController.GetDepartmentMenuOrganization4GW)
 		}
 
