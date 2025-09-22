@@ -60,6 +60,7 @@ type UserEntityResponseV2 struct {
 
 	StudentOrganization []StudentOrganization `json:"student_organization"`
 	ReLoginWeb          bool                  `json:"re_login_web"`
+	Settings            *UserSettingResponse  `json:"settings"`
 }
 
 type UserEntityResponseData struct {

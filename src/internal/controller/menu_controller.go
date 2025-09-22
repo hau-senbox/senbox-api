@@ -876,7 +876,7 @@ func (receiver *MenuController) UploadOrgMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) UploadUserMenu(context *gin.Context) {
-	var req request.UploadUserMenuRequest
+	var req request.UploadSectionUserMenuRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -885,27 +885,7 @@ func (receiver *MenuController) UploadUserMenu(context *gin.Context) {
 		return
 	}
 
-	user, err := receiver.GetUserFromToken(context)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: err.Error(),
-		})
-		return
-	}
-
-	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-		return org.ID.String() == req.OrganizationID
-	})
-	if !present {
-		context.JSON(http.StatusForbidden, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: "access denied",
-		})
-		return
-	}
-
-	err = receiver.UploadUserMenuUseCase.Upload(req)
+	err := receiver.UploadSectionMenuUseCase.UploadUserMenu(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

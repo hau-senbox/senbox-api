@@ -148,6 +148,9 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	// get org name of student for parent
 	studentOrgs, _ := receiver.StudentApplicationUseCase.GetStudentOrganizationsByUser(userEntity.ID.String())
 
+	// get user setting
+	settings, _ := receiver.UserSettingUseCase.GetByOwner(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
@@ -173,6 +176,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Avatars:             avatars,
 			StudentOrganization: studentOrgs,
 			ReLoginWeb:          userEntity.ReLoginWeb,
+			Settings:            settings,
 		},
 	})
 }
