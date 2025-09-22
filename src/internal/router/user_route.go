@@ -586,7 +586,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	device := engine.Group("/v1/user/device", secureMiddleware.Secured())
 	{
-		device.GET("/:device_id", deviceController.GetDevice4App)
+		device.GET("/:device_id", middleware.DataLogMiddleware(dbConn), deviceController.GetDevice4App)
 	}
 
 	// languages config

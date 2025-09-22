@@ -99,6 +99,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SuperAdminEmergencyMenu{},
 		&entity.OrganizationEmergencyMenu{},
 		&entity.LanguageSetting{},
+		&entity.DataLog{},
 	)
 
 	// Seed
