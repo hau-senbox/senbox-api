@@ -442,10 +442,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("/section/teacher/:teacher_id/organization/:organization_id", menuController.GetTeacherMenuOrganization4Admin)
 
 		// get user menu
-		menu.GET("/user/:id", menuController.GetUserMenu)
+		menu.GET("/user/:id", menuController.GetUserMenu4Web)
 		menu.POST("/user", middleware.GeneralLoggerMiddleware(dbConn), menuController.UploadUserMenu)
 		// super admin menu
-		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu)
+		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu4Web)
 		menu.POST("/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuTop)
 		menu.POST("/bottom", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuBottom)
 		// organization admin menu

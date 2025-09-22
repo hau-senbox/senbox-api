@@ -113,6 +113,23 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetSuperAdminMenu4Web(context *gin.Context) {
+	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu4Web()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
 func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
 	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu4App(context)
 	if err != nil {
@@ -390,7 +407,7 @@ func (receiver *MenuController) GetTeacherMenu4App(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetUserMenu(context *gin.Context) {
+func (receiver *MenuController) GetUserMenu4Web(context *gin.Context) {
 	userID := context.Param("id")
 	if userID == "" {
 		context.JSON(
@@ -402,39 +419,18 @@ func (receiver *MenuController) GetUserMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetUserMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetUserMenu4Web(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
-
 		return
 	}
 
-	res := make([]componentResponse, 0)
-	for _, m := range menus {
-		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
-		if err != nil {
-			log.Println("Normalize error:", err)
-		}
-		res = append(res, componentResponse{
-			ID:    m.Component.ID.String(),
-			Name:  m.Component.Name,
-			Type:  m.Component.Type.String(),
-			Key:   m.Component.Key,
-			Value: string(normalizedValue),
-			Order: m.Order,
-		})
-	}
-
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Order < res[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: menus,
 	})
 }
 

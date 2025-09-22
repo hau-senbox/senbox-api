@@ -51,6 +51,86 @@ func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, erro
 	return receiver.MenuRepository.GetSuperAdminMenu()
 }
 
+func (receiver *GetMenuUseCase) GetSuperAdminMenu4Web() (*response.GetSuperAdminMenuResponse4Web, error) {
+	menus, err := receiver.MenuRepository.GetSuperAdminMenu()
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom ComponentID
+	componentIDs := make([]uuid.UUID, 0, len(menus))
+	componentOrderMap := make(map[uuid.UUID]int)
+	componentDirectionMap := make(map[uuid.UUID]menu.Direction)
+
+	for _, m := range menus {
+		componentIDs = append(componentIDs, m.ComponentID)
+		componentOrderMap[m.ComponentID] = m.Order
+		componentDirectionMap[m.ComponentID] = m.Direction
+	}
+
+	// Lấy tất cả components
+	components, err := receiver.ComponentRepository.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom theo direction + language
+	topByLang := make(map[uint][]response.ComponentResponse)
+	bottomByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menuResp := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		// cache language
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := receiver.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+
+		if componentDirectionMap[comp.ID] == menu.Top {
+			topByLang[comp.LanguageID] = append(topByLang[comp.LanguageID], menuResp)
+		} else {
+			bottomByLang[comp.LanguageID] = append(bottomByLang[comp.LanguageID], menuResp)
+		}
+	}
+
+	// Build response
+	resp := &response.GetSuperAdminMenuResponse4Web{
+		Top:    make([]response.GetMenus4Web, 0, len(topByLang)),
+		Bottom: make([]response.GetMenus4Web, 0, len(bottomByLang)),
+	}
+
+	for langID, comps := range topByLang {
+		resp.Top = append(resp.Top, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	for langID, comps := range bottomByLang {
+		resp.Bottom = append(resp.Bottom, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	return resp, nil
+}
+
 func (receiver *GetMenuUseCase) GetSuperAdminMenu4App(ctx *gin.Context) ([]menu.SuperAdminMenu, error) {
 	appLanguage, _ := ctx.Get("app_language")
 	return receiver.MenuRepository.GetSuperAdminMenuByLanguage(appLanguage.(uint))
@@ -130,6 +210,75 @@ func (receiver *GetMenuUseCase) GetUserMenu(userID string) ([]menu.UserMenu, err
 	}
 
 	return receiver.MenuRepository.GetUserMenu(user.ID.String())
+}
+
+func (receiver *GetMenuUseCase) GetUserMenu4Web(userID string) ([]response.GetMenus4Web, error) {
+	// Lấy user
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+	if err != nil {
+		return nil, err
+	}
+
+	// Lấy danh sách menu gốc (UserMenu)
+	userMenus, err := receiver.MenuRepository.GetUserMenu(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	// Chuẩn bị dữ liệu
+	componentIDs := make([]uuid.UUID, 0, len(userMenus))
+	componentOrderMap := make(map[uuid.UUID]int)
+
+	for _, um := range userMenus {
+		componentIDs = append(componentIDs, um.ComponentID)
+		componentOrderMap[um.ComponentID] = um.Order
+	}
+
+	// Lấy components theo IDs
+	components, err := receiver.ComponentRepository.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menu := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
+
+		// Cache language
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := receiver.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	return getMenus, nil
 }
 
 func (receiver *GetMenuUseCase) GetUserMenu4App(ctx *gin.Context, userID string) ([]menu.UserMenu, error) {
