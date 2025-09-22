@@ -138,6 +138,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
 			DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
 			ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
+			LanguageSettingRepo:      &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		DepartmentMenuOrganizationUseCase: &usecase.DepartmentMenuOrganizationUseCase{
 			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
@@ -145,6 +146,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			OrganizationRepository:               &repository.OrganizationRepository{DBConn: dbConn},
 			DeviceRepository:                     &repository.DeviceRepository{DBConn: dbConn},
 			DepartmentGateway:                    departmentGW,
+			LanguageSettingRepo:                  &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 
