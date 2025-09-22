@@ -341,14 +341,14 @@ func (r *ComponentRepository) UpdateWithTx(tx *gorm.DB, component *components.Co
 func (r *ComponentRepository) CheckExistLanguage(tx *gorm.DB, languageID uint) (bool, error) {
 	var count int64
 	if err := tx.Model(&components.Component{}).
-		Where("language = ?", languageID).
+		Where("language_id = ?", languageID).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
-func (receiver *ComponentRepository) GetByIDsAndLanguage(componentIDs []uuid.UUID, Language uint) ([]components.Component, error) {
+func (receiver *ComponentRepository) GetByIDsAndLanguage(componentIDs []uuid.UUID, languageID uint) ([]components.Component, error) {
 	var components []components.Component
 
 	if len(componentIDs) == 0 {
@@ -356,7 +356,7 @@ func (receiver *ComponentRepository) GetByIDsAndLanguage(componentIDs []uuid.UUI
 	}
 
 	err := receiver.DBConn.
-		Where("id IN ? AND language = ?", componentIDs, Language).
+		Where("id IN ? AND language_id = ?", componentIDs, languageID).
 		Find(&components).Error
 
 	if err != nil {
@@ -365,4 +365,15 @@ func (receiver *ComponentRepository) GetByIDsAndLanguage(componentIDs []uuid.UUI
 	}
 
 	return components, nil
+}
+
+func (receiver *ComponentRepository) GetByIDAndLanguage(componentID string, languageID uint) (*components.Component, error) {
+	var component components.Component
+	err := receiver.DBConn.Where("id = ? AND language_id = ?", componentID, languageID).First(&component).Error
+	if err != nil {
+		log.Error("ComponentRepository.GetByID: " + err.Error())
+		return nil, errors.New("failed to get role")
+	}
+
+	return &component, nil
 }

@@ -297,11 +297,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// language setting
 		system.POST("/language", systemController.UploadLanguageSetting)
+		system.GET("/language", systemController.GetLanguageSettings4Web)
 	}
 
 	publicSystem := engine.Group("/v1/admin/settings")
 	{
-		publicSystem.GET("/language", systemController.GetLanguageSettings)
+		publicSystem.GET("/language-published", systemController.GetAllIsPublished)
 	}
 
 	monitoring := engine.Group("/v1/admin/monitor")
@@ -348,6 +349,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			StudentAppRepo:                     &repository.StudentApplicationRepository{DB: dbConn},
 			SuperAdminEmergencyMenuRepo:        &repository.SuperAdminEmergencyMenuRepository{DBConn: dbConn},
 			OrganizationEmergencyMenuRepo:      &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
+			LanguageSettingRepo:                &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
 			MenuRepository:                     &repository.MenuRepository{DBConn: dbConn},
@@ -440,13 +442,14 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("/section/teacher/:teacher_id/organization/:organization_id", menuController.GetTeacherMenuOrganization4Admin)
 
 		// get user menu
-		menu.GET("/user/:id", menuController.GetUserMenu)
+		menu.GET("/user/:id", menuController.GetUserMenu4Web)
+		menu.POST("/user", middleware.GeneralLoggerMiddleware(dbConn), menuController.UploadUserMenu)
 		// super admin menu
-		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu)
+		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu4Web)
 		menu.POST("/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuTop)
 		menu.POST("/bottom", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuBottom)
 		// organization admin menu
-		menu.GET("/organization/:id", menuController.GetOrgMenu)
+		menu.GET("/organization/:id", menuController.GetOrgMenu4Web)
 		menu.POST("/organization/top", menuController.UploadOrganizationAdminMenuTop)
 		menu.POST("/organization/bottom", menuController.UploadOrganizationAdminMenuBottom)
 

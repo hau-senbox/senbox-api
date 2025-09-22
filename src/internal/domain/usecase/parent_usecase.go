@@ -58,26 +58,26 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 
 	for _, comp := range components {
 		menu := response.ComponentResponse{
-			ID:       comp.ID.String(),
-			Name:     comp.Name,
-			Type:     comp.Type.String(),
-			Key:      comp.Key,
-			Value:    string(comp.Value),
-			Order:    componentOrderMap[comp.ID],
-			IsShow:   componentIsShowMap[comp.ID],
-			Language: comp.Language,
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			IsShow:     componentIsShowMap[comp.ID],
+			LanguageID: comp.LanguageID,
 		}
 
-		menusByLang[comp.Language] = append(menusByLang[comp.Language], menu)
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
 
-		// nếu chưa có language trong cache -> query DB
-		if _, ok := langMap[comp.Language]; !ok {
-			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.Language)
+		// nếu chưa có language ILanguageIDtrong cache -> query DB
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.LanguageID)
 			if err != nil {
 				return nil, err
 			}
 			if langSetting != nil {
-				langMap[comp.Language] = *langSetting
+				langMap[comp.LanguageID] = *langSetting
 			}
 		}
 	}

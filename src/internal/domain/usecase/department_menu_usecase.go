@@ -3,6 +3,7 @@ package usecase
 import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
+	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 type DepartmentMenuUseCase struct {
 	DepartmentMenuRepository *repository.DepartmentMenuRepository
 	ComponentRepository      *repository.ComponentRepository
+	LanguageSettingRepo      *repository.LanguageSettingRepository
 }
 
 func (uc *DepartmentMenuUseCase) GetDepartmentMenu4GW(departmentID string) (response.GetDepartmentMenuResponse, error) {
@@ -37,28 +39,54 @@ func (uc *DepartmentMenuUseCase) GetDepartmentMenu4GW(departmentID string) (resp
 		return response.GetDepartmentMenuResponse{}, err
 	}
 
-	// B4: Build danh sách response
-	componentResponses := make([]response.ComponentResponse, 0, len(components))
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
 	for _, comp := range components {
-		componentResponses = append(componentResponses, response.ComponentResponse{
-			ID:    comp.ID.String(),
-			Name:  comp.Name,
-			Type:  comp.Type.String(),
-			Key:   comp.Key,
-			Value: string(comp.Value),
+		menu := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
+
+		// nếu chưa có languageID trong cache -> query DB
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return response.GetDepartmentMenuResponse{}, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
 		})
 	}
 
 	return response.GetDepartmentMenuResponse{
-		Components: componentResponses,
+		Components: getMenus,
 	}, nil
 }
 
-func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(ctx *gin.Context, departmentID string) (response.GetDepartmentMenuResponse, error) {
+func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(ctx *gin.Context, departmentID string) (response.GetDepartmentMenuResponse4App, error) {
 
 	departmentMenus, err := uc.DepartmentMenuRepository.GetByDepartmentID(departmentID)
 	if err != nil {
-		return response.GetDepartmentMenuResponse{}, err
+		return response.GetDepartmentMenuResponse4App{}, err
 	}
 
 	// B1: Lấy tất cả ComponentID từ departmentMenus
@@ -74,7 +102,7 @@ func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(ctx *gin.Context, departm
 	appLanguage, _ := ctx.Get("app_language")
 	components, err := uc.ComponentRepository.GetByIDsAndLanguage(componentIDs, appLanguage.(uint))
 	if err != nil {
-		return response.GetDepartmentMenuResponse{}, err
+		return response.GetDepartmentMenuResponse4App{}, err
 	}
 
 	// B3: Map sang ComponentChildResponse
@@ -94,7 +122,7 @@ func (uc *DepartmentMenuUseCase) GetDepartmentMenu4App(ctx *gin.Context, departm
 		})
 	}
 
-	return response.GetDepartmentMenuResponse{
+	return response.GetDepartmentMenuResponse4App{
 		Components: componentResponses,
 	}, nil
 }

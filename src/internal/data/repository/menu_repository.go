@@ -424,10 +424,10 @@ func (r *MenuRepository) UpdateDeviceMenuOrganizationWithTx(tx *gorm.DB, deviceM
 	return nil
 }
 
-func (receiver *MenuRepository) GetSuperAdminMenuByLanguage(language uint) ([]menu.SuperAdminMenu, error) {
+func (receiver *MenuRepository) GetSuperAdminMenuByLanguage(languageID uint) ([]menu.SuperAdminMenu, error) {
 	var menus []menu.SuperAdminMenu
 	err := receiver.DBConn.Model(&menu.SuperAdminMenu{}).
-		Preload("Component", "language = ?", language).
+		Preload("Component", "language_id = ?", languageID).
 		Find(&menus).Error
 	if err != nil {
 		log.Error("MenuRepository.GetSuperAdminMenuByLanguage: " + err.Error())
@@ -435,4 +435,108 @@ func (receiver *MenuRepository) GetSuperAdminMenuByLanguage(language uint) ([]me
 	}
 
 	return menus, nil
+}
+
+func (receiver *MenuRepository) GetOrgMenuByLanguage(orgID string, languageID uint) ([]menu.OrgMenu, error) {
+	var menus []menu.OrgMenu
+	err := receiver.DBConn.Model(&menu.OrgMenu{}).
+		Where("organization_id = ?", orgID).
+		Preload("Component", "language_id = ?", languageID).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetOrgMenu: " + err.Error())
+		return nil, errors.New("failed to get org menu")
+	}
+
+	return menus, nil
+}
+
+func (receiver *MenuRepository) GetUserMenuByLanguage(userID string, languageID uint) ([]menu.UserMenu, error) {
+	var menus []menu.UserMenu
+
+	err := receiver.DBConn.Model(&menu.UserMenu{}).
+		Where("user_id = ?", userID).
+		Preload("Component", "language_id = ?", languageID).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetUserMenu: " + err.Error())
+		return nil, errors.New("failed to get user menu")
+	}
+
+	return menus, nil
+}
+
+func (receiver *MenuRepository) GetDeviceMenuByLanguage(deviceID string, languageID uint) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Preload("Component", "language_id = ?", languageID).
+		Joins("INNER JOIN s_organization o ON o.id = device_menu.organization_id").
+		Joins("INNER JOIN s_org_devices od ON od.organization_id = o.id").
+		Where("od.device_id = ?", deviceID).
+		Find(&menus).Error
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
+
+func (receiver *MenuRepository) GetDeviceMenuByOrgByLanguage(organizationID string, languageID uint) ([]menu.DeviceMenu, error) {
+	var menus []menu.DeviceMenu
+
+	err := receiver.DBConn.Model(&menu.DeviceMenu{}).
+		Joins("JOIN component c ON c.id = device_menu.component_id").
+		Where("device_menu.organization_id = ? AND c.language_id = ?", organizationID, languageID).
+		Preload("Component").
+		Find(&menus).Error
+
+	if err != nil {
+		log.Error("MenuRepository.GetDeviceMenu: " + err.Error())
+		return nil, errors.New("failed to get device menu")
+	}
+
+	return menus, nil
+}
+
+func (r *MenuRepository) GetUserMenuByComponentID(userID string, componentID string) (*menu.UserMenu, error) {
+	var deviceMenu menu.UserMenu
+	err := r.DBConn.
+		Where("user_id = ? AND component_id = ?", userID, componentID).
+		First(&deviceMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.GetUserMenuByComponentID: " + err.Error())
+		return nil, err
+	}
+	return &deviceMenu, nil
+}
+
+func (r *MenuRepository) UpdateUserMenuWithTx(tx *gorm.DB, userMenu *menu.UserMenu) error {
+	err := tx.Model(&menu.UserMenu{}).
+		Where("user_id = ? AND component_id = ?", userMenu.UserID, userMenu.ComponentID).
+		Updates(userMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.UpdateUserMenuWithTx: " + err.Error())
+		return errors.New("failed to update user menu")
+	}
+	return nil
+}
+
+func (r *MenuRepository) CreateUserMenuWithTx(tx *gorm.DB, userMenu *menu.UserMenu) error {
+	err := tx.Create(userMenu).Error
+	if err != nil {
+		log.Error("MenuRepository.CreateUserMenuWithTx: " + err.Error())
+		return errors.New("failed to create user menu")
+	}
+	return nil
+}
+
+func (r *MenuRepository) DeleteUserMenuByComponentID(componentID string) error {
+	err := r.DBConn.Where("component_id = ?", componentID).Delete(&menu.UserMenu{}).Error
+	if err != nil {
+		log.Error("MenuRepository.DeleteUserMenuByComponentID: " + err.Error())
+		return errors.New("failed to delete user menu organization")
+	}
+	return nil
 }

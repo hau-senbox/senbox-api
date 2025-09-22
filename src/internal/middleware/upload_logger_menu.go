@@ -56,3 +56,49 @@ func MenuUploadLoggerMiddleware(db *gorm.DB) gin.HandlerFunc {
 		}
 	}
 }
+
+func GeneralLoggerMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// đọc body request
+		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		// tạo log entry ban đầu
+		logEntry := &entity.DataLog{
+			ID:        uuid.New(),
+			Endpoint:  c.FullPath(),
+			Method:    c.Request.Method,
+			Payload:   datatypes.JSON(bodyBytes),
+			Status:    "PENDING",
+			CreatedAt: time.Now(),
+		}
+		db.Create(logEntry)
+		c.Set("general_log_id", logEntry.ID)
+
+		// wrap writer để capture response
+		respBody := &bytes.Buffer{}
+		writer := &bodyLogWriter{body: respBody, ResponseWriter: c.Writer}
+		c.Writer = writer
+
+		// tiếp tục request
+		c.Next()
+
+		// update log sau khi handler xong
+		if logID, exists := c.Get("general_log_id"); exists {
+			status := "SUCCESS"
+			var errMsg string
+			if len(c.Errors) > 0 {
+				status = "FAIL"
+				errMsg = c.Errors.String()
+			}
+
+			db.Model(&entity.DataLog{}).
+				Where("id = ?", logID).
+				Updates(map[string]interface{}{
+					"status":        status,
+					"error_message": errMsg,
+					"response":      datatypes.JSON(respBody.Bytes()),
+				})
+		}
+	}
+}

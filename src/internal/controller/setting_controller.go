@@ -1112,8 +1112,24 @@ func (receiver *SettingController) UploadLanguageSetting(context *gin.Context) {
 	})
 }
 
-func (receiver *SettingController) GetLanguageSettings(context *gin.Context) {
+func (receiver *SettingController) GetLanguageSettings4Web(context *gin.Context) {
 	settings, err := receiver.LanguageSettingUseCase.GetAll()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   err.Error(),
+			Message: "Failed to get language settings",
+		})
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: settings,
+	})
+}
+
+func (receiver *SettingController) GetAllIsPublished(context *gin.Context) {
+	settings, err := receiver.LanguageSettingUseCase.GetAllIsPublished()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

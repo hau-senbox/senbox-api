@@ -113,6 +113,23 @@ func (receiver *MenuController) GetSuperAdminMenu(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetSuperAdminMenu4Web(context *gin.Context) {
+	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu4Web()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
 func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
 	menus, err := receiver.GetMenuUseCase.GetSuperAdminMenu4App(context)
 	if err != nil {
@@ -183,7 +200,7 @@ func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
+func (receiver *MenuController) GetOrgMenu4Web(context *gin.Context) {
 	organizationID := context.Param("id")
 	if organizationID == "" {
 		context.JSON(
@@ -195,7 +212,7 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu4Web(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -205,46 +222,9 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		return
 	}
 
-	topMenuResponse := make([]componentResponse, 0)
-	bottomMenuResponse := make([]componentResponse, 0)
-	for _, m := range menus {
-		switch m.Direction {
-		case menu.Top:
-			topMenuResponse = append(topMenuResponse, componentResponse{
-				ID:    m.Component.ID.String(),
-				Name:  m.Component.Name,
-				Type:  m.Component.Type.String(),
-				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
-				Order: m.Order,
-			})
-		case menu.Bottom:
-			bottomMenuResponse = append(bottomMenuResponse, componentResponse{
-				ID:    m.Component.ID.String(),
-				Name:  m.Component.Name,
-				Type:  m.Component.Type.String(),
-				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
-				Order: m.Order,
-			})
-		default:
-			continue
-		}
-	}
-
-	sort.Slice(topMenuResponse, func(i, j int) bool {
-		return topMenuResponse[i].Order < topMenuResponse[j].Order
-	})
-	sort.Slice(bottomMenuResponse, func(i, j int) bool {
-		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: menuResponse{
-			Top:    topMenuResponse,
-			Bottom: bottomMenuResponse,
-		},
+		Data: menus,
 	})
 }
 
@@ -260,7 +240,7 @@ func (receiver *MenuController) GetOrgMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu4App(context, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -346,7 +326,7 @@ func (receiver *MenuController) GetStudentMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetStudentMenu4App(studentID)
+	menus, err := receiver.GetMenuUseCase.GetStudentMenu4App(context, studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -390,7 +370,7 @@ func (receiver *MenuController) GetTeacherMenu4App(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetUserMenu(context *gin.Context) {
+func (receiver *MenuController) GetUserMenu4Web(context *gin.Context) {
 	userID := context.Param("id")
 	if userID == "" {
 		context.JSON(
@@ -402,39 +382,18 @@ func (receiver *MenuController) GetUserMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetUserMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetUserMenu4Web(userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
 			Error: err.Error(),
 		})
-
 		return
 	}
 
-	res := make([]componentResponse, 0)
-	for _, m := range menus {
-		normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
-		if err != nil {
-			log.Println("Normalize error:", err)
-		}
-		res = append(res, componentResponse{
-			ID:    m.Component.ID.String(),
-			Name:  m.Component.Name,
-			Type:  m.Component.Type.String(),
-			Key:   m.Component.Key,
-			Value: string(normalizedValue),
-			Order: m.Order,
-		})
-	}
-
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Order < res[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: menus,
 	})
 }
 
@@ -450,7 +409,7 @@ func (receiver *MenuController) GetUserMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetUserMenu(userID)
+	menus, err := receiver.GetMenuUseCase.GetUserMenu4App(context, userID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -592,7 +551,7 @@ func (receiver *MenuController) GetDeviceMenu4App(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetDeviceMenu(deviceID)
+	menus, err := receiver.GetMenuUseCase.GetDeviceMenu4App(context, deviceID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -750,6 +709,61 @@ func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
 	})
 }
 
+func (receiver *MenuController) GetDeviceMenuByOrg4App(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	menus, err := receiver.GetMenuUseCase.GetDeviceMenuByOrg4App(context, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+
+		return
+	}
+
+	res := make([]componentResponse, 0)
+	for _, m := range menus {
+		//normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
+		if err != nil {
+			log.Println("Normalize error:", err)
+		}
+		comp := components.Component{
+			ID:    m.Component.ID,
+			Name:  m.Component.Name,
+			Type:  m.Component.Type,
+			Key:   m.Component.Key,
+			Value: m.Component.Value,
+		}
+		res = append(res, componentResponse{
+			ID:    m.Component.ID.String(),
+			Name:  m.Component.Name,
+			Type:  m.Component.Type.String(),
+			Key:   m.Component.Key,
+			Value: helper.BuildSectionValueMenu(m.Component.Value.String(), comp),
+			Order: m.Order,
+		})
+	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Order < res[j].Order
+	})
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
 func (receiver *MenuController) UploadSuperAdminMenu(context *gin.Context) {
 	var req request.UploadSuperAdminMenuRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -821,7 +835,7 @@ func (receiver *MenuController) UploadOrgMenu(context *gin.Context) {
 }
 
 func (receiver *MenuController) UploadUserMenu(context *gin.Context) {
-	var req request.UploadUserMenuRequest
+	var req request.UploadSectionUserMenuRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -830,27 +844,7 @@ func (receiver *MenuController) UploadUserMenu(context *gin.Context) {
 		return
 	}
 
-	user, err := receiver.GetUserFromToken(context)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: err.Error(),
-		})
-		return
-	}
-
-	present := lo.ContainsBy(user.Organizations, func(org entity.SOrganization) bool {
-		return org.ID.String() == req.OrganizationID
-	})
-	if !present {
-		context.JSON(http.StatusForbidden, response.FailedResponse{
-			Code:  http.StatusForbidden,
-			Error: "access denied",
-		})
-		return
-	}
-
-	err = receiver.UploadUserMenuUseCase.Upload(req)
+	err := receiver.UploadSectionMenuUseCase.UploadUserMenu(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -1386,6 +1380,14 @@ func (receiver *MenuController) GetTeacherMenuOrganization4App(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+		})
+		return
+	}
+
+	if len(menus.Components) == 0 {
+		c.JSON(http.StatusOK, response.SucceedResponse{
+			Code: http.StatusOK,
+			Data: nil,
 		})
 		return
 	}

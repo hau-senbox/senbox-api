@@ -525,14 +525,13 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	{
 		userMenu.GET("/super-admin", menuController.GetSuperAdminMenu)
 		userMenu.GET("/user/super-admin", menuController.GetSuperAdminMenu4App)
-		userMenu.GET("/org/:id", menuController.GetOrgMenu)
 		userMenu.GET("/user/org/:id", menuController.GetOrgMenu4App)
 		userMenu.GET("/student/:id", menuController.GetStudentMenu4App)
 		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu4App)
 		userMenu.GET("/user/:id", menuController.GetUserMenu4App)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/user/device/:id", menuController.GetDeviceMenu4App)
-		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg)
+		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg4App)
 		userMenu.GET("/section", menuController.GetSectionMenu4App)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
@@ -587,7 +586,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	device := engine.Group("/v1/user/device", secureMiddleware.Secured())
 	{
-		device.GET("/:device_id", deviceController.GetDevice4App)
+		device.GET("/:device_id", middleware.DataLogMiddleware(dbConn), deviceController.GetDevice4App)
 	}
 
 	// languages config

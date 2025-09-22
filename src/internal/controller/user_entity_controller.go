@@ -3,6 +3,7 @@ package controller
 import (
 	"bufio"
 	"net/http"
+	"regexp"
 	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -147,6 +148,9 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	// get org name of student for parent
 	studentOrgs, _ := receiver.StudentApplicationUseCase.GetStudentOrganizationsByUser(userEntity.ID.String())
 
+	// get user setting
+	settings, _ := receiver.UserSettingUseCase.GetByOwner(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
@@ -172,6 +176,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			Avatars:             avatars,
 			StudentOrganization: studentOrgs,
 			ReLoginWeb:          userEntity.ReLoginWeb,
+			Settings:            settings,
 		},
 	})
 }
@@ -2008,6 +2013,8 @@ func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
 		})
 		return
 	}
+	re := regexp.MustCompile(`\s+`)
+	fileName = re.ReplaceAllString(fileName, "_")
 
 	indexStr := c.PostForm("index")
 	if indexStr == "" {

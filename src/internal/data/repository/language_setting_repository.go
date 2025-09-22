@@ -69,3 +69,9 @@ func (r *LanguageSettingRepository) DeleteByIDs(tx *gorm.DB, ids []uint, compRep
 	}
 	return nil
 }
+
+func (r *LanguageSettingRepository) GetAllIsPublished() ([]entity.LanguageSetting, error) {
+	var settings []entity.LanguageSetting
+	err := r.DBConn.Where("is_published = ?", true).Find(&settings).Error
+	return settings, err
+}
