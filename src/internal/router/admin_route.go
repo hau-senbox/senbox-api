@@ -449,7 +449,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.POST("/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuTop)
 		menu.POST("/bottom", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuBottom)
 		// organization admin menu
-		menu.GET("/organization/:id", menuController.GetOrgMenu)
+		menu.GET("/organization/:id", menuController.GetOrgMenu4Web)
 		menu.POST("/organization/top", menuController.UploadOrganizationAdminMenuTop)
 		menu.POST("/organization/bottom", menuController.UploadOrganizationAdminMenuBottom)
 

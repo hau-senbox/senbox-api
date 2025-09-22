@@ -145,6 +145,86 @@ func (receiver *GetMenuUseCase) GetOrgMenu(orgID string) ([]menu.OrgMenu, error)
 	return receiver.MenuRepository.GetOrgMenu(org.ID.String())
 }
 
+func (receiver *GetMenuUseCase) GetOrgMenu4Web(orgID string) (*response.GetOrganizationAdminMenuResponse4Web, error) {
+	menus, err := receiver.MenuRepository.GetOrgMenu(orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom ComponentID
+	componentIDs := make([]uuid.UUID, 0, len(menus))
+	componentOrderMap := make(map[uuid.UUID]int)
+	componentDirectionMap := make(map[uuid.UUID]menu.Direction)
+
+	for _, m := range menus {
+		componentIDs = append(componentIDs, m.ComponentID)
+		componentOrderMap[m.ComponentID] = m.Order
+		componentDirectionMap[m.ComponentID] = m.Direction
+	}
+
+	// Lấy tất cả components
+	components, err := receiver.ComponentRepository.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom theo direction + language
+	topByLang := make(map[uint][]response.ComponentResponse)
+	bottomByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menuResp := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		// cache language
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := receiver.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+
+		if componentDirectionMap[comp.ID] == menu.Top {
+			topByLang[comp.LanguageID] = append(topByLang[comp.LanguageID], menuResp)
+		} else {
+			bottomByLang[comp.LanguageID] = append(bottomByLang[comp.LanguageID], menuResp)
+		}
+	}
+
+	// Build response
+	resp := &response.GetOrganizationAdminMenuResponse4Web{
+		Top:    make([]response.GetMenus4Web, 0, len(topByLang)),
+		Bottom: make([]response.GetMenus4Web, 0, len(bottomByLang)),
+	}
+
+	for langID, comps := range topByLang {
+		resp.Top = append(resp.Top, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	for langID, comps := range bottomByLang {
+		resp.Bottom = append(resp.Bottom, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	return resp, nil
+}
+
 func (receiver *GetMenuUseCase) GetOrgMenu4App(ctx *gin.Context, orgID string) ([]menu.OrgMenu, error) {
 	org, err := receiver.OrganizationRepository.GetByID(orgID)
 	if err != nil {

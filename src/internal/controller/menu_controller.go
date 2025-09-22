@@ -200,7 +200,7 @@ func (receiver *MenuController) GetSuperAdminMenu4App(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
+func (receiver *MenuController) GetOrgMenu4Web(context *gin.Context) {
 	organizationID := context.Param("id")
 	if organizationID == "" {
 		context.JSON(
@@ -212,7 +212,7 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetOrgMenu(organizationID)
+	menus, err := receiver.GetMenuUseCase.GetOrgMenu4Web(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -222,46 +222,9 @@ func (receiver *MenuController) GetOrgMenu(context *gin.Context) {
 		return
 	}
 
-	topMenuResponse := make([]componentResponse, 0)
-	bottomMenuResponse := make([]componentResponse, 0)
-	for _, m := range menus {
-		switch m.Direction {
-		case menu.Top:
-			topMenuResponse = append(topMenuResponse, componentResponse{
-				ID:    m.Component.ID.String(),
-				Name:  m.Component.Name,
-				Type:  m.Component.Type.String(),
-				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
-				Order: m.Order,
-			})
-		case menu.Bottom:
-			bottomMenuResponse = append(bottomMenuResponse, componentResponse{
-				ID:    m.Component.ID.String(),
-				Name:  m.Component.Name,
-				Type:  m.Component.Type.String(),
-				Key:   m.Component.Key,
-				Value: string(m.Component.Value),
-				Order: m.Order,
-			})
-		default:
-			continue
-		}
-	}
-
-	sort.Slice(topMenuResponse, func(i, j int) bool {
-		return topMenuResponse[i].Order < topMenuResponse[j].Order
-	})
-	sort.Slice(bottomMenuResponse, func(i, j int) bool {
-		return bottomMenuResponse[i].Order < bottomMenuResponse[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: menuResponse{
-			Top:    topMenuResponse,
-			Bottom: bottomMenuResponse,
-		},
+		Data: menus,
 	})
 }
 
