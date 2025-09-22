@@ -3,6 +3,7 @@ package controller
 import (
 	"bufio"
 	"net/http"
+	"regexp"
 	"sen-global-api/helper"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -2008,6 +2009,8 @@ func (receiver *UserEntityController) UploadAvatarV2(c *gin.Context) {
 		})
 		return
 	}
+	re := regexp.MustCompile(`\s+`)
+	fileName = re.ReplaceAllString(fileName, "_")
 
 	indexStr := c.PostForm("index")
 	if indexStr == "" {
