@@ -349,6 +349,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			StudentAppRepo:                     &repository.StudentApplicationRepository{DB: dbConn},
 			SuperAdminEmergencyMenuRepo:        &repository.SuperAdminEmergencyMenuRepository{DBConn: dbConn},
 			OrganizationEmergencyMenuRepo:      &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
+			LanguageSettingRepo:                &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		UploadSectionMenuUseCase: &usecase.UploadSectionMenuUseCase{
 			MenuRepository:                     &repository.MenuRepository{DBConn: dbConn},

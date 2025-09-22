@@ -44,6 +44,7 @@ type GetMenuUseCase struct {
 	DepartmentMenuUseCase              *DepartmentMenuUseCase
 	SuperAdminEmergencyMenuRepo        *repository.SuperAdminEmergencyMenuRepository
 	OrganizationEmergencyMenuRepo      *repository.OrganizationEmergencyMenuRepository
+	LanguageSettingRepo                *repository.LanguageSettingRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -568,63 +569,115 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	return result, nil
 }
 
-func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]response.ComponentResponse, error) {
+func (receiver *GetMenuUseCase) GetEmergencyMenu4WebAdmin(ctx *gin.Context) ([]response.GetMenus4Web, error) {
 	user, err := receiver.GetUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]response.ComponentResponse, 0)
+	var emMenus []struct {
+		ComponentID uuid.UUID
+		Order       int
+	}
 
 	if user.IsSuperAdmin() {
 		menus, err := receiver.SuperAdminEmergencyMenuRepo.GetAll()
 		if err != nil {
 			return nil, err
 		}
-		for _, menu := range menus {
-			// get component
-			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
-			result = append(result, response.ComponentResponse{
-				ID:    menu.ComponentID.String(),
-				Name:  comp.Name,
-				Key:   comp.Key,
-				Type:  comp.Type.String(),
-				Value: comp.Value.String(),
-				Order: menu.Order,
+		for _, m := range menus {
+			emMenus = append(emMenus, struct {
+				ComponentID uuid.UUID
+				Order       int
+			}{
+				ComponentID: m.ComponentID,
+				Order:       m.Order,
 			})
 		}
 	} else {
 		if len(user.Organizations) == 0 {
-			return result, errors.New("user does not belong to any organization")
+			return nil, errors.New("user does not belong to any organization")
 		}
 
 		orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
 		if err != nil {
-			return result, err
+			return nil, err
 		}
 		if len(orgIDsManaged) == 0 {
-			return result, errors.New("user does not manage any organization")
-		}
-		menus, err := receiver.OrganizationEmergencyMenuRepo.GetByOrganizationID(orgIDsManaged[0])
-		if err != nil {
-			return result, err
+			return nil, errors.New("user does not manage any organization")
 		}
 
-		for _, menu := range menus {
-			// get component
-			comp, _ := receiver.ComponentRepository.GetByID(menu.ComponentID.String())
-			result = append(result, response.ComponentResponse{
-				ID:    menu.ComponentID.String(),
-				Name:  comp.Name,
-				Key:   comp.Key,
-				Type:  comp.Type.String(),
-				Value: comp.Value.String(),
-				Order: menu.Order,
+		menus, err := receiver.OrganizationEmergencyMenuRepo.GetByOrganizationID(orgIDsManaged[0])
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range menus {
+			emMenus = append(emMenus, struct {
+				ComponentID uuid.UUID
+				Order       int
+			}{
+				ComponentID: m.ComponentID,
+				Order:       m.Order,
 			})
 		}
 	}
 
-	return result, nil
+	// === Tái sử dụng logic gom components theo lang ===
+
+	// Tạo danh sách componentID
+	componentIDs := make([]uuid.UUID, 0, len(emMenus))
+	componentOrderMap := make(map[uuid.UUID]int)
+
+	for _, cm := range emMenus {
+		componentIDs = append(componentIDs, cm.ComponentID)
+		componentOrderMap[cm.ComponentID] = cm.Order
+	}
+
+	// Lấy tất cả components theo IDs
+	components, err := receiver.ComponentRepository.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menu := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
+
+		// Nếu chưa có language cache thì lấy từ DB
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := receiver.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	return getMenus, nil
 }
 
 func (receiver *GetMenuUseCase) GetEmergencyMenu4App(ctx *gin.Context, organizationID string) ([]response.GetMenuSectionResponse, error) {
