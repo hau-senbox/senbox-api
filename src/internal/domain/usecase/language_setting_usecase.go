@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 )
 
 type LanguageSettingUseCase struct {
@@ -12,8 +14,20 @@ type LanguageSettingUseCase struct {
 	ComponentRepository       *repository.ComponentRepository
 }
 
-func (l *LanguageSettingUseCase) GetAll() ([]entity.LanguageSetting, error) {
-	return l.LanguageSettingRepository.GetAll()
+func (l *LanguageSettingUseCase) GetAll() ([]response.LanguageSettingResponse, error) {
+	data, err := l.LanguageSettingRepository.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return mapper.MapLanguageSettingToResponses(data), nil
+}
+
+func (l *LanguageSettingUseCase) GetAllIsPublished() ([]response.LanguageSettingResponse, error) {
+	data, err := l.LanguageSettingRepository.GetAllIsPublished()
+	if err != nil {
+		return nil, err
+	}
+	return mapper.MapLanguageSettingToResponses(data), nil
 }
 
 func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest) error {
