@@ -77,10 +77,11 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		}
 
 		component := &components.Component{
-			Name:  req.Component.Name,
-			Type:  components.ComponentType(req.Component.Type),
-			Key:   req.Component.Key,
-			Value: datatypes.JSON(valueJSON),
+			Name:       req.Component.Name,
+			Type:       components.ComponentType(req.Component.Type),
+			Key:        req.Component.Key,
+			Value:      datatypes.JSON(valueJSON),
+			LanguageID: req.Component.LanguageID,
 		}
 
 		if req.Component.ID != "" {
