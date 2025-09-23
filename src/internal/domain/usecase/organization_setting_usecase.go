@@ -308,9 +308,10 @@ func (u *OrganizationSettingUsecase) GetOrgSetting4Web(deviceID string) (respons
 		Components:         []*response.ComponentScreenbutton{},
 	}
 
-	// Nếu có ComponentID thì lấy component và language
-	if orgSetting.ComponentID != "" {
-		component, err := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+	orgSettingMenus, _ := u.OrganizationSettingMenuRepo.GetByOrganiazationSettingID(orgSetting.ID.String())
+
+	for _, orgSettingMenu := range orgSettingMenus {
+		component, err := u.ComponentRepo.GetByID(orgSettingMenu.ComponentID.String())
 		if err == nil && component != nil {
 			lang, _ := u.LanguageSettingRepo.GetByID(component.LanguageID)
 
