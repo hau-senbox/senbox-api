@@ -1486,10 +1486,11 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			// get is_deactive
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
 			users = append(users, response.UserResponse{
-				ID:         u.ID.String(),
-				Username:   u.Username,
-				Nickname:   u.Nickname,
-				IsDeactive: isDeactive,
+				ID:           u.ID.String(),
+				Username:     u.Username,
+				Nickname:     u.Nickname,
+				IsDeactive:   isDeactive,
+				CreatedIndex: u.CreatedIndex,
 			})
 		}
 		for _, c := range rawChildren {
