@@ -359,8 +359,9 @@ func mapStudentAppsToResponse(apps []entity.SStudentFormApplication) []response.
 	res := make([]response.StudentResponse, 0, len(apps))
 	for _, a := range apps {
 		res = append(res, response.StudentResponse{
-			StudentID:   a.ID.String(),
-			StudentName: a.StudentName,
+			StudentID:    a.ID.String(),
+			StudentName:  a.StudentName,
+			CreatedIndex: a.CreatedIndex,
 		})
 	}
 	return res
