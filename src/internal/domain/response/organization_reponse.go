@@ -41,5 +41,5 @@ type GetOrgSettingResponse4Web struct {
 
 type ComponentScreenbutton struct {
 	Language entity.LanguageSetting `json:"language"`
-	Menu     ComponentResponse      `json:"menus"`
+	Menu     ComponentResponse      `json:"menu"`
 }

@@ -759,6 +759,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepo:               &repository.ComponentRepository{DBConn: dbConn},
 			OrganizationRepo:            &repository.OrganizationRepository{DBConn: dbConn},
 			OrganizationSettingMenuRepo: &repository.OrganizationSettingMenuRepository{DBConn: dbConn},
+			LanguageSettingRepo:         &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		AuthorizeUseCase: &usecase.AuthorizeUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},

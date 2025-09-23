@@ -26,6 +26,7 @@ type OrganizationSettingUsecase struct {
 	ComponentRepo               *repository.ComponentRepository
 	OrganizationRepo            *repository.OrganizationRepository
 	OrganizationSettingMenuRepo *repository.OrganizationSettingMenuRepository
+	LanguageSettingRepo         *repository.LanguageSettingRepository
 }
 
 func NewOrganizationSettingUsecase(repo *repository.OrganizationSettingRepository) *OrganizationSettingUsecase {
@@ -283,19 +284,51 @@ func (u *OrganizationSettingUsecase) GetOrgSetting4App(deviceID string) (respons
 	return resp, nil
 }
 
-func (u *OrganizationSettingUsecase) GetOrgSetting4Web(deviceID string) (response.OrgSettingResponse, error) {
+func (u *OrganizationSettingUsecase) GetOrgSetting4Web(deviceID string) (response.GetOrgSettingResponse4Web, error) {
 	// Lấy thông tin OrgSetting
 	orgSetting, err := u.Repo.GetByDeviceID(deviceID)
 	if err != nil {
-		return response.OrgSettingResponse{}, err
+		return response.GetOrgSettingResponse4Web{}, err
 	}
 
-	// Lấy danh sách components
-	component, _ := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+	// Chuẩn bị response
+	resp := response.GetOrgSettingResponse4Web{
+		ID:                 orgSetting.ID.String(),
+		OrganizationID:     orgSetting.OrganizationID,
+		DeviceID:           orgSetting.DeviceID,
+		IsViewMessageBox:   orgSetting.IsViewMessageBox,
+		IsShowMessage:      orgSetting.IsShowMessage,
+		MessageBox:         orgSetting.MessageBox,
+		IsShowSpecialBtn:   orgSetting.IsShowSpecialBtn,
+		IsDeactiveApp:      orgSetting.IsDeactiveApp,
+		MessageDeactiveApp: orgSetting.MessageDeactiveApp,
+		IsDeactiveTopMenu:  orgSetting.IsDeactiveTopMenu,
+		MessageTopMenu:     orgSetting.MessageTopMenu,
+		TopMenuPassword:    orgSetting.TopMenuPassword,
+		Components:         []*response.ComponentScreenbutton{},
+	}
 
-	// ger org info
-	orgInfo, _ := u.OrganizationRepo.GetByID(orgSetting.OrganizationID)
-	resp := mapper.MapOrgSettingToResponse(orgSetting, component, orgInfo.OrganizationName)
+	// Nếu có ComponentID thì lấy component và language
+	if orgSetting.ComponentID != "" {
+		component, err := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+		if err == nil && component != nil {
+			lang, _ := u.LanguageSettingRepo.GetByID(component.LanguageID)
+
+			compResp := &response.ComponentScreenbutton{
+				Language: *lang,
+				Menu: response.ComponentResponse{
+					ID:         component.ID.String(),
+					Name:       component.Name,
+					Type:       component.Type.String(),
+					Key:        component.Key,
+					Value:      component.Value.String(),
+					LanguageID: component.LanguageID,
+				},
+			}
+
+			resp.Components = append(resp.Components, compResp)
+		}
+	}
 
 	return resp, nil
 }
