@@ -611,7 +611,7 @@ func (receiver OrganizationController) UploadOrgSetting(c *gin.Context) {
 	})
 }
 
-func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
+func (receiver OrganizationController) GetOrgSetting4App(c *gin.Context) {
 	deviceID := c.Param("device_id")
 
 	if deviceID == "" {
@@ -622,7 +622,44 @@ func (receiver OrganizationController) GetOrgSetting(c *gin.Context) {
 		return
 	}
 
-	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting(deviceID)
+	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting4App(deviceID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, response.SucceedResponse{
+				Code:    http.StatusOK,
+				Message: "Not Found",
+				Data:    nil,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get organization setting",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    orgSetting,
+	})
+}
+
+func (receiver OrganizationController) GetOrgSetting4Web(c *gin.Context) {
+	deviceID := c.Param("device_id")
+
+	if deviceID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing device ID",
+		})
+		return
+	}
+
+	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting4Web(deviceID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, response.SucceedResponse{
