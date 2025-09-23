@@ -16,7 +16,7 @@ type UploadOrgSettingRequest struct {
 }
 
 type UploadOrgSettingMenuRequest struct {
-	ID         string                    `json:"id" binding:"required"`
+	ID         string                    `json:"id"`
 	LanguageID uint                      `json:"language_id"`
 	Name       string                    `json:"name"`
 	Type       string                    `json:"type"`

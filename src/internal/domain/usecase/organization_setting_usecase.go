@@ -22,9 +22,11 @@ import (
 )
 
 type OrganizationSettingUsecase struct {
-	Repo             *repository.OrganizationSettingRepository
-	ComponentRepo    *repository.ComponentRepository
-	OrganizationRepo *repository.OrganizationRepository
+	Repo                        *repository.OrganizationSettingRepository
+	ComponentRepo               *repository.ComponentRepository
+	OrganizationRepo            *repository.OrganizationRepository
+	OrganizationSettingMenuRepo *repository.OrganizationSettingMenuRepository
+	LanguageSettingRepo         *repository.LanguageSettingRepository
 }
 
 func NewOrganizationSettingUsecase(repo *repository.OrganizationSettingRepository) *OrganizationSettingUsecase {
@@ -223,6 +225,19 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		return err
 	}
 
+	// Sau khi commit thì mở transaction mới (hoặc dùng DBConn trực tiếp)
+	if componentID != "" {
+		orgSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
+		if err != nil {
+			return fmt.Errorf("get organization setting after upsert fail: %w", err)
+		}
+
+		// mở tx mới hoặc dùng DBConn
+		if err := u.UploadOrganizationSettingMenu(u.Repo.DBConn, orgSetting.ID.String(), componentID); err != nil {
+			return fmt.Errorf("upload organization setting menu fail: %w", err)
+		}
+	}
+
 	// Push lên Firestore sau khi commit thành công
 	// get setting by device id
 	settingFirestore, _ := u.GetOrgSetting(req.DeviceID)
@@ -252,17 +267,75 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.Or
 	return resp, nil
 }
 
+func (u *OrganizationSettingUsecase) GetOrgSetting4App(deviceID string) (response.OrgSettingResponse, error) {
+	// Lấy thông tin OrgSetting
+	orgSetting, err := u.Repo.GetByDeviceID(deviceID)
+	if err != nil {
+		return response.OrgSettingResponse{}, err
+	}
+
+	// Lấy danh sách components
+	component, _ := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+
+	// ger org info
+	orgInfo, _ := u.OrganizationRepo.GetByID(orgSetting.OrganizationID)
+	resp := mapper.MapOrgSettingToResponse(orgSetting, component, orgInfo.OrganizationName)
+
+	return resp, nil
+}
+
+func (u *OrganizationSettingUsecase) GetOrgSetting4Web(deviceID string) (response.GetOrgSettingResponse4Web, error) {
+	// Lấy thông tin OrgSetting
+	orgSetting, err := u.Repo.GetByDeviceID(deviceID)
+	if err != nil {
+		return response.GetOrgSettingResponse4Web{}, err
+	}
+
+	// Chuẩn bị response
+	resp := response.GetOrgSettingResponse4Web{
+		ID:                 orgSetting.ID.String(),
+		OrganizationID:     orgSetting.OrganizationID,
+		DeviceID:           orgSetting.DeviceID,
+		IsViewMessageBox:   orgSetting.IsViewMessageBox,
+		IsShowMessage:      orgSetting.IsShowMessage,
+		MessageBox:         orgSetting.MessageBox,
+		IsShowSpecialBtn:   orgSetting.IsShowSpecialBtn,
+		IsDeactiveApp:      orgSetting.IsDeactiveApp,
+		MessageDeactiveApp: orgSetting.MessageDeactiveApp,
+		IsDeactiveTopMenu:  orgSetting.IsDeactiveTopMenu,
+		MessageTopMenu:     orgSetting.MessageTopMenu,
+		TopMenuPassword:    orgSetting.TopMenuPassword,
+		Components:         []*response.ComponentScreenbutton{},
+	}
+
+	// Nếu có ComponentID thì lấy component và language
+	if orgSetting.ComponentID != "" {
+		component, err := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+		if err == nil && component != nil {
+			lang, _ := u.LanguageSettingRepo.GetByID(component.LanguageID)
+
+			compResp := &response.ComponentScreenbutton{
+				Language: *lang,
+				Menu: response.ComponentResponse{
+					ID:         component.ID.String(),
+					Name:       component.Name,
+					Type:       component.Type.String(),
+					Key:        component.Key,
+					Value:      component.Value.String(),
+					LanguageID: component.LanguageID,
+				},
+			}
+
+			resp.Components = append(resp.Components, compResp)
+		}
+	}
+
+	return resp, nil
+}
+
 func (uc *OrganizationSettingUsecase) pushToFirestore(setting response.OrgSettingResponse) error {
 	client := firebase.InitFirestoreClient()
 	ctx := context.Background()
-
-	// Convert Component.Value (struct) -> map[string]interface{}
-	var valueMap map[string]interface{}
-	if b, err := json.Marshal(setting.Component.Value); err == nil {
-		_ = json.Unmarshal(b, &valueMap)
-	} else {
-		return fmt.Errorf("failed to marshal component value: %w", err)
-	}
 
 	// Build data map
 	data := map[string]interface{}{
@@ -276,13 +349,7 @@ func (uc *OrganizationSettingUsecase) pushToFirestore(setting response.OrgSettin
 		"is_deactive_top_menu": setting.IsDeactiveTopMenu,
 		"message_top_menu":     setting.MessageTopMenu,
 		"top_menu_password":    setting.TopMenuPassword,
-		"component": map[string]interface{}{
-			"name":  setting.Component.Name,
-			"type":  setting.Component.Type,
-			"key":   setting.Component.Key,
-			"value": valueMap, // <-- giữ nguyên tất cả field trong struct
-		},
-		"updated_at": time.Now(),
+		"updated_at":           time.Now(),
 	}
 
 	// Upsert theo device_id
@@ -355,4 +422,29 @@ func (u *OrganizationSettingUsecase) GetOrgSettingNews(orgID string) (*response.
 		IsPublishedPortal: setting.IsPublishedPortal,
 		MessagePortalNews: setting.MessagePortalNews,
 	}, nil
+}
+
+func (u *OrganizationSettingUsecase) UploadOrganizationSettingMenu(tx *gorm.DB, organizationSettingID string, componentID string) error {
+	existing, err := u.OrganizationSettingMenuRepo.GetByOrganizationSettingIDAndComponentID(
+		tx,
+		organizationSettingID,
+		componentID,
+	)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("get organization setting menu fail: %w", err)
+	}
+
+	if existing == nil {
+		// Không tồn tại → create
+		menu := &entity.OrganizationSettingMenu{
+			ID:                    uuid.New(),
+			OrganizationSettingID: organizationSettingID,
+			ComponentID:           uuid.MustParse(componentID),
+		}
+		if err := u.OrganizationSettingMenuRepo.CreateWithTx(tx, menu); err != nil {
+			return fmt.Errorf("create organization setting menu fail: %w", err)
+		}
+	}
+
+	return nil
 }

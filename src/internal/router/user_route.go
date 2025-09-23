@@ -561,15 +561,17 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	// organization
 	orgController := &controller.OrganizationController{
 		OrganizationSettingUsecase: &usecase.OrganizationSettingUsecase{
-			Repo:             &repository.OrganizationSettingRepository{DBConn: dbConn},
-			ComponentRepo:    &repository.ComponentRepository{DBConn: dbConn},
-			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+			Repo:                        &repository.OrganizationSettingRepository{DBConn: dbConn},
+			ComponentRepo:               &repository.ComponentRepository{DBConn: dbConn},
+			OrganizationRepo:            &repository.OrganizationRepository{DBConn: dbConn},
+			OrganizationSettingMenuRepo: &repository.OrganizationSettingMenuRepository{DBConn: dbConn},
+			LanguageSettingRepo:         &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 
 	org := engine.Group("/v1/user/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/:device_id", orgController.GetOrgSetting)
+		org.GET("/setting/:device_id", orgController.GetOrgSetting4App)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
 	}
 

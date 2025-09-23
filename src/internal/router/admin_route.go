@@ -755,9 +755,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	orgController := &controller.OrganizationController{
 		OrganizationSettingUsecase: &usecase.OrganizationSettingUsecase{
-			Repo:             &repository.OrganizationSettingRepository{DBConn: dbConn},
-			ComponentRepo:    &repository.ComponentRepository{DBConn: dbConn},
-			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+			Repo:                        &repository.OrganizationSettingRepository{DBConn: dbConn},
+			ComponentRepo:               &repository.ComponentRepository{DBConn: dbConn},
+			OrganizationRepo:            &repository.OrganizationRepository{DBConn: dbConn},
+			OrganizationSettingMenuRepo: &repository.OrganizationSettingMenuRepository{DBConn: dbConn},
+			LanguageSettingRepo:         &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		AuthorizeUseCase: &usecase.AuthorizeUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
@@ -871,7 +873,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	org := engine.Group("/v1/admin/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/device/:device_id", orgController.GetOrgSetting)
+		org.GET("/setting/device/:device_id", orgController.GetOrgSetting4Web)
 		org.POST("/setting/device", orgController.UploadOrgSetting)
 		org.GET("/:organization_id/device", deviceController.GetAllDeviceByOrgID)
 		org.GET("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
