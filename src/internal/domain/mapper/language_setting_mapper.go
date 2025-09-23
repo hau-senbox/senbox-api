@@ -9,10 +9,11 @@ func MapLanguageSettingToResponses(list []entity.LanguageSetting) []response.Lan
 	result := make([]response.LanguageSettingResponse, len(list))
 	for i, item := range list {
 		result[i] = response.LanguageSettingResponse{
-			ID:          item.ID,
-			LangKey:     item.LangKey,
-			RegionKey:   item.RegionKey,
-			IsPublished: item.IsPublished,
+			ID:                 item.ID,
+			LangKey:            item.LangKey,
+			RegionKey:          item.RegionKey,
+			IsPublished:        item.IsPublished,
+			DeactivatedMessage: item.DeactivatedMessage,
 		}
 	}
 	return result
