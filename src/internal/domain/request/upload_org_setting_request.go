@@ -16,13 +16,14 @@ type UploadOrgSettingRequest struct {
 }
 
 type UploadOrgSettingMenuRequest struct {
-	ID     string                    `json:"id"`
-	Name   string                    `json:"name"`
-	Type   string                    `json:"type"`
-	Key    string                    `json:"key" default:""`
-	Value  UploadOrgSettingMenuValue `json:"value"`
-	Order  int                       `json:"order"`
-	IsShow bool                      `json:"is_show"`
+	ID         string                    `json:"id" binding:"required"`
+	LanguageID uint                      `json:"language_id"`
+	Name       string                    `json:"name"`
+	Type       string                    `json:"type"`
+	Key        string                    `json:"key" default:""`
+	Value      UploadOrgSettingMenuValue `json:"value"`
+	Order      int                       `json:"order"`
+	IsShow     bool                      `json:"is_show"`
 }
 
 type UploadOrgSettingMenuValue struct {
