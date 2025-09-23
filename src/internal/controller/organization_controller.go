@@ -622,7 +622,7 @@ func (receiver OrganizationController) GetOrgSetting4App(c *gin.Context) {
 		return
 	}
 
-	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting4App(deviceID)
+	orgSetting, err := receiver.OrganizationSettingUsecase.GetOrgSetting4App(c, deviceID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, response.SucceedResponse{

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"sen-global-api/internal/domain/entity"
 	"time"
@@ -12,58 +13,62 @@ import (
 	"gorm.io/gorm"
 )
 
-func DataLogMiddleware(db *gorm.DB) gin.HandlerFunc {
+func GeneralLoggerMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
+		// đọc body request
+		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		// đọc body request (payload)
-		var bodyBytes []byte
-		if c.Request.Body != nil {
-			bodyBytes, _ = io.ReadAll(c.Request.Body)
-			// reset body để handler khác vẫn đọc được
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		// lấy tất cả params từ gin.Context
+		params := make(map[string]string)
+		for _, p := range c.Params {
+			params[p.Key] = p.Value
 		}
 
-		// capture response bằng custom writer
+		// convert sang JSON
+		paramsJSON, _ := json.Marshal(params)
+
+		// tạo log entry ban đầu
+		logEntry := &entity.DataLog{
+			ID:        uuid.New(),
+			Endpoint:  c.FullPath(),
+			Method:    c.Request.Method,
+			Payload:   datatypes.JSON(bodyBytes),
+			Status:    "PENDING",
+			CreatedAt: time.Now(),
+			Params:    datatypes.JSON(paramsJSON),
+		}
+		db.Create(logEntry)
+		c.Set("general_log_id", logEntry.ID)
+
+		// wrap writer để capture response
 		respBody := &bytes.Buffer{}
 		writer := &bodyLogWriter{body: respBody, ResponseWriter: c.Writer}
 		c.Writer = writer
 
-		// chạy tiếp handler
+		// tiếp tục request
 		c.Next()
 
-		// lấy status và error nếu có
-		status := "success"
-		var errMsg *string
-		if len(c.Errors) > 0 {
-			status = "error"
-			msg := c.Errors.String()
-			errMsg = &msg
-		}
+		// update log sau khi handler xong
+		if logID, exists := c.Get("general_log_id"); exists {
+			status := "SUCCESS"
+			var errMsg string
+			if len(c.Errors) > 0 {
+				status = "FAIL"
+				errMsg = c.Errors.String()
+			}
 
-		payload := bodyBytes
-		if len(payload) == 0 {
-			payload = []byte("{}")
+			db.Model(&entity.DataLog{}).
+				Where("id = ?", logID).
+				Updates(map[string]interface{}{
+					"status":        status,
+					"error_message": errMsg,
+					"response":      datatypes.JSON(respBody.Bytes()),
+				})
 		}
-
-		// tạo log
-		log := entity.DataLog{
-			ID:           uuid.New(),
-			Endpoint:     c.FullPath(),
-			Method:       c.Request.Method,
-			Payload:      datatypes.JSON(payload),
-			Response:     datatypes.JSON(respBody.Bytes()),
-			Status:       status,
-			ErrorMessage: errMsg,
-			CreatedAt:    start,
-		}
-
-		// save DB
-		db.Create(&log)
 	}
 }
 
-// custom writer để capture response
 type bodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer

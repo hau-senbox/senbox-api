@@ -412,9 +412,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		DeviceMenuUseCase: &usecase.DeviceMenuUseCase{
-			Repo:          &repository.DeviceMenuRepository{DBConn: dbConn},
-			ComponentRepo: &repository.ComponentRepository{DBConn: dbConn},
-			DeviceRepo:    &repository.DeviceRepository{DBConn: dbConn},
+			Repo:                &repository.DeviceMenuRepository{DBConn: dbConn},
+			ComponentRepo:       &repository.ComponentRepository{DBConn: dbConn},
+			DeviceRepo:          &repository.DeviceRepository{DBConn: dbConn},
+			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		TeacherMenuOrganizationUseCase: &usecase.TeacherMenuOrganizationUseCase{
 			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},

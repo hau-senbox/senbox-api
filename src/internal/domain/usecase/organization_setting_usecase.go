@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
@@ -267,16 +268,25 @@ func (u *OrganizationSettingUsecase) GetOrgSetting(deviceID string) (response.Or
 	return resp, nil
 }
 
-func (u *OrganizationSettingUsecase) GetOrgSetting4App(deviceID string) (response.OrgSettingResponse, error) {
+func (u *OrganizationSettingUsecase) GetOrgSetting4App(ctx *gin.Context, deviceID string) (response.OrgSettingResponse, error) {
 	// Lấy thông tin OrgSetting
 	orgSetting, err := u.Repo.GetByDeviceID(deviceID)
 	if err != nil {
 		return response.OrgSettingResponse{}, err
 	}
 
-	// Lấy danh sách components
-	component, _ := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+	// get app language
+	appLanguage, _ := ctx.Get("app_language")
+	orgSettingMenus, _ := u.OrganizationSettingMenuRepo.GetByOrganiazationSettingID(orgSetting.ID.String())
 
+	var component *components.Component
+	for _, menu := range orgSettingMenus {
+		comp, _ := u.ComponentRepo.GetByIDAndLanguage(menu.ComponentID.String(), appLanguage.(uint))
+		if comp != nil {
+			component = comp
+			break
+		}
+	}
 	// ger org info
 	orgInfo, _ := u.OrganizationRepo.GetByID(orgSetting.OrganizationID)
 	resp := mapper.MapOrgSettingToResponse(orgSetting, component, orgInfo.OrganizationName)
@@ -308,9 +318,10 @@ func (u *OrganizationSettingUsecase) GetOrgSetting4Web(deviceID string) (respons
 		Components:         []*response.ComponentScreenbutton{},
 	}
 
-	// Nếu có ComponentID thì lấy component và language
-	if orgSetting.ComponentID != "" {
-		component, err := u.ComponentRepo.GetByID(orgSetting.ComponentID)
+	orgSettingMenus, _ := u.OrganizationSettingMenuRepo.GetByOrganiazationSettingID(orgSetting.ID.String())
+
+	for _, orgSettingMenu := range orgSettingMenus {
+		component, err := u.ComponentRepo.GetByID(orgSettingMenu.ComponentID.String())
 		if err == nil && component != nil {
 			lang, _ := u.LanguageSettingRepo.GetByID(component.LanguageID)
 

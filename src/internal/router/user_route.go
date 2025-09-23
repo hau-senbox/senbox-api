@@ -571,7 +571,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	org := engine.Group("/v1/user/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/:device_id", orgController.GetOrgSetting4App)
+		org.GET("/setting/:device_id", middleware.GeneralLoggerMiddleware(dbConn), orgController.GetOrgSetting4App)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
 	}
 
@@ -588,7 +588,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	device := engine.Group("/v1/user/device", secureMiddleware.Secured())
 	{
-		device.GET("/:device_id", middleware.DataLogMiddleware(dbConn), deviceController.GetDevice4App)
+		device.GET("/:device_id", middleware.GeneralLoggerMiddleware(dbConn), deviceController.GetDevice4App)
 	}
 
 	// languages config
