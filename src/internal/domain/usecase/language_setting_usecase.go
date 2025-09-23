@@ -64,13 +64,14 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 			if exist {
 				if setting.LangKey != s.LangKey || setting.RegionKey != s.RegionKey {
 					tx.Rollback()
-					return fmt.Errorf("language setting ID %d is in use by components and cannot be updated", *s.ID)
+					return fmt.Errorf("the language is in use by components and cannot be updated")
 				}
 			}
 
 			setting.LangKey = s.LangKey
 			setting.RegionKey = s.RegionKey
 			setting.IsPublished = s.IsPublished
+			setting.DeactivatedMessage = s.DeactivatedMessage
 
 			if err := tx.Save(setting).Error; err != nil {
 				tx.Rollback()
@@ -79,9 +80,10 @@ func (l *LanguageSettingUseCase) Upload(req request.UploadLanguageSettingRequest
 		} else {
 			// Create
 			setting := &entity.LanguageSetting{
-				LangKey:     s.LangKey,
-				RegionKey:   s.RegionKey,
-				IsPublished: s.IsPublished,
+				LangKey:            s.LangKey,
+				RegionKey:          s.RegionKey,
+				IsPublished:        s.IsPublished,
+				DeactivatedMessage: s.DeactivatedMessage,
 			}
 			if err := tx.Create(setting).Error; err != nil {
 				tx.Rollback()

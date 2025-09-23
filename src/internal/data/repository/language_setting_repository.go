@@ -59,7 +59,7 @@ func (r *LanguageSettingRepository) DeleteByIDs(tx *gorm.DB, ids []uint, compRep
 			return err
 		}
 		if exist {
-			return fmt.Errorf("language setting ID %d is in use by components and cannot be deleted", langSetting.ID)
+			return fmt.Errorf("the language setting is in use by components and cannot be deleted")
 		}
 
 		// Nếu không tồn tại trong component thì xóa
