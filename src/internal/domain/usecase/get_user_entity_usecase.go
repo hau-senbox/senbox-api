@@ -51,7 +51,19 @@ func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]en
 
 	// Nếu là SuperAdmin → trả về tất cả user
 	if user.IsSuperAdmin() {
-		return receiver.UserEntityRepository.GetAll()
+		allUsers, err := receiver.UserEntityRepository.GetAll()
+		if err != nil {
+			return nil, err
+		}
+
+		result := make([]entity.SUserEntity, 0, len(allUsers))
+		for _, u := range allUsers {
+			if !u.IsSuperAdmin() {
+				result = append(result, u)
+			}
+		}
+
+		return result, nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy danh sách org mà user quản lý
@@ -76,7 +88,7 @@ func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]en
 	// Lọc ra chính user đang truy cập khỏi kết quả
 	result := make([]entity.SUserEntity, 0, len(users))
 	for _, u := range users {
-		if u.ID != user.ID {
+		if u.ID != user.ID && !u.IsSuperAdmin() {
 			result = append(result, u)
 		}
 	}
