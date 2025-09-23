@@ -1525,7 +1525,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			})
 		}
 		for _, s := range rawStaffs {
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
+			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Staff(s.StaffID)
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
 			staffs = append(staffs, response.StaffResponse{
 				StaffID:      s.StaffID,
@@ -1540,10 +1540,11 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
-				ParentID:   p.ID.String(),
-				ParentName: p.Nickname,
-				IsDeactive: isDeactive,
-				Avatar:     avatar,
+				ParentID:     p.ID.String(),
+				ParentName:   p.Nickname,
+				IsDeactive:   isDeactive,
+				Avatar:       avatar,
+				CreatedIndex: p.CreatedIndex,
 			})
 		}
 
