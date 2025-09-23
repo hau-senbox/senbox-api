@@ -10,11 +10,12 @@ type SearchUserResponse struct {
 }
 
 type UserResponse struct {
-	ID         string `json:"id"`
-	Username   string `json:"username"`
-	Nickname   string `json:"nickname"`
-	IsDeactive bool   `json:"is_deactive"`
-	Avatar     Avatar `json:"avatar"`
+	ID           string `json:"id"`
+	Username     string `json:"username"`
+	Nickname     string `json:"nickname"`
+	IsDeactive   bool   `json:"is_deactive"`
+	Avatar       Avatar `json:"avatar"`
+	CreatedIndex int    `json:"created_index"`
 }
 
 type ChildrenResponse struct {
