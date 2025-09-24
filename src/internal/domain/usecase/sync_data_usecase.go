@@ -214,8 +214,7 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 			}
 			time.Sleep(1 * time.Second)
 			if (i+1)%20 == 0 {
-				fmt.Println("Reached 20 items, waiting 40 seconds...")
-				time.Sleep(40 * time.Second)
+				time.Sleep(15 * time.Second)
 			}
 		}
 
@@ -350,8 +349,7 @@ func (uc *SyncDataUsecase) AutoSyncFormAnswersDaily() {
 			}
 		}(queue, req)
 
-		// doi 5 phut
-		time.Sleep(5 * time.Minute)
+		time.Sleep(1 * time.Minute)
 	}
 
 }
