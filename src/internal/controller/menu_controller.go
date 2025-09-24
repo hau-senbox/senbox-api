@@ -654,7 +654,7 @@ func (receiver *MenuController) GetDeviceMenu4Admin(context *gin.Context) {
 	})
 }
 
-func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
+func (receiver *MenuController) GetDeviceMenuByOrg4Web(context *gin.Context) {
 	organizationID := context.Param("organization_id")
 	if organizationID == "" {
 		context.JSON(

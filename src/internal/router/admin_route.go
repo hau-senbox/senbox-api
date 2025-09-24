@@ -456,7 +456,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.POST("/organization/bottom", menuController.UploadOrganizationAdminMenuBottom)
 
 		// organization device menu
-		menu.GET("/organization/device/:organization_id", menuController.GetDeviceMenuByOrg)
+		menu.GET("/organization/device/:organization_id", menuController.GetDeviceMenuByOrg4Web)
 		menu.POST("/organization/device", menuController.UploadOrganizationDeviceMenu)
 
 		// emergency menu
