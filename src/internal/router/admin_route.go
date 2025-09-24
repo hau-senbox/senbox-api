@@ -420,6 +420,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		TeacherMenuOrganizationUseCase: &usecase.TeacherMenuOrganizationUseCase{
 			TeacherMenuOrganizationRepository: &repository.TeacherMenuOrganizationRepository{DBConn: dbConn},
 			ComponentRepo:                     &repository.ComponentRepository{DBConn: dbConn},
+			LanguageSettingRepo:               &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 

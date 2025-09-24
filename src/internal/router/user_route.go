@@ -338,6 +338,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				},
 			},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			LanguageSettingRepo:    &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 		DepartmentMenuUseCase: &usecase.DepartmentMenuUseCase{
 			DepartmentMenuRepository: &repository.DepartmentMenuRepository{DBConn: dbConn},
