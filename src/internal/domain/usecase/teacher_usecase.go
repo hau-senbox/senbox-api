@@ -197,12 +197,10 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	// Tạo danh sách componentID để lấy Component
 	componentIDs := make([]uuid.UUID, 0, len(teacherMenus))
 	componentOrderMap := make(map[uuid.UUID]int)
-	componentIsShowMap := make(map[uuid.UUID]bool)
 
 	for _, cm := range teacherMenus {
 		componentIDs = append(componentIDs, cm.ComponentID)
 		componentOrderMap[cm.ComponentID] = cm.Order
-		componentIsShowMap[cm.ComponentID] = cm.IsShow
 	}
 
 	// Lấy components theo ID
@@ -223,7 +221,6 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 			Key:        comp.Key,
 			Value:      string(comp.Value),
 			Order:      componentOrderMap[comp.ID],
-			IsShow:     componentIsShowMap[comp.ID],
 			LanguageID: comp.LanguageID,
 		}
 

@@ -394,6 +394,68 @@ func (receiver *GetMenuUseCase) GetDeviceMenuByOrg(organizationID string) ([]men
 	return receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
 }
 
+func (receiver *GetMenuUseCase) GetDeviceMenuByOrg4Web(organizationID string) ([]response.GetMenus4Web, error) {
+	menus, err := receiver.MenuRepository.GetDeviceMenuByOrg(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tạo danh sách componentID để lấy Component
+	componentIDs := make([]uuid.UUID, 0, len(menus))
+	componentOrderMap := make(map[uuid.UUID]int)
+
+	for _, cm := range menus {
+		componentIDs = append(componentIDs, cm.ComponentID)
+		componentOrderMap[cm.ComponentID] = cm.Order
+	}
+
+	// Lấy components theo ID
+	components, err := receiver.ComponentRepository.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menu := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
+
+		// nếu chưa có languageID trong cache -> query DB
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := receiver.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	return getMenus, nil
+}
+
 func (receiver *GetMenuUseCase) GetDeviceMenuByOrg4App(ctx *gin.Context, organizationID string) ([]menu.DeviceMenu, error) {
 	appLanguage, _ := ctx.Get("app_language")
 	return receiver.MenuRepository.GetDeviceMenuByOrgByLanguage(organizationID, appLanguage.(uint))
