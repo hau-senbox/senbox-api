@@ -445,7 +445,7 @@ func (u *OrganizationSettingUsecase) UploadOrganizationSettingMenu(tx *gorm.DB, 
 		return fmt.Errorf("get organization setting menu fail: %w", err)
 	}
 
-	if existing == nil {
+	if existing != nil {
 		// Không tồn tại → create
 		menu := &entity.OrganizationSettingMenu{
 			ID:                    uuid.New(),
