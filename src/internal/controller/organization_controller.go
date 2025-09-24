@@ -80,54 +80,61 @@ func (receiver OrganizationController) GetAllOrganization(context *gin.Context) 
 }
 
 func (receiver OrganizationController) Check4App(context *gin.Context) {
-	deviceID := context.Param("device_id")
-	if deviceID == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "deviceID is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+	// deviceID := context.Param("device_id")
+	// if deviceID == "" {
+	// 	context.JSON(
+	// 		http.StatusBadRequest, response.FailedResponse{
+	// 			Error: "deviceID is required",
+	// 			Code:  http.StatusBadRequest,
+	// 		},
+	// 	)
+	// 	return
+	// }
 
-	organizationID := context.Param("organization_id")
-	if organizationID == "" {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "organizationID is required",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+	// organizationID := context.Param("organization_id")
+	// if organizationID == "" {
+	// 	context.JSON(
+	// 		http.StatusBadRequest, response.FailedResponse{
+	// 			Error: "organizationID is required",
+	// 			Code:  http.StatusBadRequest,
+	// 		},
+	// 	)
+	// 	return
+	// }
 
-	isOK, err := receiver.CheckDeviceInOrg4App(deviceID, organizationID)
+	// isOK, err := receiver.CheckDeviceInOrg4App(deviceID, organizationID)
 
-	if err != nil {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: err.Error(),
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+	// if err != nil {
+	// 	context.JSON(
+	// 		http.StatusBadRequest, response.FailedResponse{
+	// 			Error: err.Error(),
+	// 			Code:  http.StatusBadRequest,
+	// 		},
+	// 	)
+	// 	return
+	// }
 
-	if !isOK {
-		context.JSON(
-			http.StatusBadRequest, response.FailedResponse{
-				Error: "device is not in organization",
-				Code:  http.StatusBadRequest,
-			},
-		)
-		return
-	}
+	// if !isOK {
+	// 	context.JSON(
+	// 		http.StatusBadRequest, response.FailedResponse{
+	// 			Error: "device is not in organization",
+	// 			Code:  http.StatusBadRequest,
+	// 		},
+	// 	)
+	// 	return
+	// }
 
+	// context.JSON(http.StatusOK, response.SucceedResponse{
+	// 	Code: http.StatusOK,
+	// 	Data: isOK,
+	// })
+
+	/// API luon tra 200 -> Data = true
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: isOK,
+		Data: true,
 	})
+
 }
 
 func (receiver OrganizationController) GetOrganizationByID(context *gin.Context) {
