@@ -666,7 +666,7 @@ func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
 		return
 	}
 
-	menus, err := receiver.GetMenuUseCase.GetDeviceMenuByOrg(organizationID)
+	menus, err := receiver.GetMenuUseCase.GetDeviceMenuByOrg4Web(organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
@@ -676,36 +676,9 @@ func (receiver *MenuController) GetDeviceMenuByOrg(context *gin.Context) {
 		return
 	}
 
-	res := make([]componentResponse, 0)
-	for _, m := range menus {
-		//normalizedValue, err := helper.NormalizeComponentValue(m.Component.Value)
-		if err != nil {
-			log.Println("Normalize error:", err)
-		}
-		comp := components.Component{
-			ID:    m.Component.ID,
-			Name:  m.Component.Name,
-			Type:  m.Component.Type,
-			Key:   m.Component.Key,
-			Value: m.Component.Value,
-		}
-		res = append(res, componentResponse{
-			ID:    m.Component.ID.String(),
-			Name:  m.Component.Name,
-			Type:  m.Component.Type.String(),
-			Key:   m.Component.Key,
-			Value: helper.BuildSectionValueMenu(m.Component.Value.String(), comp),
-			Order: m.Order,
-		})
-	}
-
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Order < res[j].Order
-	})
-
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
-		Data: res,
+		Data: menus,
 	})
 }
 
