@@ -371,8 +371,7 @@ func (receiver *ComponentRepository) GetByIDAndLanguage(componentID string, lang
 	var component components.Component
 	err := receiver.DBConn.Where("id = ? AND language_id = ?", componentID, languageID).First(&component).Error
 	if err != nil {
-		log.Error("ComponentRepository.GetByID: " + err.Error())
-		return nil, errors.New("failed to get role")
+		return nil, err
 	}
 
 	return &component, nil

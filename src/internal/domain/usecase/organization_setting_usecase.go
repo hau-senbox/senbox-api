@@ -68,55 +68,6 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		}
 	}()
 
-	var componentID string
-	isNewComp := false
-
-	// Xử lý component nếu có
-	if req.Component.Name != "" || req.Component.ID != "" {
-		valueJSON, err := json.Marshal(req.Component.Value)
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("marshal component value fail: %w", err)
-		}
-
-		component := &components.Component{
-			Name:       req.Component.Name,
-			Type:       components.ComponentType(req.Component.Type),
-			Key:        req.Component.Key,
-			Value:      datatypes.JSON(valueJSON),
-			LanguageID: req.Component.LanguageID,
-		}
-
-		if req.Component.ID != "" {
-			// Update component
-			component.ID = uuid.MustParse(req.Component.ID)
-			existingComp, err := u.ComponentRepo.GetByID(component.ID.String())
-			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				tx.Rollback()
-				return fmt.Errorf("query component fail: %w", err)
-			}
-			if existingComp != nil {
-				if err := u.ComponentRepo.UpdateWithTx(tx, component); err != nil {
-					tx.Rollback()
-					return fmt.Errorf("update component fail: %w", err)
-				}
-				isNewComp = false
-			} else {
-				tx.Rollback()
-				return fmt.Errorf("component ID not found, cannot update")
-			}
-		} else {
-			// Create component mới
-			componentID = uuid.New().String()
-			component.ID = uuid.MustParse(componentID)
-			if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
-				tx.Rollback()
-				return fmt.Errorf("create component fail: %w", err)
-			}
-			isNewComp = true
-		}
-	}
-
 	// Upsert organization setting
 	setting := &entity.OrganizationSetting{
 		OrganizationID: req.OrganizationID,
@@ -137,10 +88,6 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 	}
 	if req.IsShowSpecialBtn != nil {
 		setting.IsShowSpecialBtn = *req.IsShowSpecialBtn
-	}
-
-	if componentID != "" {
-		setting.ComponentID = componentID
 	}
 
 	if req.IsShowSpecialBtn != nil {
@@ -204,11 +151,6 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 			existingSetting.TopMenuPassword = *req.TopMenuPassword
 		}
 
-		// Merge component
-		if isNewComp && componentID != "" {
-			existingSetting.ComponentID = componentID
-		}
-
 		if err := u.Repo.UpdateWithTx(tx, existingSetting); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("update organization setting fail: %w", err)
@@ -226,17 +168,15 @@ func (u *OrganizationSettingUsecase) UploadOrgSetting(req request.UploadOrgSetti
 		return err
 	}
 
-	// Sau khi commit thì mở transaction mới (hoặc dùng DBConn trực tiếp)
-	if componentID != "" {
-		orgSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
-		if err != nil {
-			return fmt.Errorf("get organization setting after upsert fail: %w", err)
-		}
+	// handle component menu
+	orgSetting, err := u.Repo.GetByDeviceID(req.DeviceID)
+	if err != nil {
+		return fmt.Errorf("get organization setting after upsert fail: %w", err)
+	}
 
-		// mở tx mới hoặc dùng DBConn
-		if err := u.UploadOrganizationSettingMenu(u.Repo.DBConn, orgSetting.ID.String(), componentID); err != nil {
-			return fmt.Errorf("upload organization setting menu fail: %w", err)
-		}
+	// mở tx mới hoặc dùng DBConn
+	if err := u.UploadOrganizationSettingMenu(u.Repo.DBConn, orgSetting.ID.String(), req.Component); err != nil {
+		return fmt.Errorf("upload organization setting menu fail: %w", err)
 	}
 
 	// Push lên Firestore sau khi commit thành công
@@ -435,22 +375,79 @@ func (u *OrganizationSettingUsecase) GetOrgSettingNews(orgID string) (*response.
 	}, nil
 }
 
-func (u *OrganizationSettingUsecase) UploadOrganizationSettingMenu(tx *gorm.DB, organizationSettingID string, componentID string) error {
+func (u *OrganizationSettingUsecase) UploadOrganizationSettingMenu(
+	tx *gorm.DB,
+	organizationSettingID string,
+	compReq request.UploadOrgSettingMenuRequest,
+) error {
+	// marshal value
+	valueJSON, err := json.Marshal(compReq.Value)
+	if err != nil {
+		return fmt.Errorf("marshal component value fail: %w", err)
+	}
+
+	// tìm menu bất kỳ trong orgSettingMenus (nếu cần)
+	orgSettingMenus, err := u.OrganizationSettingMenuRepo.GetByOrganiazationSettingID(organizationSettingID)
+	if err != nil {
+		return fmt.Errorf("get organization setting menus fail: %w", err)
+	}
+
+	var componentID uuid.UUID
+	var comp *components.Component
+
+	// kiểm tra từng menu, tìm component theo LanguageID
+	for _, menu := range orgSettingMenus {
+		comp, err = u.ComponentRepo.GetByIDAndLanguage(menu.ComponentID.String(), compReq.LanguageID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("get component by language fail: %w", err)
+		}
+		if comp != nil {
+			break
+		}
+	}
+
+	if comp == nil {
+		// create mới
+		component := &components.Component{
+			ID:         uuid.New(),
+			Name:       compReq.Name,
+			Type:       components.ComponentType(compReq.Type),
+			Key:        compReq.Key,
+			Value:      datatypes.JSON(valueJSON),
+			LanguageID: compReq.LanguageID,
+		}
+		if err := u.ComponentRepo.CreateWithTx(tx, component); err != nil {
+			return fmt.Errorf("create component fail: %w", err)
+		}
+		componentID = component.ID
+	} else {
+		// update
+		comp.Name = compReq.Name
+		comp.Type = components.ComponentType(compReq.Type)
+		comp.Key = compReq.Key
+		comp.Value = datatypes.JSON(valueJSON)
+
+		if err := u.ComponentRepo.UpdateWithTx(tx, comp); err != nil {
+			return fmt.Errorf("update component fail: %w", err)
+		}
+		componentID = comp.ID
+	}
+
+	// kiểm tra menu đã tồn tại chưa
 	existing, err := u.OrganizationSettingMenuRepo.GetByOrganizationSettingIDAndComponentID(
 		tx,
 		organizationSettingID,
-		componentID,
+		componentID.String(),
 	)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("get organization setting menu fail: %w", err)
 	}
 
-	if existing != nil {
-		// Không tồn tại → create
+	if existing == nil {
 		menu := &entity.OrganizationSettingMenu{
 			ID:                    uuid.New(),
 			OrganizationSettingID: organizationSettingID,
-			ComponentID:           uuid.MustParse(componentID),
+			ComponentID:           componentID,
 		}
 		if err := u.OrganizationSettingMenuRepo.CreateWithTx(tx, menu); err != nil {
 			return fmt.Errorf("create organization setting menu fail: %w", err)
