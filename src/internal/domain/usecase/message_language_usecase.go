@@ -41,3 +41,37 @@ func (uc *MessageLanguageUseCase) UploadMessageLanguage(req request.UploadMessag
 		return uc.messageLanguageRepo.Create(newMessage)
 	}
 }
+
+func (uc *MessageLanguageUseCase) UploadMessageLanguages(req request.UploadMessageLanguagesRequest) error {
+	for _, msgReq := range req.MessageLanguages {
+		// check exist
+		existMessage, err := uc.messageLanguageRepo.GetByTypeAndKeyAndLanguageAndTypeID(
+			msgReq.Type, msgReq.Key, msgReq.LanguageID, msgReq.TypeID,
+		)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		if existMessage != nil {
+			// update
+			existMessage.Value = msgReq.Value
+			if err := uc.messageLanguageRepo.Update(existMessage); err != nil {
+				return err
+			}
+		} else {
+			// create new
+			newMessage := &entity.MessageLanguage{
+				TypeID:     msgReq.TypeID,
+				Type:       msgReq.Type,
+				Key:        msgReq.Key,
+				Value:      msgReq.Value,
+				LanguageID: msgReq.LanguageID,
+			}
+			if err := uc.messageLanguageRepo.Create(newMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}

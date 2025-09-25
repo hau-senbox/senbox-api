@@ -235,7 +235,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		messageLanguageController := controller.NewMessageLanguageController(messageLanguageUsecase)
 		message := api.Group("/messages")
 		{
-			message.POST("", messageLanguageController.UploadMessageLanguage)
+			message.POST("", messageLanguageController.UploadMessageLanguages)
 		}
 	}
 }

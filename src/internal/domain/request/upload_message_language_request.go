@@ -8,6 +8,6 @@ type UploadMessageLanguageRequest struct {
 	LanguageID uint   `json:"language_id" binding:"required"`
 }
 
-type UploadMessageLanguageListRequest struct {
-	Messages []UploadMessageLanguageRequest `json:"messages" binding:"required,dive,required"`
+type UploadMessageLanguagesRequest struct {
+	MessageLanguages []UploadMessageLanguageRequest `json:"message_languages" binding:"required"`
 }
