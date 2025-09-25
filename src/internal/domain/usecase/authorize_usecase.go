@@ -172,3 +172,23 @@ func (receiver AuthorizeUseCase) UserLogoutUsecase(c *gin.Context, req request.U
 	}
 	return nil
 }
+
+func (receiver AuthorizeUseCase) RefreshToken(userID string) (*response.LoginResponseData, error) {
+	// get user entity
+	user, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	// generate token
+	token, err := receiver.GenerateToken(*user)
+	if err != nil {
+		log.Error("AuthorizeUseCase.RefreshToken.GenerateToken: " + err.Error())
+		return nil, errors.New("cannot generate token")
+	}
+
+	return token, nil
+}

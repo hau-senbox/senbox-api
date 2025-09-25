@@ -1,12 +1,14 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"sen-global-api/internal/data/repository"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,6 +20,7 @@ type SecuredMiddleware struct {
 func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authorizationHeader := context.GetHeader("Authorization")
+
 		// get app language
 		appLanguage := uint(1) // default
 		if header := context.GetHeader("app_language"); header != "" {
@@ -27,6 +30,7 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 		}
 		context.Set("app_language", appLanguage)
 
+		// check header
 		if len(authorizationHeader) == 0 {
 			context.AbortWithStatus(http.StatusForbidden)
 			return
@@ -37,14 +41,25 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 			return
 		}
 
+		// parse token
 		tokenString := strings.Split(authorizationHeader, " ")[1]
 		token, err := receiver.SessionRepository.ValidateToken(tokenString)
+
 		if err != nil {
-			context.AbortWithStatus(http.StatusForbidden)
-		} else if token.Valid {
+			// phân biệt lỗi hết hạn (expired) với lỗi khác
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				context.AbortWithStatus(http.StatusUnauthorized) // 401
+			} else {
+				context.AbortWithStatus(http.StatusForbidden) // 403
+			}
+			return
+		}
+
+		if token.Valid {
 			userID, err := receiver.SessionRepository.ExtractUserIDFromToken(tokenString)
 			if err != nil {
 				context.AbortWithStatus(http.StatusForbidden)
+				return
 			}
 			context.Set("user_id", *userID)
 			context.Set("token", tokenString)
