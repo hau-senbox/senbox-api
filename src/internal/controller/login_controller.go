@@ -1,13 +1,16 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 )
 
@@ -83,6 +86,44 @@ func (receiver LoginController) UserLogin(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: *data,
+	})
+}
+
+func (receiver LoginController) RefreshToken(c *gin.Context) {
+	authorizationHeader := c.GetHeader("Authorization")
+	if !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "missing or invalid Authorization header",
+		})
+		return
+	}
+	tokenString := strings.Split(authorizationHeader, " ")[1]
+
+	// validate token
+	_, err := receiver.SessionRepository.ValidateToken(tokenString)
+	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
+	}
+
+	// extract user_id
+	userID, err := receiver.SessionRepository.ExtractUserIDIgnoreExp(tokenString)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "cannot extract user id"})
+		return
+	}
+
+	// generate new token
+	data, err := receiver.AuthorizeUseCase.RefreshToken(*userID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// success response
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: *data,

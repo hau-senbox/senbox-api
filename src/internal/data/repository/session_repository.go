@@ -108,7 +108,14 @@ func (receiver *SessionRepository) ValidateToken(encodedToken string) (*jwt.Toke
 		return nil, err
 	}
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	// if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	// 	return token, nil
+	// }
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if err := claims.Valid(); err != nil {
+			return nil, fmt.Errorf("token is expired or not valid: %w", err)
+		}
 		return token, nil
 	}
 
@@ -237,4 +244,24 @@ func (receiver *SessionRepository) GeneratePassword(password string) (string, er
 	}
 
 	return string(hashedPassword), nil
+}
+
+func (receiver *SessionRepository) ExtractUserIDIgnoreExp(tokenString string) (*string, error) {
+	// parse token nhưng không validate exp
+	parser := jwt.NewParser(jwt.WithoutClaimsValidation())
+
+	token, _, err := parser.ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse token: %w", err)
+	}
+
+	// cast claims
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if userID, ok := claims["user_id"].(string); ok {
+			return &userID, nil
+		}
+		return nil, errors.New("user_id not found in token claims")
+	}
+
+	return nil, errors.New("invalid token claims")
 }

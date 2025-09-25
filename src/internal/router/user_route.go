@@ -393,6 +393,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		}
 		userAccess.POST("/login", loginController.UserLogin)
 		userAccess.POST("/logout", secureMiddleware.Secured(), logoutController.UserLogout)
+		userAccess.GET("/refresh-token", loginController.RefreshToken)
 	}
 
 	// block setting
