@@ -228,5 +228,14 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			image.POST("/get-url", imageController.GetUrlByKey)
 			image.POST("/avatar/get-url", imageController.GetUrlIsMain4Owner)
 		}
+
+		// message language
+		messageLanguageRepo := repository.NewMessageLanguageRepository(dbConn)
+		messageLanguageUsecase := usecase.NewMessageLanguageUseCase(messageLanguageRepo)
+		messageLanguageController := controller.NewMessageLanguageController(messageLanguageUsecase)
+		message := api.Group("/messages")
+		{
+			message.POST("", messageLanguageController.UploadMessageLanguage)
+		}
 	}
 }
