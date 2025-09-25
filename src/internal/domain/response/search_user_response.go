@@ -34,25 +34,28 @@ type StudentResponse struct {
 }
 
 type TeacherResponse struct {
-	TeacherID    string `json:"id"`
-	TeacherName  string `json:"nickname"`
-	IsDeactive   bool   `json:"is_deactive"`
-	CreatedIndex int    `json:"created_index"`
-	Avatar       Avatar `json:"avatar"`
+	TeacherID        string `json:"id"`
+	TeacherName      string `json:"nickname"`
+	IsDeactive       bool   `json:"is_deactive"`
+	CreatedIndex     int    `json:"created_index"`
+	Avatar           Avatar `json:"avatar"`
+	UserCreatedIndex int    `json:"user_created_index"`
 }
 
 type StaffResponse struct {
-	StaffID      string `json:"id"`
-	StaffName    string `json:"nickname"`
-	IsDeactive   bool   `json:"is_deactive"`
-	CreatedIndex int    `json:"created_index"`
-	Avatar       Avatar `json:"avatar"`
+	StaffID          string `json:"id"`
+	StaffName        string `json:"nickname"`
+	IsDeactive       bool   `json:"is_deactive"`
+	CreatedIndex     int    `json:"created_index"`
+	Avatar           Avatar `json:"avatar"`
+	UserCreatedIndex int    `json:"user_created_index"`
 }
 
 type ParentResponse struct {
-	ParentID     string `json:"id"`
-	ParentName   string `json:"nickname"`
-	IsDeactive   bool   `json:"is_deactive"`
-	CreatedIndex int    `json:"created_index"`
-	Avatar       Avatar `json:"avatar"`
+	ParentID         string `json:"id"`
+	ParentName       string `json:"nickname"`
+	IsDeactive       bool   `json:"is_deactive"`
+	CreatedIndex     int    `json:"created_index"`
+	Avatar           Avatar `json:"avatar"`
+	UserCreatedIndex int    `json:"user_created_index"`
 }
