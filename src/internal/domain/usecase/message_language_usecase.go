@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 
 	"gorm.io/gorm"
 )
@@ -74,4 +76,32 @@ func (uc *MessageLanguageUseCase) UploadMessageLanguages(req request.UploadMessa
 	}
 
 	return nil
+}
+
+func (uc *MessageLanguageUseCase) GetMessageLanguages4GW(typeStr string, typeID string) ([]*response.GetMessageLanguages4GWResponse, error) {
+	// Lấy tất cả messages theo type + typeID
+	messages, err := uc.messageLanguageRepo.GetByTypeAndTypeID(typeStr, typeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get message languages: %w", err)
+	}
+
+	// Gom nhóm theo LanguageID
+	grouped := make(map[uint]map[string]string)
+	for _, msg := range messages {
+		if _, ok := grouped[msg.LanguageID]; !ok {
+			grouped[msg.LanguageID] = make(map[string]string)
+		}
+		grouped[msg.LanguageID][msg.Key] = msg.Value
+	}
+
+	// Build response
+	var responses []*response.GetMessageLanguages4GWResponse
+	for langID, msgs := range grouped {
+		responses = append(responses, &response.GetMessageLanguages4GWResponse{
+			LangID:   langID,
+			Contents: msgs,
+		})
+	}
+
+	return responses, nil
 }
