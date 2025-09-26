@@ -14,7 +14,7 @@ func CORS() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
 		c.Writer.Header().Set("Access-Control-Allow-Headers",
-			"Content-Type, Content-Length, Accept-Encoding, Accept-Language, X-CSRF-Token, Authorization, Cache-Control, X-Requested-With, app_language")
+			"Content-Type, Content-Length, Accept-Encoding, Accept-Language, X-CSRF-Token, Authorization, Cache-Control, X-Requested-With, X-App-Language")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
 		if c.Request.Method == "OPTIONS" {
