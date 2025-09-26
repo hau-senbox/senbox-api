@@ -67,3 +67,11 @@ func (r *MessageLanguageRepository) GetByTypeAndTypeID(typeStr string, typeID st
 	}
 	return messages, nil
 }
+
+func (r *MessageLanguageRepository) GetByTypeAndTypeIDAndLanguage(typeStr string, typeID string, languageID uint) ([]entity.MessageLanguage, error) {
+	var messages []entity.MessageLanguage
+	if err := r.DBConn.Where("type = ? AND language_id = ? AND type_id = ?", typeStr, languageID, typeID).Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
+}

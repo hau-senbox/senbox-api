@@ -105,3 +105,25 @@ func (uc *MessageLanguageUseCase) GetMessageLanguages4GW(typeStr string, typeID 
 
 	return responses, nil
 }
+
+func (uc *MessageLanguageUseCase) GetMessageLanguage4GW(typeStr string, typeID string, languageID uint) (*response.GetMessageLanguages4GWResponse, error) {
+
+	// Lấy tất cả messages theo type + typeID + languageID
+	messages, err := uc.messageLanguageRepo.GetByTypeAndTypeIDAndLanguage(typeStr, typeID, languageID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get message languages: %w", err)
+	}
+
+	// Build response
+	contents := make(map[string]string)
+	for _, msg := range messages {
+		if msg.TypeID == typeID {
+			contents[msg.Key] = msg.Value
+		}
+	}
+
+	return &response.GetMessageLanguages4GWResponse{
+		LangID:   languageID,
+		Contents: contents,
+	}, nil
+}
