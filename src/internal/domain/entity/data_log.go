@@ -14,6 +14,7 @@ type DataLog struct {
 	Payload      datatypes.JSON `gorm:"type:json;default:null" json:"payload"`
 	Response     datatypes.JSON `gorm:"type:json" json:"response,omitempty"`
 	Params       datatypes.JSON `gorm:"type:json" json:"params,omitempty"`
+	Headers      datatypes.JSON `gorm:"type:json" json:"headers,omitempty"`
 	Status       string         `gorm:"type:varchar(20);not null" json:"status"`
 	ErrorMessage *string        `gorm:"type:text" json:"error_message,omitempty"`
 	CreatedAt    time.Time      `gorm:"type:datetime(3);not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"sen-global-api/internal/domain/entity"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,14 @@ func GeneralLoggerMiddleware(db *gorm.DB) gin.HandlerFunc {
 		// convert sang JSON
 		paramsJSON, _ := json.Marshal(params)
 
+		// lấy tất cả headers
+		headers := make(map[string]string)
+		for k, v := range c.Request.Header {
+			// header có thể nhiều value, gộp lại bằng ","
+			headers[k] = strings.Join(v, ",")
+		}
+		headersJSON, _ := json.Marshal(headers)
+
 		// tạo log entry ban đầu
 		logEntry := &entity.DataLog{
 			ID:        uuid.New(),
@@ -37,6 +46,7 @@ func GeneralLoggerMiddleware(db *gorm.DB) gin.HandlerFunc {
 			Status:    "PENDING",
 			CreatedAt: time.Now(),
 			Params:    datatypes.JSON(paramsJSON),
+			Headers:   datatypes.JSON(headersJSON),
 		}
 		db.Create(logEntry)
 		c.Set("general_log_id", logEntry.ID)
