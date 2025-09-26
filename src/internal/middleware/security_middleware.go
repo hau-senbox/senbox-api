@@ -23,11 +23,13 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 
 		// get app language
 		appLanguage := uint(1) // default
-		if header := context.GetHeader("app_language"); header != "" {
+		if header := context.GetHeader("X-App-Language"); header != "" {
+			log.Info("App language from header:", header)
 			if val, err := strconv.Atoi(header); err == nil {
 				appLanguage = uint(val)
 			}
 		}
+		context.Writer.Header().Set("X-App-Language", strconv.Itoa(int(appLanguage)))
 		context.Set("app_language", appLanguage)
 
 		// check header
