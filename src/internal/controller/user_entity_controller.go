@@ -1517,22 +1517,24 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
 			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:    t.TeacherID,
-				TeacherName:  t.TeacherName,
-				IsDeactive:   isDeactive,
-				CreatedIndex: t.CreatedIndex,
-				Avatar:       avatar,
+				TeacherID:        t.TeacherID,
+				TeacherName:      t.TeacherName,
+				IsDeactive:       isDeactive,
+				CreatedIndex:     t.CreatedIndex,
+				Avatar:           avatar,
+				UserCreatedIndex: t.UserCreatedIndex,
 			})
 		}
 		for _, s := range rawStaffs {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Staff(s.StaffID)
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:      s.StaffID,
-				StaffName:    s.StaffName,
-				IsDeactive:   isDeactive,
-				CreatedIndex: s.CreatedIndex,
-				Avatar:       avatar,
+				StaffID:          s.StaffID,
+				StaffName:        s.StaffName,
+				IsDeactive:       isDeactive,
+				CreatedIndex:     s.CreatedIndex,
+				Avatar:           avatar,
+				UserCreatedIndex: s.UserCreatedIndex,
 			})
 		}
 		for _, p := range rawParents {
@@ -1540,11 +1542,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
-				ParentID:     p.ID.String(),
-				ParentName:   p.Nickname,
-				IsDeactive:   isDeactive,
-				Avatar:       avatar,
-				CreatedIndex: p.CreatedIndex,
+				ParentID:         p.ID.String(),
+				ParentName:       p.Nickname,
+				IsDeactive:       isDeactive,
+				Avatar:           avatar,
+				CreatedIndex:     p.CreatedIndex,
+				UserCreatedIndex: p.CreatedIndex,
 			})
 		}
 
@@ -1626,11 +1629,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
 			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:    t.TeacherID,
-				TeacherName:  t.TeacherName,
-				IsDeactive:   isDeactive,
-				CreatedIndex: t.CreatedIndex,
-				Avatar:       avatar,
+				TeacherID:        t.TeacherID,
+				TeacherName:      t.TeacherName,
+				IsDeactive:       isDeactive,
+				CreatedIndex:     t.CreatedIndex,
+				Avatar:           avatar,
+				UserCreatedIndex: t.UserCreatedIndex,
 			})
 		}
 		teachers = helper.FilterTeacherByName(teachers, name)
@@ -1642,11 +1646,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
 			staffs = append(staffs, response.StaffResponse{
-				StaffID:      s.StaffID,
-				StaffName:    s.StaffName,
-				IsDeactive:   isDeactive,
-				CreatedIndex: s.CreatedIndex,
-				Avatar:       avatar,
+				StaffID:          s.StaffID,
+				StaffName:        s.StaffName,
+				IsDeactive:       isDeactive,
+				CreatedIndex:     s.CreatedIndex,
+				Avatar:           avatar,
+				UserCreatedIndex: s.UserCreatedIndex,
 			})
 		}
 		staffs = helper.FilterStaffByName(staffs, name)
@@ -1675,10 +1680,11 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.GetDeactive4User(p.ID.String())
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
-				ParentID:   p.ID.String(),
-				ParentName: p.Nickname,
-				IsDeactive: isDeactive,
-				Avatar:     avatar,
+				ParentID:         p.ID.String(),
+				ParentName:       p.Nickname,
+				IsDeactive:       isDeactive,
+				Avatar:           avatar,
+				UserCreatedIndex: p.CreatedIndex,
 			})
 		}
 		parents = helper.FilterParentByName(parents, name)
