@@ -281,19 +281,19 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 	}
 
 	// kiem tra student org va device org
-	deviceOrgIds, _ := uc.DeviceRepo.GetOrgIDsByDeviceID(deviceID)
+	// deviceOrgIds, _ := uc.DeviceRepo.GetOrgIDsByDeviceID(deviceID)
 
-	found := false
-	for _, orgID := range deviceOrgIds {
-		if orgID == studentApp.OrganizationID {
-			found = true
-			break
-		}
-	}
+	// found := false
+	// for _, orgID := range deviceOrgIds {
+	// 	if orgID == studentApp.OrganizationID {
+	// 		found = true
+	// 		break
+	// 	}
+	// }
 
-	if !found {
-		return nil, errors.New("device not associated with student's organization")
-	}
+	// if !found {
+	// 	return nil, errors.New("device not associated with student's organization")
+	// }
 
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
