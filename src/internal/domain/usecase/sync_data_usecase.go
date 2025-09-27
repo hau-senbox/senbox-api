@@ -37,6 +37,56 @@ type CreateFormAnswerRequest struct {
 	Answers         map[string]string
 }
 
+// cần import thêm:
+// "fmt"
+// "strings"
+// "strconv"
+// "time"
+
+func colLetter(n int) string {
+	if n <= 0 {
+		return "A"
+	}
+	letters := ""
+	for n > 0 {
+		n-- // convert to 0-based
+		letters = string('A'+(n%26)) + letters
+		n /= 26
+	}
+	return letters
+}
+
+func (uc *SyncDataUsecase) countNonEmptyRowsInColA(spreadsheetID, sheetName string) (int, error) {
+	rangeA := fmt.Sprintf("%s!A:A", sheetName)
+	resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, rangeA).Do()
+	if err != nil {
+		return 0, err
+	}
+	// API trả về chỉ những hàng có giá trị, nên len(resp.Values) = số hàng hiện có
+	return len(resp.Values), nil
+}
+
+func extractStartColFromUpdatedRange(updatedRange string) string {
+	// updatedRange ví dụ: "Sheet1!B1320:Z1320" hoặc "'Sheet 1'!B1320:Z1320"
+	parts := strings.Split(updatedRange, "!")
+	if len(parts) < 2 {
+		return ""
+	}
+	right := parts[1]                     // B1320:Z1320
+	start := strings.Split(right, ":")[0] // B1320
+	// lấy phần chữ (cột)
+	colLetters := ""
+	for i := 0; i < len(start); i++ {
+		ch := start[i]
+		if ch >= 'A' && ch <= 'Z' {
+			colLetters += string(ch)
+		} else {
+			break
+		}
+	}
+	return colLetters
+}
+
 func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	req CreateFormAnswerRequest,
 	spreadsheetID string,
@@ -45,20 +95,14 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	headerIndex map[string]int,
 	queueID uint64,
 ) error {
-	// Load Vietnam timezone
+	// timezone
 	loc, errT := time.LoadLocation("Asia/Ho_Chi_Minh")
 	if errT != nil {
 		return fmt.Errorf("failed to load timezone: %w", errT)
 	}
-
-	// Convert to Vietnam time
 	submittedAtVN := req.SubmittedAt.In(loc)
 	tFormatted := submittedAtVN.Format("2006-01-02 15:04:05")
 
-	// Parse SubmittedAt
-	//tFormatted := req.SubmittedAt.Format("2006-01-02 15:04:05")
-
-	// Base info
 	baseInfo := []interface{}{
 		tFormatted,
 		req.StudentCustomID,
@@ -67,26 +111,88 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 		req.FormName,
 	}
 
-	// Tạo dòng dữ liệu mới
+	// prepare row with exact number of headers
 	row := make([]interface{}, len(headers))
-	copy(row, baseInfo)
+	for i := range row {
+		row[i] = ""
+	}
 
-	for q, a := range req.Answers {
-		if colIndex, ok := headerIndex[q]; ok {
-			row[colIndex] = a
+	// copy baseInfo
+	for i, v := range baseInfo {
+		if i < len(row) {
+			row[i] = v
 		}
 	}
 
-	appendRange := fmt.Sprintf("%s!A:Z", sheetName)
-	_, err := uc.SheetService.Spreadsheets.Values.Append(spreadsheetID, appendRange, &sheets.ValueRange{
+	// fill answers
+	for q, a := range req.Answers {
+		if colIndex, ok := headerIndex[q]; ok {
+			if colIndex >= 0 && colIndex < len(row) {
+				row[colIndex] = a
+			}
+		}
+	}
+
+	// fix thừa cột
+	if len(row) > len(headers) {
+		row = row[:len(headers)]
+	}
+
+	// Fill answers. headerIndex assumed 0-based (as in prepareHeaders).
+	for q, a := range req.Answers {
+		if colIndex, ok := headerIndex[q]; ok {
+			// guard bounds
+			if colIndex >= 0 && colIndex < len(row) {
+				row[colIndex] = a
+			} else if colIndex >= 1 && colIndex <= len(row) {
+				// defensive: if caller accidentally provided 1-based index
+				row[colIndex-1] = a
+			} else {
+				// out of range: log for debug
+				fmt.Printf("[WARN] headerIndex out of range for key=%s idx=%d len(headers)=%d\n", q, colIndex, len(headers))
+			}
+		} else {
+			// không tìm header -> log (nên không xảy ra nếu prepareHeaders hoạt động)
+			fmt.Printf("[WARN] no headerIndex for key=%s\n", q)
+		}
+	}
+
+	endCol := colLetter(len(headers)) // last column letter
+	appendRange := fmt.Sprintf("%s!A1:%s", sheetName, endCol)
+
+	resp, err := uc.SheetService.Spreadsheets.Values.Append(spreadsheetID, appendRange, &sheets.ValueRange{
 		Values: [][]interface{}{row},
 	}).ValueInputOption("RAW").InsertDataOption("INSERT_ROWS").Do()
 
 	if err != nil {
-		// Cập nhật trạng thái queue về FAIL
+		// update queue fail
 		_ = uc.SyncQueueRepo.UpdateStatusByID(queueID, value.SyncQueueStatusFailed)
-
 		return fmt.Errorf("failed to append data: %w", err)
+	}
+
+	// nếu Google ghi không bắt đầu từ A -> fallback: tính hàng tiếp theo dựa trên cột A rồi Update vào A{row}:ENDCOL{row}
+	if resp != nil && resp.Updates != nil && resp.Updates.UpdatedRange != "" {
+		updatedRange := resp.Updates.UpdatedRange
+		fmt.Printf("[SYNC] append UpdatedRange = %s\n", updatedRange)
+		startCol := extractStartColFromUpdatedRange(updatedRange)
+		if startCol != "" && startCol != "A" {
+			// fallback: compute next empty row in column A
+			count, errCount := uc.countNonEmptyRowsInColA(spreadsheetID, sheetName)
+			if errCount != nil {
+				fmt.Printf("[WARN] cannot count rows in column A: %v\n", errCount)
+			} else {
+				targetRow := count + 1
+				updateRange := fmt.Sprintf("%s!A%d:%s%d", sheetName, targetRow, endCol, targetRow)
+				_, errUpd := uc.SheetService.Spreadsheets.Values.Update(spreadsheetID, updateRange, &sheets.ValueRange{
+					Values: [][]interface{}{row},
+				}).ValueInputOption("RAW").Do()
+				if errUpd != nil {
+					fmt.Printf("[ERROR] fallback update failed for %s: %v\n", updateRange, errUpd)
+				} else {
+					fmt.Printf("[SYNC] fallback update successful at %s\n", updateRange)
+				}
+			}
+		}
 	}
 
 	return nil
