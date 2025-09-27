@@ -5,6 +5,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -126,9 +127,15 @@ func (ctrl *MessageLanguageController) GetMessageLanguages4GW(ctx *gin.Context) 
 func (ctrl *MessageLanguageController) GetMessageLanguage4GW(ctx *gin.Context) {
 	typeStr := ctx.Query("type")
 	typeID := ctx.Query("type_id")
-	languageID := ctx.GetUint("language_id")
+	languageIDStr := ctx.Query("language_id")
+	languageID := uint(1)
+	if languageIDStr != "" {
+		if val, err := strconv.Atoi(languageIDStr); err == nil {
+			languageID = uint(val)
+		}
+	}
 
-	if typeStr == "" || typeID == "" || languageID == 0 {
+	if typeStr == "" || typeID == "" {
 		ctx.JSON(
 			http.StatusBadRequest, response.FailedResponse{
 				Code:    http.StatusBadRequest,

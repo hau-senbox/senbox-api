@@ -22,9 +22,8 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 		authorizationHeader := context.GetHeader("Authorization")
 
 		// get app language
-		appLanguage := uint(1) // default
+		appLanguage := uint(1)
 		if header := context.GetHeader("X-App-Language"); header != "" {
-			log.Info("App language from header:", header)
 			if val, err := strconv.Atoi(header); err == nil {
 				appLanguage = uint(val)
 			}

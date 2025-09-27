@@ -41,7 +41,7 @@ func NewGatewayClient(serviceName, token string, consulClient *api.Client, httpC
 }
 
 // Call gọi API tới service khác thông qua Consul discovery
-func (c *GatewayClient) Call(method, path string, body interface{}) ([]byte, error) {
+func (c *GatewayClient) Call(method, path string, body interface{}, headers map[string]string) ([]byte, error) {
 	service, err := c.ServiceDiscovery.DiscoverService()
 	if err != nil {
 		return nil, fmt.Errorf("service discovery failed: %v", err)
@@ -63,9 +63,17 @@ func (c *GatewayClient) Call(method, path string, body interface{}) ([]byte, err
 		return nil, fmt.Errorf("create request failed: %v", err)
 	}
 
+	// mặc định luôn có Content-Type
 	req.Header.Set("Content-Type", "application/json")
+
+	// thêm Authorization nếu có token
 	if c.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.Token)
+	}
+
+	// thêm custom headers
+	for k, v := range headers {
+		req.Header.Set(k, v)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

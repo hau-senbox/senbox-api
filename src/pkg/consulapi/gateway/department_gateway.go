@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sen-global-api/pkg/consulapi/gateway/dto"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
@@ -42,7 +43,14 @@ func (dg *departmentGateway) GetDepartmentsByUser(context *gin.Context) ([]*dto.
 		return nil, err
 	}
 
-	resp, err := client.Call("GET", "/api/v1/gateway/departments", nil)
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	resp, err := client.Call("GET", "/api/v1/gateway/departments", nil, headers)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +87,14 @@ func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, 
 		return nil, err
 	}
 
-	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/departments/organization/%s", orgID), nil)
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/departments/organization/%s", orgID), nil, headers)
 	if err != nil {
 		return nil, err
 	}
