@@ -154,7 +154,9 @@ func (uc *DepartmentMenuOrganizationUseCase) GetDepartmentMenuOrg4App(ctx *gin.C
 			Components:  menus,
 		}
 
-		deptOrgMenus = append(deptOrgMenus, departmentOrgMenus)
+		if len(menus) > 0 {
+			deptOrgMenus = append(deptOrgMenus, departmentOrgMenus)
+		}
 	}
 
 	return deptOrgMenus, nil

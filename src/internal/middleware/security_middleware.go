@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"net/http"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"strconv"
 	"strings"
@@ -21,14 +22,13 @@ func (receiver SecuredMiddleware) Secured() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authorizationHeader := context.GetHeader("Authorization")
 
-		// get app language
-		appLanguage := uint(1)
-		if header := context.GetHeader("X-App-Language"); header != "" {
-			if val, err := strconv.Atoi(header); err == nil {
-				appLanguage = uint(val)
-			}
-		}
+		// parse app language
+		appLanguage := helper.ParseAppLanguage(context.GetHeader("X-App-Language"), 1)
+
+		// set lại header cho response
 		context.Writer.Header().Set("X-App-Language", strconv.Itoa(int(appLanguage)))
+
+		// lưu vào context
 		context.Set("app_language", appLanguage)
 
 		// check header

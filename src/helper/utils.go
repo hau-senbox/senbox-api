@@ -11,6 +11,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -432,4 +433,12 @@ func FilterParentsByStatus(parents []response.ParentResponse, status value.Searc
 func AppConfigValueToJSON(v any) datatypes.JSON {
 	b, _ := json.Marshal(v)
 	return datatypes.JSON(b)
+}
+
+func ParseAppLanguage(header string, defaultVal uint) uint {
+	header = strings.TrimSpace(strings.Trim(header, "\""))
+	if val, err := strconv.Atoi(header); err == nil {
+		return uint(val)
+	}
+	return defaultVal
 }
