@@ -109,11 +109,16 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		// So sánh với các org đã preload, map sang OrganizationAdmin nếu khớp
 		for _, org := range userEntity.Organizations {
 			avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(org.Avatar, uploader.UploadPrivate)
+			var avatarURL string
+			if avtUrl != nil {
+				avatarURL = *avtUrl
+			}
+
 			if lo.Contains(managedOrgIDs, org.ID.String()) {
 				orgAdminResp = &response.OrganizationAdmin{
 					ID:               org.ID.String(),
 					OrganizationName: org.OrganizationName,
-					AvatarURL:        *avtUrl,
+					AvatarURL:        avatarURL,
 					Address:          org.Address,
 					Description:      org.Description,
 					CreatedAt:        org.CreatedAt,
@@ -127,10 +132,14 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		if orgAdminResp == nil && len(userEntity.Organizations) > 0 {
 			org := userEntity.Organizations[0]
 			avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(org.Avatar, uploader.UploadPrivate)
+			var avatarURL string
+			if avtUrl != nil {
+				avatarURL = *avtUrl
+			}
 			orgAdminResp = &response.OrganizationAdmin{
 				ID:               org.ID.String(),
 				OrganizationName: org.OrganizationName,
-				AvatarURL:        *avtUrl,
+				AvatarURL:        avatarURL,
 				Address:          org.Address,
 				Description:      org.Description,
 				CreatedAt:        org.CreatedAt,
