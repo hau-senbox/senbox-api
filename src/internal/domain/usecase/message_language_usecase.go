@@ -127,3 +127,7 @@ func (uc *MessageLanguageUseCase) GetMessageLanguage4GW(typeStr string, typeID s
 		Contents: contents,
 	}, nil
 }
+
+func (uc *MessageLanguageUseCase) DeleteMessageLanguage4GW(typeStr string, typeID string) error {
+	return uc.messageLanguageRepo.DeleteByTypeAndTypeID(typeStr, typeID)
+}

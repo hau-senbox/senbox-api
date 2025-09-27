@@ -75,3 +75,7 @@ func (r *MessageLanguageRepository) GetByTypeAndTypeIDAndLanguage(typeStr string
 	}
 	return messages, nil
 }
+
+func (r *MessageLanguageRepository) DeleteByTypeAndTypeID(typeStr string, typeID string) error {
+	return r.DBConn.Where("type = ? AND type_id = ?", typeStr, typeID).Delete(&entity.MessageLanguage{}).Error
+}

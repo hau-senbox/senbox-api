@@ -238,6 +238,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			message.POST("", messageLanguageController.UploadMessageLanguages)
 			message.GET("", messageLanguageController.GetMessageLanguages4GW)
 			message.GET("/get-by-language", messageLanguageController.GetMessageLanguage4GW)
+			message.DELETE("", messageLanguageController.DeleteMessageLanguage4GW)
 		}
 	}
 }
