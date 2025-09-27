@@ -54,6 +54,7 @@ type UserEntityController struct {
 	*usecase.LanguagesConfigUsecase
 	*usecase.UserSettingUseCase
 	*usecase.OwnerAssignUseCase
+	*usecase.GetImageUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -107,12 +108,12 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 
 		// So sánh với các org đã preload, map sang OrganizationAdmin nếu khớp
 		for _, org := range userEntity.Organizations {
+			avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(org.Avatar, uploader.UploadPrivate)
 			if lo.Contains(managedOrgIDs, org.ID.String()) {
 				orgAdminResp = &response.OrganizationAdmin{
 					ID:               org.ID.String(),
 					OrganizationName: org.OrganizationName,
-					Avatar:           org.Avatar,
-					AvatarURL:        org.AvatarURL,
+					AvatarURL:        *avtUrl,
 					Address:          org.Address,
 					Description:      org.Description,
 					CreatedAt:        org.CreatedAt,
@@ -125,11 +126,11 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 		// Nếu không có org nào user quản lý, lấy org đầu tiên làm mặc định
 		if orgAdminResp == nil && len(userEntity.Organizations) > 0 {
 			org := userEntity.Organizations[0]
+			avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(org.Avatar, uploader.UploadPrivate)
 			orgAdminResp = &response.OrganizationAdmin{
 				ID:               org.ID.String(),
 				OrganizationName: org.OrganizationName,
-				Avatar:           org.Avatar,
-				AvatarURL:        org.AvatarURL,
+				AvatarURL:        *avtUrl,
 				Address:          org.Address,
 				Description:      org.Description,
 				CreatedAt:        org.CreatedAt,

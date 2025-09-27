@@ -186,6 +186,10 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		UserSettingUseCase: &usecase.UserSettingUseCase{
 			Repo: &repository.UserSettingRepository{DBConn: dbConn},
 		},
+		GetImageUseCase: &usecase.GetImageUseCase{
+			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			UploadProvider:  provider,
+		},
 	}
 
 	userRoleController := &controller.RoleController{
