@@ -18,6 +18,27 @@ type ParentUseCase struct {
 	LanguagesConfigUsecase *LanguagesConfigUsecase
 	UserImagesUsecase      *UserImagesUsecase
 	LanguageSettingRepo    *repository.LanguageSettingRepository
+	ParentRepo             *repository.ParentRepository
+}
+
+func NewParentUseCase(
+	userRepo *repository.UserEntityRepository,
+	parentMenuRepo *repository.ParentMenuRepository,
+	componentRepo *repository.ComponentRepository,
+	languagesConfigUsecase *LanguagesConfigUsecase,
+	userImagesUsecase *UserImagesUsecase,
+	languageSettingRepo *repository.LanguageSettingRepository,
+	parentRepo *repository.ParentRepository,
+) *ParentUseCase {
+	return &ParentUseCase{
+		UserRepo:               userRepo,
+		ParentMenuRepo:         parentMenuRepo,
+		ComponentRepo:          componentRepo,
+		LanguagesConfigUsecase: languagesConfigUsecase,
+		UserImagesUsecase:      userImagesUsecase,
+		LanguageSettingRepo:    languageSettingRepo,
+		ParentRepo:             parentRepo,
+	}
 }
 
 func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentResponseBase, error) {
@@ -108,4 +129,14 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		Avatars:        avatars,
 		CreatedIndex:   parent.CreatedIndex,
 	}, nil
+}
+
+func (uc *ParentUseCase) CreateParent(parent *entity.SParent) error {
+
+	err := uc.ParentRepo.Create(parent)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
