@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"fmt"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -310,5 +311,96 @@ func (receiver *ImageController) GetUrlIsMain4Owner(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "image was get successfully",
 		Data:    url,
+	})
+}
+
+func (receiver *ImageController) CreateImages(context *gin.Context) {
+	form, err := context.MultipartForm()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "failed to parse multipart form: " + err.Error(),
+		})
+		return
+	}
+
+	files := form.File["files"] // client phải gửi field name = "files"
+	if len(files) == 0 {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "no files uploaded",
+		})
+		return
+	}
+
+	folder := strings.TrimSpace(context.DefaultPostForm("folder", "img"))
+	fileName := strings.TrimSpace(context.DefaultPostForm("file_name", randx.GenString(10)))
+
+	// Replace all whitespace sequences (tabs, spaces, multiple spaces, etc.) with "_"
+	folder = strings.Join(strings.Fields(folder), "_")
+	fileName = strings.Join(strings.Fields(fileName), "_")
+
+	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Chuẩn bị data cho UploadImages
+	fileInputs := make([]struct {
+		Data      []byte
+		FileName  string
+		ImageName string
+	}, 0)
+
+	for idx, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: fmt.Sprintf("failed to open file %s: %v", fileHeader.Filename, err),
+			})
+			return
+		}
+		defer file.Close()
+
+		dataBytes := make([]byte, fileHeader.Size)
+		if _, err := bufio.NewReader(file).Read(dataBytes); err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: fmt.Sprintf("failed to read file %s: %v", fileHeader.Filename, err),
+			})
+			return
+		}
+
+		imageName := fmt.Sprintf("%s_%d", fileName, idx+1)
+		fileInputs = append(fileInputs, struct {
+			Data      []byte
+			FileName  string
+			ImageName string
+		}{
+			Data:      dataBytes,
+			FileName:  fileHeader.Filename,
+			ImageName: imageName,
+		})
+	}
+
+	// Gọi usecase
+	result, err := receiver.UploadImageUseCase.UploadImages(fileInputs, folder, mode)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: fmt.Sprintf("%d images uploaded successfully", len(result.Images)),
+		Data:    result,
 	})
 }

@@ -11,6 +11,7 @@ import (
 	"path"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/uploader"
 	"strings"
 	"time"
@@ -206,4 +207,39 @@ func (receiver *UploadImageUseCase) UploadImagev2(
 	}
 
 	return url, &img, nil
+}
+
+func (receiver *UploadImageUseCase) UploadImages(
+	files []struct {
+		Data      []byte
+		FileName  string
+		ImageName string
+	},
+	folder string,
+	mode uploader.UploadMode,
+) (*response.UploadImagesResponse, error) {
+	// Khởi tạo response rỗng
+	results := &response.UploadImagesResponse{
+		Images: make([]response.ImageResponse, 0),
+	}
+
+	for _, f := range files {
+		url, img, err := receiver.UploadImagev2(
+			f.Data, folder, f.FileName, f.ImageName, mode,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		results.Images = append(results.Images, response.ImageResponse{
+			ImageName: img.ImageName,
+			Key:       img.Key,
+			Extension: img.Extension,
+			Url:       *url,
+			Width:     img.Width,
+			Height:    img.Height,
+		})
+	}
+
+	return results, nil
 }
