@@ -3,6 +3,7 @@ package controller
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -402,5 +403,102 @@ func (receiver *ImageController) CreateImages(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: fmt.Sprintf("%d images uploaded successfully", len(result.Images)),
 		Data:    result,
+	})
+}
+
+func (ic *ImageController) UploadImage4GW(c *gin.Context) {
+	var req request.UploadImageRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// mở file
+	file, err := req.File.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// gắn data vào request
+	uploadReq := request.UploadImageRequest{
+		File:      req.File,
+		Folder:    req.Folder,
+		FileName:  req.FileName,
+		ImageName: req.ImageName,
+		Mode:      req.Mode,
+	}
+	res, err := ic.UploadImageUseCase.UploadImagev3(data, uploadReq)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "image deleted successfully",
+		Data:    res,
+	})
+}
+
+func (ac *AudioController) UploadAudio4GW(c *gin.Context) {
+	var req request.UploadAudioRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// mở file
+	file, err := req.File.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	res, err := ac.UploadAudioUseCase.UploadAudiov2(data, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "audio uploaded successfully",
+		Data:    res,
 	})
 }

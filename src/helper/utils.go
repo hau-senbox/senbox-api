@@ -442,3 +442,10 @@ func ParseAppLanguage(header string, defaultVal uint) uint {
 	}
 	return defaultVal
 }
+
+func SanitizeName(name string) string {
+	name = strings.TrimSpace(name)
+	// gom nhiều khoảng trắng thành 1
+	name = strings.Join(strings.Fields(name), "_")
+	return name
+}

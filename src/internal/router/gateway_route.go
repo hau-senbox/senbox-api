@@ -225,7 +225,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		{
 			image.POST("/get-url", imageController.GetUrlByKey)
 			image.POST("/avatar/get-url", imageController.GetUrlIsMain4Owner)
-			image.POST("/upload", imageController.CreateImage)
+			image.POST("/upload", imageController.UploadImage4GW)
 		}
 
 		// video
@@ -246,7 +246,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		video := api.Group("/videos")
 		{
 			video.POST("/get-url", videoController.GetUrlByKey)
-			video.POST("/upload", videoController.CreateVideo)
+			video.POST("/upload", videoController.UploadVideo4GW)
 		}
 
 		// audio
@@ -268,7 +268,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		audio := api.Group("/audios")
 		{
 			audio.POST("/get-url", audioController.GetUrlByKey)
-			audio.POST("/upload", audioController.CreateAudio)
+			audio.POST("/upload", audioController.UploadAudio4GW)
 		}
 
 		// message language
