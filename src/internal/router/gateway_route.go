@@ -150,30 +150,6 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 	}
 
-	// image ctl
-	imageController := &controller.ImageController{
-		GetImageUseCase: &usecase.GetImageUseCase{
-			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			UploadProvider:  s3Provider,
-		},
-		UploadImageUseCase: &usecase.UploadImageUseCase{
-			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			UploadProvider:  s3Provider,
-		},
-		DeleteImageUseCase: &usecase.DeleteImageUseCase{
-			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			UploadProvider:  s3Provider,
-		},
-		UserImagesUsecase: &usecase.UserImagesUsecase{
-			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
-			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
-			GetImageUseCase: &usecase.GetImageUseCase{
-				UploadProvider:  s3Provider,
-				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			},
-		},
-	}
-
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
 
@@ -223,10 +199,76 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		}
 
 		// image
+		imageController := &controller.ImageController{
+			GetImageUseCase: &usecase.GetImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			UploadImageUseCase: &usecase.UploadImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			DeleteImageUseCase: &usecase.DeleteImageUseCase{
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  s3Provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+		}
 		image := api.Group("/images")
 		{
 			image.POST("/get-url", imageController.GetUrlByKey)
 			image.POST("/avatar/get-url", imageController.GetUrlIsMain4Owner)
+			image.POST("/upload", imageController.CreateImage)
+		}
+
+		// video
+		videoController := &controller.VideoController{
+			GetVideoUseCase: &usecase.GetVideoUseCase{
+				VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			UploadVideoUseCase: &usecase.UploadVideoUseCase{
+				VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			DeleteVideoUseCase: &usecase.DeleteVideoUseCase{
+				VideoRepository: &repository.VideoRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+		}
+		video := api.Group("/videos")
+		{
+			video.POST("/get-url", videoController.GetUrlByKey)
+			video.POST("/upload", videoController.CreateVideo)
+		}
+
+		// audio
+		audioController := &controller.AudioController{
+			GetAudioUseCase: &usecase.GetAudioUseCase{
+				AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			UploadAudioUseCase: &usecase.UploadAudioUseCase{
+				AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+			DeleteAudioUseCase: &usecase.DeleteAudioUseCase{
+				AudioRepository: &repository.AudioRepository{DBConn: dbConn},
+				UploadProvider:  s3Provider,
+			},
+		}
+
+		audio := api.Group("/audios")
+		{
+			audio.POST("/get-url", audioController.GetUrlByKey)
+			audio.POST("/upload", audioController.CreateAudio)
 		}
 
 		// message language
