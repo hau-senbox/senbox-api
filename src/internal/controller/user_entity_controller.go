@@ -1674,11 +1674,12 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(u.ID.String(), value.OwnerRoleUser)
 			users = append(users, response.UserResponse{
-				ID:         u.ID.String(),
-				Username:   u.Username,
-				Nickname:   u.Nickname,
-				IsDeactive: isDeactive,
-				Avatar:     avatar,
+				ID:           u.ID.String(),
+				Username:     u.Username,
+				Nickname:     u.Nickname,
+				IsDeactive:   isDeactive,
+				Avatar:       avatar,
+				CreatedIndex: u.CreatedIndex,
 			})
 		}
 		users = helper.FilterUsersByName(users, name)
