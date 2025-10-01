@@ -254,8 +254,8 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 			}
 
 			// Nếu đã gọi API 50 lần => nghỉ 1 phút
-			if uc.GetCounter()%50 == 0 {
-				fmt.Println("[SYNC INFO] Đã đạt 50 request → nghỉ 1 phút để tránh rate limit")
+			if uc.GetCounter()%40 == 0 {
+				fmt.Println("[SYNC INFO] Đã đạt 40 request → nghỉ 1 phút để tránh rate limit")
 				time.Sleep(1 * time.Minute)
 				// reset counter
 				atomic.StoreInt64(&uc.counter, 0)
