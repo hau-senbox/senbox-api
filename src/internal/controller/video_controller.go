@@ -198,3 +198,30 @@ func (vc *VideoController) UploadVideo4GW(c *gin.Context) {
 		Data:    res,
 	})
 }
+
+func (receiver *VideoController) DeleteVideo4GW(context *gin.Context) {
+	key := context.Param("key")
+	if key == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "key is required",
+		})
+		return
+	}
+	var req request.DeleteVideoRequest
+	req.Key = key
+
+	err := receiver.DeleteVideoUseCase.DeleteVideo(req.Key)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "video deleted successfully",
+	})
+}

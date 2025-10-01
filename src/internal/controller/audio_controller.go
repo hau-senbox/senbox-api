@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"io"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -132,6 +133,79 @@ func (receiver *AudioController) DeleteAudio(context *gin.Context) {
 		})
 		return
 	}
+
+	err := receiver.DeleteAudioUseCase.DeleteAudio(req.Key)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "audio deleted successfully",
+	})
+}
+
+func (ac *AudioController) UploadAudio4GW(c *gin.Context) {
+	var req request.UploadAudioRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// mở file
+	file, err := req.File.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	res, err := ac.UploadAudioUseCase.UploadAudiov2(data, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "audio uploaded successfully",
+		Data:    res,
+	})
+}
+
+func (receiver *AudioController) DeleteAudio4GW(context *gin.Context) {
+	key := context.Param("key")
+	if key == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "key is required",
+		})
+		return
+	}
+	var req request.DeleteAudioRequest
+	req.Key = key
 
 	err := receiver.DeleteAudioUseCase.DeleteAudio(req.Key)
 	if err != nil {
