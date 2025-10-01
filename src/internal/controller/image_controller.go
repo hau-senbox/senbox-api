@@ -159,11 +159,16 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 	// 	return
 	// }
 
+	fileNameInit := context.PostForm("file_name")
+
 	fileHeader, err := context.FormFile("file")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -181,6 +186,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -190,6 +198,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -201,6 +212,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -229,6 +243,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -237,6 +254,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "image was not created",
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}

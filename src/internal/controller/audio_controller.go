@@ -55,11 +55,15 @@ func (receiver *AudioController) GetUrlByKey(context *gin.Context) {
 }
 
 func (receiver *AudioController) CreateAudio(context *gin.Context) {
+	fileNameInit := context.PostForm("file_name")
 	fileHeader, err := context.FormFile("file")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -71,6 +75,9 @@ func (receiver *AudioController) CreateAudio(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -80,6 +87,9 @@ func (receiver *AudioController) CreateAudio(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -91,6 +101,9 @@ func (receiver *AudioController) CreateAudio(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -100,6 +113,9 @@ func (receiver *AudioController) CreateAudio(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -108,6 +124,9 @@ func (receiver *AudioController) CreateAudio(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "audio upload failed",
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
