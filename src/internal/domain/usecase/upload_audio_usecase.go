@@ -95,7 +95,7 @@ func (uc *UploadAudioUseCase) UploadAudiov2(data []byte, req request.UploadAudio
 
 	// Sinh finalFileName
 	timestamp := time.Now().UnixNano()
-	finalFileName := fmt.Sprintf("%s_%d%s", req.AudioName, timestamp, fileExt)
+	finalFileName := fmt.Sprintf("%s_%d%s", req.FileName, timestamp, fileExt)
 
 	// Convert mode string → enum
 	mode, err := uploader.UploadModeFromString(req.Mode)
