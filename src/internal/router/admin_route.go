@@ -689,9 +689,11 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		ImportFormsUseCase: importFormsUseCase,
 	}
 
-	// call schedule sync cron job
-	syncDataUsecase.StartAutoSyncScheduler()
-	syncDataUsecase.StartAutoSyncForm2Scheduler()
+	// neu != dev call schedule sync cron job
+	if !config.IsDevMode() {
+		syncDataUsecase.StartAutoSyncScheduler()
+		syncDataUsecase.StartAutoSyncForm2Scheduler()
+	}
 
 	applicationController := &controller.ApplicationController{
 		StaffAppUsecase: &usecase.StaffApplicationUseCase{

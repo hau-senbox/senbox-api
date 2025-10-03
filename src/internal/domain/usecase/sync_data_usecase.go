@@ -253,8 +253,9 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 				continue
 			}
 
+			log.Printf("counter : %d", uc.GetCounter())
 			// Nếu đã gọi API 50 lần => nghỉ 1 phút
-			if uc.GetCounter()%40 == 0 {
+			if uc.GetCounter()%30 == 0 {
 				fmt.Println("[SYNC INFO] Đã đạt 40 request → nghỉ 1 phút để tránh rate limit")
 				time.Sleep(1 * time.Minute)
 				// reset counter
