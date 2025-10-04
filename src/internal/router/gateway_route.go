@@ -84,25 +84,6 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 	}
 
-	// user entity ctl
-	userEntityCtrl := &controller.UserEntityController{
-		StudentApplicationUseCase: studentUsecase,
-		TeacherApplicationUseCase: teacherUsecase,
-		StaffApplicationUseCase:   staffUsecase,
-		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
-			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
-			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
-		},
-		UserImagesUsecase: &usecase.UserImagesUsecase{
-			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
-			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
-			GetImageUseCase: &usecase.GetImageUseCase{
-				UploadProvider:  s3Provider,
-				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
-			},
-		},
-	}
-
 	// organization ctl
 	orgCtrl := &controller.OrganizationController{
 		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
@@ -150,6 +131,42 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 	}
 
+	// user
+	userEntityCtrl := &controller.UserEntityController{
+		StudentApplicationUseCase: studentUsecase,
+		TeacherApplicationUseCase: teacherUsecase,
+		StaffApplicationUseCase:   staffUsecase,
+		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
+		UserEntityUseCase: &usecase.UserEntityUseCase{
+			UserRepo:    &repository.UserEntityRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  s3Provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+		},
+	}
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
 
@@ -157,6 +174,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		user := api.Group("/users")
 		{
 			user.GET("/:user_id", userEntityCtrl.GetUser4Gateway)
+			user.GET("/teacher/:teacher_id", userEntityCtrl.GetUserByTeacher)
+			user.GET("/staff/:staff_id", userEntityCtrl.GetUserByStaff)
 		}
 
 		// student

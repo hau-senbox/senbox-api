@@ -55,6 +55,7 @@ type UserEntityController struct {
 	*usecase.UserSettingUseCase
 	*usecase.OwnerAssignUseCase
 	*usecase.GetImageUseCase
+	*usecase.UserEntityUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -2555,5 +2556,53 @@ func (receiver *UserEntityController) SetReLogin(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
+	})
+}
+
+func (receiver *UserEntityController) GetUserByTeacher(context *gin.Context) {
+	teacherId := context.Param("teacher_id")
+	if teacherId == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing teacher ID",
+		})
+		return
+	}
+	res, err := receiver.UserEntityUseCase.GetUserByTeacherID(teacherId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get user",
+			Error:   err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *UserEntityController) GetUserByStaff(context *gin.Context) {
+	staffId := context.Param("staff_id")
+	if staffId == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing staff ID",
+		})
+		return
+	}
+	res, err := receiver.UserEntityUseCase.GetUserByStaffID(staffId)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get user",
+			Error:   err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
 	})
 }
