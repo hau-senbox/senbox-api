@@ -149,6 +149,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			},
 		},
 		UserEntityUseCase: &usecase.UserEntityUseCase{
+			DBConn:      dbConn,
 			UserRepo:    &repository.UserEntityRepository{DBConn: dbConn},
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
