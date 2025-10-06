@@ -627,6 +627,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 		},
+		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
 	}
 
 	userBlockSettingController := &controller.BlockSettingController{
@@ -676,6 +679,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// re logimn
 		user.PUT("/set-relogin", secureMiddleware.ValidateSuperAdminRole(), userEntityController.SetReLogin)
+
+		// get language setting
+		user.GET("/student/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig)
 	}
 
 	// application
