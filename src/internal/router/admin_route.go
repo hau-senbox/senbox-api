@@ -681,7 +681,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		user.PUT("/set-relogin", secureMiddleware.ValidateSuperAdminRole(), userEntityController.SetReLogin)
 
 		// get language setting
-		user.GET("/student/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig)
+		user.GET("/student/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig4Web)
 	}
 
 	// application

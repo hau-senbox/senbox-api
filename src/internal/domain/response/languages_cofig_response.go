@@ -8,3 +8,12 @@ type LanguagesConfigResponse struct {
 	SpokenLang []entity.LanguageConfig `json:"spoken_lang"`
 	StudyLang  []entity.LanguageConfig `json:"study_lang"`
 }
+
+type LanguagesConfigResponse4Web struct {
+	StudyLang []StudyLanguageConfig4Web `json:"study_lang"`
+}
+
+type StudyLanguageConfig4Web struct {
+	LanguageKey string `json:"lang_key"`
+	RegionKey   string `json:"region_key"`
+}

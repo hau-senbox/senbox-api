@@ -2336,6 +2336,33 @@ func (receiver *UserEntityController) GetStudentLanguageConfig(context *gin.Cont
 	})
 }
 
+func (receiver *UserEntityController) GetStudentLanguageConfig4Web(context *gin.Context) {
+	studentID := context.Param("id")
+	if studentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing student ID",
+		})
+		return
+	}
+
+	studentLangConfig, err := receiver.LanguagesConfigUsecase.GetLanguagesConfigByOwner4Web(context, studentID, value.OwnerRoleLangStudent)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get student study language config",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: studentLangConfig,
+	})
+}
+
 func (receiver *UserEntityController) GetTeacherByUser4Gateway(context *gin.Context) {
 	userID := context.Param("user_id")
 	if userID == "" {

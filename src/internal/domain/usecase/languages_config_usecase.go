@@ -122,3 +122,12 @@ func (uc *LanguagesConfigUsecase) GetStudentStudyLangConfig(ctx context.Context,
 	}
 	return mapper.ToStudyLanguagesConfigResponse(lc), nil
 }
+
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4Web, error) {
+
+	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToLanguagesConfigResponse4Web(lc), nil
+}
