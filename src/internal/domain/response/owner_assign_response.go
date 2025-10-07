@@ -3,11 +3,13 @@ package response
 import "sen-global-api/internal/domain/value"
 
 type OwnerAssignResponse struct {
-	OwnerID   string          `json:"owner_id"`
-	OwnerRole value.OwnerRole `json:"owner_role"`
-	Name      string          `json:"name"`
-	AvatarKey string          `json:"avatar_key"`
-	AvatarUrl string          `json:"avatar_url"`
+	OwnerID          string          `json:"owner_id"`
+	OwnerRole        value.OwnerRole `json:"owner_role"`
+	Name             string          `json:"name"`
+	AvatarKey        string          `json:"avatar_key"`
+	AvatarUrl        string          `json:"avatar_url"`
+	CreatedIndex     int             `json:"created_index"`
+	UserCreatedIndex int             `json:"user_created_index"`
 }
 
 type ListOwnerAssignResponse struct {
