@@ -131,3 +131,12 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Cont
 	}
 	return mapper.ToLanguagesConfigResponse4Web(lc), nil
 }
+
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4App, error) {
+
+	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToLanguagesConfigResponse4App(lc), nil
+}

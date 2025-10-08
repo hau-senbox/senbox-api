@@ -2309,7 +2309,7 @@ func (receiver *UserEntityController) GetUser4Gateway(context *gin.Context) {
 	})
 }
 
-func (receiver *UserEntityController) GetStudentLanguageConfig(context *gin.Context) {
+func (receiver *UserEntityController) GetStudentLanguageConfig4App(context *gin.Context) {
 	studentID := context.Param("id")
 	if studentID == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -2319,7 +2319,7 @@ func (receiver *UserEntityController) GetStudentLanguageConfig(context *gin.Cont
 		return
 	}
 
-	studentLangConfig, err := receiver.LanguagesConfigUsecase.GetLanguagesConfigByOwner(context, studentID, value.OwnerRoleLangStudent)
+	studentLangConfig, err := receiver.LanguagesConfigUsecase.GetLanguagesConfigByOwner4App(context, studentID, value.OwnerRoleLangStudent)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

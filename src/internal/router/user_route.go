@@ -488,7 +488,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		studentApplication.POST("/:id/block", secureMiddleware.Secured(), userEntityController.BlockStudentFormApplication)
 		studentApplication.PUT("/", secureMiddleware.Secured(), userEntityController.UpdateStudent4App)
 		studentApplication.GET("/:id", secureMiddleware.Secured(), userEntityController.GetStudent4App)
-		studentApplication.GET("/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig)
+		studentApplication.GET("/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig4App)
 	}
 
 	userRole := engine.Group("v1/user-role", secureMiddleware.Secured())
