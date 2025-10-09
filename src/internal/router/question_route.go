@@ -80,7 +80,7 @@ func setupQuestionRoutes(engine *gin.Engine, conn *gorm.DB, config config.AppCon
 
 	form := engine.Group("v1/form")
 	{
-		form.POST("", questionController.GetFormQRCode)
+		form.POST("", middleware.GeneralLoggerMiddleware(conn), questionController.GetFormQRCode)
 	}
 
 	question := engine.Group("v1/question", secureMiddleware.Secured())
