@@ -57,8 +57,7 @@ func (receiver *SessionRepository) GenerateToken(user entity.SUserEntity) (*resp
 		return organization.ID.String(), organization.OrganizationName
 	})
 
-	//expirationTime := time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour)
-	expirationTime := time.Now().Add(2 * time.Minute)
+	expirationTime := time.Now().Add(receiver.TokenExpireTimeInHour * time.Hour)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":       user.ID.String(),
