@@ -125,6 +125,8 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		}
 	}
 
+	// create parent, parent childs
+
 	return err
 }
 

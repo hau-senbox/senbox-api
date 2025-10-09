@@ -24,9 +24,3 @@ func (r *ParentRepository) GetByUserID(userID string) (*entity.SParent, error) {
 	err := r.DBConn.Where("user_id = ?", userID).First(&parents).Error
 	return parents, err
 }
-
-func (r *ParentRepository) GetByChildID(childID string) (*entity.SParent, error) {
-	var parents *entity.SParent
-	err := r.DBConn.Where("child_id = ?", childID).First(&parents).Error
-	return parents, err
-}

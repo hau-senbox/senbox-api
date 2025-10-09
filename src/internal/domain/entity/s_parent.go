@@ -10,7 +10,6 @@ import (
 type SParent struct {
 	ID           uuid.UUID `gorm:"column:id;type:char(36);primary_key"`
 	UserID       string    `gorm:"column:user_id;type:char(36);not null"`
-	ChildID      string    `gorm:"column:student_id;type:char(36);not null"`
 	CreatedIndex int       `gorm:"column:created_index;not null;default:0"`
 	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime:milli;not null"`
 	UpdatedAt    time.Time `gorm:"column:updated_at;autoUpdateTime:milli;not null"`
