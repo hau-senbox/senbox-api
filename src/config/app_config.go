@@ -51,3 +51,7 @@ type AppConfig struct {
 	SMTP                            SMTPConfig     `yaml:"smtp"`
 	Messaging                       Messaging      `yaml:"messaging"`
 }
+
+func (a *AppConfig) IsDevMode() bool {
+	return a.Config.Env == common.ModeDevelopment
+}

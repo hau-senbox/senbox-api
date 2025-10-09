@@ -51,11 +51,6 @@ func main() {
 	}
 	defer client.Close()
 
-	// Thêm document
-	_, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
-		"name": "Tanhung",
-		"age":  28,
-	})
 	if err != nil {
 		log.Fatalf("Failed to add document: %v", err)
 	}

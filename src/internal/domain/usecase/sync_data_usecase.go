@@ -11,6 +11,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -25,6 +26,7 @@ type SyncDataUsecase struct {
 	SyncQueueRepo      *repository.SyncQueueRepository
 	SettingRepository  *repository.SettingRepository
 	ImportFormsUseCase *ImportFormsUseCase
+	counter            int64
 }
 
 type CreateFormAnswerRequest struct {
@@ -52,7 +54,8 @@ func colLetter(n int) string {
 
 func (uc *SyncDataUsecase) countNonEmptyRowsInColA(spreadsheetID, sheetName string) (int, error) {
 	rangeA := fmt.Sprintf("%s!A:A", sheetName)
-	resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, rangeA).Do()
+	// resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, rangeA).Do()
+	resp, err := uc.GetValues(spreadsheetID, rangeA)
 	if err != nil {
 		return 0, err
 	}
@@ -118,9 +121,8 @@ func (uc *SyncDataUsecase) CreateAndSyncFormAnswerv2(
 	updateRange := fmt.Sprintf("%s!A%d:%s%d", sheetName, targetRow, endCol, targetRow)
 
 	// Update trực tiếp vào hàng mới
-	_, err := uc.SheetService.Spreadsheets.Values.Update(spreadsheetID, updateRange, &sheets.ValueRange{
-		Values: [][]interface{}{row},
-	}).ValueInputOption("RAW").Do()
+	_, err := uc.UpdateValues(spreadsheetID, updateRange, &sheets.ValueRange{Values: [][]interface{}{row}})
+
 	if err != nil {
 		// update queue fail
 		_ = uc.SyncQueueRepo.UpdateStatusByID(queueID, value.SyncQueueStatusFailed)
@@ -245,14 +247,19 @@ func (uc *SyncDataUsecase) ExcuteCreateAndSyncFormAnswer(req request.SyncDataReq
 
 	// Đồng bộ dữ liệu lên Google Sheet ở nền
 	go func(queueID uint64) {
-		for i, item := range dataList {
+		for _, item := range dataList {
 			if err := uc.CreateAndSyncFormAnswerv2(item, spreadsheetID, req.SheetName, headers, headerIndex, queueID); err != nil {
 				fmt.Printf("[SYNC ERROR] StudentCustomID %s: %v\n", item.StudentCustomID, err)
 				continue
 			}
-			time.Sleep(1 * time.Second)
-			if (i+1)%20 == 0 {
-				time.Sleep(15 * time.Second)
+
+			// Nếu đã gọi API 30 lần => nghỉ 1 phút
+			if uc.GetCounter() > 40 {
+				time.Sleep(1 * time.Minute)
+				// reset counter
+				atomic.StoreInt64(&uc.counter, 0)
+			} else {
+				time.Sleep(1 * time.Second)
 			}
 		}
 
@@ -274,7 +281,9 @@ func ExtractSpreadsheetID(sheetUrl string) (string, error) {
 
 func (uc *SyncDataUsecase) prepareHeaders(spreadsheetID, sheetName string, allAnswers []map[string]string) ([]interface{}, map[string]int, error) {
 	readRange := fmt.Sprintf("%s!1:1", sheetName)
-	resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	//resp, err := uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	resp, err := uc.GetValues(spreadsheetID, readRange)
+
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read sheet headers: %w", err)
 	}
@@ -473,4 +482,23 @@ func (uc *SyncDataUsecase) StartAutoSyncForm2Scheduler() {
 	}
 
 	c.Start()
+}
+
+func (uc *SyncDataUsecase) GetCounter() int64 {
+	return atomic.LoadInt64(&uc.counter)
+}
+
+func (uc *SyncDataUsecase) incrementCounter() {
+	atomic.AddInt64(&uc.counter, 1)
+}
+
+func (uc *SyncDataUsecase) GetValues(spreadsheetID, readRange string) (*sheets.ValueRange, error) {
+	uc.incrementCounter()
+	return uc.SheetService.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+}
+
+func (uc *SyncDataUsecase) UpdateValues(spreadsheetID, writeRange string, valueRange *sheets.ValueRange) (*sheets.UpdateValuesResponse, error) {
+	uc.incrementCounter()
+	return uc.SheetService.Spreadsheets.Values.Update(spreadsheetID, writeRange, valueRange).
+		ValueInputOption("RAW").Do()
 }

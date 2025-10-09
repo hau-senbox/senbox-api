@@ -55,8 +55,10 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		})
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(t.ID.String(), value.OwnerRoleTeacher)
+
+		// get user created index
 		listResp.Teachers = append(listResp.Teachers,
-			mapper.MapTeacherToOwnerAssignResponse(&t, user.Nickname, avatar.ImageKey, avatar.ImageUrl),
+			mapper.MapTeacherToOwnerAssignResponse(&t, user.Nickname, avatar.ImageKey, avatar.ImageUrl, t.CreatedIndex, user.CreatedIndex),
 		)
 	}
 
@@ -69,7 +71,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStaff)
 		listResp.Staffs = append(listResp.Staffs,
-			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl),
+			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, user.CreatedIndex),
 		)
 	}
 
@@ -78,7 +80,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStudent)
 		listResp.Students = append(listResp.Students,
-			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl),
+			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex),
 		)
 	}
 

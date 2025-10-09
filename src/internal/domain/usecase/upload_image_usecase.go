@@ -9,8 +9,11 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"path"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/uploader"
 	"strings"
 	"time"
@@ -52,6 +55,10 @@ func isImage(extName string) bool {
 		}
 	}
 	return false
+}
+
+func isRasterImage(ext string) bool {
+	return supportedRasterImageExts[ext]
 }
 
 func (receiver *UploadImageUseCase) UploadImage(
@@ -206,4 +213,127 @@ func (receiver *UploadImageUseCase) UploadImagev2(
 	}
 
 	return url, &img, nil
+}
+
+func (receiver *UploadImageUseCase) UploadImages(
+	files []struct {
+		Data      []byte
+		FileName  string
+		ImageName string
+	},
+	folder string,
+	mode uploader.UploadMode,
+) (*response.UploadImagesResponse, error) {
+	// Khởi tạo response rỗng
+	results := &response.UploadImagesResponse{
+		Images: make([]response.ImageResponse, 0),
+	}
+
+	for _, f := range files {
+		url, img, err := receiver.UploadImagev2(
+			f.Data, folder, f.FileName, f.ImageName, mode,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		results.Images = append(results.Images, response.ImageResponse{
+			ImageName: img.ImageName,
+			Key:       img.Key,
+			Extension: img.Extension,
+			Url:       *url,
+			Width:     img.Width,
+			Height:    img.Height,
+		})
+	}
+
+	return results, nil
+}
+
+func (uc *UploadImageUseCase) UploadImagev3(data []byte, req request.UploadImageRequest) (*response.ImageResponse, error) {
+	// Chuẩn hóa folder, fileName, imageName
+	req.Folder = helper.SanitizeName(req.Folder)
+	req.FileName = helper.SanitizeName(req.FileName)
+	req.ImageName = helper.SanitizeName(req.ImageName)
+
+	// Lấy extension từ File upload
+	fileExt := strings.ToLower(path.Ext(req.FileName))
+	if fileExt == "" && req.File != nil {
+		fileExt = strings.ToLower(path.Ext(req.File.Filename))
+	}
+
+	if !isImage(fileExt) {
+		return nil, fmt.Errorf("file extension %s is not supported", fileExt)
+	}
+
+	// Nếu folder trống → mặc định là "img"
+	if req.Folder == "" {
+		req.Folder = "img"
+	}
+
+	// Tính width, height cho raster images
+	var width, height int
+	if isRasterImage(fileExt) {
+		w, h, err := getImageDimensions(data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get image dimensions: %w", err)
+		}
+		width, height = w, h
+	}
+
+	// Sinh finalFileName
+	timestamp := time.Now().UnixNano()
+	finalFileName := fmt.Sprintf("%s_%d%s", req.FileName, timestamp, fileExt)
+
+	// Convert mode string → enum
+	mode, err := uploader.UploadModeFromString(req.Mode)
+	if err != nil {
+		return nil, err
+	}
+
+	// Upload
+	uploadPath := fmt.Sprintf("%s/%s", req.Folder, finalFileName)
+	url, err := uc.UploadProvider.SaveFileUploaded(context.Background(), data, uploadPath, mode)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lưu metadata
+	img := entity.SImage{
+		ImageName: req.FileName,
+		Folder:    req.Folder,
+		Key:       uploadPath,
+		Width:     width,
+		Height:    height,
+		Extension: fileExt,
+	}
+	if err := uc.ImageRepository.CreateImage(&img); err != nil {
+		return nil, err
+	}
+
+	if mode == uploader.UploadPublic {
+		if err := uc.ImageRepository.CreatePublicImage(entity.PublicImage{
+			ImageName: req.FileName,
+			Folder:    req.Folder,
+			Key:       uploadPath,
+			URL:       *url,
+			Width:     width,
+			Height:    height,
+			Extension: fileExt,
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	// Response
+	res := &response.ImageResponse{
+		ImageName: img.ImageName,
+		Key:       img.Key,
+		Extension: img.Extension,
+		Url:       *url,
+		Width:     img.Width,
+		Height:    img.Height,
+	}
+
+	return res, nil
 }

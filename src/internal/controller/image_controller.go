@@ -2,6 +2,8 @@ package controller
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"net/http"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
@@ -157,11 +159,16 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 	// 	return
 	// }
 
+	fileNameInit := context.PostForm("file_name")
+
 	fileHeader, err := context.FormFile("file")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -179,6 +186,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -188,6 +198,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -199,6 +212,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -227,6 +243,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: err.Error(),
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -235,6 +254,9 @@ func (receiver *ImageController) CreateImage(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
 			Error: "image was not created",
+			Data: map[string]interface{}{
+				"file_name": fileNameInit,
+			},
 		})
 		return
 	}
@@ -310,5 +332,174 @@ func (receiver *ImageController) GetUrlIsMain4Owner(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "image was get successfully",
 		Data:    url,
+	})
+}
+
+func (receiver *ImageController) CreateImages(context *gin.Context) {
+	form, err := context.MultipartForm()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "failed to parse multipart form: " + err.Error(),
+		})
+		return
+	}
+
+	files := form.File["files"] // client phải gửi field name = "files"
+	if len(files) == 0 {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "no files uploaded",
+		})
+		return
+	}
+
+	folder := strings.TrimSpace(context.DefaultPostForm("folder", "img"))
+	fileName := strings.TrimSpace(context.DefaultPostForm("file_name", randx.GenString(10)))
+
+	// Replace all whitespace sequences (tabs, spaces, multiple spaces, etc.) with "_"
+	folder = strings.Join(strings.Fields(folder), "_")
+	fileName = strings.Join(strings.Fields(fileName), "_")
+
+	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// Chuẩn bị data cho UploadImages
+	fileInputs := make([]struct {
+		Data      []byte
+		FileName  string
+		ImageName string
+	}, 0)
+
+	for idx, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: fmt.Sprintf("failed to open file %s: %v", fileHeader.Filename, err),
+			})
+			return
+		}
+		defer file.Close()
+
+		dataBytes := make([]byte, fileHeader.Size)
+		if _, err := bufio.NewReader(file).Read(dataBytes); err != nil {
+			context.JSON(http.StatusBadRequest, response.FailedResponse{
+				Code:  http.StatusBadRequest,
+				Error: fmt.Sprintf("failed to read file %s: %v", fileHeader.Filename, err),
+			})
+			return
+		}
+
+		imageName := fmt.Sprintf("%s_%d", fileName, idx+1)
+		fileInputs = append(fileInputs, struct {
+			Data      []byte
+			FileName  string
+			ImageName string
+		}{
+			Data:      dataBytes,
+			FileName:  fileHeader.Filename,
+			ImageName: imageName,
+		})
+	}
+
+	// Gọi usecase
+	result, err := receiver.UploadImageUseCase.UploadImages(fileInputs, folder, mode)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: fmt.Sprintf("%d images uploaded successfully", len(result.Images)),
+		Data:    result,
+	})
+}
+
+func (ic *ImageController) UploadImage4GW(c *gin.Context) {
+	var req request.UploadImageRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// mở file
+	file, err := req.File.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// gắn data vào request
+	uploadReq := request.UploadImageRequest{
+		File:      req.File,
+		Folder:    req.Folder,
+		FileName:  req.FileName,
+		ImageName: req.ImageName,
+		Mode:      req.Mode,
+	}
+	res, err := ic.UploadImageUseCase.UploadImagev3(data, uploadReq)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "image deleted successfully",
+		Data:    res,
+	})
+}
+
+func (receiver *ImageController) DeleteImage4GW(context *gin.Context) {
+	key := context.Param("key")
+	if key == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "key is required",
+		})
+		return
+	}
+	var req request.DeleteImageRequest
+	req.Key = key
+
+	err := receiver.DeleteImageUseCase.DeleteImage(req.Key)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "image deleted successfully",
 	})
 }
