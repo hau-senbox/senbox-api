@@ -281,7 +281,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	form := engine.Group("v1/form", secureMiddleware.Secured())
 	{
-		form.POST("/submit", deviceController.SubmitForm)
+		form.POST("/submit", middleware.GeneralLoggerMiddleware(dbConn), deviceController.SubmitForm)
 		form.POST("/submission/last", deviceController.GetLastSubmissionByForm)
 		form.POST("/get-submission-by-condition", deviceController.GetSubmissionByCondition)
 		form.POST("/get-total-nr-submission-by-condition", deviceController.GetTotalNrSubmissionByCondition)
