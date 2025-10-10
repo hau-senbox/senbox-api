@@ -67,3 +67,7 @@ func (r *RoleOrgSignUpRepository) GetByID(id string) (*entity.SRoleOrgSignUp, er
 
 	return &role, nil
 }
+
+func (r *RoleOrgSignUpRepository) WithTx(tx *gorm.DB) *RoleOrgSignUpRepository {
+	return &RoleOrgSignUpRepository{DBConn: tx}
+}

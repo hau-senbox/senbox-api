@@ -93,3 +93,7 @@ func (r *ChildMenuRepository) DeleteByComponentID(componentID string) error {
 	}
 	return nil
 }
+
+func (r *ChildMenuRepository) WithTx(tx *gorm.DB) *ChildMenuRepository {
+	return &ChildMenuRepository{DBConn: tx}
+}

@@ -36,3 +36,7 @@ func (r *ParentChildsRepository) Delete(ctx context.Context, parentID, childID s
 		Where("parent_id = ? AND child_id = ?", parentID, childID).
 		Delete(&entity.SParentChilds{}).Error
 }
+
+func (r *ParentChildsRepository) WithTx(tx *gorm.DB) *ParentChildsRepository {
+	return &ParentChildsRepository{DBConn: tx}
+}

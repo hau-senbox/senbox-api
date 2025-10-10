@@ -8,7 +8,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -131,30 +130,4 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 		Avatars:        avatars,
 		CreatedIndex:   parent.CreatedIndex,
 	}, nil
-}
-
-func (uc *ParentUseCase) CreateParent(ctx *gin.Context, childID string, userID string) error {
-
-	parent := &entity.SParent{
-		ID:     uuid.New(),
-		UserID: userID,
-	}
-
-	// tao parent
-	err := uc.ParentRepo.Create(parent)
-	if err != nil {
-		return err
-	}
-
-	// tao parent childs
-	parentChilds := &entity.SParentChilds{
-		ParentID: parent.ID.String(),
-		ChildID:  childID,
-	}
-
-	err = uc.ParentChildsRepo.Create(ctx, parentChilds)
-	if err != nil {
-		return err
-	}
-	return nil
 }

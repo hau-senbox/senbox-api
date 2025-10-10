@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
@@ -12,10 +13,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type ChildUseCase struct {
+	dbConn                 *gorm.DB
 	childRepo              *repository.ChildRepository
 	userRepo               *repository.UserEntityRepository
 	componentRepo          *repository.ComponentRepository
@@ -25,9 +27,12 @@ type ChildUseCase struct {
 	userImagesUsecase      *UserImagesUsecase
 	languagesConfigUsecase *LanguagesConfigUsecase
 	languageSettingRepo    *repository.LanguageSettingRepository
+	parentRepo             *repository.ParentRepository
+	parentChildsRepo       *repository.ParentChildsRepository
 }
 
 func NewChildUseCase(
+	dbConn *gorm.DB,
 	childRepo *repository.ChildRepository,
 	userRepo *repository.UserEntityRepository,
 	componentRepo *repository.ComponentRepository,
@@ -37,8 +42,11 @@ func NewChildUseCase(
 	languagesConfigUsecase *LanguagesConfigUsecase,
 	userImagesUsecase *UserImagesUsecase,
 	languageSettingRepo *repository.LanguageSettingRepository,
+	parentRepo *repository.ParentRepository,
+	parentChildsRepo *repository.ParentChildsRepository,
 ) *ChildUseCase {
 	return &ChildUseCase{
+		dbConn:                 dbConn,
 		childRepo:              childRepo,
 		userRepo:               userRepo,
 		componentRepo:          componentRepo,
@@ -48,6 +56,8 @@ func NewChildUseCase(
 		userImagesUsecase:      userImagesUsecase,
 		languagesConfigUsecase: languagesConfigUsecase,
 		languageSettingRepo:    languageSettingRepo,
+		parentRepo:             parentRepo,
+		parentChildsRepo:       parentChildsRepo,
 	}
 }
 
@@ -79,55 +89,80 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		ParentID:  userID,
 	}
 
-	// create child
-	err := uc.childRepo.Create(child)
+	// Bắt đầu Transaction
+	tx := uc.dbConn.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
 
-	if err == nil {
-		//tao child menu
-		childRoleOrg, _ := uc.roleOrgRepo.GetByRoleName(string(value.RoleChild))
-		if childRoleOrg != nil {
-			comps, _ := uc.componentRepo.GetBySectionID(childRoleOrg.ID.String())
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
 
-			for index, component := range comps {
+	// ---- Create Child ----
+	if err := uc.childRepo.WithTx(tx).Create(child); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("create child failed: %w", err)
+	}
 
-				visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
+	// ---- Tạo menu cho child ----
+	childRoleOrg, _ := uc.roleOrgRepo.WithTx(tx).GetByRoleName(string(value.RoleChild))
+	if childRoleOrg != nil {
+		comps, _ := uc.componentRepo.WithTx(tx).GetBySectionID(childRoleOrg.ID.String())
 
-				// → Tạo mới một Component từ thông tin đã lấy
-				newComponent := &components.Component{
-					ID:        uuid.New(),
-					Name:      component.Name,
-					Type:      component.Type,
-					Key:       component.Key,
-					SectionID: component.SectionID,
-					Value:     component.Value,
-				}
+		for index, component := range comps {
+			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 
-				err = uc.componentRepo.Create(newComponent)
+			newComponent := &components.Component{
+				ID:        uuid.New(),
+				Name:      component.Name,
+				Type:      component.Type,
+				Key:       component.Key,
+				SectionID: component.SectionID,
+				Value:     component.Value,
+			}
 
-				if err != nil {
-					log.Printf("Create new component fail: %v", err)
-					continue
-				}
+			if err := uc.componentRepo.WithTx(tx).Create(newComponent); err != nil {
+				tx.Rollback()
+				return fmt.Errorf("create component failed: %w", err)
+			}
 
-				err := uc.childMenuRepo.Create(&entity.ChildMenu{
-					ID:          uuid.New(),
-					ChildID:     childID,
-					ComponentID: newComponent.ID,
-					Order:       index,
-					IsShow:      true,
-					Visible:     visible,
-				})
+			childMenu := &entity.ChildMenu{
+				ID:          uuid.New(),
+				ChildID:     childID,
+				ComponentID: newComponent.ID,
+				Order:       index,
+				IsShow:      true,
+				Visible:     visible,
+			}
 
-				if err != nil {
-					continue
-				}
+			if err := uc.childMenuRepo.WithTx(tx).Create(childMenu); err != nil {
+				tx.Rollback()
+				return fmt.Errorf("create child menu failed: %w", err)
 			}
 		}
 	}
 
-	// create parent, parent childs
+	// ---- Tạo Parent - Child mapping ----
+	if err := uc.parentRepo.WithTx(tx).Create(ctx, &entity.SParent{ID: uuid.New(), UserID: userID.String()}); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("create parent-child failed: %w", err)
+	}
 
-	return err
+	if err := uc.parentChildsRepo.WithTx(tx).Create(ctx, &entity.SParentChilds{ParentID: userID.String(), ChildID: childID.String()}); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("create parent-child failed: %w", err)
+	}
+
+	// Commit nếu tất cả OK
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (uc *ChildUseCase) UpdateChild(req request.UpdateChildRequest, ctx *gin.Context) error {

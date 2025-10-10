@@ -493,6 +493,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	)
 
 	childUseCase := usecase.NewChildUseCase(
+		dbConn,
 		&repository.ChildRepository{DB: dbConn},
 		&repository.UserEntityRepository{DBConn: dbConn},
 		&repository.ComponentRepository{DBConn: dbConn},
@@ -514,6 +515,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		&repository.ParentChildsRepository{DBConn: dbConn},
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

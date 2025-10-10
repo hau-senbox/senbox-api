@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"sen-global-api/internal/domain/entity"
 
 	"gorm.io/gorm"
@@ -15,12 +16,16 @@ func NewParentRepository(db *gorm.DB) *ParentRepository {
 }
 
 // Create a new parent record
-func (r *ParentRepository) Create(parent *entity.SParent) error {
-	return r.DBConn.Create(parent).Error
+func (r *ParentRepository) Create(ctx context.Context, parent *entity.SParent) error {
+	return r.DBConn.WithContext(ctx).Create(parent).Error
 }
 
 func (r *ParentRepository) GetByUserID(userID string) (*entity.SParent, error) {
 	var parents *entity.SParent
 	err := r.DBConn.Where("user_id = ?", userID).First(&parents).Error
 	return parents, err
+}
+
+func (r *ParentRepository) WithTx(tx *gorm.DB) *ParentRepository {
+	return &ParentRepository{DBConn: tx}
 }

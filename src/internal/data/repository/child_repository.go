@@ -132,3 +132,7 @@ func (r *ChildRepository) GetAllParents() ([]entity.SUserEntity, error) {
 
 	return parents, nil
 }
+
+func (r *ChildRepository) WithTx(tx *gorm.DB) *ChildRepository {
+	return &ChildRepository{DB: tx}
+}

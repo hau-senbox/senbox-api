@@ -41,6 +41,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	deviceRepository := &repository.DeviceRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl}
 	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
 	childUseCase := usecase.NewChildUseCase(
+		dbConn,
 		&repository.ChildRepository{DB: dbConn},
 		&repository.UserEntityRepository{DBConn: dbConn},
 		&repository.ComponentRepository{DBConn: dbConn},
@@ -61,6 +62,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 			// },
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		&repository.ParentChildsRepository{DBConn: dbConn},
 	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,

@@ -376,3 +376,7 @@ func (receiver *ComponentRepository) GetByIDAndLanguage(componentID string, lang
 
 	return &component, nil
 }
+
+func (r *ComponentRepository) WithTx(tx *gorm.DB) *ComponentRepository {
+	return &ComponentRepository{DBConn: tx}
+}
