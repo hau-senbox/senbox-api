@@ -303,6 +303,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				ComponentRepository:      &repository.ComponentRepository{DBConn: dbConn},
 			},
 			OrganizationEmergencyMenuRepo: &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
+			ParentRepo:                    &repository.ParentRepository{DBConn: dbConn},
 		},
 		UploadSuperAdminMenuUseCase: &usecase.UploadSuperAdminMenuUseCase{
 			MenuRepository:      &repository.MenuRepository{DBConn: dbConn},

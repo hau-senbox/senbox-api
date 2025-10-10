@@ -74,7 +74,7 @@ func (r *StudentApplicationRepository) GetByUserIDApproved(userID string) ([]ent
 // Get by OrganizationID
 func (r *StudentApplicationRepository) GetByOrganizationID(orgID string) ([]entity.SStudentFormApplication, error) {
 	var apps []entity.SStudentFormApplication
-	err := r.DB.Where("organization_id = ?", orgID).Find(&apps).Error
+	err := r.DB.Where("organization_id = ? And status = ?", orgID, value.Approved).Find(&apps).Error
 	return apps, err
 }
 

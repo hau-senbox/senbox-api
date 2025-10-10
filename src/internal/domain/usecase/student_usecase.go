@@ -553,3 +553,7 @@ func (uc *StudentApplicationUseCase) GetStudentOrganizationsByUser(userID string
 
 	return res, nil
 }
+
+func (uc *StudentApplicationUseCase) GetAllByOrganizationID(organizationID string) ([]entity.SStudentFormApplication, error) {
+	return uc.StudentAppRepo.GetByOrganizationID(organizationID)
+}

@@ -20,12 +20,18 @@ func (r *ParentRepository) Create(ctx context.Context, parent *entity.SParent) e
 	return r.DBConn.WithContext(ctx).Create(parent).Error
 }
 
-func (r *ParentRepository) GetByUserID(userID string) (*entity.SParent, error) {
+func (r *ParentRepository) GetByUserID(ctx context.Context, userID string) (*entity.SParent, error) {
 	var parents *entity.SParent
-	err := r.DBConn.Where("user_id = ?", userID).First(&parents).Error
+	err := r.DBConn.WithContext(ctx).Where("user_id = ?", userID).First(&parents).Error
 	return parents, err
 }
 
 func (r *ParentRepository) WithTx(tx *gorm.DB) *ParentRepository {
 	return &ParentRepository{DBConn: tx}
+}
+
+func (r *ParentRepository) GetAll(ctx context.Context) ([]entity.SParent, error) {
+	var parents []entity.SParent
+	err := r.DBConn.WithContext(ctx).Find(&parents).Error
+	return parents, err
 }

@@ -45,6 +45,7 @@ type GetMenuUseCase struct {
 	SuperAdminEmergencyMenuRepo        *repository.SuperAdminEmergencyMenuRepository
 	OrganizationEmergencyMenuRepo      *repository.OrganizationEmergencyMenuRepository
 	LanguageSettingRepo                *repository.LanguageSettingRepository
+	ParentRepo                         *repository.ParentRepository
 }
 
 func (receiver *GetMenuUseCase) GetSuperAdminMenu() ([]menu.SuperAdminMenu, error) {
@@ -829,8 +830,9 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 	}
 
 	// Get Parent Menu
-	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(context, userID)
-	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(userID, value.OwnerRoleParent)
+	parent, _ := receiver.ParentRepo.GetByUserID(context, userID)
+	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(context, parent.ID.String(), userID)
+	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(parent.ID.String(), value.OwnerRoleParent)
 	menuIconKey := ""
 	if img != nil {
 		menuIconKey = img.Key

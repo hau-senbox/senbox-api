@@ -33,14 +33,7 @@ func (uc *ParentMenuUseCase) DeleteByParentID(parentID string) error {
 	return uc.Repo.DeleteByParentID(parentID)
 }
 
-func (uc *ParentMenuUseCase) GetByParentID(ctx *gin.Context, parentID string) (response.GetParentMenuResponse, error) {
-	parent, err := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{
-		ID: parentID,
-	})
-
-	if parent == nil || err != nil {
-		return response.GetParentMenuResponse{}, err
-	}
+func (uc *ParentMenuUseCase) GetByParentID(ctx *gin.Context, parentID string, userID string) (response.GetParentMenuResponse, error) {
 
 	parentMenus, err := uc.Repo.GetByParentIDActive(parentID)
 	if err != nil {
@@ -79,9 +72,13 @@ func (uc *ParentMenuUseCase) GetByParentID(ctx *gin.Context, parentID string) (r
 		})
 	}
 
+	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{
+		ID: userID,
+	})
+
 	return response.GetParentMenuResponse{
 		ParentID:   parentID,
-		ParentName: parent.Nickname,
+		ParentName: user.Nickname,
 		Components: componentResponses,
 	}, nil
 }
