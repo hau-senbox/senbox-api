@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -230,12 +231,28 @@ func (u *SubmissionLogUseCase) GetSubmissionsFormLogsBySubmit(
 			}
 		}
 
+		var matchedAnswers []string
+
+		if ansArr, ok := payload["answers"].([]interface{}); ok {
+			for _, a := range ansArr {
+				if ansMap, ok := a.(map[string]interface{}); ok {
+					if answer, ok := ansMap["answer"].(string); ok {
+						matched, _ := regexp.MatchString(`^[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})?$`, answer)
+						if matched {
+							matchedAnswers = append(matchedAnswers, answer)
+						}
+					}
+				}
+			}
+		}
+
 		results = append(results, map[string]interface{}{
-			"nickname":   nickname,
-			"qr_code":    qr,
-			"user_id":    userID,
-			"custom_id":  customID,
-			"created_at": result.CreatedAt,
+			"nickname":        nickname,
+			"qr_code":         qr,
+			"user_id":         userID,
+			"custom_id":       customID,
+			"created_at":      result.CreatedAt,
+			"matched_answers": matchedAnswers,
 		})
 	}
 
