@@ -8,4 +8,5 @@ type OrganizationResponse struct {
 	Address          string                      `json:"address"`
 	Description      string                      `json:"description"`
 	Managers         []GetOrgManagerInfoResponse `json:"managers"`
+	LanguageConfig   *LanguagesConfigResponse    `json:"language_config"`
 }

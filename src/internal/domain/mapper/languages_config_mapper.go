@@ -36,11 +36,11 @@ func toLangItemList(items []entity.LanguageConfig) []entity.LanguageConfig {
 	result := make([]entity.LanguageConfig, len(items))
 	for i, item := range items {
 		result[i] = entity.LanguageConfig{
-			Order:    item.Order,
-			Language: item.Language,
-			Origin:   item.Origin,
-			Percent:  item.Percent,
-			Note:     item.Note,
+			Order:       item.Order,
+			LanguageKey: item.LanguageKey,
+			RegionKey:   item.RegionKey,
+			Percent:     item.Percent,
+			Note:        item.Note,
 		}
 	}
 	return result
@@ -60,8 +60,8 @@ func toLangItemList4Web(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4Web, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4Web{
-			LanguageKey: item.Language,
-			RegionKey:   item.Origin,
+			LanguageKey: item.LanguageKey,
+			RegionKey:   item.RegionKey,
 		}
 	}
 	return result
@@ -81,8 +81,9 @@ func toLangItemList4App(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4App, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4App{
-			Language: item.Language,
-			Origin:   formatOrigin(item.Origin),
+			Language:  item.LanguageKey,
+			Origin:    formatOrigin(item.RegionKey),
+			UniqueKey: item.LanguageKey + "-" + item.RegionKey,
 		}
 	}
 	return result
