@@ -27,3 +27,9 @@ type StudyLanguageConfig4App struct {
 	Origin    string `json:"origin"`
 	UniqueKey string `json:"unique_key"`
 }
+
+type StudyLanguage4Assign struct {
+	ID          uint   `json:"id"`
+	LanguageKey string `json:"lang_key"`
+	RegionKey   string `json:"region_key"`
+}

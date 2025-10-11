@@ -16,7 +16,8 @@ import (
 )
 
 type LanguagesConfigUsecase struct {
-	Repo *repository.LanguagesConfigRepository
+	Repo            *repository.LanguagesConfigRepository
+	LangSettingRepo *repository.LanguageSettingRepository
 }
 
 // func NewLanguagesConfigUsecase(repo *repository.LanguagesConfigRepository) *LanguagesConfigUsecase {
@@ -139,4 +140,10 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Cont
 		return nil, err
 	}
 	return mapper.ToLanguagesConfigResponse4App(lc), nil
+}
+
+func (uc *LanguageSettingUseCase) GetStudyLanguage4OrganizationAssign4Web(ctx context.Context, organizationID string) ([]*response.StudyLanguage4Assign, error) {
+
+	return nil, nil
+
 }

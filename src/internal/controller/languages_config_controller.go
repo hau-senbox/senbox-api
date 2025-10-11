@@ -171,3 +171,15 @@ func getUserID(ctx *gin.Context) (string, bool) {
 	userID, ok := val.(string)
 	return userID, ok
 }
+
+func (c *LanguagesConfigController) GetStudyLanguage4OrganizationAssign4Web(ctx *gin.Context) {
+	organizationID := ctx.Param("organization_id")
+	if organizationID == "" {
+		ctx.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "organization_id is required",
+		})
+		return
+	}
+
+}
