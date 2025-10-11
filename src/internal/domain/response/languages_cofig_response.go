@@ -18,8 +18,9 @@ type LanguagesConfigResponse4App struct {
 }
 
 type StudyLanguageConfig4Web struct {
-	LanguageKey string `json:"lang_key"`
-	RegionKey   string `json:"region_key"`
+	LanguageKey       string `json:"lang_key"`
+	RegionKey         string `json:"region_key"`
+	UniqueLanguageKey string `json:"unique_language_key"`
 }
 
 type StudyLanguageConfig4App struct {

@@ -60,8 +60,9 @@ func toLangItemList4Web(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4Web, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4Web{
-			LanguageKey: item.LanguageKey,
-			RegionKey:   item.RegionKey,
+			LanguageKey:       item.LanguageKey,
+			RegionKey:         item.RegionKey,
+			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
 		}
 	}
 	return result
