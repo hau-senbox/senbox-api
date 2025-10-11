@@ -23,9 +23,9 @@ type StudyLanguageConfig4Web struct {
 }
 
 type StudyLanguageConfig4App struct {
-	Language  string `json:"language"`
-	Origin    string `json:"origin"`
-	UniqueKey string `json:"unique_key"`
+	Language          string `json:"language"`
+	Origin            string `json:"origin"`
+	UniqueLanguageKey string `json:"unique_language_key"`
 }
 
 type StudyLanguage4Assign struct {

@@ -81,9 +81,9 @@ func toLangItemList4App(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4App, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4App{
-			Language:  item.LanguageKey,
-			Origin:    formatOrigin(item.RegionKey),
-			UniqueKey: item.LanguageKey + "-" + item.RegionKey,
+			Language:          item.LanguageKey,
+			Origin:            formatOrigin(item.RegionKey),
+			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
 		}
 	}
 	return result
