@@ -142,8 +142,21 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Cont
 	return mapper.ToLanguagesConfigResponse4App(lc), nil
 }
 
-func (uc *LanguageSettingUseCase) GetStudyLanguage4OrganizationAssign4Web(ctx context.Context, organizationID string) ([]*response.StudyLanguage4Assign, error) {
+func (uc *LanguagesConfigUsecase) GetStudyLanguage4OrganizationAssign4Web(ctx context.Context, organizationID string) ([]*response.StudyLanguage4Assign, error) {
 
-	return nil, nil
+	// get list language setting form admin
+	languageSetting, err := uc.LangSettingRepo.GetAllIsPublished()
+	if err != nil {
+		return nil, errors.New("cannot get language setting")
+	}
+
+	// get list language config form organization
+	languageConfig, err := uc.Repo.GetByOwner(ctx, organizationID, value.OwnerRoleLangOrganization)
+
+	if err != nil {
+		return nil, errors.New("cannot get language config")
+	}
+
+	return mapper.ToAssignLanguagesConfigResponse(languageSetting, &languageConfig.StudyLang), nil
 
 }

@@ -920,7 +920,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	languagesConfigController := &controller.LanguagesConfigController{
 		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
-			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			Repo:            &repository.LanguagesConfigRepository{DBConn: dbConn},
+			LangSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 
@@ -928,6 +929,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		languagesConfig.GET("", languagesConfigController.GetByOwner)
 		languagesConfig.POST("", languagesConfigController.UploadLanguagesConfig)
+		languagesConfig.GET("/assign", languagesConfigController.GetStudyLanguage4OrganizationAssign4Web)
 	}
 
 	executor := &TimeMachineSubscriber{

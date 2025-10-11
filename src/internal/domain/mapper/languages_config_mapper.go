@@ -103,3 +103,23 @@ func formatOrigin(origin string) string {
 	}
 	return strings.Join(parts, " ")
 }
+
+func ToAssignLanguagesConfigResponse(languageSettiings []entity.LanguageSetting, organizationStudyLang *entity.LanguageConfigList) []*response.StudyLanguage4Assign {
+	var result = make([]*response.StudyLanguage4Assign, 0)
+	for _, langSetting := range languageSettiings {
+		if organizationStudyLang != nil {
+			for _, lang := range *organizationStudyLang {
+				if lang.LanguageKey == langSetting.LangKey && lang.RegionKey == langSetting.RegionKey {
+					result = append(result, &response.StudyLanguage4Assign{
+						ID:          langSetting.ID,
+						LanguageKey: langSetting.LangKey,
+						RegionKey:   langSetting.RegionKey,
+					})
+					break
+				}
+			}
+		}
+	}
+
+	return result
+}
