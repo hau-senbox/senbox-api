@@ -241,7 +241,18 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 	}
 
 	if user.IsSuperAdmin() {
-		return uc.ParentRepo.GetAll(ctx)
+		parents, err := uc.ParentRepo.GetAll(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for i := range parents {
+			userParent, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parents[i].UserID})
+			if userParent != nil {
+				parents[i].ParentName = userParent.Nickname
+			}
+		}
+
+		return parents, nil
 	}
 
 	orgAdminIds, _ := user.GetManagedOrganizationIDs(DBConn)
@@ -257,9 +268,22 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 		return nil, err
 	}
 
-	// get childs by students
-	childs, err := uc.ChildRepo.GetByStudents(students)
-	if err != nil {
-		return nil, err
+	var parents = make([]entity.SParent, 0)
+
+	// get parent by childid in student
+	for _, student := range students {
+		parent, err := uc.ParentRepo.GetByUserID(ctx, student.UserID.String())
+		if err != nil {
+			return nil, err
+		}
+		if parent != nil {
+			userParent, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+			if userParent != nil {
+				parent.ParentName = userParent.Nickname
+			}
+			parents = append(parents, *parent)
+		}
 	}
+
+	return parents, nil
 }

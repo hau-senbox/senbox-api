@@ -13,6 +13,7 @@ type SParent struct {
 	CreatedIndex int       `gorm:"column:created_index;not null;default:0"`
 	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime:milli;not null"`
 	UpdatedAt    time.Time `gorm:"column:updated_at;autoUpdateTime:milli;not null"`
+	ParentName   string    `gorm:"-" json:"parent_name"` // not map db
 }
 
 func (parent *SParent) BeforeCreate(tx *gorm.DB) (err error) {

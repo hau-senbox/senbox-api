@@ -1490,7 +1490,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		rawParents, _ := receiver.GetAllParents4Search(c)
+		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
 
 		// Map sang response
 		for _, u := range rawUsers {
@@ -1554,7 +1554,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
 				ParentID:         p.ID.String(),
-				ParentName:       p.Nickname,
+				ParentName:       p.ParentName,
 				IsDeactive:       isDeactive,
 				Avatar:           avatar,
 				CreatedIndex:     p.CreatedIndex,
@@ -1687,13 +1687,13 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		users = helper.FilterUsersByStatus(users, status)
 
 	case value.Parent:
-		rawParents, _ := receiver.GetAllParents4Search(c)
+		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
 		for _, p := range rawParents {
 			isDeactive, _ := receiver.GetDeactive4User(p.ID.String())
 			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 			parents = append(parents, response.ParentResponse{
 				ParentID:         p.ID.String(),
-				ParentName:       p.Nickname,
+				ParentName:       p.ParentName,
 				IsDeactive:       isDeactive,
 				Avatar:           avatar,
 				UserCreatedIndex: p.CreatedIndex,

@@ -596,6 +596,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
+			ParentRepo:          &repository.ParentRepository{DBConn: dbConn},
+			ParentChildsRepo:    &repository.ParentChildsRepository{DBConn: dbConn},
+			StudentRepo:         &repository.StudentApplicationRepository{DB: dbConn},
 		},
 		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
