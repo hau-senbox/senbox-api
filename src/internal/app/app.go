@@ -91,7 +91,8 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 
 	// 4. Init server & routes
 	handler := gin.New()
-	handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
+	//handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
+	handler.Use(gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
 	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm, client)
 
 	docs.SwaggerInfo.BasePath = "/"
