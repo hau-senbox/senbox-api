@@ -318,7 +318,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		image.POST("/icon", imageController.GetIconByKey)
 		image.POST("/upload", imageController.CreateImage)
 		image.POST("/delete", imageController.DeleteImage)
-		image.POST("/uploads", imageController.CreateImages)
+		image.POST("/upload/multiple", imageController.CreateImages)
 	}
 
 	video := engine.Group("v1/videos", secureMiddleware.Secured())
