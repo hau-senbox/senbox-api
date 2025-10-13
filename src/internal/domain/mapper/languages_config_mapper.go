@@ -36,11 +36,12 @@ func toLangItemList(items []entity.LanguageConfig) []entity.LanguageConfig {
 	result := make([]entity.LanguageConfig, len(items))
 	for i, item := range items {
 		result[i] = entity.LanguageConfig{
-			Order:       item.Order,
-			LanguageKey: item.LanguageKey,
-			RegionKey:   item.RegionKey,
-			Percent:     item.Percent,
-			Note:        item.Note,
+			Order:             item.Order,
+			LanguageKey:       item.LanguageKey,
+			RegionKey:         item.RegionKey,
+			Percent:           item.Percent,
+			Note:              item.Note,
+			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
 		}
 	}
 	return result

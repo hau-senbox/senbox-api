@@ -22,11 +22,12 @@ type LanguagesConfig struct {
 }
 
 type LanguageConfig struct {
-	Order       int    `json:"order"`
-	LanguageKey string `json:"lang_key"`
-	RegionKey   string `json:"region_key"`
-	Percent     int    `json:"percent"`
-	Note        string `json:"note"`
+	Order             int    `json:"order"`
+	LanguageKey       string `json:"lang_key"`
+	RegionKey         string `json:"region_key"`
+	Percent           int    `json:"percent"`
+	Note              string `json:"note"`
+	UniqueLanguageKey string `json:"unique_language_key"`
 }
 
 type LanguageConfigList []LanguageConfig
