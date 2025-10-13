@@ -4,7 +4,7 @@ import "time"
 
 type LanguageSetting struct {
 	ID                 uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	LangKey            string    `gorm:"unique;not null" json:"lang_key"`
+	LangKey            string    `gorm:"type:varchar(255);not null" json:"lang_key"`
 	RegionKey          string    `gorm:"type:varchar(255);not null" json:"region_key"`
 	IsPublished        bool      `json:"is_published" default:"true"`
 	DeactivatedMessage string    `gorm:"type:text;default:''" json:"deactivated_message"`
