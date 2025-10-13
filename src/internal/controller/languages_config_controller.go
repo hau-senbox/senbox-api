@@ -15,6 +15,7 @@ import (
 type LanguagesConfigController struct {
 	LanguagesConfigUsecase *usecase.LanguagesConfigUsecase
 	ChildUsecase           *usecase.ChildUseCase
+	GetUserFromToken       *usecase.GetUserFromTokenUseCase
 }
 
 func (c *LanguagesConfigController) GetByOwner(ctx *gin.Context) {
@@ -173,16 +174,9 @@ func getUserID(ctx *gin.Context) (string, bool) {
 }
 
 func (c *LanguagesConfigController) GetStudyLanguage4OrganizationAssign4Web(ctx *gin.Context) {
-	organizationID := ctx.Param("organization_id")
-	if organizationID == "" {
-		ctx.JSON(http.StatusBadRequest, response.FailedResponse{
-			Code:    http.StatusBadRequest,
-			Message: "organization_id is required",
-		})
-		return
-	}
 
-	res, err := c.LanguagesConfigUsecase.GetStudyLanguage4OrganizationAssign4Web(ctx, organizationID)
+	currentUser, err := c.GetUserFromToken.GetUserFromToken(ctx)
+	res, err := c.LanguagesConfigUsecase.GetStudyLanguage4OrganizationAssign4Web(ctx, currentUser)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

@@ -302,7 +302,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	publicSystem := engine.Group("/v1/admin/settings")
 	{
-		publicSystem.GET("/language-published", systemController.GetAllIsPublished)
+		//publicSystem.GET("/language-published", systemController.GetAllIsPublished)
+		publicSystem.GET("/study-languages", systemController.GetAllIsPublished)
 	}
 
 	monitoring := engine.Group("/v1/admin/monitor")
@@ -479,7 +480,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},
 		&usecase.LanguagesConfigUsecase{
-			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			DBConn: dbConn,
+			Repo:   &repository.LanguagesConfigRepository{DBConn: dbConn},
 		},
 		&usecase.UserImagesUsecase{
 			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
@@ -920,8 +922,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	languagesConfigController := &controller.LanguagesConfigController{
 		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+			DBConn:          dbConn,
 			Repo:            &repository.LanguagesConfigRepository{DBConn: dbConn},
 			LangSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
+		},
+		GetUserFromToken: &usecase.GetUserFromTokenUseCase{
+			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
+			SessionRepository:    sessionRepository,
 		},
 	}
 
@@ -929,7 +936,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	{
 		languagesConfig.GET("", languagesConfigController.GetByOwner)
 		languagesConfig.POST("", languagesConfigController.UploadLanguagesConfig)
-		languagesConfig.GET("/assign", languagesConfigController.GetStudyLanguage4OrganizationAssign4Web)
+		languagesConfig.GET("/assigned-languages", languagesConfigController.GetStudyLanguage4OrganizationAssign4Web)
 	}
 
 	executor := &TimeMachineSubscriber{
