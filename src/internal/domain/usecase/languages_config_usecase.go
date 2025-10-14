@@ -13,13 +13,10 @@ import (
 	"sen-global-api/internal/domain/value"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type LanguagesConfigUsecase struct {
-	DBConn          *gorm.DB
-	Repo            *repository.LanguagesConfigRepository
-	LangSettingRepo *repository.LanguageSettingRepository
+	Repo *repository.LanguagesConfigRepository
 }
 
 // func NewLanguagesConfigUsecase(repo *repository.LanguagesConfigRepository) *LanguagesConfigUsecase {
@@ -142,33 +139,4 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Cont
 		return nil, err
 	}
 	return mapper.ToLanguagesConfigResponse4App(lc), nil
-}
-
-func (uc *LanguagesConfigUsecase) GetStudyLanguage4OrganizationAssign4Web(ctx context.Context, currentUser *entity.SUserEntity) ([]*response.StudyLanguage4Assign, error) {
-
-	// get organization id
-	managedOrgIDs, err := currentUser.GetManagedOrganizationIDs(DBConn)
-	if err != nil {
-		return nil, errors.New("cannot get managed organization")
-	}
-
-	if len(managedOrgIDs) == 0 {
-		return nil, errors.New("cannot get managed organization")
-	}
-
-	// get list language setting form admin
-	languageSetting, err := uc.LangSettingRepo.GetAllIsPublished()
-	if err != nil {
-		return nil, errors.New("cannot get language setting")
-	}
-
-	// get list language config form organization
-	languageConfig, err := uc.Repo.GetByOwner(ctx, managedOrgIDs[0], value.OwnerRoleLangOrganization)
-
-	if err != nil {
-		return nil, errors.New("cannot get language config")
-	}
-
-	return mapper.ToAssignLanguagesConfigResponse(languageSetting, &languageConfig.StudyLang), nil
-
 }

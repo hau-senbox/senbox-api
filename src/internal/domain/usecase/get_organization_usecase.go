@@ -4,17 +4,11 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
-	"sen-global-api/internal/domain/value"
-	"sen-global-api/pkg/uploader"
-
-	"github.com/gin-gonic/gin"
 )
 
 type GetOrganizationUseCase struct {
 	*repository.OrganizationRepository
 	*repository.DeviceRepository
-	*GetImageUseCase
-	*LanguagesConfigUsecase
 }
 
 func (receiver *GetOrganizationUseCase) GetOrganizationByID(id string) (*entity.SOrganization, error) {
@@ -67,44 +61,4 @@ func (receiver *GetOrganizationUseCase) GetAllOrganizations4Gateway() ([]respons
 	}
 
 	return responses, nil
-}
-
-func (receiver *GetOrganizationUseCase) GetOrganizationByID4Web(ctx *gin.Context, organizationID string) (*response.OrganizationResponse, error) {
-	// get org by id
-	organization, err := receiver.OrganizationRepository.GetByID(organizationID)
-	if err != nil {
-		return nil, err
-	}
-
-	managers := make([]response.GetOrgManagerInfoResponse, 0)
-	for _, userOrg := range organization.UserOrgs {
-		managers = append(managers, response.GetOrgManagerInfoResponse{
-			UserID:       userOrg.UserID.String(),
-			UserNickName: userOrg.UserNickName,
-			IsManager:    userOrg.IsManager,
-		})
-	}
-
-	// get avt url
-	avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(organization.Avatar, uploader.UploadPrivate)
-	var avatarURL string
-	if avtUrl != nil {
-		avatarURL = *avtUrl
-	}
-
-	// get languages config
-	languageConfigs, _ := receiver.LanguagesConfigUsecase.GetLanguagesConfigByOwner(ctx, organizationID, value.OwnerRoleLangOrganization)
-	// map sang response
-	response := response.OrganizationResponse{
-		ID:               organization.ID.String(),
-		OrganizationName: organization.OrganizationName,
-		Avatar:           organization.Avatar,
-		AvatarURL:        avatarURL,
-		Address:          organization.Address,
-		Description:      organization.Description,
-		Managers:         managers,
-		LanguageConfig:   languageConfigs,
-	}
-
-	return &response, nil
 }

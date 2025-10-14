@@ -36,12 +36,11 @@ func toLangItemList(items []entity.LanguageConfig) []entity.LanguageConfig {
 	result := make([]entity.LanguageConfig, len(items))
 	for i, item := range items {
 		result[i] = entity.LanguageConfig{
-			Order:             item.Order,
-			LanguageKey:       item.LanguageKey,
-			RegionKey:         item.RegionKey,
-			Percent:           item.Percent,
-			Note:              item.Note,
-			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
+			Order:    item.Order,
+			Language: item.Language,
+			Origin:   item.Origin,
+			Percent:  item.Percent,
+			Note:     item.Note,
 		}
 	}
 	return result
@@ -61,9 +60,8 @@ func toLangItemList4Web(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4Web, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4Web{
-			LanguageKey:       item.LanguageKey,
-			RegionKey:         item.RegionKey,
-			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
+			LanguageKey: item.Language,
+			RegionKey:   item.Origin,
 		}
 	}
 	return result
@@ -83,9 +81,8 @@ func toLangItemList4App(items []entity.LanguageConfig) []response.StudyLanguageC
 	result := make([]response.StudyLanguageConfig4App, len(items))
 	for i, item := range items {
 		result[i] = response.StudyLanguageConfig4App{
-			Language:          item.LanguageKey,
-			Origin:            formatOrigin(item.RegionKey),
-			UniqueLanguageKey: item.LanguageKey + "-" + item.RegionKey,
+			Language: item.Language,
+			Origin:   formatOrigin(item.Origin),
 		}
 	}
 	return result
@@ -103,24 +100,4 @@ func formatOrigin(origin string) string {
 		parts[i] = string(runes)
 	}
 	return strings.Join(parts, " ")
-}
-
-func ToAssignLanguagesConfigResponse(languageSettiings []entity.LanguageSetting, organizationStudyLang *entity.LanguageConfigList) []*response.StudyLanguage4Assign {
-	var result = make([]*response.StudyLanguage4Assign, 0)
-	for _, langSetting := range languageSettiings {
-		if organizationStudyLang != nil {
-			for _, lang := range *organizationStudyLang {
-				if lang.LanguageKey == langSetting.LangKey && lang.RegionKey == langSetting.RegionKey {
-					result = append(result, &response.StudyLanguage4Assign{
-						ID:          langSetting.ID,
-						LanguageKey: langSetting.LangKey,
-						RegionKey:   langSetting.RegionKey,
-					})
-					break
-				}
-			}
-		}
-	}
-
-	return result
 }

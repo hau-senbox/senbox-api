@@ -15,7 +15,6 @@ import (
 type LanguagesConfigController struct {
 	LanguagesConfigUsecase *usecase.LanguagesConfigUsecase
 	ChildUsecase           *usecase.ChildUseCase
-	GetUserFromToken       *usecase.GetUserFromTokenUseCase
 }
 
 func (c *LanguagesConfigController) GetByOwner(ctx *gin.Context) {
@@ -171,25 +170,4 @@ func getUserID(ctx *gin.Context) (string, bool) {
 	}
 	userID, ok := val.(string)
 	return userID, ok
-}
-
-func (c *LanguagesConfigController) GetStudyLanguage4OrganizationAssign4Web(ctx *gin.Context) {
-
-	currentUser, err := c.GetUserFromToken.GetUserFromToken(ctx)
-	res, err := c.LanguagesConfigUsecase.GetStudyLanguage4OrganizationAssign4Web(ctx, currentUser)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, response.FailedResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "Failed to get study language",
-			Error:   err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, response.SucceedResponse{
-		Code:    http.StatusOK,
-		Message: "Success",
-		Data:    res,
-	})
-
 }

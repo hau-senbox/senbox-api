@@ -18,19 +18,11 @@ type LanguagesConfigResponse4App struct {
 }
 
 type StudyLanguageConfig4Web struct {
-	LanguageKey       string `json:"lang_key"`
-	RegionKey         string `json:"region_key"`
-	UniqueLanguageKey string `json:"unique_language_key"`
+	LanguageKey string `json:"lang_key"`
+	RegionKey   string `json:"region_key"`
 }
 
 type StudyLanguageConfig4App struct {
-	Language          string `json:"language"`
-	Origin            string `json:"origin"`
-	UniqueLanguageKey string `json:"unique_language_key"`
-}
-
-type StudyLanguage4Assign struct {
-	ID          uint   `json:"id"`
-	LanguageKey string `json:"lang_key"`
-	RegionKey   string `json:"region_key"`
+	Language string `json:"language"`
+	Origin   string `json:"origin"`
 }
