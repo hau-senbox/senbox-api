@@ -349,14 +349,12 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 	}
 
 	orgAdminIds, _ := user.GetManagedOrganizationIDs(DBConn)
-
 	if len(orgAdminIds) == 0 {
 		return nil, errors.New("user does not manage any organization")
 	}
 
 	// get all student by org
 	students, err := uc.StudentRepo.GetByOrganizationID(orgAdminIds[0])
-
 	if err != nil {
 		return nil, err
 	}
@@ -378,5 +376,15 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 		}
 	}
 
-	return parents, nil
+	uniqueMap := make(map[uuid.UUID]entity.SParent)
+	for _, p := range parents {
+		uniqueMap[p.ID] = p
+	}
+
+	uniqueParents := make([]entity.SParent, 0, len(uniqueMap))
+	for _, v := range uniqueMap {
+		uniqueParents = append(uniqueParents, v)
+	}
+
+	return uniqueParents, nil
 }
