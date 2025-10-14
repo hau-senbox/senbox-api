@@ -26,3 +26,10 @@ type StudyLanguageConfig4App struct {
 	Language string `json:"language"`
 	Origin   string `json:"origin"`
 }
+
+type LanguageConfigResponse4HardStudentStudyLanguage struct {
+	LanguageKey       string `json:"lang_key"`
+	RegionKey         string `json:"region_key"`
+	LanguageFormat    string `json:"language_format"`
+	UniqueLanguageKey string `json:"unique_lang_key"`
+}

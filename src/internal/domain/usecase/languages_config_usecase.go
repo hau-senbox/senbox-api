@@ -123,20 +123,65 @@ func (uc *LanguagesConfigUsecase) GetStudentStudyLangConfig(ctx context.Context,
 	return mapper.ToStudyLanguagesConfigResponse(lc), nil
 }
 
-func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4Web, error) {
+// func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4Web, error) {
+// 	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return mapper.ToLanguagesConfigResponse4Web(lc), nil
+// }
 
-	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
-	if err != nil {
-		return nil, err
-	}
-	return mapper.ToLanguagesConfigResponse4Web(lc), nil
+// tam thoi hard de su. dubng cho report
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) ([]response.LanguageConfigResponse4HardStudentStudyLanguage, error) {
+
+	var res = make([]response.LanguageConfigResponse4HardStudentStudyLanguage, 0)
+	// hard vietnamese
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		LanguageKey:       "vietnamese",
+		RegionKey:         "ho_chi_minh",
+		LanguageFormat:    "Vietnamese Ho Chi Minh",
+		UniqueLanguageKey: "vietnamese-ho_chi_minh",
+	})
+
+	// hard english
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		LanguageKey:       "english",
+		RegionKey:         "united_kingdom",
+		LanguageFormat:    "English United Kingdom",
+		UniqueLanguageKey: "english-united_kingdom",
+	})
+
+	return res, nil
 }
 
-func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4App, error) {
+// func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) (*response.LanguagesConfigResponse4App, error) {
 
-	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
-	if err != nil {
-		return nil, err
-	}
-	return mapper.ToLanguagesConfigResponse4App(lc), nil
+// 	lc, err := uc.Repo.GetByOwner(ctx, ownerID, ownerRole)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return mapper.ToLanguagesConfigResponse4App(lc), nil
+// }
+
+// tam thoi hard de su. dubng cho report
+func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) ([]response.LanguageConfigResponse4HardStudentStudyLanguage, error) {
+
+	var res = make([]response.LanguageConfigResponse4HardStudentStudyLanguage, 0)
+	// hard vietnamese
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		LanguageKey:       "vietnamese",
+		RegionKey:         "ho_chi_minh",
+		LanguageFormat:    "Vietnamese Ho Chi Minh",
+		UniqueLanguageKey: "vietnamese-ho_chi_minh",
+	})
+
+	// hard english
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		LanguageKey:       "english",
+		RegionKey:         "united_kingdom",
+		LanguageFormat:    "English United Kingdom",
+		UniqueLanguageKey: "english-united_kingdom",
+	})
+
+	return res, nil
 }
