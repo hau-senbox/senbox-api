@@ -425,7 +425,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	}
 
-	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured(), middleware.GeneralLoggerMiddleware(dbConn))
+	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
 	{
 		menu.GET("/section", menuController.GetSectionMenu4WebAdmin)
 		menu.POST("/section", menuController.UploadSectionMenu)
@@ -446,7 +446,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// get user menu
 		menu.GET("/user/:id", menuController.GetUserMenu4Web)
-		menu.POST("/user", middleware.GeneralLoggerMiddleware(dbConn), menuController.UploadUserMenu)
+		menu.POST("/user", menuController.UploadUserMenu)
 		// super admin menu
 		menu.GET("", secureMiddleware.ValidateSuperAdminRole(), menuController.GetSuperAdminMenu4Web)
 		menu.POST("/top", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenuTop)
@@ -891,7 +891,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	org := engine.Group("/v1/admin/organization", secureMiddleware.Secured())
 	{
 		org.GET("/setting/device/:device_id", orgController.GetOrgSetting4Web)
-		org.POST("/setting/device", middleware.GeneralLoggerMiddleware(dbConn), orgController.UploadOrgSetting)
+		org.POST("/setting/device", orgController.UploadOrgSetting)
 		org.GET("/:organization_id/device", deviceController.GetAllDeviceByOrgID)
 		org.GET("/:organization_id/device/:device_id", deviceController.GetDevice4Web)
 		org.POST("/:organization_id/setting/device/news", orgController.UploadOrgSettingNewsDevice)

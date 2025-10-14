@@ -542,7 +542,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
 		userMenu.GET("/user/device/:id", menuController.GetDeviceMenu4App)
 		userMenu.GET("/device/organization/:organization_id", menuController.GetDeviceMenuByOrg4App)
-		userMenu.GET("/section", middleware.GeneralLoggerMiddleware(dbConn), menuController.GetSectionMenu4App)
+		userMenu.GET("/section", menuController.GetSectionMenu4App)
 
 		userMenu.POST("/super-admin", secureMiddleware.ValidateSuperAdminRole(), menuController.UploadSuperAdminMenu)
 		userMenu.POST("/org", menuController.UploadOrgMenu)
@@ -581,7 +581,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	org := engine.Group("/v1/user/organization", secureMiddleware.Secured())
 	{
-		org.GET("/setting/:device_id", middleware.GeneralLoggerMiddleware(dbConn), orgController.GetOrgSetting4App)
+		org.GET("/setting/:device_id", orgController.GetOrgSetting4App)
 		org.GET("/:organization_id/setting/news", orgController.GetOrgSettingNews)
 	}
 
@@ -598,7 +598,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	device := engine.Group("/v1/user/device", secureMiddleware.Secured())
 	{
-		device.GET("/:device_id", middleware.GeneralLoggerMiddleware(dbConn), deviceController.GetDevice4App)
+		device.GET("/:device_id", deviceController.GetDevice4App)
 	}
 
 	// languages config
