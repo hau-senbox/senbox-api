@@ -6,5 +6,4 @@ type LanguageSettingResponse struct {
 	RegionKey          string `json:"region_key"`
 	IsPublished        bool   `json:"is_published"`
 	DeactivatedMessage string `json:"deactivated_message"`
-	UniqueLanguageKey  string `json:"unique_language_key"`
 }

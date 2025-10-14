@@ -14,7 +14,6 @@ func MapLanguageSettingToResponses(list []entity.LanguageSetting) []response.Lan
 			RegionKey:          item.RegionKey,
 			IsPublished:        item.IsPublished,
 			DeactivatedMessage: item.DeactivatedMessage,
-			UniqueLanguageKey:  item.LangKey + "-" + item.RegionKey,
 		}
 	}
 	return result
