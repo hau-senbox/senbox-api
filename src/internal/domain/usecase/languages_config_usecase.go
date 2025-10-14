@@ -135,20 +135,27 @@ func (uc *LanguagesConfigUsecase) GetStudentStudyLangConfig(ctx context.Context,
 func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) ([]response.LanguageConfigResponse4HardStudentStudyLanguage, error) {
 
 	var res = make([]response.LanguageConfigResponse4HardStudentStudyLanguage, 0)
-	// hard vietnamese
-	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
-		LanguageKey:       "vietnamese",
-		RegionKey:         "ho_chi_minh",
-		LanguageFormat:    "Vietnamese Ho Chi Minh",
-		UniqueLanguageKey: "vietnamese-ho_chi_minh",
-	})
-
 	// hard english
 	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		Order:             1,
+		Percent:           50,
+		Language:          "english",
+		Origin:            "united_kingdom",
 		LanguageKey:       "english",
 		RegionKey:         "united_kingdom",
 		LanguageFormat:    "English United Kingdom",
 		UniqueLanguageKey: "english-united_kingdom",
+	})
+	// hard vietnamese
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		Order:             2,
+		Percent:           50,
+		Language:          "vietnamese",
+		Origin:            "ho_chi_minh",
+		LanguageKey:       "vietnamese",
+		RegionKey:         "ho_chi_minh",
+		LanguageFormat:    "Vietnamese Ho Chi Minh",
+		UniqueLanguageKey: "vietnamese-ho_chi_minh",
 	})
 
 	return res, nil
@@ -167,20 +174,19 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4Web(ctx context.Cont
 func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Context, ownerID string, ownerRole value.OwnerRole4LangConfig) ([]response.LanguageConfigResponse4HardStudentStudyLanguage, error) {
 
 	var res = make([]response.LanguageConfigResponse4HardStudentStudyLanguage, 0)
-	// hard vietnamese
-	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
-		LanguageKey:       "vietnamese",
-		RegionKey:         "ho_chi_minh",
-		LanguageFormat:    "Vietnamese Ho Chi Minh",
-		UniqueLanguageKey: "vietnamese-ho_chi_minh",
-	})
-
 	// hard english
 	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
 		LanguageKey:       "english",
 		RegionKey:         "united_kingdom",
 		LanguageFormat:    "English United Kingdom",
 		UniqueLanguageKey: "english-united_kingdom",
+	})
+	// hard vietnamese
+	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
+		LanguageKey:       "vietnamese",
+		RegionKey:         "ho_chi_minh",
+		LanguageFormat:    "Vietnamese Ho Chi Minh",
+		UniqueLanguageKey: "vietnamese-ho_chi_minh",
 	})
 
 	return res, nil

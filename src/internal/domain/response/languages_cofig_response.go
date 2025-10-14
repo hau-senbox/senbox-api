@@ -28,6 +28,10 @@ type StudyLanguageConfig4App struct {
 }
 
 type LanguageConfigResponse4HardStudentStudyLanguage struct {
+	Order             int    `json:"order"`
+	Language          string `json:"language"`
+	Origin            string `json:"origin"`
+	Percent           int    `json:"percent"`
 	LanguageKey       string `json:"lang_key"`
 	RegionKey         string `json:"region_key"`
 	LanguageFormat    string `json:"language_format"`
