@@ -137,6 +137,99 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 	}, nil
 }
 
+func (uc *ParentUseCase) GetParentByID4Web(ctx context.Context, parentID string) (*response.ParentResponseBase, error) {
+	parent, err := uc.ParentRepo.GetByID(ctx, parentID)
+	if err != nil {
+		return nil, err
+	}
+	if parent == nil {
+		return nil, errors.New("parent not found")
+	}
+
+	// Lấy danh sách ParentMenus
+	parentMenus, err := uc.ParentMenuRepo.GetByParentID(parentID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tạo danh sách componentID để lấy Component
+	componentIDs := make([]uuid.UUID, 0, len(parentMenus))
+	componentOrderMap := make(map[uuid.UUID]int)
+	componentIsShowMap := make(map[uuid.UUID]bool)
+
+	for _, cm := range parentMenus {
+		componentIDs = append(componentIDs, cm.ComponentID)
+		componentOrderMap[cm.ComponentID] = cm.Order
+		componentIsShowMap[cm.ComponentID] = cm.IsShow
+	}
+
+	// Lấy tất cả components theo danh sách ID
+	components, err := uc.ComponentRepo.GetByIDs(componentIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Gom components theo language_id
+	menusByLang := make(map[uint][]response.ComponentResponse)
+	langMap := make(map[uint]entity.LanguageSetting)
+
+	for _, comp := range components {
+		menu := response.ComponentResponse{
+			ID:         comp.ID.String(),
+			Name:       comp.Name,
+			Type:       comp.Type.String(),
+			Key:        comp.Key,
+			Value:      string(comp.Value),
+			Order:      componentOrderMap[comp.ID],
+			IsShow:     componentIsShowMap[comp.ID],
+			LanguageID: comp.LanguageID,
+		}
+
+		menusByLang[comp.LanguageID] = append(menusByLang[comp.LanguageID], menu)
+
+		// nếu chưa có language ILanguageIDtrong cache -> query DB
+		if _, ok := langMap[comp.LanguageID]; !ok {
+			langSetting, err := uc.LanguageSettingRepo.GetByID(comp.LanguageID)
+			if err != nil {
+				return nil, err
+			}
+			if langSetting != nil {
+				langMap[comp.LanguageID] = *langSetting
+			}
+		}
+	}
+
+	// Build []GetMenus4Web
+	getMenus := make([]response.GetMenus4Web, 0, len(menusByLang))
+	for langID, comps := range menusByLang {
+		getMenus = append(getMenus, response.GetMenus4Web{
+			Language: langMap[langID],
+			Menus:    comps,
+		})
+	}
+
+	// get languages config
+	languageConfig, _ := uc.LanguagesConfigUsecase.GetLanguagesConfigByOwnerNoCtx(parentID, value.OwnerRoleLangParent)
+
+	// get avts
+	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(parentID, value.OwnerRoleParent)
+
+	// get user
+	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+
+	return &response.ParentResponseBase{
+		ParentID:       parentID,
+		ParentName:     user.Nickname,
+		Avatar:         "",
+		AvatarURL:      "",
+		Menus:          getMenus,
+		LanguageConfig: languageConfig,
+		Avatars:        avatars,
+		CustomID:       "",
+		CreatedIndex:   parent.CreatedIndex,
+	}, nil
+}
+
 func (uc *ParentUseCase) GetParentByUser4Web(ctx context.Context, userID string) (*response.ParentResponseBase, error) {
 	parent, err := uc.ParentRepo.GetByUserID(ctx, userID)
 	if err != nil {

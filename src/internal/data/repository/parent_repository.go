@@ -4,6 +4,7 @@ import (
 	"context"
 	"sen-global-api/internal/domain/entity"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -33,5 +34,13 @@ func (r *ParentRepository) WithTx(tx *gorm.DB) *ParentRepository {
 func (r *ParentRepository) GetAll(ctx context.Context) ([]entity.SParent, error) {
 	var parents []entity.SParent
 	err := r.DBConn.WithContext(ctx).Find(&parents).Error
+	return parents, err
+}
+
+func (r *ParentRepository) GetByID(ctx context.Context, parentID string) (*entity.SParent, error) {
+	var parents *entity.SParent
+
+	parentUuid := uuid.MustParse(parentID)
+	err := r.DBConn.WithContext(ctx).Where("id = ?", parentUuid).First(&parents).Error
 	return parents, err
 }

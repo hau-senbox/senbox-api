@@ -1841,7 +1841,7 @@ func (receiver *UserEntityController) GetParent4WebAdmin(context *gin.Context) {
 		return
 	}
 
-	parent, err := receiver.ParentUseCase.GetParentByID(parentID)
+	parent, err := receiver.ParentUseCase.GetParentByID4Web(context, parentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
