@@ -2,6 +2,7 @@ package repository
 
 import (
 	"sen-global-api/internal/domain/entity"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +16,7 @@ func (r *ValuesAppCurrentRepository) Create(log *entity.ValuesAppCurrent) error 
 }
 
 func (r *ValuesAppCurrentRepository) Update(log *entity.ValuesAppCurrent) error {
+	log.UpdatedAt = time.Now()
 	return r.DBConn.Save(log).Error
 }
 
