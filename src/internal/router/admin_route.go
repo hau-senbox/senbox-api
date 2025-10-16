@@ -797,6 +797,17 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 		},
+		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	deviceController := &controller.DeviceController{
@@ -902,6 +913,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.GET("/switch/:organization_id", secureMiddleware.ValidateSuperAdminRole(), orgController.SwitchToOrganizationAdmin)
 		// delete device by org
 		org.DELETE("/:organization_id/device/:device_id", deviceController.DeleteDeviceByOrgID)
+		// get org detail
+		org.GET("/:organization_id", orgController.GetOrganizationByID4Web)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
