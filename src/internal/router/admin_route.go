@@ -637,6 +637,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
 			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
 		},
+		PreRegisterUseCase: &usecase.PreRegisterUseCase{
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			FormRepository:       &repository.FormRepository{DBConn: dbConn},
+		},
 	}
 
 	userBlockSettingController := &controller.BlockSettingController{
@@ -689,6 +693,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// get language setting
 		user.GET("/student/:id/language-config", secureMiddleware.Secured(), userEntityController.GetStudentLanguageConfig4Web)
+
+		// pre register
+		user.GET("/pre-register", userEntityController.GetAllPreRegister4Web)
 	}
 
 	// application

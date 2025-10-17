@@ -647,11 +647,11 @@ func (receiver *UserEntityRepository) GetPreRegisterUserByEmail(email string) (*
 	return register, nil
 }
 
-func (receiver *UserEntityRepository) CreatePreRegisterUser(email string) error {
+func (receiver *UserEntityRepository) CreatePreRegisterUser(entity *entity.SPreRegister) error {
 	// check if email already registered
 	var count int64
-	err := receiver.DBConn.Model(&entity.SPreRegister{}).
-		Where("email = ?", email).
+	err := receiver.DBConn.Model(&entity).
+		Where("email = ?", entity.Email).
 		Count(&count).Error
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -664,9 +664,7 @@ func (receiver *UserEntityRepository) CreatePreRegisterUser(email string) error 
 	}
 
 	// create register
-	err = receiver.DBConn.Create(&entity.SPreRegister{
-		Email: email,
-	}).Error
+	err = receiver.DBConn.Create(&entity).Error
 	if err != nil {
 		log.Error("UserEntityRepository.CreatePreRegisterUser: " + err.Error())
 		return errors.New("failed to create user pre register")
@@ -1237,4 +1235,15 @@ func (r *UserEntityRepository) UpdateReLogin(userID string, relogin *bool) error
 	}
 
 	return nil
+}
+
+func (receiver *UserEntityRepository) GetAllPreRegister() ([]*entity.SPreRegister, error) {
+	var registers []*entity.SPreRegister
+	err := receiver.DBConn.Model(&entity.SPreRegister{}).Find(&registers).Error
+	if err != nil {
+		log.Error("UserEntityRepository.GetAllPreRegister: " + err.Error())
+		return nil, errors.New("failed to fetch user pre registers")
+	}
+
+	return registers, nil
 }

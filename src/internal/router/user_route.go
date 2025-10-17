@@ -100,11 +100,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		DeleteUserAuthorizeUseCase: &usecase.DeleteUserAuthorizeUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 		},
-		GetPreRegisterUseCase: &usecase.GetPreRegisterUseCase{
+		PreRegisterUseCase: &usecase.PreRegisterUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
-		},
-		CreatePreRegisterUseCase: &usecase.CreatePreRegisterUseCase{
-			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			FormRepository:       &repository.FormRepository{DBConn: dbConn},
 		},
 		GetUserFromTokenUseCase: &usecase.GetUserFromTokenUseCase{
 			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
@@ -446,8 +444,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		user.POST("/func", secureMiddleware.Secured(), userEntityController.UpdateUserAuthorize)
 		user.DELETE("/func", secureMiddleware.Secured(), userEntityController.DeleteUserAuthorize)
 
-		user.GET("/pre-register/", secureMiddleware.Secured(), userEntityController.GetAllPreRegisterUser)
-		user.POST("/pre-register/", userEntityController.CreatePreRegister)
+		user.GET("/pre-register", secureMiddleware.Secured(), userEntityController.GetAllPreRegister4App)
+		user.POST("/pre-register", userEntityController.CreatePreRegister)
 		user.GET("/role-sign-up", userEntityController.GetAllRoleOrgSignUp)
 		user.GET("/child/:id", secureMiddleware.Secured(), userEntityController.GetChildByID)
 		user.PUT("/child", secureMiddleware.Secured(), userEntityController.UpdateChild)

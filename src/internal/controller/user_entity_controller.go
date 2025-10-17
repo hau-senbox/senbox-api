@@ -31,8 +31,6 @@ type UserEntityController struct {
 	*usecase.UpdateUserOrgInfoUseCase
 	*usecase.UpdateUserAuthorizeUseCase
 	*usecase.DeleteUserAuthorizeUseCase
-	*usecase.GetPreRegisterUseCase
-	*usecase.CreatePreRegisterUseCase
 	*usecase.GetUserFromTokenUseCase
 
 	*usecase.GetUserFormApplicationUseCase
@@ -56,6 +54,7 @@ type UserEntityController struct {
 	*usecase.OwnerAssignUseCase
 	*usecase.GetImageUseCase
 	*usecase.UserEntityUseCase
+	*usecase.PreRegisterUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -901,12 +900,8 @@ func (receiver *UserEntityController) UpdateUserOrgInfo(context *gin.Context) {
 	})
 }
 
-type registerResponse struct {
-	Email string `json:"email"`
-}
-
-func (receiver *UserEntityController) GetAllPreRegisterUser(context *gin.Context) {
-	registers, err := receiver.GetPreRegisterUseCase.GetAllPreRegisterUser()
+func (receiver *UserEntityController) GetAllPreRegister4App(context *gin.Context) {
+	res, err := receiver.PreRegisterUseCase.GetAllPreRegister4App()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -915,11 +910,20 @@ func (receiver *UserEntityController) GetAllPreRegisterUser(context *gin.Context
 		return
 	}
 
-	var res []registerResponse
-	for _, register := range registers {
-		res = append(res, registerResponse{
-			Email: register.Email,
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}
+
+func (receiver *UserEntityController) GetAllPreRegister4Web(context *gin.Context) {
+	res, err := receiver.PreRegisterUseCase.GetAllPreRegister4Web()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
+		return
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
@@ -927,13 +931,8 @@ func (receiver *UserEntityController) GetAllPreRegisterUser(context *gin.Context
 		Data: res,
 	})
 }
-
-type createPreRegisterResponse struct {
-	Email string `json:"email"`
-}
-
 func (receiver *UserEntityController) CreatePreRegister(context *gin.Context) {
-	var req createPreRegisterResponse
+	var req request.CreatePreRegisterRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -942,7 +941,7 @@ func (receiver *UserEntityController) CreatePreRegister(context *gin.Context) {
 		return
 	}
 
-	err := receiver.CreatePreRegisterUseCase.CreatePreRegister(req.Email)
+	err := receiver.PreRegisterUseCase.CreatePreRegister(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
