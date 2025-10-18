@@ -2632,3 +2632,27 @@ func (receiver *UserEntityController) GetUserByStaff(context *gin.Context) {
 		Data: res,
 	})
 }
+
+func (receiver *UserEntityController) GetStaffsTeachers4App(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+
+	staffs, _ := receiver.StaffApplicationUseCase.GetAllStaffByOrg4App(context, organizationID)
+	teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeacherByOrg4App(context, organizationID)
+
+	res := map[string]interface{}{
+		"staffs":   staffs,
+		"teachers": teachers,
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: res,
+	})
+}

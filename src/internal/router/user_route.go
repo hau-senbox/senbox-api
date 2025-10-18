@@ -64,6 +64,31 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.ParentChildsRepository{DBConn: dbConn},
 	)
 
+	staffUsecase := usecase.NewStaffApplicationUseCase(
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.StaffMenuRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		&repository.OrganizationRepository{DBConn: dbConn},
+		&usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
+		&usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
+	)
+
 	userEntityController := &controller.UserEntityController{
 		GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
@@ -190,6 +215,30 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		GetImageUseCase: &usecase.GetImageUseCase{
 			ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			UploadProvider:  provider,
+		},
+		StaffApplicationUseCase: staffUsecase,
+		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			GetUserEntityUseCase: &usecase.GetUserEntityUseCase{
+				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			TeacherMenuRepo:      &repository.TeacherMenuRepository{DBConn: dbConn},
+			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
+			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
+			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 
@@ -459,6 +508,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		{
 			aacountsLog.POST("", secureMiddleware.Secured(), accountsLogController.CreateAccountsLog)
 		}
+
+		user.GET("/organization/:organization_id/staffs-teachers", secureMiddleware.Secured(), userEntityController.GetStaffsTeachers4App)
 	}
 
 	teacherApplication := engine.Group("/v1/user/teacher/application")

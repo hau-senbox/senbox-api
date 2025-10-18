@@ -516,3 +516,13 @@ func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(userID strin
 		Avatar:         avatar,
 	}, nil
 }
+
+func (uc *TeacherApplicationUseCase) GetAllTeacherByOrg4App(ctx *gin.Context, organizationID string) ([]response.TeacherResponse, error) {
+
+	teachers, err := uc.TeacherRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapTeacherAppsToResponse(teachers, uc), nil
+}

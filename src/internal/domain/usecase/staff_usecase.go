@@ -445,3 +445,13 @@ func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(userID string, o
 		Avatar:         avatar,
 	}, nil
 }
+
+func (uc *StaffApplicationUseCase) GetAllStaffByOrg4App(ctx *gin.Context, organizationID string) ([]response.StaffResponse, error) {
+
+	staffs, err := uc.StaffAppRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapStaffAppsToResponse(staffs, uc), nil
+}
