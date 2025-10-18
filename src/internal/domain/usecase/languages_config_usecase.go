@@ -178,14 +178,14 @@ func (uc *LanguagesConfigUsecase) GetLanguagesConfigByOwner4App(ctx context.Cont
 	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
 		LanguageKey:       "english",
 		RegionKey:         "united_kingdom",
-		LanguageFormat:    "English United Kingdom",
+		LanguageFormat:    "🇺🇸 English 🇬🇧 United Kingdom",
 		UniqueLanguageKey: "english-united_kingdom",
 	})
 	// hard vietnamese
 	res = append(res, response.LanguageConfigResponse4HardStudentStudyLanguage{
 		LanguageKey:       "vietnamese",
 		RegionKey:         "ho_chi_minh",
-		LanguageFormat:    "Vietnamese Ho Chi Minh",
+		LanguageFormat:    "🇻🇳 Vietnamese 🇻🇳 Ho Chi Minh",
 		UniqueLanguageKey: "vietnamese-ho_chi_minh",
 	})
 
