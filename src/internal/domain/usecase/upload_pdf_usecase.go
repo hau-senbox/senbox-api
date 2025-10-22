@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
+	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/uploader"
 	"strings"
 	"time"
@@ -18,10 +21,10 @@ type UploadPDFUseCase struct {
 	*repository.PdfRepository
 }
 
-func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfName string, mode uploader.UploadMode, ogrID string) (*string, *entity.SPdf, error) {
+func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfName string, mode uploader.UploadMode) (*string, *entity.SPdf, error) {
 	fileExt := strings.ToLower(path.Ext(fileName))
 
-	if !isValidHandler(fileExt) {
+	if !isValidPDF(fileExt) {
 		return nil, nil, fmt.Errorf("file extension %s is not supported", fileExt)
 	}
 
@@ -43,11 +46,11 @@ func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfNa
 	}
 
 	pdf := &entity.SPdf{
-		PdfName:        pdfName,
-		Folder:         folder,
-		OrganizationID: ogrID,
-		Key:            uploadPath,
-		Extension:      fileExt,
+		PdfName: pdfName,
+		Folder:  folder,
+		//OrganizationID: ogrID,
+		Key:       uploadPath,
+		Extension: fileExt,
 	}
 
 	err = receiver.PdfRepository.Save(pdf)
@@ -59,10 +62,69 @@ func (receiver *UploadPDFUseCase) UploadPDF(data []byte, folder, fileName, pdfNa
 
 }
 
-func isValidHandler(extName string) bool {
-	extName = strings.ToLower(extName)
-	if extName == ".pdf" {
-		return true
+func (uc *UploadPDFUseCase) UploadPDFv2(data []byte, req request.UploadPdfRequest) (*response.PdfResponse, error) {
+	// Chuẩn hóa dữ liệu đầu vào
+	req.Folder = helper.SanitizeName(req.Folder)
+	req.FileName = helper.SanitizeName(req.FileName)
+
+	// Lấy extension
+	fileExt := strings.ToLower(path.Ext(req.FileName))
+	if fileExt == "" && req.File != nil {
+		fileExt = strings.ToLower(path.Ext(req.File.Filename))
 	}
-	return false
+
+	// Kiểm tra định dạng hợp lệ
+	if !isValidPDF(fileExt) {
+		return nil, fmt.Errorf("file extension %s is not supported (only .pdf allowed)", fileExt)
+	}
+
+	// Nếu folder trống → mặc định là "pdf"
+	if req.Folder == "" {
+		req.Folder = "pdf"
+	}
+
+	// Sinh tên file mới
+	timestamp := time.Now().UnixNano()
+	finalFileName := fmt.Sprintf("%s_%d%s", req.FileName, timestamp, fileExt)
+
+	// Chuyển mode string → enum
+	mode, err := uploader.UploadModeFromString(req.Mode)
+	if err != nil {
+		return nil, fmt.Errorf("invalid upload mode: %w", err)
+	}
+
+	// Upload file
+	uploadPath := fmt.Sprintf("%s/%s", req.Folder, finalFileName)
+	url, err := uc.UploadProvider.SaveFileUploaded(context.Background(), data, uploadPath, mode)
+	if err != nil {
+		log.Errorf("error uploading file to S3: %v", err)
+		return nil, err
+	}
+
+	// Lưu thông tin PDF vào database
+	pdf := &entity.SPdf{
+		PdfName:   req.FileName,
+		Folder:    req.Folder,
+		Key:       uploadPath,
+		Extension: fileExt,
+	}
+
+	if err := uc.PdfRepository.Save(pdf); err != nil {
+		log.Errorf("error saving pdf metadata: %v", err)
+		return nil, err
+	}
+
+	// Chuẩn bị response
+	res := &response.PdfResponse{
+		PdfName:   pdf.PdfName,
+		Key:       pdf.Key,
+		Url:       *url,
+		Extension: pdf.Extension,
+	}
+
+	return res, nil
+}
+
+func isValidPDF(ext string) bool {
+	return strings.ToLower(ext) == ".pdf"
 }

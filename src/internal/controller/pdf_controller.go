@@ -2,7 +2,9 @@ package controller
 
 import (
 	"bufio"
+	"io"
 	"net/http"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
@@ -34,14 +36,14 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 
 	folder := context.DefaultPostForm("folder", "pdf")
 	fileName := context.DefaultPostForm("file_name", randx.GenString(10))
-	orgIDString := context.DefaultPostForm("org_id", "")
-	if orgIDString == "" {
-		context.JSON(http.StatusBadRequest, response.FailedResponse{
-			Code:  http.StatusBadRequest,
-			Error: "Missing org_id",
-		})
-		return
-	}
+	// orgIDString := context.DefaultPostForm("org_id", "")
+	// if orgIDString == "" {
+	// 	context.JSON(http.StatusBadRequest, response.FailedResponse{
+	// 		Code:  http.StatusBadRequest,
+	// 		Error: "Missing org_id",
+	// 	})
+	// 	return
+	// }
 	mode, err := uploader.UploadModeFromString(context.PostForm("mode"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
@@ -70,7 +72,7 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		return
 	}
 
-	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode, orgIDString)
+	url, pdf, err := receiver.UploadPDFUseCase.UploadPDF(dataBytes, folder, fileHeader.Filename, fileName, mode)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -91,11 +93,11 @@ func (receiver *PdfController) CreatePDF(context *gin.Context) {
 		Code:    http.StatusOK,
 		Message: "pdf was create successfully",
 		Data: response.PdfResponse{
-			PdfName:        pdf.PdfName,
-			Key:            pdf.Key,
-			OrganizationID: pdf.OrganizationID,
-			Extension:      pdf.Extension,
-			Url:            *url,
+			PdfName: pdf.PdfName,
+			Key:     pdf.Key,
+			// OrganizationID: pdf.OrganizationID,
+			Extension: pdf.Extension,
+			Url:       *url,
 		},
 	})
 }
@@ -171,6 +173,87 @@ func (recervier *PdfController) DeletePDF(context *gin.Context) {
 		})
 		return
 	}
+
+	err := recervier.DeletePDFUseCase.DeletePDF(req.Key)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "pdf deleted successfully",
+	})
+}
+
+func (recervier *PdfController) UpoadPDF4Gw(context *gin.Context) {
+	var req request.UploadImageRequest
+	if err := context.ShouldBind(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// mở file
+	file, err := req.File.Open()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	// gắn data vào request
+	uploadReq := request.UploadPdfRequest{
+		File:     req.File,
+		Folder:   req.Folder,
+		FileName: req.FileName,
+		Mode:     req.Mode,
+	}
+	res, err := recervier.UploadPDFUseCase.UploadPDFv2(data, uploadReq)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "image deleted successfully",
+		Data:    res,
+	})
+}
+
+func (recervier *PdfController) DeletePDF4Gw(context *gin.Context) {
+	key := context.Param("key")
+	if key == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "key is required",
+		})
+		return
+	}
+
+	var req deletePDFByKeyRequest
+	req.Key = key
 
 	err := recervier.DeletePDFUseCase.DeletePDF(req.Key)
 	if err != nil {

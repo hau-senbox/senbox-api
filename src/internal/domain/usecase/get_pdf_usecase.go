@@ -29,11 +29,11 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 		}
 
 		return &response.PdfResponse{
-			Url:            *url,
-			PdfName:        pdf.PdfName,
-			OrganizationID: pdf.OrganizationID,
-			Key:            pdf.Key,
-			Extension:      pdf.Extension,
+			Url:     *url,
+			PdfName: pdf.PdfName,
+			// OrganizationID: pdf.OrganizationID,
+			Key:       pdf.Key,
+			Extension: pdf.Extension,
 		}, nil
 	case uploader.UploadPublic:
 		duration := time.Now().AddDate(10, 0, 0).Sub(time.Now())
@@ -42,11 +42,11 @@ func (u *GetPdfByKeyUseCase) GetPdfByKey(key string, mode uploader.UploadMode) (
 			return nil, err
 		}
 		return &response.PdfResponse{
-			Url:            *url,
-			PdfName:        pdf.PdfName,
-			OrganizationID: pdf.OrganizationID,
-			Key:            pdf.Key,	
-			Extension:      pdf.Extension,
+			Url:     *url,
+			PdfName: pdf.PdfName,
+			// OrganizationID: pdf.OrganizationID,
+			Key:       pdf.Key,
+			Extension: pdf.Extension,
 		}, nil
 	default:
 		return nil, errors.New("invalid upload mode")

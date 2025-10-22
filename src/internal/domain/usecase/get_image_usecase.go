@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/pkg/uploader"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type GetImageUseCase struct {

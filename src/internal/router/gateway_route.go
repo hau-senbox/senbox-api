@@ -294,6 +294,29 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			audio.DELETE("/:key", audioController.DeleteAudio4GW)
 		}
 
+		// pdf
+		pdfController := &controller.PdfController{
+			GetPdfByKeyUseCase: &usecase.GetPdfByKeyUseCase{
+				PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+				UploadProvider: s3Provider,
+			},
+			UploadPDFUseCase: &usecase.UploadPDFUseCase{
+				PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+				UploadProvider: s3Provider,
+			},
+			DeletePDFUseCase: &usecase.DeletePDFUseCase{
+				PdfRepository:  &repository.PdfRepository{DBConn: dbConn},
+				UploadProvider: s3Provider,
+			},
+		}
+
+		pdf := api.Group("/pdfs")
+		{
+			pdf.POST("/get-url", pdfController.GetUrlByKey)
+			pdf.POST("/upload", pdfController.UpoadPDF4Gw)
+			pdf.DELETE("/:key", pdfController.DeletePDF4Gw)
+		}
+
 		// message language
 		messageLanguageRepo := repository.NewMessageLanguageRepository(dbConn)
 		messageLanguageUsecase := usecase.NewMessageLanguageUseCase(messageLanguageRepo)
