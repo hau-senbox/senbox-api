@@ -312,7 +312,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 
 		pdf := api.Group("/pdfs")
 		{
-			pdf.POST("/get-url", pdfController.GetUrlByKey)
+			pdf.POST("/get-url", pdfController.GetUrlByKey4Gw)
 			pdf.POST("/upload", pdfController.UpoadPDF4Gw)
 			pdf.DELETE("/:key", pdfController.DeletePDF4Gw)
 		}

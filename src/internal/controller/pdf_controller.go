@@ -269,3 +269,43 @@ func (recervier *PdfController) DeletePDF4Gw(context *gin.Context) {
 		Message: "pdf deleted successfully",
 	})
 }
+
+func (recervier *PdfController) GetUrlByKey4Gw(context *gin.Context) {
+	var req getUrlByKeyRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	mode, err := uploader.UploadModeFromString(req.Mode)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	res, err := recervier.GetPdfByKey(req.Key, mode)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	url := ""
+	if res.Url != "" {
+		url = res.Url
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "pdf was get successfully",
+		Data:    url,
+	})
+}
