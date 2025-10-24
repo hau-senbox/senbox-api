@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -242,8 +243,9 @@ func (recervier *PdfController) UpoadPDF4Gw(context *gin.Context) {
 	})
 }
 
-func (recervier *PdfController) DeletePDF4Gw(context *gin.Context) {
-	key := context.Param("key")
+func (receiver *PdfController) DeletePDF4Gw(context *gin.Context) {
+	key := strings.TrimPrefix(context.Param("key"), "/")
+
 	if key == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -252,10 +254,7 @@ func (recervier *PdfController) DeletePDF4Gw(context *gin.Context) {
 		return
 	}
 
-	var req deletePDFByKeyRequest
-	req.Key = key
-
-	err := recervier.DeletePDFUseCase.DeletePDF(req.Key)
+	err := receiver.DeletePDFUseCase.DeletePDF(key)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,

@@ -9,6 +9,7 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/pkg/randx"
 	"sen-global-api/pkg/uploader"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -219,7 +220,7 @@ func (vc *VideoController) UploadVideo4GW(c *gin.Context) {
 }
 
 func (receiver *VideoController) DeleteVideo4GW(context *gin.Context) {
-	key := context.Param("key")
+	key := strings.TrimPrefix(context.Param("key"), "/")
 	if key == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

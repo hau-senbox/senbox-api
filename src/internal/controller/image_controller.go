@@ -478,7 +478,7 @@ func (ic *ImageController) UploadImage4GW(c *gin.Context) {
 }
 
 func (receiver *ImageController) DeleteImage4GW(context *gin.Context) {
-	key := context.Param("key")
+	key := strings.TrimPrefix(context.Param("key"), "/")
 	if key == "" {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
