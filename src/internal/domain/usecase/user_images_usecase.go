@@ -212,21 +212,13 @@ func (uc *UserImagesUsecase) GetAvtIsMain4Owner(ownerID string, ownerRole value.
 	imageEntity, _ := uc.ImageRepo.GetByID(userImages.ImageID)
 	// get img url
 	url, _ := uc.GetImageUseCase.GetUrlByKey(imageEntity.Key, uploader.UploadPrivate)
-	avtUrl := ""
-	if url != nil {
-		avtUrl = *url
-	}
-
-	if imageEntity == nil {
-		return response.Avatar{}, fmt.Errorf("image not found for image_id %d", userImages.ImageID)
-	}
 
 	avatar := response.Avatar{
 		ImageID:  userImages.ImageID,
 		ImageKey: imageEntity.Key,
 		Index:    userImages.Index,
 		IsMain:   userImages.IsMain,
-		ImageUrl: avtUrl,
+		ImageUrl: *url,
 	}
 
 	return avatar, nil

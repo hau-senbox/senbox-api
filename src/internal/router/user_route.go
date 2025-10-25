@@ -179,6 +179,14 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 			DeviceRepo:       &repository.DeviceRepository{DBConn: dbConn},
 			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+					UploadProvider:  provider,
+				},
+			},
 		},
 		UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},

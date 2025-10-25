@@ -296,17 +296,13 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 	// }
 
 	// get student main avt url
-	avtMainImageUrl := ""
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(studentID, value.OwnerRoleStudent)
-	if avatar.ImageKey != "" {
-		avtMainImageUrl = avatar.ImageUrl
-	}
 
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
 		StudentName: studentApp.StudentName,
 		CustomID:    studentApp.CustomID,
-		AvatarURL:   avtMainImageUrl,
+		AvatarURL:   avatar.ImageUrl,
 	}, nil
 }
 
