@@ -438,7 +438,7 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*resp
 	return &response.GetTeacher4Gateway{
 		TeacherID:      teacherID,
 		OrganizationID: teacher.OrganizationID.String(),
-		TeacherName:    userEntity.Username,
+		TeacherName:    userEntity.Nickname,
 		Avatar:         avatar,
 	}, nil
 }
