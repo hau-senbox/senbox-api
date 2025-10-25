@@ -295,10 +295,14 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 	// 	return nil, errors.New("device not associated with student's organization")
 	// }
 
+	// get student main avt url
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(studentID, value.OwnerRoleStudent)
+
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
 		StudentName: studentApp.StudentName,
 		CustomID:    studentApp.CustomID,
+		AvatarURL:   avatar.ImageUrl,
 	}, nil
 }
 
