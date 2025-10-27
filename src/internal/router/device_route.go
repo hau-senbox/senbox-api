@@ -32,7 +32,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		log.Errorf("error getting current directory: %w", err)
+		log.Errorf("error getting current directory: %s", err)
 		return
 	}
 	driveService, err := drive.NewService(context.Background(), option.WithCredentialsFile(pwd+"/credentials/google_service_account.json"))
