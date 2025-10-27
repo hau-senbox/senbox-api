@@ -1,4 +1,4 @@
-package dto
+package response
 
 type DepartmentGateway struct {
 	ID   string `json:"id"`

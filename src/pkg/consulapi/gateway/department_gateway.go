@@ -3,7 +3,7 @@ package gateway
 import (
 	"encoding/json"
 	"fmt"
-	"sen-global-api/pkg/consulapi/gateway/dto"
+	"sen-global-api/pkg/consulapi/gateway/dto/response"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ import (
 )
 
 type DepartmentGateway interface {
-	GetDepartmentsByUser(context *gin.Context) ([]*dto.DepartmentGateway, error)
+	GetDepartmentsByUser(context *gin.Context) ([]*response.DepartmentGateway, error)
 }
 
 type departmentGateway struct {
@@ -26,7 +26,7 @@ func NewDepartmentGateway(serviceName string, consulClient *api.Client) Departme
 	}
 }
 
-func (dg *departmentGateway) GetDepartmentsByUser(context *gin.Context) ([]*dto.DepartmentGateway, error) {
+func (dg *departmentGateway) GetDepartmentsByUser(context *gin.Context) ([]*response.DepartmentGateway, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := context.Get("token")
 	if !exists {
@@ -55,7 +55,7 @@ func (dg *departmentGateway) GetDepartmentsByUser(context *gin.Context) ([]*dto.
 		return nil, err
 	}
 
-	var gwResp dto.APIGateWayResponse[[]*dto.DepartmentGateway]
+	var gwResp response.APIGateWayResponse[[]*response.DepartmentGateway]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
 		return nil, fmt.Errorf("unmarshal response fail: %w", err)
 	}
@@ -67,7 +67,7 @@ func (dg *departmentGateway) GetDepartmentsByUser(context *gin.Context) ([]*dto.
 	return gwResp.Data, nil
 }
 
-func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, orgID string) ([]*dto.DepartmentGateway, error) {
+func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, orgID string) ([]*response.DepartmentGateway, error) {
 	token, exists := context.Get("token")
 	if !exists {
 		return nil, fmt.Errorf("token not found in context")
@@ -99,7 +99,7 @@ func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, 
 		return nil, err
 	}
 
-	var gwResp dto.APIGateWayResponse[[]*dto.DepartmentGateway]
+	var gwResp response.APIGateWayResponse[[]*response.DepartmentGateway]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
 		return nil, fmt.Errorf("unmarshal response fail: %w", err)
 	}

@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ type StaffApplicationUseCase struct {
 	LanguagesConfigUsecase *LanguagesConfigUsecase
 	UserImagesUsecase      *UserImagesUsecase
 	LanguageSettingRepo    *repository.LanguageSettingRepository
+	ProfileGateway         gateway.ProfileGateway
 }
 
 func NewStaffApplicationUseCase(
@@ -454,4 +456,17 @@ func (uc *StaffApplicationUseCase) GetAllStaffByOrg4App(ctx *gin.Context, organi
 	}
 
 	return mapStaffAppsToResponse(staffs, uc), nil
+}
+
+func (uc *StaffApplicationUseCase) GenerateStaffCode(ctx *gin.Context) {
+	// get all staffs
+	staffs, err := uc.StaffAppRepo.GetAll()
+	if err != nil {
+		return
+	}
+
+	for _, sf := range staffs {
+		// call profile gateway to generate staff code
+		_, _ = uc.ProfileGateway.GenerateStaffCode(ctx, sf.ID.String(), sf.CreatedIndex)
+	}
 }

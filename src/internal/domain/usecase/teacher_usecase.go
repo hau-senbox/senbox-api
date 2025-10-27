@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ type TeacherApplicationUseCase struct {
 	LanguagesConfigUsecase *LanguagesConfigUsecase
 	UserImagesUsecase      *UserImagesUsecase
 	LanguageSettingRepo    *repository.LanguageSettingRepository
+	ProfileGateway         gateway.ProfileGateway
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -525,4 +527,17 @@ func (uc *TeacherApplicationUseCase) GetAllTeacherByOrg4App(ctx *gin.Context, or
 	}
 
 	return mapTeacherAppsToResponse(teachers, uc), nil
+}
+
+func (uc *TeacherApplicationUseCase) GenerateTeacherCode(ctx *gin.Context) {
+	// get all teachers
+	teachers, err := uc.TeacherRepo.GetAll()
+	if err != nil {
+		return
+	}
+
+	for _, tr := range teachers {
+		// call profile gateway to generate teacher code
+		_, _ = uc.ProfileGateway.GenerateTeacherCode(ctx, tr.ID.String(), tr.CreatedIndex)
+	}
 }

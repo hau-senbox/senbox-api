@@ -25,8 +25,9 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 	}
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 
-	// department gateway init
+	// gateway init
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
 
 	s3Provider := uploader.NewS3Provider(
 		appCfg.S3.SenboxFormSubmitBucket.AccessKey,
@@ -52,6 +53,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		ProfileGateway: profileGw,
 	}
 
 	// teacher
@@ -67,6 +69,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		ProfileGateway: profileGw,
 	}
 
 	// staff
@@ -82,6 +85,25 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
+		ProfileGateway: profileGw,
+	}
+
+	// parent
+	parentRepo := &repository.ParentRepository{DBConn: dbConn}
+	parentUsecase := &usecase.ParentUseCase{
+		DBConn:         dbConn,
+		UserRepo:       userEntityRepository,
+		ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
+		ParentRepo:     parentRepo,
+		UserImagesUsecase: &usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
+		ProfileGateway: profileGw,
 	}
 
 	// organization ctl
@@ -167,6 +189,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				},
 			},
 		},
+		ParentUseCase: parentUsecase,
 	}
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
@@ -183,6 +206,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		student := api.Group("/students")
 		{
 			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)
+			student.POST("/code/generate", userEntityCtrl.GenerateStudentCode)
 		}
 
 		// teacher
@@ -191,6 +215,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			teacher.GET("/:teacher_id", userEntityCtrl.GetTeacher4Gateway)
 			teacher.GET("/get-by-user/:user_id", userEntityCtrl.GetTeachersByUser4Gateway)
 			teacher.GET("/organization/:organization_id/user/:user_id", userEntityCtrl.GetTeacherByOrgAndUser4Gateway)
+			teacher.POST("/code/generate", userEntityCtrl.GenerateTeacherCode)
 		}
 
 		// staff
@@ -199,6 +224,13 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			staff.GET("/:staff_id", userEntityCtrl.GetStaff4Gateway)
 			staff.GET("/get-by-user/:user_id", userEntityCtrl.GetStaffsByUser4Gateway)
 			staff.GET("/organization/:organization_id/user/:user_id", userEntityCtrl.GetStaffByOrgAndUser4Gateway)
+			staff.POST("/code/generate", userEntityCtrl.GenerateStaffCode)
+		}
+
+		// prarent
+		parent := api.Group("/parents")
+		{
+			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
 		}
 
 		// organization

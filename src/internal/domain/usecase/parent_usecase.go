@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -25,6 +26,7 @@ type ParentUseCase struct {
 	ParentRepo             *repository.ParentRepository
 	ParentChildsRepo       *repository.ParentChildsRepository
 	StudentRepo            *repository.StudentApplicationRepository
+	ProfileGateway         gateway.ProfileGateway
 }
 
 func NewParentUseCase(
@@ -387,4 +389,17 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 	}
 
 	return uniqueParents, nil
+}
+
+func (uc *ParentUseCase) GenerateParentCode(ctx *gin.Context) {
+	// get all parents
+	parents, err := uc.ParentRepo.GetAll(ctx)
+	if err != nil {
+		return
+	}
+
+	for _, pr := range parents {
+		// call profile gateway to generate parent code
+		_, _ = uc.ProfileGateway.GenerateParentCode(ctx, pr.ID.String(), pr.CreatedIndex)
+	}
 }

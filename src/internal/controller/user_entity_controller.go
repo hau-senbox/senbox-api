@@ -2656,3 +2656,36 @@ func (receiver *UserEntityController) GetStaffsTeachers4App(context *gin.Context
 		Data: res,
 	})
 }
+
+// ================ PRIVATE METHOD ===================
+func (receiver *UserEntityController) GenerateStudentCode(c *gin.Context) {
+	receiver.StudentApplicationUseCase.GenerateStudentCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}
+
+func (receiver *UserEntityController) GenerateTeacherCode(c *gin.Context) {
+	receiver.TeacherApplicationUseCase.GenerateTeacherCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}
+
+func (receiver *UserEntityController) GenerateStaffCode(c *gin.Context) {
+	receiver.StaffApplicationUseCase.GenerateStaffCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}
+
+func (receiver *UserEntityController) GenerateParentCode(c *gin.Context) {
+	receiver.ParentUseCase.GenerateParentCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}

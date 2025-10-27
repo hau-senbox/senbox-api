@@ -8,6 +8,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,7 @@ type StudentApplicationUseCase struct {
 	LanguagesConfigUsecase     *LanguagesConfigUsecase
 	UserImagesUsecase          *UserImagesUsecase
 	LanguageSettingRepo        *repository.LanguageSettingRepository
+	ProfileGateway             gateway.ProfileGateway
 }
 
 func NewStudentApplicationUseCase(
@@ -560,4 +562,18 @@ func (uc *StudentApplicationUseCase) GetStudentOrganizationsByUser(userID string
 
 func (uc *StudentApplicationUseCase) GetAllByOrganizationID(organizationID string) ([]entity.SStudentFormApplication, error) {
 	return uc.StudentAppRepo.GetByOrganizationID(organizationID)
+}
+
+// call profile gateway to generate student code
+func (uc *StudentApplicationUseCase) GenerateStudentCode(ctx *gin.Context) {
+	// get all students
+	students, err := uc.StudentAppRepo.GetAll()
+	if err != nil {
+		return
+	}
+
+	for _, student := range students {
+		// call profile gateway to generate student code
+		_, _ = uc.ProfileGateway.GenerateStudentCode(ctx, student.ID.String(), student.CreatedIndex)
+	}
 }
