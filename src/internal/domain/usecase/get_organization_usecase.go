@@ -106,3 +106,30 @@ func (receiver *GetOrganizationUseCase) GetOrganizationByID4Web(ctx *gin.Context
 
 	return &response, nil
 }
+
+func (receiver *GetOrganizationUseCase) GetOrganizationByID4App(ctx *gin.Context, organizationID string) (*response.OrganizationResponse, error) {
+	// get org by id
+	organization, err := receiver.OrganizationRepository.GetByID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	// get avt url
+	avtUrl, _ := receiver.GetImageUseCase.GetUrlByKey(organization.Avatar, uploader.UploadPrivate)
+	var avatarURL string
+	if avtUrl != nil {
+		avatarURL = *avtUrl
+	}
+
+	// map sang response
+	response := response.OrganizationResponse{
+		ID:               organization.ID.String(),
+		OrganizationName: organization.OrganizationName,
+		Avatar:           organization.Avatar,
+		AvatarURL:        avatarURL,
+		Address:          organization.Address,
+		Description:      organization.Description,
+	}
+
+	return &response, nil
+}

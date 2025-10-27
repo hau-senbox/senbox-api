@@ -876,3 +876,31 @@ func (receiver OrganizationController) GetOrganizationByID4Web(context *gin.Cont
 		Data: organization,
 	})
 }
+
+func (receiver OrganizationController) GetOrganizationByID4App(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(
+			http.StatusBadRequest, response.FailedResponse{
+				Error: "organization_id is required",
+				Code:  http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	organization, err := receiver.GetOrganizationUseCase.GetOrganizationByID4App(context, organizationID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		})
+
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: organization,
+	})
+}
