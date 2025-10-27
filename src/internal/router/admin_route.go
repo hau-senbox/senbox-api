@@ -496,6 +496,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
+		&repository.StudentBlockSettingRepository{DBConn: dbConn},
+		profileGw,
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -549,6 +551,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
+		profileGw,
+		&usecase.UserBlockSettingUsecase{
+			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -582,6 +590,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
+			ProfileGateway:      profileGw,
+			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			},
 		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},

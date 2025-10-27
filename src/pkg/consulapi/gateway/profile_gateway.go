@@ -21,12 +21,12 @@ type ProfileGateway interface {
 	GenerateChildCode(ctx *gin.Context, childID string, createdIndex int) (*string, error)
 
 	// get owner codes
-	GetStudentCode(ctx *gin.Context, studentID string) (*string, error)
-	GetTeacherCode(ctx *gin.Context, teacherID string) (*string, error)
-	GetStaffCode(ctx *gin.Context, staffID string) (*string, error)
-	GetParentCode(ctx *gin.Context, parentID string) (*string, error)
-	GetUserCode(ctx *gin.Context, userID string) (*string, error)
-	GetChildCode(ctx *gin.Context, childID string) (*string, error)
+	GetStudentCode(ctx *gin.Context, studentID string) (string, error)
+	GetTeacherCode(ctx *gin.Context, teacherID string) (string, error)
+	GetStaffCode(ctx *gin.Context, staffID string) (string, error)
+	GetParentCode(ctx *gin.Context, parentID string) (string, error)
+	GetUserCode(ctx *gin.Context, userID string) (string, error)
+	GetChildCode(ctx *gin.Context, childID string) (string, error)
 }
 
 type profileGateway struct {
@@ -317,21 +317,22 @@ func (pg *profileGateway) GenerateChildCode(ctx *gin.Context, ownerID string, cr
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (*string, error) {
+// =============== Get owner codes ===============
+func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -343,36 +344,36 @@ func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (*str
 
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/student/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get student code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get student code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (*string, error) {
+func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "nil", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -384,36 +385,36 @@ func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (*str
 
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/teacher/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get teacher code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get teacher code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (*string, error) {
+func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -425,35 +426,35 @@ func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (*strin
 
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/staff/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get staff code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get staff code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (*string, error) {
+func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -464,36 +465,36 @@ func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (*stri
 	}
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/parent/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get parent code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get parent code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (*string, error) {
+func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -505,36 +506,36 @@ func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (*string
 
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/user/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get user code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get user code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil
 }
 
-func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (*string, error) {
+func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (string, error) {
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
-		return nil, fmt.Errorf("token not found in context")
+		return "", fmt.Errorf("token not found in context")
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
+		return "", fmt.Errorf("invalid token in context")
 	}
 
 	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	appLanguage, _ := ctx.Get("app_language")
@@ -546,16 +547,16 @@ func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (*strin
 
 	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/owner-code/child/%s", ownerID), nil, headers)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var gwResp response.APIGateWayResponse[*string]
+	var gwResp response.APIGateWayResponse[string]
 	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+		return "", fmt.Errorf("unmarshal response fail: %w", err)
 	}
 
 	if gwResp.StatusCode != 200 {
-		return nil, fmt.Errorf("call gateway get child code fail: %s", gwResp.Message)
+		return "", fmt.Errorf("call gateway get child code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil

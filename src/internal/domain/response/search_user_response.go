@@ -16,6 +16,8 @@ type UserResponse struct {
 	IsDeactive   bool   `json:"is_deactive"`
 	Avatar       Avatar `json:"avatar"`
 	CreatedIndex int    `json:"created_index"`
+	Code         string `json:"code"`
+	LanguageKey  string `json:"lang_key"`
 }
 
 type ChildrenResponse struct {
@@ -31,6 +33,8 @@ type StudentResponse struct {
 	IsDeactive   bool   `json:"is_deactive"`
 	CreatedIndex int    `json:"created_index"`
 	Avatar       Avatar `json:"avatar"`
+	Code         string `json:"code"`
+	LanguageKey  string `json:"lang_key"`
 }
 
 type TeacherResponse struct {
@@ -40,6 +44,8 @@ type TeacherResponse struct {
 	CreatedIndex     int    `json:"created_index"`
 	Avatar           Avatar `json:"avatar"`
 	UserCreatedIndex int    `json:"user_created_index"`
+	Code             string `json:"code"`
+	LanguageKey      string `json:"lang_key"`
 }
 
 type StaffResponse struct {
@@ -49,6 +55,8 @@ type StaffResponse struct {
 	CreatedIndex     int    `json:"created_index"`
 	Avatar           Avatar `json:"avatar"`
 	UserCreatedIndex int    `json:"user_created_index"`
+	Code             string `json:"code"`
+	LanguageKey      string `json:"lang_key"`
 }
 
 type ParentResponse struct {
@@ -58,4 +66,6 @@ type ParentResponse struct {
 	CreatedIndex     int    `json:"created_index"`
 	Avatar           Avatar `json:"avatar"`
 	UserCreatedIndex int    `json:"user_created_index"`
+	Code             string `json:"code"`
+	LanguageKey      string `json:"lang_key"`
 }

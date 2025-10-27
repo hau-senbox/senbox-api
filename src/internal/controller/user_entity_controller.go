@@ -1486,9 +1486,9 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		// Lấy tất cả
 		rawUsers, _ := receiver.GetAllUsers4Search(c)
 		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
-		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		staffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
 		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
 
 		// Map sang response
@@ -1510,41 +1510,6 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				ChildName:    c.ChildName,
 				CreatedIndex: c.CreatedIndex,
 				Avatar:       avatar,
-			})
-		}
-		for _, s := range rawStudents {
-			isDeactive, _ := receiver.StudentBlockSettingUsecase.GetDeactive4Student(s.StudentID)
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StudentID, value.OwnerRoleStudent)
-			students = append(students, response.StudentResponse{
-				StudentID:    s.StudentID,
-				StudentName:  s.StudentName,
-				IsDeactive:   isDeactive,
-				CreatedIndex: s.CreatedIndex,
-				Avatar:       avatar,
-			})
-		}
-		for _, t := range rawTeachers {
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
-			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:        t.TeacherID,
-				TeacherName:      t.TeacherName,
-				IsDeactive:       isDeactive,
-				CreatedIndex:     t.CreatedIndex,
-				Avatar:           avatar,
-				UserCreatedIndex: t.UserCreatedIndex,
-			})
-		}
-		for _, s := range rawStaffs {
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Staff(s.StaffID)
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
-			staffs = append(staffs, response.StaffResponse{
-				StaffID:          s.StaffID,
-				StaffName:        s.StaffName,
-				IsDeactive:       isDeactive,
-				CreatedIndex:     s.CreatedIndex,
-				Avatar:           avatar,
-				UserCreatedIndex: s.UserCreatedIndex,
 			})
 		}
 		for _, p := range rawParents {
@@ -1574,6 +1539,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 		teachers = helper.FilterTeachersByStatus(teachers, status)
 		staffs = helper.FilterStaffsByStatus(staffs, status)
 		parents = helper.FilterParentsByStatus(parents, status)
+		students = helper.FilterStudentsByStatus(students, status)
 
 		// Trả kết quả
 		c.JSON(http.StatusOK, response.SucceedResponse{
@@ -1622,48 +1588,19 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 	case value.RoleStudent:
 		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		for _, s := range rawStudents {
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StudentID, value.OwnerRoleStudent)
-			students = append(students, response.StudentResponse{
-				StudentID:    s.StudentID,
-				StudentName:  s.StudentName,
-				CreatedIndex: s.CreatedIndex,
-				Avatar:       avatar,
-			})
-		}
+		students = append(students, rawStudents...)
 		students = helper.FilterStudentByName(students, name)
+		students = helper.FilterStudentsByStatus(students, status)
 
 	case value.RoleTeacher:
 		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		for _, t := range rawTeachers {
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(t.TeacherID)
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(t.TeacherID, value.OwnerRoleTeacher)
-			teachers = append(teachers, response.TeacherResponse{
-				TeacherID:        t.TeacherID,
-				TeacherName:      t.TeacherName,
-				IsDeactive:       isDeactive,
-				CreatedIndex:     t.CreatedIndex,
-				Avatar:           avatar,
-				UserCreatedIndex: t.UserCreatedIndex,
-			})
-		}
+		teachers = append(teachers, rawTeachers...)
 		teachers = helper.FilterTeacherByName(teachers, name)
 		teachers = helper.FilterTeachersByStatus(teachers, status)
 
 	case value.RoleStaff:
 		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		for _, s := range rawStaffs {
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4Teacher(s.StaffID)
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(s.StaffID, value.OwnerRoleStaff)
-			staffs = append(staffs, response.StaffResponse{
-				StaffID:          s.StaffID,
-				StaffName:        s.StaffName,
-				IsDeactive:       isDeactive,
-				CreatedIndex:     s.CreatedIndex,
-				Avatar:           avatar,
-				UserCreatedIndex: s.UserCreatedIndex,
-			})
-		}
+		staffs = append(staffs, rawStaffs...)
 		staffs = helper.FilterStaffByName(staffs, name)
 		staffs = helper.FilterStaffsByStatus(staffs, status)
 

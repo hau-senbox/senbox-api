@@ -16,17 +16,18 @@ import (
 )
 
 type TeacherApplicationUseCase struct {
-	TeacherRepo            *repository.TeacherApplicationRepository
-	GetUserEntityUseCase   *GetUserEntityUseCase
-	UserEntityRepository   *repository.UserEntityRepository
-	TeacherMenuRepo        *repository.TeacherMenuRepository
-	ComponentRepo          *repository.ComponentRepository
-	RoleOrgRepo            *repository.RoleOrgSignUpRepository
-	OrganizationRepo       *repository.OrganizationRepository
-	LanguagesConfigUsecase *LanguagesConfigUsecase
-	UserImagesUsecase      *UserImagesUsecase
-	LanguageSettingRepo    *repository.LanguageSettingRepository
-	ProfileGateway         gateway.ProfileGateway
+	TeacherRepo             *repository.TeacherApplicationRepository
+	GetUserEntityUseCase    *GetUserEntityUseCase
+	UserEntityRepository    *repository.UserEntityRepository
+	TeacherMenuRepo         *repository.TeacherMenuRepository
+	ComponentRepo           *repository.ComponentRepository
+	RoleOrgRepo             *repository.RoleOrgSignUpRepository
+	OrganizationRepo        *repository.OrganizationRepository
+	LanguagesConfigUsecase  *LanguagesConfigUsecase
+	UserImagesUsecase       *UserImagesUsecase
+	LanguageSettingRepo     *repository.LanguageSettingRepository
+	ProfileGateway          gateway.ProfileGateway
+	UserBlockSettingUsecase *UserBlockSettingUsecase
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -142,7 +143,7 @@ func (uc *TeacherApplicationUseCase) GetAllTeachers4Search(ctx *gin.Context) ([]
 		if err != nil {
 			return nil, err
 		}
-		return mapTeacherAppsToResponse(apps, uc), nil
+		return uc.mapTeacherAppsToResponse(ctx, apps), nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
@@ -160,22 +161,29 @@ func (uc *TeacherApplicationUseCase) GetAllTeachers4Search(ctx *gin.Context) ([]
 		return nil, err
 	}
 
-	return mapTeacherAppsToResponse(apps, uc), nil
+	return uc.mapTeacherAppsToResponse(ctx, apps), nil
 }
 
-func mapTeacherAppsToResponse(apps []entity.STeacherFormApplication, uc *TeacherApplicationUseCase) []response.TeacherResponse {
-	res := make([]response.TeacherResponse, 0, len(apps))
+func (uc *TeacherApplicationUseCase) mapTeacherAppsToResponse(ctx *gin.Context, teachers []entity.STeacherFormApplication) []response.TeacherResponse {
+	res := make([]response.TeacherResponse, 0, len(teachers))
 
-	for _, a := range apps {
+	for _, teacher := range teachers {
 		// lay user theo user id cua teacher
 		userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
-			ID: a.UserID.String(),
+			ID: teacher.UserID.String(),
 		})
+		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4Teacher(teacher.ID.String())
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleStaff)
+		Code, _ := uc.ProfileGateway.GetTeacherCode(ctx, teacher.ID.String())
 		res = append(res, response.TeacherResponse{
-			TeacherID:        a.ID.String(),
+			TeacherID:        teacher.ID.String(),
 			TeacherName:      userEntity.Nickname,
-			CreatedIndex:     a.CreatedIndex,
+			CreatedIndex:     teacher.CreatedIndex,
 			UserCreatedIndex: userEntity.CreatedIndex,
+			IsDeactive:       isDeactive,
+			Avatar:           avatar,
+			LanguageKey:      "vietnamese",
+			Code:             Code,
 		})
 	}
 	return res
@@ -526,7 +534,7 @@ func (uc *TeacherApplicationUseCase) GetAllTeacherByOrg4App(ctx *gin.Context, or
 		return nil, err
 	}
 
-	return mapTeacherAppsToResponse(teachers, uc), nil
+	return uc.mapTeacherAppsToResponse(ctx, teachers), nil
 }
 
 func (uc *TeacherApplicationUseCase) GenerateTeacherCode(ctx *gin.Context) {

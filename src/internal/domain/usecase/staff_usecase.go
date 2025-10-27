@@ -16,17 +16,18 @@ import (
 )
 
 type StaffApplicationUseCase struct {
-	StaffAppRepo           *repository.StaffApplicationRepository
-	StaffMenuRepo          *repository.StaffMenuRepository
-	ComponentRepo          *repository.ComponentRepository
-	RoleOrgRepo            *repository.RoleOrgSignUpRepository
-	OrganizationRepo       *repository.OrganizationRepository
-	GetUserEntityUseCase   *GetUserEntityUseCase
-	UserEntityRepository   *repository.UserEntityRepository
-	LanguagesConfigUsecase *LanguagesConfigUsecase
-	UserImagesUsecase      *UserImagesUsecase
-	LanguageSettingRepo    *repository.LanguageSettingRepository
-	ProfileGateway         gateway.ProfileGateway
+	StaffAppRepo            *repository.StaffApplicationRepository
+	StaffMenuRepo           *repository.StaffMenuRepository
+	ComponentRepo           *repository.ComponentRepository
+	RoleOrgRepo             *repository.RoleOrgSignUpRepository
+	OrganizationRepo        *repository.OrganizationRepository
+	GetUserEntityUseCase    *GetUserEntityUseCase
+	UserEntityRepository    *repository.UserEntityRepository
+	LanguagesConfigUsecase  *LanguagesConfigUsecase
+	UserImagesUsecase       *UserImagesUsecase
+	LanguageSettingRepo     *repository.LanguageSettingRepository
+	ProfileGateway          gateway.ProfileGateway
+	UserBlockSettingUsecase *UserBlockSettingUsecase
 }
 
 func NewStaffApplicationUseCase(
@@ -40,18 +41,22 @@ func NewStaffApplicationUseCase(
 	languagesConfigUsecase *LanguagesConfigUsecase,
 	userImagesUsecase *UserImagesUsecase,
 	languageSettingRepo *repository.LanguageSettingRepository,
+	profileGateway gateway.ProfileGateway,
+	userBlockSettingUseCase *UserBlockSettingUsecase,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
-		StaffAppRepo:           staffRepo,
-		StaffMenuRepo:          menuRepo,
-		ComponentRepo:          componentRepo,
-		RoleOrgRepo:            roleOrgRepo,
-		OrganizationRepo:       organizationRepo,
-		GetUserEntityUseCase:   getUserEntityUseCase,
-		UserEntityRepository:   userEntityResitory,
-		LanguagesConfigUsecase: languagesConfigUsecase,
-		UserImagesUsecase:      userImagesUsecase,
-		LanguageSettingRepo:    languageSettingRepo,
+		StaffAppRepo:            staffRepo,
+		StaffMenuRepo:           menuRepo,
+		ComponentRepo:           componentRepo,
+		RoleOrgRepo:             roleOrgRepo,
+		OrganizationRepo:        organizationRepo,
+		GetUserEntityUseCase:    getUserEntityUseCase,
+		UserEntityRepository:    userEntityResitory,
+		LanguagesConfigUsecase:  languagesConfigUsecase,
+		UserImagesUsecase:       userImagesUsecase,
+		LanguageSettingRepo:     languageSettingRepo,
+		ProfileGateway:          profileGateway,
+		UserBlockSettingUsecase: userBlockSettingUseCase,
 	}
 }
 
@@ -183,7 +188,7 @@ func (uc *StaffApplicationUseCase) GetAllStaff4Search(ctx *gin.Context) ([]respo
 		if err != nil {
 			return nil, err
 		}
-		return mapStaffAppsToResponse(apps, uc), nil
+		return uc.mapStaffAppsToResponse(ctx, apps), nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
@@ -201,22 +206,28 @@ func (uc *StaffApplicationUseCase) GetAllStaff4Search(ctx *gin.Context) ([]respo
 		return nil, err
 	}
 
-	return mapStaffAppsToResponse(apps, uc), nil
+	return uc.mapStaffAppsToResponse(ctx, apps), nil
 }
 
-func mapStaffAppsToResponse(apps []entity.SStaffFormApplication, uc *StaffApplicationUseCase) []response.StaffResponse {
-	res := make([]response.StaffResponse, 0, len(apps))
-	for _, a := range apps {
+func (uc *StaffApplicationUseCase) mapStaffAppsToResponse(ctx *gin.Context, staffs []entity.SStaffFormApplication) []response.StaffResponse {
+	res := make([]response.StaffResponse, 0, len(staffs))
+	for _, staff := range staffs {
 
 		// lay user theo user id cua teacher
 		userEntity, _ := uc.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{
-			ID: a.UserID.String(),
+			ID: staff.UserID.String(),
 		})
+		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4Staff(staff.ID.String())
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
+		Code, _ := uc.ProfileGateway.GetStaffCode(ctx, staff.ID.String())
 		res = append(res, response.StaffResponse{
-			StaffID:          a.ID.String(),
+			StaffID:          staff.ID.String(),
 			StaffName:        userEntity.Nickname,
-			CreatedIndex:     a.CreatedIndex,
+			CreatedIndex:     staff.CreatedIndex,
 			UserCreatedIndex: userEntity.CreatedIndex,
+			IsDeactive:       isDeactive,
+			Avatar:           avatar,
+			Code:             Code,
 		})
 	}
 	return res
@@ -455,7 +466,7 @@ func (uc *StaffApplicationUseCase) GetAllStaffByOrg4App(ctx *gin.Context, organi
 		return nil, err
 	}
 
-	return mapStaffAppsToResponse(staffs, uc), nil
+	return uc.mapStaffAppsToResponse(ctx, staffs), nil
 }
 
 func (uc *StaffApplicationUseCase) GenerateStaffCode(ctx *gin.Context) {

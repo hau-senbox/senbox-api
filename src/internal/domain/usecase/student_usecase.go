@@ -16,18 +16,19 @@ import (
 )
 
 type StudentApplicationUseCase struct {
-	StudentAppRepo             *repository.StudentApplicationRepository
-	StudentMenuRepo            *repository.StudentMenuRepository
-	ComponentRepo              *repository.ComponentRepository
-	RoleOrgRepo                *repository.RoleOrgSignUpRepository
-	GetUserEntityUseCase       *GetUserEntityUseCase
-	OrganizationRepo           *repository.OrganizationRepository
-	DeviceRepo                 *repository.DeviceRepository
-	StudentBlockSettingUsecase *StudentBlockSettingUsecase
-	LanguagesConfigUsecase     *LanguagesConfigUsecase
-	UserImagesUsecase          *UserImagesUsecase
-	LanguageSettingRepo        *repository.LanguageSettingRepository
-	ProfileGateway             gateway.ProfileGateway
+	StudentAppRepo                *repository.StudentApplicationRepository
+	StudentMenuRepo               *repository.StudentMenuRepository
+	ComponentRepo                 *repository.ComponentRepository
+	RoleOrgRepo                   *repository.RoleOrgSignUpRepository
+	GetUserEntityUseCase          *GetUserEntityUseCase
+	OrganizationRepo              *repository.OrganizationRepository
+	DeviceRepo                    *repository.DeviceRepository
+	StudentBlockSettingUsecase    *StudentBlockSettingUsecase
+	LanguagesConfigUsecase        *LanguagesConfigUsecase
+	UserImagesUsecase             *UserImagesUsecase
+	LanguageSettingRepo           *repository.LanguageSettingRepository
+	ProfileGateway                gateway.ProfileGateway
+	StudentBlockSettingRepository *repository.StudentBlockSettingRepository
 }
 
 func NewStudentApplicationUseCase(
@@ -41,18 +42,22 @@ func NewStudentApplicationUseCase(
 	languagesConfigUsecase *LanguagesConfigUsecase,
 	userImagesUsecase *UserImagesUsecase,
 	languageSettingRepo *repository.LanguageSettingRepository,
+	studentBlockRepo *repository.StudentBlockSettingRepository,
+	profileGw gateway.ProfileGateway,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
-		StudentAppRepo:             studentRepo,
-		StudentMenuRepo:            menuRepo,
-		ComponentRepo:              componentRepo,
-		RoleOrgRepo:                roleOrgRepo,
-		GetUserEntityUseCase:       getUserEntityUseCase,
-		OrganizationRepo:           organizationRepo,
-		StudentBlockSettingUsecase: studentBlockSettingUsecase,
-		LanguagesConfigUsecase:     languagesConfigUsecase,
-		UserImagesUsecase:          userImagesUsecase,
-		LanguageSettingRepo:        languageSettingRepo,
+		StudentAppRepo:                studentRepo,
+		StudentMenuRepo:               menuRepo,
+		ComponentRepo:                 componentRepo,
+		RoleOrgRepo:                   roleOrgRepo,
+		GetUserEntityUseCase:          getUserEntityUseCase,
+		OrganizationRepo:              organizationRepo,
+		StudentBlockSettingUsecase:    studentBlockSettingUsecase,
+		LanguagesConfigUsecase:        languagesConfigUsecase,
+		UserImagesUsecase:             userImagesUsecase,
+		LanguageSettingRepo:           languageSettingRepo,
+		StudentBlockSettingRepository: studentBlockRepo,
+		ProfileGateway:                profileGw,
 	}
 }
 
@@ -340,7 +345,7 @@ func (uc *StudentApplicationUseCase) GetAllStudents4Search(ctx *gin.Context) ([]
 		if err != nil {
 			return nil, err
 		}
-		return mapStudentAppsToResponse(apps), nil
+		return uc.mapStudentAppsToResponse(ctx, apps), nil
 	}
 
 	// Nếu không phải SuperAdmin → lấy orgIDs mà user đang quản lý
@@ -358,16 +363,23 @@ func (uc *StudentApplicationUseCase) GetAllStudents4Search(ctx *gin.Context) ([]
 		return nil, err
 	}
 
-	return mapStudentAppsToResponse(apps), nil
+	return uc.mapStudentAppsToResponse(ctx, apps), nil
 }
 
-func mapStudentAppsToResponse(apps []entity.SStudentFormApplication) []response.StudentResponse {
-	res := make([]response.StudentResponse, 0, len(apps))
-	for _, a := range apps {
+func (uc *StudentApplicationUseCase) mapStudentAppsToResponse(ctx *gin.Context, students []entity.SStudentFormApplication) []response.StudentResponse {
+	res := make([]response.StudentResponse, 0, len(students))
+	for _, std := range students {
+		isDeactive, _ := uc.StudentBlockSettingRepository.GetIsDeactiveByStudentID(std.ID.String())
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(std.ID.String(), value.OwnerRoleStudent)
+		code, _ := uc.ProfileGateway.GetStudentCode(ctx, std.ID.String())
 		res = append(res, response.StudentResponse{
-			StudentID:    a.ID.String(),
-			StudentName:  a.StudentName,
-			CreatedIndex: a.CreatedIndex,
+			StudentID:    std.ID.String(),
+			StudentName:  std.StudentName,
+			CreatedIndex: std.CreatedIndex,
+			IsDeactive:   isDeactive,
+			Avatar:       avatar,
+			LanguageKey:  "vietnamese",
+			Code:         code,
 		})
 	}
 	return res

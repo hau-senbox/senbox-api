@@ -430,6 +430,23 @@ func FilterParentsByStatus(parents []response.ParentResponse, status value.Searc
 	return filtered
 }
 
+func FilterStudentsByStatus(students []response.StudentResponse, status value.SearchUserStatus) []response.StudentResponse {
+	if status == value.SearchUserStatusAll {
+		return students
+	}
+
+	filtered := make([]response.StudentResponse, 0)
+	for _, s := range students {
+		if status == value.SearchUserStatusActive && !s.IsDeactive {
+			filtered = append(filtered, s)
+		}
+		if status == value.SearchUserStatusDeactivated && s.IsDeactive {
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered
+}
+
 func AppConfigValueToJSON(v any) datatypes.JSON {
 	b, _ := json.Marshal(v)
 	return datatypes.JSON(b)
