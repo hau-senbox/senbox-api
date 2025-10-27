@@ -8,11 +8,13 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/sheet"
 	"sen-global-api/pkg/uploader"
 	"time"
 
 	firebase "firebase.google.com/go/v4"
+	"github.com/hashicorp/consul/api"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -21,7 +23,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App) {
+func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App, consulClient *api.Client) {
 	sessionRepository := repository.SessionRepository{
 		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
 
@@ -40,6 +42,10 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	formRepo := &repository.FormRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize}
 	deviceRepository := &repository.DeviceRepository{DBConn: dbConn, DefaultRequestPageSize: config.DefaultRequestPageSize, DefaultOutputSpreadsheetUrl: config.OutputSpreadsheetUrl}
 	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
+
+	// gateway init
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
+
 	childUseCase := usecase.NewChildUseCase(
 		dbConn,
 		&repository.ChildRepository{DB: dbConn},
@@ -64,6 +70,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
+		profileGw,
 	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,

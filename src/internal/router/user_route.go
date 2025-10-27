@@ -36,6 +36,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	// department gateway init
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
 
 	childUsecase := usecase.NewChildUseCase(
 		dbConn,
@@ -62,6 +63,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
+		profileGw,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

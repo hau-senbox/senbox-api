@@ -16,6 +16,8 @@ type ProfileGateway interface {
 	GenerateTeacherCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error)
 	GenerateStaffCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error)
 	GenerateParentCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error)
+	GenerateUserCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error)
+	GenerateChildCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error)
 }
 
 type profileGateway struct {
@@ -209,6 +211,98 @@ func (pg *profileGateway) GenerateParentCode(ctx *gin.Context, ownerID string, c
 
 	if gwResp.StatusCode != 200 {
 		return nil, fmt.Errorf("call gateway generate parent code fail: %s", gwResp.Message)
+	}
+
+	return gwResp.Data, nil
+}
+
+func (pg *profileGateway) GenerateUserCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error) {
+	// Lấy token từ context (được set ở SecuredMiddleware)
+	token, exists := ctx.Get("token")
+	if !exists {
+		return nil, fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return nil, fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	req := request.GenerateOwnerCodeRequest{
+		OwnerID:      ownerID,
+		CreatedIndex: createdIndex,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/admin/profiles/owner-code/user/generate", req, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	var gwResp response.APIGateWayResponse[*string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return nil, fmt.Errorf("call gateway generate user code fail: %s", gwResp.Message)
+	}
+
+	return gwResp.Data, nil
+}
+
+func (pg *profileGateway) GenerateChildCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error) {
+	// Lấy token từ context (được set ở SecuredMiddleware)
+	token, exists := ctx.Get("token")
+	if !exists {
+		return nil, fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return nil, fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	req := request.GenerateOwnerCodeRequest{
+		OwnerID:      ownerID,
+		CreatedIndex: createdIndex,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/admin/profiles/owner-code/child/generate", req, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	var gwResp response.APIGateWayResponse[*string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return nil, fmt.Errorf("call gateway generate child code fail: %s", gwResp.Message)
 	}
 
 	return gwResp.Data, nil

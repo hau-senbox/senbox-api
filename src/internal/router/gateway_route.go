@@ -106,6 +106,34 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ProfileGateway: profileGw,
 	}
 
+	// child
+	childUseCase := usecase.NewChildUseCase(
+		dbConn,
+		&repository.ChildRepository{DB: dbConn},
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&repository.ChildMenuRepository{DBConn: dbConn},
+		&repository.RoleOrgSignUpRepository{DBConn: dbConn},
+		&usecase.GetUserEntityUseCase{
+			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+		},
+		&usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
+		&usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			GetImageUseCase: &usecase.GetImageUseCase{
+				UploadProvider:  s3Provider,
+				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		&repository.ParentChildsRepository{DBConn: dbConn},
+		profileGw,
+	)
 	// organization ctl
 	orgCtrl := &controller.OrganizationController{
 		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
@@ -188,8 +216,10 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
+			ProfileGateway: profileGw,
 		},
 		ParentUseCase: parentUsecase,
+		ChildUseCase:  childUseCase,
 	}
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
@@ -200,6 +230,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			user.GET("/:user_id", userEntityCtrl.GetUser4Gateway)
 			user.GET("/teacher/:teacher_id", userEntityCtrl.GetUserByTeacher)
 			user.GET("/staff/:staff_id", userEntityCtrl.GetUserByStaff)
+			user.POST("/code/generate", userEntityCtrl.GenerateUserCode)
+
 		}
 
 		// student
@@ -231,6 +263,12 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		parent := api.Group("/parents")
 		{
 			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
+		}
+
+		// child
+		child := api.Group("/children")
+		{
+			child.POST("/code/generate", userEntityCtrl.GenerateChildCode)
 		}
 
 		// organization

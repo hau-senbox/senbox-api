@@ -7,7 +7,9 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -20,6 +22,7 @@ type UserEntityUseCase struct {
 	UserRepo                *repository.UserEntityRepository
 	TeacherRepo             *repository.TeacherApplicationRepository
 	StaffRepo               *repository.StaffApplicationRepository
+	ProfileGateway          gateway.ProfileGateway
 }
 
 func (receiver *UserEntityUseCase) MapUserInfoToResponse(userEntity entity.SUserEntity) (*response.UserEntityResponseV2, error) {
@@ -97,4 +100,17 @@ func (receiver *UserEntityUseCase) GetUserByStaffID(staffID string) (*response.U
 		return nil, err
 	}
 	return res, nil
+}
+
+func (uc *UserEntityUseCase) GenerateUserCode(ctx *gin.Context) {
+	// get all users
+	users, err := uc.UserRepo.GetAll()
+	if err != nil {
+		return
+	}
+
+	for _, user := range users {
+		// call profile gateway to generate user code
+		_, _ = uc.ProfileGateway.GenerateUserCode(ctx, user.ID.String(), user.CreatedIndex)
+	}
 }

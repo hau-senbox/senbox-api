@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/usecase/infrastructure"
 	"sen-global-api/internal/middleware"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/job"
 	"sen-global-api/pkg/monitor"
 	"sen-global-api/pkg/sheet"
@@ -19,11 +20,12 @@ import (
 	firebase "firebase.google.com/go/v4"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/consul/api"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
-func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App) {
+func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App, consulClient *api.Client) {
 	usecase.AdminSpreadsheetClient = userSpreadsheet
 	usecase.TheTimeMachine = job.New()
 	sessionRepository := repository.SessionRepository{
@@ -36,6 +38,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	secureMiddleware := middleware.SecuredMiddleware{SessionRepository: sessionRepository}
 	settingRepository := &repository.SettingRepository{DBConn: dbConn}
+
+	// gateway init
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
 
 	s3Provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -518,6 +523,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
+		profileGw,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

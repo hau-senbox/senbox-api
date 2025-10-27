@@ -2689,3 +2689,19 @@ func (receiver *UserEntityController) GenerateParentCode(c *gin.Context) {
 		Data: nil,
 	})
 }
+
+func (receiver *UserEntityController) GenerateUserCode(c *gin.Context) {
+	receiver.UserEntityUseCase.GenerateUserCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}
+
+func (receiver *UserEntityController) GenerateChildCode(c *gin.Context) {
+	receiver.ChildUseCase.GenerateChildCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+}

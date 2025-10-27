@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -29,6 +30,7 @@ type ChildUseCase struct {
 	languageSettingRepo    *repository.LanguageSettingRepository
 	parentRepo             *repository.ParentRepository
 	parentChildsRepo       *repository.ParentChildsRepository
+	profileGateway         gateway.ProfileGateway
 }
 
 func NewChildUseCase(
@@ -44,6 +46,7 @@ func NewChildUseCase(
 	languageSettingRepo *repository.LanguageSettingRepository,
 	parentRepo *repository.ParentRepository,
 	parentChildsRepo *repository.ParentChildsRepository,
+	profileGateway gateway.ProfileGateway,
 ) *ChildUseCase {
 	return &ChildUseCase{
 		dbConn:                 dbConn,
@@ -58,6 +61,7 @@ func NewChildUseCase(
 		languageSettingRepo:    languageSettingRepo,
 		parentRepo:             parentRepo,
 		parentChildsRepo:       parentChildsRepo,
+		profileGateway:         profileGateway,
 	}
 }
 
@@ -338,4 +342,17 @@ func (uc *ChildUseCase) IsParentOfChild(userID string, childID string) (bool, er
 	}
 
 	return parentID == userID, nil
+}
+
+func (uc *ChildUseCase) GenerateChildCode(ctx *gin.Context) {
+	// get all children
+	children, err := uc.childRepo.GetAll()
+	if err != nil {
+		return
+	}
+
+	for _, child := range children {
+		// call profile gateway to generate children code
+		_, _ = uc.profileGateway.GenerateChildCode(ctx, child.ID.String(), child.CreatedIndex)
+	}
 }
