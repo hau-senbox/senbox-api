@@ -231,7 +231,6 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			user.GET("/teacher/:teacher_id", userEntityCtrl.GetUserByTeacher)
 			user.GET("/staff/:staff_id", userEntityCtrl.GetUserByStaff)
 			user.POST("/code/generate", userEntityCtrl.GenerateUserCode)
-
 		}
 
 		// student
