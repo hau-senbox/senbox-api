@@ -16,18 +16,19 @@ import (
 )
 
 type TeacherApplicationUseCase struct {
-	TeacherRepo             *repository.TeacherApplicationRepository
-	GetUserEntityUseCase    *GetUserEntityUseCase
-	UserEntityRepository    *repository.UserEntityRepository
-	TeacherMenuRepo         *repository.TeacherMenuRepository
-	ComponentRepo           *repository.ComponentRepository
-	RoleOrgRepo             *repository.RoleOrgSignUpRepository
-	OrganizationRepo        *repository.OrganizationRepository
-	LanguagesConfigUsecase  *LanguagesConfigUsecase
-	UserImagesUsecase       *UserImagesUsecase
-	LanguageSettingRepo     *repository.LanguageSettingRepository
-	ProfileGateway          gateway.ProfileGateway
-	UserBlockSettingUsecase *UserBlockSettingUsecase
+	TeacherRepo              *repository.TeacherApplicationRepository
+	GetUserEntityUseCase     *GetUserEntityUseCase
+	UserEntityRepository     *repository.UserEntityRepository
+	TeacherMenuRepo          *repository.TeacherMenuRepository
+	ComponentRepo            *repository.ComponentRepository
+	RoleOrgRepo              *repository.RoleOrgSignUpRepository
+	OrganizationRepo         *repository.OrganizationRepository
+	LanguagesConfigUsecase   *LanguagesConfigUsecase
+	UserImagesUsecase        *UserImagesUsecase
+	LanguageSettingRepo      *repository.LanguageSettingRepository
+	ProfileGateway           gateway.ProfileGateway
+	UserBlockSettingUsecase  *UserBlockSettingUsecase
+	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {

@@ -55,6 +55,7 @@ type UserEntityController struct {
 	*usecase.GetImageUseCase
 	*usecase.UserEntityUseCase
 	*usecase.PreRegisterUseCase
+	usecase.GenerateOwnerCodeUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -752,6 +753,9 @@ func (receiver *UserEntityController) CreateUserEntity(context *gin.Context) {
 		return
 	}
 
+	//tao user code
+	receiver.GenerateOwnerCodeUseCase.GenerateUserCode(context, data.UserID)
+
 	context.JSON(http.StatusOK, response.LoginResponse{
 		Data: *data,
 	})
@@ -1051,7 +1055,7 @@ func (receiver *UserEntityController) CreateTeacherFormApplication(context *gin.
 
 	req.UserID = user.ID.String()
 
-	err = receiver.CreateUserFormApplicationUseCase.CreateTeacherFormApplication(req)
+	err = receiver.CreateUserFormApplicationUseCase.CreateTeacherFormApplication(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -1161,7 +1165,7 @@ func (receiver *UserEntityController) CreateStaffFormApplication(context *gin.Co
 
 	req.UserID = user.ID.String()
 
-	err = receiver.CreateUserFormApplicationUseCase.CreateStaffFormApplication(req)
+	err = receiver.CreateUserFormApplicationUseCase.CreateStaffFormApplication(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,
@@ -1271,7 +1275,7 @@ func (receiver *UserEntityController) CreateStudentFormApplication(context *gin.
 
 	req.UserID = user.ID.String()
 
-	err = receiver.CreateUserFormApplicationUseCase.CreateStudentFormApplication(req)
+	err = receiver.CreateUserFormApplicationUseCase.CreateStudentFormApplication(context, req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, response.FailedResponse{
 			Code:  http.StatusBadRequest,

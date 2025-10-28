@@ -38,6 +38,16 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
 
+	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.TeacherApplicationRepository{DBConn: dbConn},
+		&repository.StudentApplicationRepository{DB: dbConn},
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.ChildRepository{DB: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		profileGw,
+	)
+
 	childUsecase := usecase.NewChildUseCase(
 		dbConn,
 		&repository.ChildRepository{DB: dbConn},
@@ -64,6 +74,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
+		generateOwnerCodeUseCase,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(
@@ -95,6 +106,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
+		generateOwnerCodeUseCase,
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -141,7 +153,6 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			UserEntityRepository: repository.UserEntityRepository{DBConn: dbConn},
 			SessionRepository:    sessionRepository,
 		},
-
 		CreateUserFormApplicationUseCase: &usecase.CreateUserFormApplicationUseCase{
 			UserEntityRepository:               &repository.UserEntityRepository{DBConn: dbConn},
 			RoleOrgSignUpRepository:            &repository.RoleOrgSignUpRepository{DBConn: dbConn},
@@ -151,6 +162,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			OrganizationMenuTemplateRepository: &repository.OrganizationMenuTemplateRepository{DBConn: dbConn},
 			StaffMenuRepository:                &repository.StaffMenuRepository{DBConn: dbConn},
 			OrganizationRepository:             &repository.OrganizationRepository{DBConn: dbConn},
+			GenerateOwnerCodeUseCase:           generateOwnerCodeUseCase,
 		},
 		ApproveUserFormApplicationUseCase: &usecase.ApproveUserFormApplicationUseCase{
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
@@ -256,6 +268,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
 	userRoleController := &controller.RoleController{

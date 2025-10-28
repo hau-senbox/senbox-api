@@ -11,6 +11,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/value"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -23,9 +24,10 @@ type CreateUserFormApplicationUseCase struct {
 	*repository.StaffMenuRepository
 	*repository.OrganizationMenuTemplateRepository
 	*repository.OrganizationRepository
+	GenerateOwnerCodeUseCase
 }
 
-func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(req request.CreateTeacherFormApplicationRequest) error {
+func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(ctx *gin.Context, req request.CreateTeacherFormApplicationRequest) error {
 	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
@@ -108,10 +110,12 @@ func (receiver *CreateUserFormApplicationUseCase) CreateTeacherFormApplication(r
 		}
 	}
 
+	// generate student code
+	receiver.GenerateOwnerCodeUseCase.GenerateTeacherCode(ctx, teacherID.String())
 	return err
 }
 
-func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req request.CreateStaffFormApplicationRequest) error {
+func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(ctx *gin.Context, req request.CreateStaffFormApplicationRequest) error {
 	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
@@ -195,10 +199,13 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStaffFormApplication(req
 		}
 	}
 
+	// generate student code
+	receiver.GenerateOwnerCodeUseCase.GenerateStaffCode(ctx, staffID.String())
+
 	return err
 }
 
-func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(req request.CreateStudentFormApplicationRequest) error {
+func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(ctx *gin.Context, req request.CreateStudentFormApplicationRequest) error {
 	_, err := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: req.UserID})
 	if err != nil {
 		return err
@@ -283,5 +290,7 @@ func (receiver *CreateUserFormApplicationUseCase) CreateStudentFormApplication(r
 		}
 	}
 
+	// generate student code
+	receiver.GenerateOwnerCodeUseCase.GenerateStudentCode(ctx, studentID.String())
 	return err
 }

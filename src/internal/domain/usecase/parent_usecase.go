@@ -16,18 +16,19 @@ import (
 )
 
 type ParentUseCase struct {
-	DBConn                  *gorm.DB
-	UserRepo                *repository.UserEntityRepository
-	ParentMenuRepo          *repository.ParentMenuRepository
-	ComponentRepo           *repository.ComponentRepository
-	LanguagesConfigUsecase  *LanguagesConfigUsecase
-	UserImagesUsecase       *UserImagesUsecase
-	LanguageSettingRepo     *repository.LanguageSettingRepository
-	ParentRepo              *repository.ParentRepository
-	ParentChildsRepo        *repository.ParentChildsRepository
-	StudentRepo             *repository.StudentApplicationRepository
-	ProfileGateway          gateway.ProfileGateway
-	UserBlockSettingUsecase *UserBlockSettingUsecase
+	DBConn                   *gorm.DB
+	UserRepo                 *repository.UserEntityRepository
+	ParentMenuRepo           *repository.ParentMenuRepository
+	ComponentRepo            *repository.ComponentRepository
+	LanguagesConfigUsecase   *LanguagesConfigUsecase
+	UserImagesUsecase        *UserImagesUsecase
+	LanguageSettingRepo      *repository.LanguageSettingRepository
+	ParentRepo               *repository.ParentRepository
+	ParentChildsRepo         *repository.ParentChildsRepository
+	StudentRepo              *repository.StudentApplicationRepository
+	ProfileGateway           gateway.ProfileGateway
+	UserBlockSettingUsecase  *UserBlockSettingUsecase
+	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 }
 
 func NewParentUseCase(
@@ -42,19 +43,21 @@ func NewParentUseCase(
 	studentRepo *repository.StudentApplicationRepository,
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUsecase *UserBlockSettingUsecase,
+	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 ) *ParentUseCase {
 	return &ParentUseCase{
-		UserRepo:                userRepo,
-		ParentMenuRepo:          parentMenuRepo,
-		ComponentRepo:           componentRepo,
-		LanguagesConfigUsecase:  languagesConfigUsecase,
-		UserImagesUsecase:       userImagesUsecase,
-		LanguageSettingRepo:     languageSettingRepo,
-		ParentRepo:              parentRepo,
-		ParentChildsRepo:        parentChildsRepo,
-		StudentRepo:             studentRepo,
-		ProfileGateway:          profileGateway,
-		UserBlockSettingUsecase: userBlockSettingUsecase,
+		UserRepo:                 userRepo,
+		ParentMenuRepo:           parentMenuRepo,
+		ComponentRepo:            componentRepo,
+		LanguagesConfigUsecase:   languagesConfigUsecase,
+		UserImagesUsecase:        userImagesUsecase,
+		LanguageSettingRepo:      languageSettingRepo,
+		ParentRepo:               parentRepo,
+		ParentChildsRepo:         parentChildsRepo,
+		StudentRepo:              studentRepo,
+		ProfileGateway:           profileGateway,
+		UserBlockSettingUsecase:  userBlockSettingUsecase,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 }
 

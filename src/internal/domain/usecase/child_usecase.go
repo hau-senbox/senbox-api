@@ -18,19 +18,20 @@ import (
 )
 
 type ChildUseCase struct {
-	dbConn                 *gorm.DB
-	childRepo              *repository.ChildRepository
-	userRepo               *repository.UserEntityRepository
-	componentRepo          *repository.ComponentRepository
-	childMenuRepo          *repository.ChildMenuRepository
-	roleOrgRepo            *repository.RoleOrgSignUpRepository
-	getUserEntityUseCase   *GetUserEntityUseCase
-	userImagesUsecase      *UserImagesUsecase
-	languagesConfigUsecase *LanguagesConfigUsecase
-	languageSettingRepo    *repository.LanguageSettingRepository
-	parentRepo             *repository.ParentRepository
-	parentChildsRepo       *repository.ParentChildsRepository
-	profileGateway         gateway.ProfileGateway
+	dbConn                   *gorm.DB
+	childRepo                *repository.ChildRepository
+	userRepo                 *repository.UserEntityRepository
+	componentRepo            *repository.ComponentRepository
+	childMenuRepo            *repository.ChildMenuRepository
+	roleOrgRepo              *repository.RoleOrgSignUpRepository
+	getUserEntityUseCase     *GetUserEntityUseCase
+	userImagesUsecase        *UserImagesUsecase
+	languagesConfigUsecase   *LanguagesConfigUsecase
+	languageSettingRepo      *repository.LanguageSettingRepository
+	parentRepo               *repository.ParentRepository
+	parentChildsRepo         *repository.ParentChildsRepository
+	profileGateway           gateway.ProfileGateway
+	generateOwnerCodeUseCase GenerateOwnerCodeUseCase
 }
 
 func NewChildUseCase(
@@ -47,21 +48,23 @@ func NewChildUseCase(
 	parentRepo *repository.ParentRepository,
 	parentChildsRepo *repository.ParentChildsRepository,
 	profileGateway gateway.ProfileGateway,
+	gengenerateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 ) *ChildUseCase {
 	return &ChildUseCase{
-		dbConn:                 dbConn,
-		childRepo:              childRepo,
-		userRepo:               userRepo,
-		componentRepo:          componentRepo,
-		childMenuRepo:          childMenuRepo,
-		roleOrgRepo:            roleOrgRepo,
-		getUserEntityUseCase:   getUserEntityUseCase,
-		userImagesUsecase:      userImagesUsecase,
-		languagesConfigUsecase: languagesConfigUsecase,
-		languageSettingRepo:    languageSettingRepo,
-		parentRepo:             parentRepo,
-		parentChildsRepo:       parentChildsRepo,
-		profileGateway:         profileGateway,
+		dbConn:                   dbConn,
+		childRepo:                childRepo,
+		userRepo:                 userRepo,
+		componentRepo:            componentRepo,
+		childMenuRepo:            childMenuRepo,
+		roleOrgRepo:              roleOrgRepo,
+		getUserEntityUseCase:     getUserEntityUseCase,
+		userImagesUsecase:        userImagesUsecase,
+		languagesConfigUsecase:   languagesConfigUsecase,
+		languageSettingRepo:      languageSettingRepo,
+		parentRepo:               parentRepo,
+		parentChildsRepo:         parentChildsRepo,
+		profileGateway:           profileGateway,
+		generateOwnerCodeUseCase: gengenerateOwnerCodeUseCase,
 	}
 }
 
@@ -160,6 +163,9 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		tx.Rollback()
 		return fmt.Errorf("create parent-child failed: %w", err)
 	}
+
+	// generate child code
+	uc.generateOwnerCodeUseCase.GenerateChildCode(ctx, childID.String())
 
 	// Commit nếu tất cả OK
 	if err := tx.Commit().Error; err != nil {

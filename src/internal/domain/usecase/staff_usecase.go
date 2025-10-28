@@ -16,18 +16,19 @@ import (
 )
 
 type StaffApplicationUseCase struct {
-	StaffAppRepo            *repository.StaffApplicationRepository
-	StaffMenuRepo           *repository.StaffMenuRepository
-	ComponentRepo           *repository.ComponentRepository
-	RoleOrgRepo             *repository.RoleOrgSignUpRepository
-	OrganizationRepo        *repository.OrganizationRepository
-	GetUserEntityUseCase    *GetUserEntityUseCase
-	UserEntityRepository    *repository.UserEntityRepository
-	LanguagesConfigUsecase  *LanguagesConfigUsecase
-	UserImagesUsecase       *UserImagesUsecase
-	LanguageSettingRepo     *repository.LanguageSettingRepository
-	ProfileGateway          gateway.ProfileGateway
-	UserBlockSettingUsecase *UserBlockSettingUsecase
+	StaffAppRepo             *repository.StaffApplicationRepository
+	StaffMenuRepo            *repository.StaffMenuRepository
+	ComponentRepo            *repository.ComponentRepository
+	RoleOrgRepo              *repository.RoleOrgSignUpRepository
+	OrganizationRepo         *repository.OrganizationRepository
+	GetUserEntityUseCase     *GetUserEntityUseCase
+	UserEntityRepository     *repository.UserEntityRepository
+	LanguagesConfigUsecase   *LanguagesConfigUsecase
+	UserImagesUsecase        *UserImagesUsecase
+	LanguageSettingRepo      *repository.LanguageSettingRepository
+	ProfileGateway           gateway.ProfileGateway
+	UserBlockSettingUsecase  *UserBlockSettingUsecase
+	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 }
 
 func NewStaffApplicationUseCase(
@@ -43,20 +44,22 @@ func NewStaffApplicationUseCase(
 	languageSettingRepo *repository.LanguageSettingRepository,
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUseCase *UserBlockSettingUsecase,
+	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
-		StaffAppRepo:            staffRepo,
-		StaffMenuRepo:           menuRepo,
-		ComponentRepo:           componentRepo,
-		RoleOrgRepo:             roleOrgRepo,
-		OrganizationRepo:        organizationRepo,
-		GetUserEntityUseCase:    getUserEntityUseCase,
-		UserEntityRepository:    userEntityResitory,
-		LanguagesConfigUsecase:  languagesConfigUsecase,
-		UserImagesUsecase:       userImagesUsecase,
-		LanguageSettingRepo:     languageSettingRepo,
-		ProfileGateway:          profileGateway,
-		UserBlockSettingUsecase: userBlockSettingUseCase,
+		StaffAppRepo:             staffRepo,
+		StaffMenuRepo:            menuRepo,
+		ComponentRepo:            componentRepo,
+		RoleOrgRepo:              roleOrgRepo,
+		OrganizationRepo:         organizationRepo,
+		GetUserEntityUseCase:     getUserEntityUseCase,
+		UserEntityRepository:     userEntityResitory,
+		LanguagesConfigUsecase:   languagesConfigUsecase,
+		UserImagesUsecase:        userImagesUsecase,
+		LanguageSettingRepo:      languageSettingRepo,
+		ProfileGateway:           profileGateway,
+		UserBlockSettingUsecase:  userBlockSettingUseCase,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 }
 

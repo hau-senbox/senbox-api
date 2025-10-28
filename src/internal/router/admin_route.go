@@ -470,6 +470,17 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.GET("/emergency", menuController.GetEmergencyMenu4WebAdmin)
 	}
 
+	// generateOwnerCodeUseCase
+	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.TeacherApplicationRepository{DBConn: dbConn},
+		&repository.StudentApplicationRepository{DB: dbConn},
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.ChildRepository{DB: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		profileGw,
+	)
+
 	// user
 	studentUseCase := usecase.NewStudentApplicationUseCase(
 		&repository.StudentApplicationRepository{DB: dbConn},
@@ -498,6 +509,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.StudentBlockSettingRepository{DBConn: dbConn},
 		profileGw,
+		generateOwnerCodeUseCase,
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -526,6 +538,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
+		generateOwnerCodeUseCase,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(
@@ -557,6 +570,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
+		generateOwnerCodeUseCase,
 	)
 
 	parentUseCase := usecase.NewParentUseCase(
@@ -578,6 +592,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&usecase.UserBlockSettingUsecase{
 			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
 		},
+		generateOwnerCodeUseCase,
 	)
 
 	userEntityController := &controller.UserEntityController{

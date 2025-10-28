@@ -46,6 +46,16 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	// gateway init
 	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
 
+	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.TeacherApplicationRepository{DBConn: dbConn},
+		&repository.StudentApplicationRepository{DB: dbConn},
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.ChildRepository{DB: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		profileGw,
+	)
+
 	childUseCase := usecase.NewChildUseCase(
 		dbConn,
 		&repository.ChildRepository{DB: dbConn},
@@ -71,6 +81,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
+		generateOwnerCodeUseCase,
 	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,

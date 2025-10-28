@@ -29,6 +29,7 @@ type StudentApplicationUseCase struct {
 	LanguageSettingRepo           *repository.LanguageSettingRepository
 	ProfileGateway                gateway.ProfileGateway
 	StudentBlockSettingRepository *repository.StudentBlockSettingRepository
+	GenerateOwnerCodeUseCase      GenerateOwnerCodeUseCase
 }
 
 func NewStudentApplicationUseCase(
@@ -44,6 +45,7 @@ func NewStudentApplicationUseCase(
 	languageSettingRepo *repository.LanguageSettingRepository,
 	studentBlockRepo *repository.StudentBlockSettingRepository,
 	profileGw gateway.ProfileGateway,
+	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:                studentRepo,
@@ -58,6 +60,7 @@ func NewStudentApplicationUseCase(
 		LanguageSettingRepo:           languageSettingRepo,
 		StudentBlockSettingRepository: studentBlockRepo,
 		ProfileGateway:                profileGw,
+		GenerateOwnerCodeUseCase:      generateOwnerCodeUseCase,
 	}
 }
 

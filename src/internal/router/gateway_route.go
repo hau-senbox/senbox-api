@@ -39,6 +39,17 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		appCfg.S3.SenboxFormSubmitBucket.CloudfrontKeyPath,
 	)
 
+	// generateOwnerCodeUseCase
+	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.TeacherApplicationRepository{DBConn: dbConn},
+		&repository.StudentApplicationRepository{DB: dbConn},
+		&repository.StaffApplicationRepository{DBConn: dbConn},
+		&repository.ChildRepository{DB: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		profileGw,
+	)
+
 	userEntityRepository := &repository.UserEntityRepository{DBConn: dbConn}
 
 	// student
@@ -53,7 +64,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway: profileGw,
+		ProfileGateway:           profileGw,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
 	// teacher
@@ -69,7 +81,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway: profileGw,
+		ProfileGateway:           profileGw,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
 	// staff
@@ -85,7 +98,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway: profileGw,
+		ProfileGateway:           profileGw,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
 	// parent
@@ -103,7 +117,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway: profileGw,
+		ProfileGateway:           profileGw,
+		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
 	// child
@@ -133,6 +148,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
+		generateOwnerCodeUseCase,
 	)
 	// organization ctl
 	orgCtrl := &controller.OrganizationController{
