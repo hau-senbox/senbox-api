@@ -588,6 +588,20 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			ChildRepository:        &repository.ChildRepository{DB: dbConn},
+			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  s3Provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+			ProfileGateway: profileGw,
 		},
 		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},

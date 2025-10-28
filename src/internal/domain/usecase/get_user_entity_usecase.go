@@ -5,6 +5,9 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
+	"sen-global-api/internal/domain/response"
+	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +16,9 @@ type GetUserEntityUseCase struct {
 	*repository.UserEntityRepository
 	*repository.OrganizationRepository
 	*repository.ChildRepository
+	*UserBlockSettingUsecase
+	*UserImagesUsecase
+	gateway.ProfileGateway
 }
 
 func (receiver *GetUserEntityUseCase) GetUserByID(req request.GetUserEntityByIDRequest) (*entity.SUserEntity, error) {
@@ -43,57 +49,73 @@ func (receiver *GetUserEntityUseCase) GetAllUserAuthorize(userID string) ([]enti
 	return receiver.UserEntityRepository.GetAllUserAuthorize(userID)
 }
 
-func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]entity.SUserEntity, error) {
+func (receiver *GetUserEntityUseCase) GetAllUsers4Search(ctx *gin.Context) ([]response.UserResponse, error) {
 	user, err := receiver.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Nếu là SuperAdmin → trả về tất cả user
+	var users []entity.SUserEntity
+
+	// Nếu là SuperAdmin → lấy tất cả user (trừ SuperAdmin khác)
 	if user.IsSuperAdmin() {
 		allUsers, err := receiver.UserEntityRepository.GetAll()
 		if err != nil {
 			return nil, err
 		}
-
-		result := make([]entity.SUserEntity, 0, len(allUsers))
 		for _, u := range allUsers {
 			if !u.IsSuperAdmin() {
-				result = append(result, u)
+				users = append(users, u)
 			}
 		}
-
-		return result, nil
-	}
-
-	// Nếu không phải SuperAdmin → lấy danh sách org mà user quản lý
-	if len(user.Organizations) == 0 {
-		return nil, errors.New("user does not belong to any organization")
-	}
-
-	orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
-	if err != nil {
-		return nil, err
-	}
-	if len(orgIDsManaged) == 0 {
-		return nil, errors.New("user does not manage any organization")
-	}
-
-	// Lấy user thuộc các tổ chức mà user này quản lý
-	users, err := receiver.UserEntityRepository.GetUsersByOrganizationIDs(orgIDsManaged)
-	if err != nil {
-		return nil, err
-	}
-
-	// Lọc ra chính user đang truy cập khỏi kết quả
-	result := make([]entity.SUserEntity, 0, len(users))
-	for _, u := range users {
-		if u.ID != user.ID && !u.IsSuperAdmin() {
-			result = append(result, u)
+	} else {
+		// Nếu không phải SuperAdmin → lấy user theo org mà user quản lý
+		if len(user.Organizations) == 0 {
+			return nil, errors.New("user does not belong to any organization")
 		}
+
+		orgIDsManaged, err := user.GetManagedOrganizationIDs(receiver.UserEntityRepository.GetDB())
+		if err != nil {
+			return nil, err
+		}
+		if len(orgIDsManaged) == 0 {
+			return nil, errors.New("user does not manage any organization")
+		}
+
+		users, err = receiver.UserEntityRepository.GetUsersByOrganizationIDs(orgIDsManaged)
+		if err != nil {
+			return nil, err
+		}
+
+		// Loại bỏ chính user đang login & SuperAdmin
+		filtered := make([]entity.SUserEntity, 0, len(users))
+		for _, u := range users {
+			if u.ID != user.ID && !u.IsSuperAdmin() {
+				filtered = append(filtered, u)
+			}
+		}
+		users = filtered
 	}
 
-	return result, nil
+	// Map sang response
+	responses := make([]response.UserResponse, 0, len(users))
+	for _, u := range users {
+		isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
+		avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(u.ID.String(), value.OwnerRoleUser)
+		code, _ := receiver.ProfileGateway.GetUserCode(ctx, u.ID.String())
+		responses = append(responses, response.UserResponse{
+			ID:           u.ID.String(),
+			Username:     u.Username,
+			Nickname:     u.Nickname,
+			IsDeactive:   isDeactive,
+			Avatar:       avatar,
+			CreatedIndex: u.CreatedIndex,
+			Code:         code,
+			LanguageKeys: []string{"vietnamese", "english"},
+		})
+	}
+
+	return responses, nil
 }
 
 func (receiver *GetUserEntityUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SUserEntity, error) {

@@ -205,90 +205,140 @@ func FormatProfileLink(rawURL string, id string) string {
 	return rawURL
 }
 
-func FilterUsersByName(users []response.UserResponse, name string) []response.UserResponse {
-	name = strings.ToLower(name)
+// ===== USERS =====
+func FilterUsersByName(users []response.UserResponse, keyword string) []response.UserResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return users
+	}
+
 	result := make([]response.UserResponse, 0)
 	for _, u := range users {
-		if strings.Contains(strings.ToLower(u.Nickname), name) {
+		nickname := strings.ToLower(u.Nickname)
+		code := strings.ToLower(u.Code)
+		if strings.Contains(nickname, keyword) || strings.Contains(code, keyword) {
 			result = append(result, u)
-			sort.Slice(result, func(i, j int) bool {
-				return strings.ToLower(result[i].Nickname) < strings.ToLower(result[j].Nickname)
-			})
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].Nickname) < strings.ToLower(result[j].Nickname)
 	})
+
 	return result
 }
 
-func FilterChildrenByName(users []response.ChildrenResponse, name string) []response.ChildrenResponse {
-	name = strings.ToLower(name)
+// ===== CHILDREN =====
+func FilterChildrenByName(children []response.ChildrenResponse, keyword string) []response.ChildrenResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return children
+	}
+
 	result := make([]response.ChildrenResponse, 0)
-	for _, u := range users {
-		if strings.Contains(strings.ToLower(u.ChildName), name) {
-			result = append(result, u)
+	for _, c := range children {
+		name := strings.ToLower(c.ChildName)
+		if strings.Contains(name, keyword) {
+			result = append(result, c)
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].ChildName) < strings.ToLower(result[j].ChildName)
 	})
+
 	return result
 }
 
-func FilterStudentByName(users []response.StudentResponse, name string) []response.StudentResponse {
-	name = strings.ToLower(name)
+// ===== STUDENTS =====
+func FilterStudentByName(students []response.StudentResponse, keyword string) []response.StudentResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return students
+	}
+
 	result := make([]response.StudentResponse, 0)
-	for _, u := range users {
-		if strings.Contains(strings.ToLower(u.StudentName), name) {
-			result = append(result, u)
+	for _, s := range students {
+		name := strings.ToLower(s.StudentName)
+		code := strings.ToLower(s.Code)
+		if strings.Contains(name, keyword) || strings.Contains(code, keyword) {
+			result = append(result, s)
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].StudentName) < strings.ToLower(result[j].StudentName)
 	})
+
 	return result
 }
 
-func FilterTeacherByName(users []response.TeacherResponse, name string) []response.TeacherResponse {
-	name = strings.ToLower(name)
+// ===== TEACHERS =====
+func FilterTeacherByName(teachers []response.TeacherResponse, keyword string) []response.TeacherResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return teachers
+	}
+
 	result := make([]response.TeacherResponse, 0)
-	for _, u := range users {
-		if strings.Contains(strings.ToLower(u.TeacherName), name) {
-			result = append(result, u)
+	for _, t := range teachers {
+		name := strings.ToLower(t.TeacherName)
+		code := strings.ToLower(t.Code)
+		if strings.Contains(name, keyword) || strings.Contains(code, keyword) {
+			result = append(result, t)
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].TeacherName) < strings.ToLower(result[j].TeacherName)
 	})
+
 	return result
 }
 
-func FilterStaffByName(users []response.StaffResponse, name string) []response.StaffResponse {
-	name = strings.ToLower(name)
+// ===== STAFFS =====
+func FilterStaffByName(staffs []response.StaffResponse, keyword string) []response.StaffResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return staffs
+	}
+
 	result := make([]response.StaffResponse, 0)
-	for _, u := range users {
-		if strings.Contains(strings.ToLower(u.StaffName), name) {
-			result = append(result, u)
+	for _, s := range staffs {
+		name := strings.ToLower(s.StaffName)
+		code := strings.ToLower(s.Code)
+		if strings.Contains(name, keyword) || strings.Contains(code, keyword) {
+			result = append(result, s)
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].StaffName) < strings.ToLower(result[j].StaffName)
 	})
+
 	return result
 }
 
-func FilterParentByName(parents []response.ParentResponse, name string) []response.ParentResponse {
-	name = strings.ToLower(name)
+// ===== PARENTS =====
+func FilterParentByName(parents []response.ParentResponse, keyword string) []response.ParentResponse {
+	keyword = strings.ToLower(strings.TrimSpace(keyword))
+	if keyword == "" {
+		return parents
+	}
+
 	result := make([]response.ParentResponse, 0)
 	for _, p := range parents {
-		if strings.Contains(strings.ToLower(p.ParentName), name) {
+		name := strings.ToLower(p.ParentName)
+		code := strings.ToLower(p.Code)
+		if strings.Contains(name, keyword) || strings.Contains(code, keyword) {
 			result = append(result, p)
 		}
 	}
+
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].ParentName) < strings.ToLower(result[j].ParentName)
 	})
+
 	return result
 }
 

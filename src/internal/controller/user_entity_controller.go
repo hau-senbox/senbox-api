@@ -1456,7 +1456,7 @@ func (ctl *UserEntityController) UpdateChild(c *gin.Context) {
 
 func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	role := c.Query("role")
-	name := strings.ToLower(c.Query("name"))
+	name := strings.ToLower(strings.TrimSpace(c.Query("name")))
 	statusParam := c.Query("status")
 
 	var status value.SearchUserStatus = value.SearchUserStatusAll
@@ -1472,54 +1472,33 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 	isAll := role == "all"
 
-	// Chuẩn bị cấu trúc response
+	// Khởi tạo response container
 	var (
-		users    = make([]response.UserResponse, 0)
-		children = make([]response.ChildrenResponse, 0)
-		students = make([]response.StudentResponse, 0)
-		teachers = make([]response.TeacherResponse, 0)
-		staffs   = make([]response.StaffResponse, 0)
-		parents  = make([]response.ParentResponse, 0)
+		users    []response.UserResponse
+		children []response.ChildrenResponse
+		students []response.StudentResponse
+		teachers []response.TeacherResponse
+		staffs   []response.StaffResponse
+		parents  []response.ParentResponse
 	)
 
 	if isAll {
-		// Lấy tất cả
-		rawUsers, _ := receiver.GetAllUsers4Search(c)
-		children, _ := receiver.ChildUseCase.GetAll4Search(c)
-		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		staffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		parents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
+		// Lấy tất cả loại user
+		users, _ = receiver.GetAllUsers4Search(c)
+		children, _ = receiver.ChildUseCase.GetAll4Search(c)
+		students, _ = receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		teachers, _ = receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		staffs, _ = receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		parents, _ = receiver.ParentUseCase.GetAllParents4Search(c)
 
-		// Map sang response
-		for _, u := range rawUsers {
-			// get is_deactive
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
-			users = append(users, response.UserResponse{
-				ID:           u.ID.String(),
-				Username:     u.Username,
-				Nickname:     u.Nickname,
-				IsDeactive:   isDeactive,
-				CreatedIndex: u.CreatedIndex,
-			})
-		}
-
-		// filter by name
-		users = helper.FilterUsersByName(users, name)
+		// Lọc theo tên & trạng thái
+		users = helper.FilterUsersByStatus(helper.FilterUsersByName(users, name), status)
 		children = helper.FilterChildrenByName(children, name)
-		students = helper.FilterStudentByName(students, name)
-		teachers = helper.FilterTeacherByName(teachers, name)
-		staffs = helper.FilterStaffByName(staffs, name)
-		parents = helper.FilterParentByName(parents, name)
+		students = helper.FilterStudentsByStatus(helper.FilterStudentByName(students, name), status)
+		teachers = helper.FilterTeachersByStatus(helper.FilterTeacherByName(teachers, name), status)
+		staffs = helper.FilterStaffsByStatus(helper.FilterStaffByName(staffs, name), status)
+		parents = helper.FilterParentsByStatus(helper.FilterParentByName(parents, name), status)
 
-		// filter by status
-		users = helper.FilterUsersByStatus(users, status)
-		teachers = helper.FilterTeachersByStatus(teachers, status)
-		staffs = helper.FilterStaffsByStatus(staffs, status)
-		parents = helper.FilterParentsByStatus(parents, status)
-		students = helper.FilterStudentsByStatus(students, status)
-
-		// Trả kết quả
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
 			Data: response.SearchUserResponse{
@@ -1544,62 +1523,37 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				Students: students,
 				Teachers: teachers,
 				Staffs:   staffs,
+				Parents:  parents,
 			},
 		})
 		return
 	}
 
-	// Xử lý từng role cụ thể
+	// Xử lý từng role
 	switch value.RoleSignUp(role) {
 	case value.RoleChild:
-		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
-		children = append(children, rawChildren...)
+		children, _ = receiver.ChildUseCase.GetAll4Search(c)
 		children = helper.FilterChildrenByName(children, name)
 
 	case value.RoleStudent:
-		rawStudents, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
-		students = append(students, rawStudents...)
-		students = helper.FilterStudentByName(students, name)
-		students = helper.FilterStudentsByStatus(students, status)
+		students, _ = receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
+		students = helper.FilterStudentsByStatus(helper.FilterStudentByName(students, name), status)
 
 	case value.RoleTeacher:
-		rawTeachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
-		teachers = append(teachers, rawTeachers...)
-		teachers = helper.FilterTeacherByName(teachers, name)
-		teachers = helper.FilterTeachersByStatus(teachers, status)
+		teachers, _ = receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
+		teachers = helper.FilterTeachersByStatus(helper.FilterTeacherByName(teachers, name), status)
 
 	case value.RoleStaff:
-		rawStaffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		staffs = append(staffs, rawStaffs...)
-		staffs = helper.FilterStaffByName(staffs, name)
-		staffs = helper.FilterStaffsByStatus(staffs, status)
+		staffs, _ = receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
+		staffs = helper.FilterStaffsByStatus(helper.FilterStaffByName(staffs, name), status)
 
 	case value.User:
-		rawUsers, _ := receiver.GetAllUsers4Search(c)
-		for _, u := range rawUsers {
-			// get is_deactive
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(u.ID.String())
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(u.ID.String(), value.OwnerRoleUser)
-			users = append(users, response.UserResponse{
-				ID:           u.ID.String(),
-				Username:     u.Username,
-				Nickname:     u.Nickname,
-				IsDeactive:   isDeactive,
-				Avatar:       avatar,
-				CreatedIndex: u.CreatedIndex,
-			})
-		}
-		users = helper.FilterUsersByName(users, name)
-		users = helper.FilterUsersByStatus(users, status)
+		users, _ = receiver.GetAllUsers4Search(c)
+		users = helper.FilterUsersByStatus(helper.FilterUsersByName(users, name), status)
 
 	case value.Parent:
-		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
-		parents = append(parents, rawParents...)
-		parents = helper.FilterParentByName(parents, name)
-		parents = helper.FilterParentsByStatus(parents, status)
-
-	case value.RoleOrganization:
-		// Không xử lý gì
+		parents, _ = receiver.ParentUseCase.GetAllParents4Search(c)
+		parents = helper.FilterParentsByStatus(helper.FilterParentByName(parents, name), status)
 	}
 
 	c.JSON(http.StatusOK, response.SucceedResponse{
