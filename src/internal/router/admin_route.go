@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"sen-global-api/config"
 	"sen-global-api/helper"
+	"sen-global-api/internal/cache"
+	"sen-global-api/internal/cache/cached"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -23,9 +25,11 @@ import (
 	"github.com/hashicorp/consul/api"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	goredis "github.com/redis/go-redis/v9"
 )
 
-func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App, consulClient *api.Client) {
+func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App, consulClient *api.Client, cacheClientRedis *goredis.Client) {
 	usecase.AdminSpreadsheetClient = userSpreadsheet
 	usecase.TheTimeMachine = job.New()
 	sessionRepository := repository.SessionRepository{
@@ -41,6 +45,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 	// gateway init
 	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
+	// cache setup
+	systemCache := cache.NewRedisCache(cacheClientRedis)
+	cachedProfileGateway := cached.NewCachedProfileGateway(profileGw, systemCache, 0)
 
 	s3Provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -478,7 +485,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.StaffApplicationRepository{DBConn: dbConn},
 		&repository.ChildRepository{DB: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 	)
 
 	// user
@@ -508,7 +515,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.StudentBlockSettingRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 		generateOwnerCodeUseCase,
 	)
 
@@ -537,7 +544,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 		generateOwnerCodeUseCase,
 	)
 
@@ -564,7 +571,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 		&usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
@@ -588,7 +595,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		&repository.StudentApplicationRepository{DB: dbConn},
-		profileGw,
+		cachedProfileGateway,
 		&usecase.UserBlockSettingUsecase{
 			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
 		},
@@ -616,7 +623,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
-			ProfileGateway: profileGw,
+			ProfileGateway: cachedProfileGateway,
 		},
 		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
@@ -640,7 +647,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
-			ProfileGateway:      profileGw,
+			ProfileGateway:      cachedProfileGateway,
 			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},

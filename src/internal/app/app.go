@@ -14,6 +14,7 @@ import (
 	"sen-global-api/internal/router"
 	"sen-global-api/pkg/common"
 	"sen-global-api/pkg/mysql"
+	"sen-global-api/pkg/redis"
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"syscall"
@@ -93,7 +94,12 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	handler := gin.New()
 	//handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
 	handler.Use(gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
-	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm, client)
+
+	// redis cache
+	cacheClientRedis := redis.InitRedisCache(appConfig)
+	defer cacheClientRedis.Close()
+
+	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm, client, cacheClientRedis)
 
 	docs.SwaggerInfo.BasePath = "/"
 	handler.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

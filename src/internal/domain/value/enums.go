@@ -1422,3 +1422,5 @@ func (k AccountsLogType) IsValid() bool {
 		return false
 	}
 }
+
+const ProfileCachePrefix = "profile-service:"

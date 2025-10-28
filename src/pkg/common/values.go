@@ -27,6 +27,14 @@ type Database struct {
 	MaxLifetime int    `env-required:"true" yaml:"max_lifetime_conn" env:"DATABASE_MAX_LIFETIME_CONN"`
 }
 
+type RedisCacheConfig struct {
+	TTLSeconds int    `yaml:"ttlSeconds"`
+	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
+	Password   string `yaml:"password"`
+	DB         int    `yaml:"db"`
+}
+
 // DefaultConfigs
 
 type Environment string
@@ -46,12 +54,13 @@ type Registry struct {
 }
 
 type Config struct {
-	HTTP     `yaml:"http"`
-	Log      `yaml:"logger"`
-	Database `yaml:"mysql"`
-	Env      Environment `env-required:"true" yaml:"environment" env:"ENVIRONMENT"`
-	Consul   Consul      `yaml:"consul"`
-	Registry Registry    `yaml:"registry"`
+	HTTP             `yaml:"http"`
+	Log              `yaml:"logger"`
+	Database         `yaml:"mysql"`
+	Env              Environment      `env-required:"true" yaml:"environment" env:"ENVIRONMENT"`
+	Consul           Consul           `yaml:"consul"`
+	Registry         Registry         `yaml:"registry"`
+	RedisCacheConfig RedisCacheConfig `yaml:"redis_cache"`
 }
 
 func NewConfigFromYAMLFile(yamlFile string) (*Config, error) {
