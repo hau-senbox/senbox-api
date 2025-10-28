@@ -50,12 +50,20 @@ func NewGenerateOwnerCodeUseCase(
 
 func (u *generateOwnerCodeUseCase) GenerateUserCode(ctx *gin.Context, userID string) (*string, error) {
 	user, _ := u.userRepo.GetByID(request.GetUserEntityByIDRequest{ID: userID})
-	return u.profileGateway.GenerateUserCode(ctx, userID, user.CreatedIndex)
+	if user == nil {
+		return nil, nil
+	}
+	u.profileGateway.GenerateUserCode(ctx, userID, user.CreatedIndex)
+	return nil, nil
 }
 
 func (u *generateOwnerCodeUseCase) GenerateStudentCode(ctx *gin.Context, studentID string) (*string, error) {
 	student, _ := u.studentRepo.GetByID(uuid.MustParse(studentID))
-	return u.profileGateway.GenerateStudentCode(ctx, studentID, student.CreatedIndex)
+	if student == nil {
+		return nil, nil
+	}
+	u.profileGateway.GenerateStudentCode(ctx, studentID, student.CreatedIndex)
+	return nil, nil
 }
 
 func (u *generateOwnerCodeUseCase) GenerateTeacherCode(ctx *gin.Context, teacherID string) (*string, error) {

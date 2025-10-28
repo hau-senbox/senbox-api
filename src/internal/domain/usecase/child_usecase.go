@@ -164,13 +164,13 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		return fmt.Errorf("create parent-child failed: %w", err)
 	}
 
-	// generate child code
-	uc.generateOwnerCodeUseCase.GenerateChildCode(ctx, childID.String())
-
 	// Commit nếu tất cả OK
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
+
+	// generate child code
+	uc.generateOwnerCodeUseCase.GenerateChildCode(ctx, childID.String())
 
 	return nil
 }

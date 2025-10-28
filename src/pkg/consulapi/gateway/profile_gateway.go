@@ -226,18 +226,8 @@ func (pg *profileGateway) GenerateParentCode(ctx *gin.Context, ownerID string, c
 }
 
 func (pg *profileGateway) GenerateUserCode(ctx *gin.Context, ownerID string, createdIndex int) (*string, error) {
-	// Lấy token từ context (được set ở SecuredMiddleware)
-	token, exists := ctx.Get("token")
-	if !exists {
-		return nil, fmt.Errorf("token not found in context")
-	}
 
-	tokenStr, ok := token.(string)
-	if !ok || tokenStr == "" {
-		return nil, fmt.Errorf("invalid token in context")
-	}
-
-	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
+	client, err := NewGatewayClient(pg.serviceName, "", pg.consul, nil)
 	if err != nil {
 		return nil, err
 	}
