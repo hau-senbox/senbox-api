@@ -559,6 +559,27 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 	)
 
+	parentUseCase := usecase.NewParentUseCase(
+		&repository.UserEntityRepository{DBConn: dbConn},
+		&repository.ParentMenuRepository{DBConn: dbConn},
+		&repository.ComponentRepository{DBConn: dbConn},
+		&usecase.LanguagesConfigUsecase{
+			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+		},
+		&usecase.UserImagesUsecase{
+			Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+			ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+		},
+		&repository.LanguageSettingRepository{DBConn: dbConn},
+		&repository.ParentRepository{DBConn: dbConn},
+		&repository.ParentChildsRepository{DBConn: dbConn},
+		&repository.StudentApplicationRepository{DB: dbConn},
+		profileGw,
+		&usecase.UserBlockSettingUsecase{
+			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
+		},
+	)
+
 	userEntityController := &controller.UserEntityController{
 		ChildUseCase:              childUseCase,
 		StudentApplicationUseCase: studentUseCase,
@@ -605,22 +626,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
-		ParentUseCase: &usecase.ParentUseCase{
-			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
-			ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
-			ComponentRepo:  &repository.ComponentRepository{DBConn: dbConn},
-			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
-				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
-			},
-			UserImagesUsecase: &usecase.UserImagesUsecase{
-				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
-				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
-			},
-			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
-			ParentRepo:          &repository.ParentRepository{DBConn: dbConn},
-			ParentChildsRepo:    &repository.ParentChildsRepository{DBConn: dbConn},
-			StudentRepo:         &repository.StudentApplicationRepository{DB: dbConn},
-		},
+		ParentUseCase: parentUseCase,
 		StudentBlockSettingUsecase: &usecase.StudentBlockSettingUsecase{
 			Repo: &repository.StudentBlockSettingRepository{DBConn: dbConn},
 		},

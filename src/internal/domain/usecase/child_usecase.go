@@ -312,19 +312,41 @@ func (uc *ChildUseCase) GetByID4WebAdmin(childID string) (*response.ChildRespons
 	}, nil
 }
 
-func (receiver *ChildUseCase) GetAll4Search(ctx *gin.Context) ([]entity.SChild, error) {
+func (receiver *ChildUseCase) GetAll4Search(ctx *gin.Context) ([]response.ChildrenResponse, error) {
 	user, err := receiver.getUserEntityUseCase.GetCurrentUserWithOrganizations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Nếu là SuperAdmin → trả về tất cả child
+	var children []entity.SChild
+
+	// Nếu là SuperAdmin → lấy tất cả
 	if user.IsSuperAdmin() {
-		return receiver.childRepo.GetAll()
+		children, err = receiver.childRepo.GetAll()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Không phải SuperAdmin → return rỗng
+		return []response.ChildrenResponse{}, nil
 	}
 
-	// Nếu không phải SuperAdmin → return nil
-	return nil, nil
+	// Map sang response
+	var res []response.ChildrenResponse
+	for _, c := range children {
+		avatar, _ := receiver.userImagesUsecase.GetAvtIsMain4Owner(c.ID.String(), value.OwnerRoleChild)
+		code, _ := receiver.profileGateway.GetChildCode(ctx, c.ID.String())
+		res = append(res, response.ChildrenResponse{
+			ChildID:      c.ID.String(),
+			ChildName:    c.ChildName,
+			CreatedIndex: c.CreatedIndex,
+			Avatar:       avatar,
+			Code:         code,
+			LanguageKeys: []string{"vietnamese", "english"},
+		})
+	}
+
+	return res, nil
 }
 
 func (uc *ChildUseCase) GetParentIDByChildID(childID string) (string, error) {

@@ -378,8 +378,9 @@ func (uc *StudentApplicationUseCase) mapStudentAppsToResponse(ctx *gin.Context, 
 			CreatedIndex: std.CreatedIndex,
 			IsDeactive:   isDeactive,
 			Avatar:       avatar,
-			LanguageKey:  "vietnamese",
-			Code:         code,
+			LanguageKeys: []string{"vietnamese", "english"},
+
+			Code: code,
 		})
 	}
 	return res

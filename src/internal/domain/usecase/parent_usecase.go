@@ -16,17 +16,18 @@ import (
 )
 
 type ParentUseCase struct {
-	DBConn                 *gorm.DB
-	UserRepo               *repository.UserEntityRepository
-	ParentMenuRepo         *repository.ParentMenuRepository
-	ComponentRepo          *repository.ComponentRepository
-	LanguagesConfigUsecase *LanguagesConfigUsecase
-	UserImagesUsecase      *UserImagesUsecase
-	LanguageSettingRepo    *repository.LanguageSettingRepository
-	ParentRepo             *repository.ParentRepository
-	ParentChildsRepo       *repository.ParentChildsRepository
-	StudentRepo            *repository.StudentApplicationRepository
-	ProfileGateway         gateway.ProfileGateway
+	DBConn                  *gorm.DB
+	UserRepo                *repository.UserEntityRepository
+	ParentMenuRepo          *repository.ParentMenuRepository
+	ComponentRepo           *repository.ComponentRepository
+	LanguagesConfigUsecase  *LanguagesConfigUsecase
+	UserImagesUsecase       *UserImagesUsecase
+	LanguageSettingRepo     *repository.LanguageSettingRepository
+	ParentRepo              *repository.ParentRepository
+	ParentChildsRepo        *repository.ParentChildsRepository
+	StudentRepo             *repository.StudentApplicationRepository
+	ProfileGateway          gateway.ProfileGateway
+	UserBlockSettingUsecase *UserBlockSettingUsecase
 }
 
 func NewParentUseCase(
@@ -37,15 +38,23 @@ func NewParentUseCase(
 	userImagesUsecase *UserImagesUsecase,
 	languageSettingRepo *repository.LanguageSettingRepository,
 	parentRepo *repository.ParentRepository,
+	parentChildsRepo *repository.ParentChildsRepository,
+	studentRepo *repository.StudentApplicationRepository,
+	profileGateway gateway.ProfileGateway,
+	userBlockSettingUsecase *UserBlockSettingUsecase,
 ) *ParentUseCase {
 	return &ParentUseCase{
-		UserRepo:               userRepo,
-		ParentMenuRepo:         parentMenuRepo,
-		ComponentRepo:          componentRepo,
-		LanguagesConfigUsecase: languagesConfigUsecase,
-		UserImagesUsecase:      userImagesUsecase,
-		LanguageSettingRepo:    languageSettingRepo,
-		ParentRepo:             parentRepo,
+		UserRepo:                userRepo,
+		ParentMenuRepo:          parentMenuRepo,
+		ComponentRepo:           componentRepo,
+		LanguagesConfigUsecase:  languagesConfigUsecase,
+		UserImagesUsecase:       userImagesUsecase,
+		LanguageSettingRepo:     languageSettingRepo,
+		ParentRepo:              parentRepo,
+		ParentChildsRepo:        parentChildsRepo,
+		StudentRepo:             studentRepo,
+		ProfileGateway:          profileGateway,
+		UserBlockSettingUsecase: userBlockSettingUsecase,
 	}
 }
 
@@ -328,15 +337,18 @@ func (uc *ParentUseCase) GetParentByUser(ctx context.Context, userID string) (*e
 	return uc.ParentRepo.GetByUserID(ctx, userID)
 }
 
-func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParent, error) {
+func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]response.ParentResponse, error) {
 	userID := ctx.GetString("user_id")
 	user, err := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: userID})
 	if err != nil {
 		return nil, err
 	}
 
+	var parents []entity.SParent
+
 	if user.IsSuperAdmin() {
-		parents, err := uc.ParentRepo.GetAll(ctx)
+		// SuperAdmin → lấy tất cả
+		parents, err = uc.ParentRepo.GetAll(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -346,49 +358,70 @@ func (uc *ParentUseCase) GetAllParents4Search(ctx *gin.Context) ([]entity.SParen
 				parents[i].ParentName = userParent.Nickname
 			}
 		}
+	} else {
+		// Non-SuperAdmin → lấy theo org
+		orgAdminIds, _ := user.GetManagedOrganizationIDs(DBConn)
+		if len(orgAdminIds) == 0 {
+			return nil, errors.New("user does not manage any organization")
+		}
 
-		return parents, nil
-	}
-
-	orgAdminIds, _ := user.GetManagedOrganizationIDs(DBConn)
-	if len(orgAdminIds) == 0 {
-		return nil, errors.New("user does not manage any organization")
-	}
-
-	// get all student by org
-	students, err := uc.StudentRepo.GetByOrganizationID(orgAdminIds[0])
-	if err != nil {
-		return nil, err
-	}
-
-	var parents = make([]entity.SParent, 0)
-
-	// get parent by childid in student
-	for _, student := range students {
-		parent, err := uc.ParentRepo.GetByUserID(ctx, student.UserID.String())
+		// Lấy học sinh theo org
+		students, err := uc.StudentRepo.GetByOrganizationID(orgAdminIds[0])
 		if err != nil {
 			return nil, err
 		}
-		if parent != nil {
-			userParent, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
-			if userParent != nil {
-				parent.ParentName = userParent.Nickname
+
+		var parentList []entity.SParent
+		for _, student := range students {
+			parent, err := uc.ParentRepo.GetByUserID(ctx, student.UserID.String())
+			if err != nil {
+				return nil, err
 			}
-			parents = append(parents, *parent)
+			if parent != nil {
+				userParent, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+				if userParent != nil {
+					parent.ParentName = userParent.Nickname
+				}
+				parentList = append(parentList, *parent)
+			}
+		}
+
+		// unique
+		uniqueMap := make(map[uuid.UUID]entity.SParent)
+		for _, p := range parentList {
+			uniqueMap[p.ID] = p
+		}
+		parents = make([]entity.SParent, 0, len(uniqueMap))
+		for _, v := range uniqueMap {
+			parents = append(parents, v)
 		}
 	}
 
-	uniqueMap := make(map[uuid.UUID]entity.SParent)
+	return uc.mapParentEntitiesToResponse(ctx, parents), nil
+}
+
+func (uc *ParentUseCase) mapParentEntitiesToResponse(ctx *gin.Context, parents []entity.SParent) []response.ParentResponse {
+	res := make([]response.ParentResponse, 0, len(parents))
 	for _, p := range parents {
-		uniqueMap[p.ID] = p
+		userEntity, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{
+			ID: p.UserID,
+		})
+		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
+		code, _ := uc.ProfileGateway.GetParentCode(ctx, p.ID.String())
+		res = append(res, response.ParentResponse{
+			ParentID:         p.ID.String(),
+			ParentName:       userEntity.Nickname,
+			IsDeactive:       isDeactive,
+			CreatedIndex:     p.CreatedIndex,
+			UserCreatedIndex: userEntity.CreatedIndex,
+			Avatar:           avatar,
+			Code:             code,
+			LanguageKeys:     []string{"vietnamese", "english"},
+		})
 	}
 
-	uniqueParents := make([]entity.SParent, 0, len(uniqueMap))
-	for _, v := range uniqueMap {
-		uniqueParents = append(uniqueParents, v)
-	}
-
-	return uniqueParents, nil
+	return res
 }
 
 func (uc *ParentUseCase) GenerateParentCode(ctx *gin.Context) {

@@ -1485,11 +1485,11 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	if isAll {
 		// Lấy tất cả
 		rawUsers, _ := receiver.GetAllUsers4Search(c)
-		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
+		children, _ := receiver.ChildUseCase.GetAll4Search(c)
 		students, _ := receiver.StudentApplicationUseCase.GetAllStudents4Search(c)
 		teachers, _ := receiver.TeacherApplicationUseCase.GetAllTeachers4Search(c)
 		staffs, _ := receiver.StaffApplicationUseCase.GetAllStaff4Search(c)
-		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
+		parents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
 
 		// Map sang response
 		for _, u := range rawUsers {
@@ -1501,28 +1501,6 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 				Nickname:     u.Nickname,
 				IsDeactive:   isDeactive,
 				CreatedIndex: u.CreatedIndex,
-			})
-		}
-		for _, c := range rawChildren {
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(c.ID.String(), value.OwnerRoleChild)
-			children = append(children, response.ChildrenResponse{
-				ChildID:      c.ID.String(),
-				ChildName:    c.ChildName,
-				CreatedIndex: c.CreatedIndex,
-				Avatar:       avatar,
-			})
-		}
-		for _, p := range rawParents {
-			// get is_deactive
-			isDeactive, _ := receiver.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
-			parents = append(parents, response.ParentResponse{
-				ParentID:         p.ID.String(),
-				ParentName:       p.ParentName,
-				IsDeactive:       isDeactive,
-				Avatar:           avatar,
-				CreatedIndex:     p.CreatedIndex,
-				UserCreatedIndex: p.CreatedIndex,
 			})
 		}
 
@@ -1575,15 +1553,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 	switch value.RoleSignUp(role) {
 	case value.RoleChild:
 		rawChildren, _ := receiver.ChildUseCase.GetAll4Search(c)
-		for _, c := range rawChildren {
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(c.ID.String(), value.OwnerRoleChild)
-			children = append(children, response.ChildrenResponse{
-				ChildID:      c.ID.String(),
-				ChildName:    c.ChildName,
-				CreatedIndex: c.CreatedIndex,
-				Avatar:       avatar,
-			})
-		}
+		children = append(children, rawChildren...)
 		children = helper.FilterChildrenByName(children, name)
 
 	case value.RoleStudent:
@@ -1624,17 +1594,7 @@ func (receiver *UserEntityController) SearchUser4WebAdmin(c *gin.Context) {
 
 	case value.Parent:
 		rawParents, _ := receiver.ParentUseCase.GetAllParents4Search(c)
-		for _, p := range rawParents {
-			isDeactive, _ := receiver.GetDeactive4User(p.ID.String())
-			avatar, _ := receiver.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
-			parents = append(parents, response.ParentResponse{
-				ParentID:         p.ID.String(),
-				ParentName:       p.ParentName,
-				IsDeactive:       isDeactive,
-				Avatar:           avatar,
-				UserCreatedIndex: p.CreatedIndex,
-			})
-		}
+		parents = append(parents, rawParents...)
 		parents = helper.FilterParentByName(parents, name)
 		parents = helper.FilterParentsByStatus(parents, status)
 

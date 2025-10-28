@@ -10,62 +10,64 @@ type SearchUserResponse struct {
 }
 
 type UserResponse struct {
-	ID           string `json:"id"`
-	Username     string `json:"username"`
-	Nickname     string `json:"nickname"`
-	IsDeactive   bool   `json:"is_deactive"`
-	Avatar       Avatar `json:"avatar"`
-	CreatedIndex int    `json:"created_index"`
-	Code         string `json:"code"`
-	LanguageKey  string `json:"lang_key"`
+	ID           string   `json:"id"`
+	Username     string   `json:"username"`
+	Nickname     string   `json:"nickname"`
+	IsDeactive   bool     `json:"is_deactive"`
+	Avatar       Avatar   `json:"avatar"`
+	CreatedIndex int      `json:"created_index"`
+	Code         string   `json:"code"`
+	LanguageKeys []string `json:"lang_keys"`
 }
 
 type ChildrenResponse struct {
-	ChildID      string `json:"id"`
-	ChildName    string `json:"nickname"`
-	CreatedIndex int    `json:"created_index"`
-	Avatar       Avatar `json:"avatar"`
+	ChildID      string   `json:"id"`
+	ChildName    string   `json:"nickname"`
+	CreatedIndex int      `json:"created_index"`
+	Avatar       Avatar   `json:"avatar"`
+	Code         string   `json:"code"`
+	LanguageKeys []string `json:"lang_keys"`
 }
 
 type StudentResponse struct {
-	StudentID    string `json:"id"`
-	StudentName  string `json:"nickname"`
-	IsDeactive   bool   `json:"is_deactive"`
-	CreatedIndex int    `json:"created_index"`
-	Avatar       Avatar `json:"avatar"`
-	Code         string `json:"code"`
-	LanguageKey  string `json:"lang_key"`
+	StudentID    string   `json:"id"`
+	StudentName  string   `json:"nickname"`
+	IsDeactive   bool     `json:"is_deactive"`
+	CreatedIndex int      `json:"created_index"`
+	Avatar       Avatar   `json:"avatar"`
+	Code         string   `json:"code"`
+	LanguageKeys []string `json:"lang_keys"`
 }
 
 type TeacherResponse struct {
-	TeacherID        string `json:"id"`
-	TeacherName      string `json:"nickname"`
-	IsDeactive       bool   `json:"is_deactive"`
-	CreatedIndex     int    `json:"created_index"`
-	Avatar           Avatar `json:"avatar"`
-	UserCreatedIndex int    `json:"user_created_index"`
-	Code             string `json:"code"`
-	LanguageKey      string `json:"lang_key"`
+	TeacherID        string   `json:"id"`
+	TeacherName      string   `json:"nickname"`
+	IsDeactive       bool     `json:"is_deactive"`
+	CreatedIndex     int      `json:"created_index"`
+	Avatar           Avatar   `json:"avatar"`
+	UserCreatedIndex int      `json:"user_created_index"`
+	Code             string   `json:"code"`
+	LanguageKeys     []string `json:"lang_keys"`
 }
 
 type StaffResponse struct {
-	StaffID          string `json:"id"`
-	StaffName        string `json:"nickname"`
-	IsDeactive       bool   `json:"is_deactive"`
-	CreatedIndex     int    `json:"created_index"`
-	Avatar           Avatar `json:"avatar"`
-	UserCreatedIndex int    `json:"user_created_index"`
-	Code             string `json:"code"`
-	LanguageKey      string `json:"lang_key"`
+	StaffID          string   `json:"id"`
+	StaffName        string   `json:"nickname"`
+	IsDeactive       bool     `json:"is_deactive"`
+	CreatedIndex     int      `json:"created_index"`
+	Avatar           Avatar   `json:"avatar"`
+	UserCreatedIndex int      `json:"user_created_index"`
+	Code             string   `json:"code"`
+	LanguageKeys     []string `json:"lang_keys"`
 }
 
 type ParentResponse struct {
-	ParentID         string `json:"id"`
-	ParentName       string `json:"nickname"`
-	IsDeactive       bool   `json:"is_deactive"`
-	CreatedIndex     int    `json:"created_index"`
-	Avatar           Avatar `json:"avatar"`
-	UserCreatedIndex int    `json:"user_created_index"`
-	Code             string `json:"code"`
-	LanguageKey      string `json:"lang_key"`
+	ParentID         string   `json:"id"`
+	ParentName       string   `json:"nickname"`
+	IsDeactive       bool     `json:"is_deactive"`
+	CreatedIndex     int      `json:"created_index"`
+	Avatar           Avatar   `json:"avatar"`
+	UserCreatedIndex int      `json:"user_created_index"`
+	Code             string   `json:"code"`
+	LanguageKeys     []string `json:"lang_keys"`
 }

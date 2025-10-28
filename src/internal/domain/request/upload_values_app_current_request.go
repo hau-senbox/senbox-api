@@ -5,5 +5,5 @@ type UploadValuesAppCurrentRequest struct {
 	Value1   string `json:"value1" binding:"required"`
 	Value2   string `json:"value2" binding:"required"`
 	Value3   string `json:"value3" binding:"required"`
-	ImageKey string `json:"image_key" binding:"required"`
+	ImageKey string `json:"image_key"`
 }

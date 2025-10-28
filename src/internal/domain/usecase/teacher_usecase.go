@@ -182,7 +182,7 @@ func (uc *TeacherApplicationUseCase) mapTeacherAppsToResponse(ctx *gin.Context, 
 			UserCreatedIndex: userEntity.CreatedIndex,
 			IsDeactive:       isDeactive,
 			Avatar:           avatar,
-			LanguageKey:      "vietnamese",
+			LanguageKeys:     []string{"vietnamese", "english"},
 			Code:             Code,
 		})
 	}

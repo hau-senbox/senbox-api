@@ -89,6 +89,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
+		profileGw,
+		&usecase.UserBlockSettingUsecase{
+			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{
