@@ -10,6 +10,8 @@ type OwnerAssignResponse struct {
 	AvatarUrl        string          `json:"avatar_url"`
 	CreatedIndex     int             `json:"created_index"`
 	UserCreatedIndex int             `json:"user_created_index"`
+	Code             string          `json:"code"`
+	LanguageKeys     []string        `json:"lang_keys"`
 }
 
 type ListOwnerAssignResponse struct {

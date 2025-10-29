@@ -6,7 +6,7 @@ import (
 	"sen-global-api/internal/domain/value"
 )
 
-func MapTeacherToOwnerAssignResponse(teacher *entity.STeacherFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int, userCreatedIndex int) *response.OwnerAssignResponse {
+func MapTeacherToOwnerAssignResponse(teacher *entity.STeacherFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int, userCreatedIndex int, code string) *response.OwnerAssignResponse {
 	return &response.OwnerAssignResponse{
 		OwnerID:          teacher.ID.String(),
 		OwnerRole:        value.OwnerRoleTeacher,
@@ -15,10 +15,12 @@ func MapTeacherToOwnerAssignResponse(teacher *entity.STeacherFormApplication, na
 		AvatarUrl:        avatarUrl,
 		CreatedIndex:     createdIndex,
 		UserCreatedIndex: userCreatedIndex,
+		Code:             code,
+		LanguageKeys:     []string{"vietnamese", "english"},
 	}
 }
 
-func MapStaffToOwnerAssignResponse(staff *entity.SStaffFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int, userCreatedIndex int) *response.OwnerAssignResponse {
+func MapStaffToOwnerAssignResponse(staff *entity.SStaffFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int, userCreatedIndex int, code string) *response.OwnerAssignResponse {
 	return &response.OwnerAssignResponse{
 		OwnerID:          staff.ID.String(),
 		OwnerRole:        value.OwnerRoleStaff,
@@ -27,10 +29,12 @@ func MapStaffToOwnerAssignResponse(staff *entity.SStaffFormApplication, name str
 		AvatarUrl:        avatarUrl,
 		CreatedIndex:     createdIndex,
 		UserCreatedIndex: userCreatedIndex,
+		Code:             code,
+		LanguageKeys:     []string{"vietnamese", "english"},
 	}
 }
 
-func MapStudentToOwnerAssignResponse(student *entity.SStudentFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int) *response.OwnerAssignResponse {
+func MapStudentToOwnerAssignResponse(student *entity.SStudentFormApplication, name string, avatarKey string, avatarUrl string, createdIndex int, code string) *response.OwnerAssignResponse {
 	return &response.OwnerAssignResponse{
 		OwnerID:      student.ID.String(),
 		OwnerRole:    value.OwnerRoleStudent,
@@ -38,5 +42,7 @@ func MapStudentToOwnerAssignResponse(student *entity.SStudentFormApplication, na
 		AvatarKey:    avatarKey,
 		AvatarUrl:    avatarUrl,
 		CreatedIndex: createdIndex,
+		Code:         code,
+		LanguageKeys: []string{"vietnamese", "english"},
 	}
 }

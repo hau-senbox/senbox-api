@@ -6,6 +6,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,7 @@ type OwnerAssignUseCase struct {
 	StudentRepo       *repository.StudentApplicationRepository
 	UserEntityRepo    *repository.UserEntityRepository
 	UserImagesUsecase *UserImagesUsecase
+	ProfileGateway    gateway.ProfileGateway
 }
 
 func (uc *OwnerAssignUseCase) GetListOwner2Assign(
@@ -55,10 +57,11 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		})
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(t.ID.String(), value.OwnerRoleTeacher)
+		code, _ := uc.ProfileGateway.GetTeacherCode(ctx, t.ID.String())
 
 		// get user created index
 		listResp.Teachers = append(listResp.Teachers,
-			mapper.MapTeacherToOwnerAssignResponse(&t, user.Nickname, avatar.ImageKey, avatar.ImageUrl, t.CreatedIndex, user.CreatedIndex),
+			mapper.MapTeacherToOwnerAssignResponse(&t, user.Nickname, avatar.ImageKey, avatar.ImageUrl, t.CreatedIndex, user.CreatedIndex, code),
 		)
 	}
 
@@ -70,8 +73,10 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		})
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStaff)
+		code, _ := uc.ProfileGateway.GetTeacherCode(ctx, s.ID.String())
+
 		listResp.Staffs = append(listResp.Staffs,
-			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, user.CreatedIndex),
+			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, user.CreatedIndex, code),
 		)
 	}
 
@@ -79,8 +84,9 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 	for _, s := range students {
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStudent)
+		code, _ := uc.ProfileGateway.GetTeacherCode(ctx, s.ID.String())
 		listResp.Students = append(listResp.Students,
-			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex),
+			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, code),
 		)
 	}
 
