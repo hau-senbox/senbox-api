@@ -285,7 +285,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		// prarent
 		parent := api.Group("/parents")
 		{
-			staff.GET("/get-by-user/:user_id", userEntityCtrl.GetParentByUser4Gateway)
+			parent.GET("/get-by-user/:user_id", userEntityCtrl.GetParentByUser4Gateway)
 			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
 		}
 
