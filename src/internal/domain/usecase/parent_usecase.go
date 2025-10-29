@@ -439,3 +439,27 @@ func (uc *ParentUseCase) GenerateParentCode(ctx *gin.Context) {
 		_, _ = uc.ProfileGateway.GenerateParentCode(ctx, pr.ID.String(), pr.CreatedIndex)
 	}
 }
+
+func (uc *ParentUseCase) GetParentByUser4Gw(ctx *gin.Context, userID string) (*response.GetParent4Gateway, error) {
+	parent, err := uc.ParentRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if parent == nil {
+		return nil, errors.New("parent not found")
+	}
+
+	// get avts
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(parent.ID.String(), value.OwnerRoleParent)
+
+	// get user
+	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+	code, _ := uc.ProfileGateway.GetParentCode(ctx, parent.ID.String())
+
+	return &response.GetParent4Gateway{
+		ParentID:   parent.ID.String(),
+		ParentName: user.Nickname,
+		Avatar:     avatar,
+		Code:       code,
+	}, nil
+}

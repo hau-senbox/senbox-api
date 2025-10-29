@@ -29,5 +29,5 @@ func Route(
 	setupUserRoutes(engine, dbConn, appConfig, consulClient)
 	setupOrganizationRoutes(engine, dbConn, appConfig)
 	setupAppRoutes(engine, dbConn, appConfig)
-	setupGatewayRoutes(engine, dbConn, appConfig, consulClient)
+	setupGatewayRoutes(engine, dbConn, appConfig, consulClient, cacheClientRedis)
 }

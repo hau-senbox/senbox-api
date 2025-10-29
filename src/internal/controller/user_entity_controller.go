@@ -2325,6 +2325,33 @@ func (receiver *UserEntityController) GetStaffsByUser4Gateway(context *gin.Conte
 	})
 }
 
+func (receiver *UserEntityController) GetParentByUser4Gateway(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+
+	parent, err := receiver.ParentUseCase.GetParentByUser4Gw(context, userID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get parent",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Thành công
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: parent,
+	})
+}
+
 func (receiver *UserEntityController) GetListOwner2Assign(context *gin.Context) {
 	organizationID := context.Param("organization_id")
 	if organizationID == "" {

@@ -2,6 +2,8 @@ package router
 
 import (
 	"sen-global-api/config"
+	"sen-global-api/internal/cache"
+	"sen-global-api/internal/cache/cached"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
@@ -13,9 +15,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
 	"gorm.io/gorm"
+
+	goredis "github.com/redis/go-redis/v9"
 )
 
-func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig, consulClient *api.Client) {
+func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig, consulClient *api.Client, cacheClientRedis *goredis.Client) {
 	// init repository + usecase
 	sessionRepository := repository.SessionRepository{
 		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
@@ -28,6 +32,10 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 	// gateway init
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
+
+	// cache setup
+	systemCache := cache.NewRedisCache(cacheClientRedis)
+	cachedProfileGateway := cached.NewCachedProfileGateway(profileGw, systemCache, 0)
 
 	s3Provider := uploader.NewS3Provider(
 		appCfg.S3.SenboxFormSubmitBucket.AccessKey,
@@ -47,7 +55,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		&repository.StaffApplicationRepository{DBConn: dbConn},
 		&repository.ChildRepository{DB: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 	)
 
 	userEntityRepository := &repository.UserEntityRepository{DBConn: dbConn}
@@ -64,7 +72,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway:           profileGw,
+		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
@@ -81,7 +89,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway:           profileGw,
+		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
@@ -98,7 +106,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway:           profileGw,
+		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
@@ -117,7 +125,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
 		},
-		ProfileGateway:           profileGw,
+		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}
 
@@ -147,7 +155,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
-		profileGw,
+		cachedProfileGateway,
 		generateOwnerCodeUseCase,
 	)
 	// organization ctl
@@ -232,7 +240,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
-			ProfileGateway: profileGw,
+			ProfileGateway: cachedProfileGateway,
 		},
 		ParentUseCase: parentUsecase,
 		ChildUseCase:  childUseCase,
@@ -277,6 +285,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		// prarent
 		parent := api.Group("/parents")
 		{
+			staff.GET("/get-by-user/:user_id", userEntityCtrl.GetParentByUser4Gateway)
 			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
 		}
 

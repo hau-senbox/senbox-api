@@ -11,3 +11,11 @@ type ParentResponseBase struct {
 	Avatars        []Avatar                 `json:"avatars"`
 	CreatedIndex   int                      `json:"created_index"`
 }
+
+type GetParent4Gateway struct {
+	ParentID       string `json:"id"`
+	OrganizationID string `json:"organization_id"`
+	ParentName     string `json:"name"`
+	Avatar         Avatar `json:"avatar"`
+	Code           string `json:"code"`
+}
