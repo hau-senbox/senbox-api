@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"fmt"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -29,6 +30,7 @@ type TeacherApplicationUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
+	CachingService           caching.CachingService
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -430,7 +432,7 @@ func (uc *TeacherApplicationUseCase) GetDetailTeacherApplication(ctx *gin.Contex
 	}, nil
 }
 
-func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*response.GetTeacher4Gateway, error) {
+func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(ctx *gin.Context, teacherID string) (*response.GetTeacher4Gateway, error) {
 	teacher, err := uc.TeacherRepo.GetByID(uuid.MustParse(teacherID))
 	if err != nil {
 		return nil, err
@@ -446,12 +448,16 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(teacherID string) (*resp
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacherID, value.OwnerRoleTeacher)
 
-	return &response.GetTeacher4Gateway{
+	res := &response.GetTeacher4Gateway{
 		TeacherID:      teacherID,
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Nickname,
 		Avatar:         avatar,
-	}, nil
+	}
+
+	_ = uc.CachingService.SetTeacherCache(ctx, res)
+
+	return res, nil
 }
 
 func (uc *TeacherApplicationUseCase) GetTeacherByUser4Gateway(userID string) (*response.GetTeacher4Gateway, error) {
@@ -503,7 +509,7 @@ func (uc *TeacherApplicationUseCase) GetTeachersByUser4Gateway(userID string) ([
 	return result, nil
 }
 
-func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(userID string, organizationID string) (*response.GetTeacher4Gateway, error) {
+func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(ctx *gin.Context, userID string, organizationID string) (*response.GetTeacher4Gateway, error) {
 	teacher, err := uc.TeacherRepo.GetByUserIDAndOrgID(userID, organizationID)
 	if err != nil {
 		return nil, err
@@ -519,6 +525,15 @@ func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(userID strin
 
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleTeacher)
+
+	res := &response.GetTeacher4Gateway{
+		TeacherID:      teacher.ID.String(),
+		OrganizationID: teacher.OrganizationID.String(),
+		TeacherName:    userEntity.Username,
+		Avatar:         avatar,
+	}
+
+	_ = uc.CachingService.SetTeacherByUserAndOrgCacheKey(ctx, userID, organizationID, res)
 
 	return &response.GetTeacher4Gateway{
 		TeacherID:      teacher.ID.String(),

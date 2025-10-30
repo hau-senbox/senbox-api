@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -29,6 +30,7 @@ type ParentUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
+	CachingService           caching.CachingService
 }
 
 func NewParentUseCase(
@@ -44,6 +46,7 @@ func NewParentUseCase(
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUsecase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
+	cachingService caching.CachingService,
 ) *ParentUseCase {
 	return &ParentUseCase{
 		UserRepo:                 userRepo,
@@ -58,6 +61,7 @@ func NewParentUseCase(
 		ProfileGateway:           profileGateway,
 		UserBlockSettingUsecase:  userBlockSettingUsecase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		CachingService:           cachingService,
 	}
 }
 
@@ -456,10 +460,13 @@ func (uc *ParentUseCase) GetParentByUser4Gw(ctx *gin.Context, userID string) (*r
 	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
 	code, _ := uc.ProfileGateway.GetParentCode(ctx, parent.ID.String())
 
-	return &response.GetParent4Gateway{
+	res := &response.GetParent4Gateway{
 		ParentID:   parent.ID.String(),
 		ParentName: user.Nickname,
 		Avatar:     avatar,
 		Code:       code,
-	}, nil
+	}
+
+	_ = uc.CachingService.SetParentByUserCacheKey(ctx, userID, res)
+	return res, nil
 }

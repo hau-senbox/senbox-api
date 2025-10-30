@@ -1424,3 +1424,4 @@ func (k AccountsLogType) IsValid() bool {
 }
 
 const ProfileCachePrefix = "profile-service:"
+const MainCachePrefix = "main-service:"

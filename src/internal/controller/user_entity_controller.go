@@ -2058,7 +2058,7 @@ func (receiver *UserEntityController) GetStudent4Gateway(context *gin.Context) {
 		return
 	}
 
-	student, err := receiver.StudentApplicationUseCase.GetStudent4Gateway(studentID)
+	student, err := receiver.StudentApplicationUseCase.GetStudent4Gateway(context, studentID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -2085,7 +2085,7 @@ func (receiver *UserEntityController) GetTeacher4Gateway(context *gin.Context) {
 		return
 	}
 
-	teacher, err := receiver.TeacherApplicationUseCase.GetTeacher4Gateway(teacherID)
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacher4Gateway(context, teacherID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -2112,7 +2112,7 @@ func (receiver *UserEntityController) GetStaff4Gateway(context *gin.Context) {
 		return
 	}
 
-	staff, err := receiver.StaffApplicationUseCase.GetStaff4Gateway(staffID)
+	staff, err := receiver.StaffApplicationUseCase.GetStaff4Gateway(context, staffID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -2398,7 +2398,7 @@ func (receiver *UserEntityController) GetTeacherByOrgAndUser4Gateway(context *gi
 		return
 	}
 
-	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByOrgAndUser4Gateway(userID, organizationID)
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByOrgAndUser4Gateway(context, userID, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -2434,7 +2434,7 @@ func (receiver *UserEntityController) GetStaffByOrgAndUser4Gateway(context *gin.
 		return
 	}
 
-	staff, err := receiver.StaffApplicationUseCase.GetStaffByOrgAndUser4Gateway(userID, organizationID)
+	staff, err := receiver.StaffApplicationUseCase.GetStaffByOrgAndUser4Gateway(context, userID, organizationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

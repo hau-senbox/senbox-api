@@ -8,27 +8,43 @@ import "sen-global-api/internal/domain/value"
 
 // entity data
 func UserCacheKey(userID string) string {
-	return value.ProfileCachePrefix + "user:" + userID
+	return value.MainCachePrefix + "user:" + userID
 }
 
 func StudentCacheKey(studentID string) string {
-	return value.ProfileCachePrefix + "student:" + studentID
+	return value.MainCachePrefix + "student:" + studentID
 }
 
 func TeacherCacheKey(teacherID string) string {
-	return value.ProfileCachePrefix + "teacher:" + teacherID
+	return value.MainCachePrefix + "teacher:" + teacherID
 }
 
 func StaffCacheKey(staffID string) string {
-	return value.ProfileCachePrefix + "staff:" + staffID
+	return value.MainCachePrefix + "staff:" + staffID
 }
 
 func ParentCacheKey(parentID string) string {
-	return value.ProfileCachePrefix + "parent:" + parentID
+	return value.MainCachePrefix + "parent:" + parentID
 }
 
 func ChildCacheKey(childID string) string {
-	return value.ProfileCachePrefix + "child:" + childID
+	return value.MainCachePrefix + "child:" + childID
+}
+
+func TeacherByUserAndOrgCacheKey(userID, orgID string) string {
+	return value.MainCachePrefix + "teacher-by-user-org:" + userID + ":" + orgID
+}
+
+func StaffByUserAndOrgCacheKey(userID, orgID string) string {
+	return value.MainCachePrefix + "staff-by-user-org:" + userID + ":" + orgID
+}
+
+func UserByTeacherCacheKey(teacherID string) string {
+	return value.MainCachePrefix + "user-by-teacher:" + teacherID
+}
+
+func ParentByUserCacheKey(userID string) string {
+	return value.MainCachePrefix + "parent-by-user:" + userID
 }
 
 // code mapping

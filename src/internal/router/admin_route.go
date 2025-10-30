@@ -6,6 +6,7 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/cache"
 	"sen-global-api/internal/cache/cached"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -517,6 +518,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.StudentBlockSettingRepository{DBConn: dbConn},
 		cachedProfileGateway,
 		generateOwnerCodeUseCase,
+		caching.NewCachingService(nil, 0),
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -578,6 +580,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
+		caching.NewCachingService(systemCache, 0),
 	)
 
 	parentUseCase := usecase.NewParentUseCase(
@@ -600,6 +603,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
+		caching.NewCachingService(nil, 0),
 	)
 
 	userEntityController := &controller.UserEntityController{

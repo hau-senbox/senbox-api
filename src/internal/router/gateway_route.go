@@ -4,6 +4,7 @@ import (
 	"sen-global-api/config"
 	"sen-global-api/internal/cache"
 	"sen-global-api/internal/cache/cached"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
@@ -36,6 +37,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 	// cache setup
 	systemCache := cache.NewRedisCache(cacheClientRedis)
 	cachedProfileGateway := cached.NewCachedProfileGateway(profileGw, systemCache, 0)
+	cachingService := caching.NewCachingService(systemCache, 0)
 
 	s3Provider := uploader.NewS3Provider(
 		appCfg.S3.SenboxFormSubmitBucket.AccessKey,
@@ -74,6 +76,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		CachingService:           cachingService,
 	}
 
 	// teacher
@@ -91,6 +94,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		CachingService:           cachingService,
 	}
 
 	// staff
@@ -127,6 +131,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 		ProfileGateway:           cachedProfileGateway,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		CachingService:           cachingService,
 	}
 
 	// child

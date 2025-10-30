@@ -2,6 +2,7 @@ package router
 
 import (
 	"sen-global-api/config"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
@@ -107,6 +108,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
+		caching.NewCachingService(nil, 0),
 	)
 
 	userEntityController := &controller.UserEntityController{

@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"fmt"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -29,6 +30,7 @@ type StaffApplicationUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
+	CachingService           caching.CachingService
 }
 
 func NewStaffApplicationUseCase(
@@ -45,6 +47,7 @@ func NewStaffApplicationUseCase(
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUseCase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
+	cachingService caching.CachingService,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
 		StaffAppRepo:             staffRepo,
@@ -60,6 +63,7 @@ func NewStaffApplicationUseCase(
 		ProfileGateway:           profileGateway,
 		UserBlockSettingUsecase:  userBlockSettingUseCase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		CachingService:           cachingService,
 	}
 }
 
@@ -365,7 +369,7 @@ func (uc *StaffApplicationUseCase) GetDetailStaffApplication(ctx *gin.Context, a
 	}, nil
 }
 
-func (uc *StaffApplicationUseCase) GetStaff4Gateway(staffID string) (*response.GetStaff4Gateway, error) {
+func (uc *StaffApplicationUseCase) GetStaff4Gateway(ctx *gin.Context, staffID string) (*response.GetStaff4Gateway, error) {
 	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
 	if err != nil {
 		return nil, err
@@ -381,12 +385,19 @@ func (uc *StaffApplicationUseCase) GetStaff4Gateway(staffID string) (*response.G
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staffID, value.OwnerRoleStaff)
 
-	return &response.GetStaff4Gateway{
+	code, _ := uc.ProfileGateway.GetStaffCode(ctx, staffID)
+
+	res := &response.GetStaff4Gateway{
 		StaffID:        staffID,
 		OrganizationID: staff.OrganizationID.String(),
 		StaffName:      userEntity.Nickname,
 		Avatar:         avatar,
-	}, nil
+		Code:           code,
+	}
+
+	_ = uc.CachingService.SetStaffCache(ctx, res)
+
+	return res, nil
 }
 
 func (uc *StaffApplicationUseCase) GetStaffByUser4Gateway(userID string) (*response.GetStaff4Gateway, error) {
@@ -438,7 +449,7 @@ func (uc *StaffApplicationUseCase) GetStaffsByUser4Gateway(userID string) ([]*re
 	return result, nil
 }
 
-func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(userID string, organizationID string) (*response.GetStaff4Gateway, error) {
+func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(ctx *gin.Context, userID string, organizationID string) (*response.GetStaff4Gateway, error) {
 	staff, err := uc.StaffAppRepo.GetByUserIDAndOrgID(userID, organizationID)
 	if err != nil {
 		return nil, err
@@ -453,13 +464,18 @@ func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(userID string, o
 
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
+	code, _ := uc.ProfileGateway.GetStaffCode(ctx, staff.ID.String())
 
-	return &response.GetStaff4Gateway{
+	res := &response.GetStaff4Gateway{
 		StaffID:        staff.ID.String(),
 		OrganizationID: staff.OrganizationID.String(),
 		StaffName:      userEntity.Nickname,
 		Avatar:         avatar,
-	}, nil
+		Code:           code,
+	}
+
+	_ = uc.CachingService.SetStaffByUserAndOrgCacheKey(ctx, userID, organizationID, res)
+	return res, nil
 }
 
 func (uc *StaffApplicationUseCase) GetAllStaffByOrg4App(ctx *gin.Context, organizationID string) ([]response.StaffResponse, error) {

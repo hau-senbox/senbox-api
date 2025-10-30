@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"fmt"
+	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -30,6 +31,7 @@ type StudentApplicationUseCase struct {
 	ProfileGateway                gateway.ProfileGateway
 	StudentBlockSettingRepository *repository.StudentBlockSettingRepository
 	GenerateOwnerCodeUseCase      GenerateOwnerCodeUseCase
+	CachingService                caching.CachingService
 }
 
 func NewStudentApplicationUseCase(
@@ -46,6 +48,7 @@ func NewStudentApplicationUseCase(
 	studentBlockRepo *repository.StudentBlockSettingRepository,
 	profileGw gateway.ProfileGateway,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
+	cachingService caching.CachingService,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:                studentRepo,
@@ -61,6 +64,7 @@ func NewStudentApplicationUseCase(
 		StudentBlockSettingRepository: studentBlockRepo,
 		ProfileGateway:                profileGw,
 		GenerateOwnerCodeUseCase:      generateOwnerCodeUseCase,
+		CachingService:                cachingService,
 	}
 }
 
@@ -261,7 +265,7 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(studentID string) (*respon
 	}, nil
 }
 
-func (uc *StudentApplicationUseCase) GetStudent4Gateway(studentID string) (*response.GetStudent4Gateway, error) {
+func (uc *StudentApplicationUseCase) GetStudent4Gateway(ctx *gin.Context, studentID string) (*response.GetStudent4Gateway, error) {
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if err != nil {
 		return nil, err
@@ -271,13 +275,19 @@ func (uc *StudentApplicationUseCase) GetStudent4Gateway(studentID string) (*resp
 	}
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(studentID, value.OwnerRoleStudent)
+	code, _ := uc.ProfileGateway.GetStudentCode(ctx, studentID)
 
-	return &response.GetStudent4Gateway{
+	res := &response.GetStudent4Gateway{
 		StudentID:      studentID,
-		OrganizationID: studentApp.OrganizationID.String(),
 		StudentName:    studentApp.StudentName,
+		OrganizationID: studentApp.OrganizationID.String(),
 		Avatar:         avatar,
-	}, nil
+		Code:           code,
+	}
+
+	_ = uc.CachingService.SetStudentCache(ctx, res)
+
+	return res, nil
 }
 
 func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studentID string, deviceID string) (*response.StudentResponseBase, error) {
