@@ -447,12 +447,14 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(ctx *gin.Context, teache
 
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacherID, value.OwnerRoleTeacher)
+	code, _ := uc.ProfileGateway.GetTeacherCode(ctx, teacherID)
 
 	res := &response.GetTeacher4Gateway{
 		TeacherID:      teacherID,
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Nickname,
 		Avatar:         avatar,
+		Code:           code,
 	}
 
 	_ = uc.CachingService.SetTeacherCache(ctx, res)
@@ -525,12 +527,14 @@ func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(ctx *gin.Con
 
 	// get avts
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleTeacher)
+	code, _ := uc.ProfileGateway.GetTeacherCode(ctx, teacher.ID.String())
 
 	res := &response.GetTeacher4Gateway{
 		TeacherID:      teacher.ID.String(),
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Username,
 		Avatar:         avatar,
+		Code:           code,
 	}
 
 	_ = uc.CachingService.SetTeacherByUserAndOrgCacheKey(ctx, userID, organizationID, res)
