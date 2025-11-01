@@ -41,7 +41,8 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
 	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
+	cachingProfileService := caching.NewCachingProfileService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway, cachingProfileService)
 
 	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
 		&repository.UserEntityRepository{DBConn: dbConn},

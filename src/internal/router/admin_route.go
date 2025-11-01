@@ -46,7 +46,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	// gateway init
 	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
 	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
+	cachingProfileService := caching.NewCachingProfileService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway, cachingProfileService)
 
 	s3Provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,

@@ -33,7 +33,8 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 	cachedProfileGateway := cached_profile_gateway.NewCachedProfileGateway(cacheClientRedis)
 	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
+	cachingProfileService := caching.NewCachingProfileService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway, cachingProfileService)
 
 	s3Provider := uploader.NewS3Provider(
 		appCfg.S3.SenboxFormSubmitBucket.AccessKey,

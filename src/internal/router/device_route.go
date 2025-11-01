@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/hung-senbox/senbox-cache-service/pkg/cache"
 	"github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -47,7 +48,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 
 	// gateway init
 	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
+	cachingProfileService := caching.NewCachingProfileService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway, cachingProfileService)
 
 	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
 		&repository.UserEntityRepository{DBConn: dbConn},

@@ -10,7 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
 
-	cached_profile_gateway "github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 )
 
 type ProfileGateway interface {
@@ -32,16 +33,18 @@ type ProfileGateway interface {
 }
 
 type profileGateway struct {
-	serviceName          string
-	consul               *api.Client
-	cachedProfileGateway cached_profile_gateway.CachedProfileGateway
+	serviceName           string
+	consul                *api.Client
+	cachedProfileGateway  cached.CachedProfileGateway
+	cachingProfileGateway caching.CachingProfileService
 }
 
-func NewProfileGateway(serviceName string, consulClient *api.Client, cachedProfileGateway cached_profile_gateway.CachedProfileGateway) ProfileGateway {
+func NewProfileGateway(serviceName string, consulClient *api.Client, cachedProfileGateway cached.CachedProfileGateway, cachingProfileGateway caching.CachingProfileService) ProfileGateway {
 	return &profileGateway{
-		serviceName:          serviceName,
-		consul:               consulClient,
-		cachedProfileGateway: cachedProfileGateway,
+		serviceName:           serviceName,
+		consul:                consulClient,
+		cachedProfileGateway:  cachedProfileGateway,
+		cachingProfileGateway: cachingProfileGateway,
 	}
 }
 
@@ -356,6 +359,8 @@ func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (stri
 		return "", fmt.Errorf("call gateway get student code fail: %s", gwResp.Message)
 	}
 
+	pg.cachingProfileGateway.SetStudentCode(ctx, ownerID, gwResp.Data)
+
 	return gwResp.Data, nil
 }
 
@@ -402,6 +407,8 @@ func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (stri
 	if gwResp.StatusCode != 200 {
 		return "", fmt.Errorf("call gateway get teacher code fail: %s", gwResp.Message)
 	}
+
+	pg.cachingProfileGateway.SetTeacherCode(ctx, ownerID, gwResp.Data)
 
 	return gwResp.Data, nil
 }
@@ -450,6 +457,8 @@ func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (string
 		return "", fmt.Errorf("call gateway get staff code fail: %s", gwResp.Message)
 	}
 
+	pg.cachingProfileGateway.SetStaffCode(ctx, ownerID, gwResp.Data)
+
 	return gwResp.Data, nil
 }
 
@@ -493,6 +502,8 @@ func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (strin
 	if gwResp.StatusCode != 200 {
 		return "", fmt.Errorf("call gateway get parent code fail: %s", gwResp.Message)
 	}
+
+	pg.cachingProfileGateway.SetParentCode(ctx, ownerID, gwResp.Data)
 
 	return gwResp.Data, nil
 }
@@ -540,6 +551,8 @@ func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (string,
 		return "", fmt.Errorf("call gateway get user code fail: %s", gwResp.Message)
 	}
 
+	pg.cachingProfileGateway.SetUserCode(ctx, ownerID, gwResp.Data)
+
 	return gwResp.Data, nil
 }
 
@@ -585,6 +598,8 @@ func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (string
 	if gwResp.StatusCode != 200 {
 		return "", fmt.Errorf("call gateway get child code fail: %s", gwResp.Message)
 	}
+
+	pg.cachingProfileGateway.SetChildCode(ctx, ownerID, gwResp.Data)
 
 	return gwResp.Data, nil
 }
