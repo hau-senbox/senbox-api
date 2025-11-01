@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"fmt"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 )
 
 type TeacherApplicationUseCase struct {
@@ -30,7 +30,7 @@ type TeacherApplicationUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
-	CachingService           caching.CachingService
+	CachingMainService       caching.CachingMainService
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -457,8 +457,7 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(ctx *gin.Context, teache
 		Code:           code,
 	}
 
-	_ = uc.CachingService.SetTeacherCache(ctx, res)
-
+	uc.CachingMainService.SetTeacherCache(ctx.Request.Context(), teacherID, res)
 	return res, nil
 }
 
@@ -537,14 +536,9 @@ func (uc *TeacherApplicationUseCase) GetTeacherByOrgAndUser4Gateway(ctx *gin.Con
 		Code:           code,
 	}
 
-	_ = uc.CachingService.SetTeacherByUserAndOrgCacheKey(ctx, userID, organizationID, res)
+	uc.CachingMainService.SetTeacherByUserAndOrgCacheKey(ctx.Request.Context(), userID, organizationID, res)
 
-	return &response.GetTeacher4Gateway{
-		TeacherID:      teacher.ID.String(),
-		OrganizationID: teacher.OrganizationID.String(),
-		TeacherName:    userEntity.Username,
-		Avatar:         avatar,
-	}, nil
+	return res, nil
 }
 
 func (uc *TeacherApplicationUseCase) GetAllTeacherByOrg4App(ctx *gin.Context, organizationID string) ([]response.TeacherResponse, error) {

@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,7 @@ type ParentUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
-	CachingService           caching.CachingService
+	CachingMainService       caching.CachingMainService
 }
 
 func NewParentUseCase(
@@ -46,7 +46,7 @@ func NewParentUseCase(
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUsecase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
-	cachingService caching.CachingService,
+	cachingMainService caching.CachingMainService,
 ) *ParentUseCase {
 	return &ParentUseCase{
 		UserRepo:                 userRepo,
@@ -61,7 +61,7 @@ func NewParentUseCase(
 		ProfileGateway:           profileGateway,
 		UserBlockSettingUsecase:  userBlockSettingUsecase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
-		CachingService:           cachingService,
+		CachingMainService:       cachingMainService,
 	}
 }
 
@@ -467,6 +467,7 @@ func (uc *ParentUseCase) GetParentByUser4Gw(ctx *gin.Context, userID string) (*r
 		Code:       code,
 	}
 
-	_ = uc.CachingService.SetParentByUserCacheKey(ctx, userID, res)
+	uc.CachingMainService.SetParentByUserCacheKey(ctx.Request.Context(), userID, res)
+
 	return res, nil
 }

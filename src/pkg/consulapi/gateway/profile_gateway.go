@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
+
+	cached_profile_gateway "github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
 )
 
 type ProfileGateway interface {
@@ -30,14 +32,16 @@ type ProfileGateway interface {
 }
 
 type profileGateway struct {
-	serviceName string
-	consul      *api.Client
+	serviceName          string
+	consul               *api.Client
+	cachedProfileGateway cached_profile_gateway.CachedProfileGateway
 }
 
-func NewProfileGateway(serviceName string, consulClient *api.Client) ProfileGateway {
+func NewProfileGateway(serviceName string, consulClient *api.Client, cachedProfileGateway cached_profile_gateway.CachedProfileGateway) ProfileGateway {
 	return &profileGateway{
-		serviceName: serviceName,
-		consul:      consulClient,
+		serviceName:          serviceName,
+		consul:               consulClient,
+		cachedProfileGateway: cachedProfileGateway,
 	}
 }
 
@@ -309,6 +313,12 @@ func (pg *profileGateway) GenerateChildCode(ctx *gin.Context, ownerID string, cr
 
 // =============== Get owner codes ===============
 func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (string, error) {
+
+	cachedData, _ := pg.cachedProfileGateway.GetStudentCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
@@ -350,6 +360,12 @@ func (pg *profileGateway) GetStudentCode(ctx *gin.Context, ownerID string) (stri
 }
 
 func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (string, error) {
+
+	cachedData, _ := pg.cachedProfileGateway.GetTeacherCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
@@ -391,6 +407,12 @@ func (pg *profileGateway) GetTeacherCode(ctx *gin.Context, ownerID string) (stri
 }
 
 func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (string, error) {
+
+	cachedData, _ := pg.cachedProfileGateway.GetStaffCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
@@ -432,6 +454,11 @@ func (pg *profileGateway) GetStaffCode(ctx *gin.Context, ownerID string) (string
 }
 
 func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (string, error) {
+	cachedData, _ := pg.cachedProfileGateway.GetParentCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
@@ -471,6 +498,11 @@ func (pg *profileGateway) GetParentCode(ctx *gin.Context, ownerID string) (strin
 }
 
 func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (string, error) {
+	cachedData, _ := pg.cachedProfileGateway.GetUserCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {
@@ -512,6 +544,11 @@ func (pg *profileGateway) GetUserCode(ctx *gin.Context, ownerID string) (string,
 }
 
 func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (string, error) {
+	cachedData, _ := pg.cachedProfileGateway.GetChildCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
+
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
 	if !exists {

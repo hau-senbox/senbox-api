@@ -14,7 +14,6 @@ import (
 	"sen-global-api/internal/router"
 	"sen-global-api/pkg/common"
 	"sen-global-api/pkg/mysql"
-	"sen-global-api/pkg/redis"
 	"sen-global-api/pkg/sheet"
 	"strconv"
 	"syscall"
@@ -25,6 +24,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
+	"github.com/hung-senbox/senbox-cache-service/pkg/redis"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -95,9 +95,12 @@ func Run(appConfig *config.AppConfig, fcm *firebase.App) error {
 	//handler.Use(middleware.BodyLimit(20<<20), gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
 	handler.Use(gin.CustomRecovery(middleware.RecoveryHandler), middleware.CORS())
 
-	// redis cache
-	cacheClientRedis := redis.InitRedisCache(appConfig)
-	defer cacheClientRedis.Close()
+	// cache redis
+	cacheClientRedis, err := redis.InitRedisCache(appConfig.Config.RedisCacheConfig.Host, appConfig.Config.RedisCacheConfig.Port, appConfig.Config.RedisCacheConfig.Password, appConfig.Config.RedisCacheConfig.DB)
+	if err != nil {
+		log.Fatalf("Failed to initialize Redis cache: %v", err)
+		return err
+	}
 
 	router.Route(handler, dbConn, userSpreadsheet, uploaderSpreadsheet, *appConfig, fcm, client, cacheClientRedis)
 

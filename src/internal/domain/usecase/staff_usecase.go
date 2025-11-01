@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"fmt"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 )
 
 type StaffApplicationUseCase struct {
@@ -30,7 +30,7 @@ type StaffApplicationUseCase struct {
 	ProfileGateway           gateway.ProfileGateway
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
-	CachingService           caching.CachingService
+	CachingMainService       caching.CachingMainService
 }
 
 func NewStaffApplicationUseCase(
@@ -47,7 +47,7 @@ func NewStaffApplicationUseCase(
 	profileGateway gateway.ProfileGateway,
 	userBlockSettingUseCase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
-	cachingService caching.CachingService,
+	cachingMainService caching.CachingMainService,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
 		StaffAppRepo:             staffRepo,
@@ -63,7 +63,7 @@ func NewStaffApplicationUseCase(
 		ProfileGateway:           profileGateway,
 		UserBlockSettingUsecase:  userBlockSettingUseCase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
-		CachingService:           cachingService,
+		CachingMainService:       cachingMainService,
 	}
 }
 
@@ -395,8 +395,7 @@ func (uc *StaffApplicationUseCase) GetStaff4Gateway(ctx *gin.Context, staffID st
 		Code:           code,
 	}
 
-	_ = uc.CachingService.SetStaffCache(ctx, res)
-
+	uc.CachingMainService.SetStaffCache(ctx.Request.Context(), staffID, res)
 	return res, nil
 }
 
@@ -474,7 +473,8 @@ func (uc *StaffApplicationUseCase) GetStaffByOrgAndUser4Gateway(ctx *gin.Context
 		Code:           code,
 	}
 
-	_ = uc.CachingService.SetStaffByUserAndOrgCacheKey(ctx, userID, organizationID, res)
+	uc.CachingMainService.SetStaffByUserAndOrgCacheKey(ctx.Request.Context(), userID, organizationID, res)
+
 	return res, nil
 }
 

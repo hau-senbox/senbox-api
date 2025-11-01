@@ -1,8 +1,6 @@
 module sen-global-api
 
-go 1.23.0
-
-toolchain go1.24.3
+go 1.24.4
 
 require (
 	firebase.google.com/go/v4 v4.14.1
@@ -86,6 +84,7 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
+	github.com/hung-senbox/senbox-cache-service v1.0.4 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect

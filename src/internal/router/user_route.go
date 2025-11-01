@@ -2,7 +2,6 @@ package router
 
 import (
 	"sen-global-api/config"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/usecase"
@@ -13,10 +12,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 	"gorm.io/gorm"
 )
 
-func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, consulClient *api.Client) {
+func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, consulClient *api.Client, cacheClientRedis *cache.RedisCache) {
 	sessionRepository := repository.SessionRepository{
 		OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		AuthorizeEncryptKey:    config.AuthorizeEncryptKey,
@@ -37,7 +39,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 	// department gateway init
 	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
+	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
+	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
 
 	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
 		&repository.UserEntityRepository{DBConn: dbConn},
@@ -108,7 +112,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
-		caching.NewCachingService(nil, 0),
+		cachingMainService,
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -209,6 +213,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 					UploadProvider:  provider,
 				},
 			},
+			CachingMainService: cachingMainService,
 		},
 		UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
@@ -269,6 +274,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				},
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
+			CachingMainService:  cachingMainService,
 		},
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 	}

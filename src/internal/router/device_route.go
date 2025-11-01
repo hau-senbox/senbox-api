@@ -15,6 +15,8 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/hashicorp/consul/api"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -23,7 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App, consulClient *api.Client) {
+func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *sheet.Spreadsheet, config config.AppConfig, fcm *firebase.App, consulClient *api.Client, cacheClientRedis *cache.RedisCache) {
 	sessionRepository := repository.SessionRepository{
 		AuthorizeEncryptKey: config.AuthorizeEncryptKey,
 
@@ -44,7 +46,8 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 	userEntityRepository := repository.UserEntityRepository{DBConn: dbConn}
 
 	// gateway init
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
+	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
 
 	generateOwnerCodeUseCase := usecase.NewGenerateOwnerCodeUseCase(
 		&repository.UserEntityRepository{DBConn: dbConn},

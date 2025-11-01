@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"fmt"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 )
 
 type StudentApplicationUseCase struct {
@@ -31,7 +31,7 @@ type StudentApplicationUseCase struct {
 	ProfileGateway                gateway.ProfileGateway
 	StudentBlockSettingRepository *repository.StudentBlockSettingRepository
 	GenerateOwnerCodeUseCase      GenerateOwnerCodeUseCase
-	CachingService                caching.CachingService
+	CachingMainService            caching.CachingMainService
 }
 
 func NewStudentApplicationUseCase(
@@ -48,7 +48,7 @@ func NewStudentApplicationUseCase(
 	studentBlockRepo *repository.StudentBlockSettingRepository,
 	profileGw gateway.ProfileGateway,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
-	cachingService caching.CachingService,
+	cachingMainService caching.CachingMainService,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:                studentRepo,
@@ -64,7 +64,7 @@ func NewStudentApplicationUseCase(
 		StudentBlockSettingRepository: studentBlockRepo,
 		ProfileGateway:                profileGw,
 		GenerateOwnerCodeUseCase:      generateOwnerCodeUseCase,
-		CachingService:                cachingService,
+		CachingMainService:            cachingMainService,
 	}
 }
 
@@ -285,7 +285,7 @@ func (uc *StudentApplicationUseCase) GetStudent4Gateway(ctx *gin.Context, studen
 		Code:           code,
 	}
 
-	_ = uc.CachingService.SetStudentCache(ctx, res)
+	uc.CachingMainService.SetStudentCache(ctx.Request.Context(), studentID, res)
 
 	return res, nil
 }

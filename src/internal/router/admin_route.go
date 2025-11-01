@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"sen-global-api/config"
 	"sen-global-api/helper"
-	"sen-global-api/internal/cache"
-	"sen-global-api/internal/cache/cached"
-	"sen-global-api/internal/cache/caching"
 	"sen-global-api/internal/controller"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/request"
@@ -27,10 +24,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
-	goredis "github.com/redis/go-redis/v9"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/cached"
+	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
 )
 
-func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App, consulClient *api.Client, cacheClientRedis *goredis.Client) {
+func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfig, userSpreadsheet *sheet.Spreadsheet, uploaderSpreadsheet *sheet.Spreadsheet, fcm *firebase.App, consulClient *api.Client, cacheClientRedis *cache.RedisCache) {
 	usecase.AdminSpreadsheetClient = userSpreadsheet
 	usecase.TheTimeMachine = job.New()
 	sessionRepository := repository.SessionRepository{
@@ -45,10 +44,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	settingRepository := &repository.SettingRepository{DBConn: dbConn}
 
 	// gateway init
-	profileGw := gateway.NewProfileGateway("profile-service", consulClient)
-	// cache setup
-	systemCache := cache.NewRedisCache(cacheClientRedis)
-	cachedProfileGateway := cached.NewCachedProfileGateway(profileGw, systemCache, 0)
+	cachedProfileGateway := cached.NewCachedProfileGateway(cacheClientRedis)
+	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
+	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway)
 
 	s3Provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
@@ -486,7 +484,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.StaffApplicationRepository{DBConn: dbConn},
 		&repository.ChildRepository{DB: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
-		cachedProfileGateway,
+		profileGw,
 	)
 
 	// user
@@ -516,9 +514,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.StudentBlockSettingRepository{DBConn: dbConn},
-		cachedProfileGateway,
+		profileGw,
 		generateOwnerCodeUseCase,
-		caching.NewCachingService(nil, 0),
+		cachingMainService,
 	)
 
 	childUseCase := usecase.NewChildUseCase(
@@ -546,7 +544,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.LanguageSettingRepository{DBConn: dbConn},
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
-		cachedProfileGateway,
+		profileGw,
 		generateOwnerCodeUseCase,
 	)
 
@@ -573,14 +571,14 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 		},
 		&repository.LanguageSettingRepository{DBConn: dbConn},
-		cachedProfileGateway,
+		profileGw,
 		&usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 			StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
-		caching.NewCachingService(systemCache, 0),
+		cachingMainService,
 	)
 
 	parentUseCase := usecase.NewParentUseCase(
@@ -598,12 +596,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.ParentRepository{DBConn: dbConn},
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		&repository.StudentApplicationRepository{DB: dbConn},
-		cachedProfileGateway,
+		profileGw,
 		&usecase.UserBlockSettingUsecase{
 			Repo: &repository.UserBlockSettingRepository{DBConn: dbConn},
 		},
 		generateOwnerCodeUseCase,
-		caching.NewCachingService(nil, 0),
+		cachingMainService,
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -627,7 +625,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 				},
 			},
-			ProfileGateway: cachedProfileGateway,
+			ProfileGateway: profileGw,
 		},
 		TeacherApplicationUseCase: &usecase.TeacherApplicationUseCase{
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
@@ -651,7 +649,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
-			ProfileGateway:      cachedProfileGateway,
+			ProfileGateway:      profileGw,
 			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
