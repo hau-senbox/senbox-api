@@ -482,3 +482,38 @@ func (uc *ParentUseCase) IsParent(ctx context.Context, userID string) (bool, err
 	}
 	return true, nil
 }
+
+func (uc *ParentUseCase) GetAllParentsByOrganizationID(ctx context.Context, organizationID string) ([]entity.SParent, error) {
+	// Lấy học sinh theo org
+	students, err := uc.StudentRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var parentList []entity.SParent
+	for _, student := range students {
+		parent, err := uc.ParentRepo.GetByUserID(ctx, student.UserID.String())
+		if err != nil {
+			return nil, err
+		}
+		if parent != nil {
+			userParent, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+			if userParent != nil {
+				parent.ParentName = userParent.Nickname
+			}
+			parentList = append(parentList, *parent)
+		}
+	}
+
+	// unique
+	uniqueMap := make(map[uuid.UUID]entity.SParent)
+	for _, p := range parentList {
+		uniqueMap[p.ID] = p
+	}
+	parents := make([]entity.SParent, 0, len(uniqueMap))
+	for _, v := range uniqueMap {
+		parents = append(parents, v)
+	}
+
+	return parents, nil
+}

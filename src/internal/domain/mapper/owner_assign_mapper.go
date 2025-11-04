@@ -46,3 +46,17 @@ func MapStudentToOwnerAssignResponse(student *entity.SStudentFormApplication, na
 		LanguageKeys: []string{"vietnamese", "english"},
 	}
 }
+
+func MapParentToOwnerAssignResponse(parent *entity.SParent, name string, avatarKey string, avatarUrl string, createdIndex int, userCreatedIndex int, code string) *response.OwnerAssignResponse {
+	return &response.OwnerAssignResponse{
+		OwnerID:          parent.ID.String(),
+		OwnerRole:        value.OwnerRoleParent,
+		Name:             name,
+		AvatarKey:        avatarKey,
+		AvatarUrl:        avatarUrl,
+		CreatedIndex:     createdIndex,
+		UserCreatedIndex: userCreatedIndex,
+		Code:             code,
+		LanguageKeys:     []string{"vietnamese", "english"},
+	}
+}

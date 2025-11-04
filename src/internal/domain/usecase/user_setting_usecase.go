@@ -138,6 +138,9 @@ func (uc *UserSettingUseCase) UploadUserIsFirstLogin(ctx *gin.Context, request r
 func (uc *UserSettingUseCase) GetUserIsFirstLogin(userID string) (bool, error) {
 	setting, err := uc.Repo.GetByOwnerAndKey(userID, string(value.UserSettingIsFirstLogin))
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return true, nil
+		}
 		return false, err
 	}
 	var isFirstLogin bool

@@ -700,6 +700,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				},
 			},
 			ProfileGateway: profileGw,
+			ParentUseCase:  parentUseCase,
 		},
 		LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
 			Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},

@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
 	"sen-global-api/pkg/consulapi/gateway"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,11 +19,13 @@ type OwnerAssignUseCase struct {
 	UserEntityRepo    *repository.UserEntityRepository
 	UserImagesUsecase *UserImagesUsecase
 	ProfileGateway    gateway.ProfileGateway
+	ParentUseCase     *ParentUseCase
 }
 
 func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 	ctx *gin.Context,
 	organizationID string,
+	nameCode string,
 ) (*response.ListOwnerAssignResponse, error) {
 
 	// get list teachers by org
@@ -43,10 +46,17 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		return nil, err
 	}
 
+	// get list parents by org
+	parents, err := uc.ParentUseCase.GetAllParentsByOrganizationID(ctx, organizationID)
+	if err != nil {
+		return nil, err
+	}
+
 	listResp := &response.ListOwnerAssignResponse{
 		Teachers: []*response.OwnerAssignResponse{},
 		Staffs:   []*response.OwnerAssignResponse{},
 		Students: []*response.OwnerAssignResponse{},
+		Parents:  []*response.OwnerAssignResponse{},
 	}
 
 	// loop teachers
@@ -90,5 +100,63 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		)
 	}
 
+	// loop parents
+	for _, p := range parents {
+		// get avatar key & url
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
+		code, _ := uc.ProfileGateway.GetParentCode(ctx, p.ID.String())
+		listResp.Parents = append(listResp.Parents,
+			mapper.MapParentToOwnerAssignResponse(&p, p.ParentName, avatar.ImageKey, avatar.ImageUrl, p.CreatedIndex, p.CreatedIndex, code),
+		)
+	}
+
+	// them buoc filder theo nameCode
+	if nameCode != "" {
+		listResp.Teachers = filterTeachers(listResp.Teachers, nameCode)
+		listResp.Staffs = filterStaffs(listResp.Staffs, nameCode)
+		listResp.Students = filterStudents(listResp.Students, nameCode)
+		listResp.Parents = filterParents(listResp.Parents, nameCode)
+	}
+
 	return listResp, nil
+}
+
+func filterTeachers(teachers []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
+	result := make([]*response.OwnerAssignResponse, 0)
+	for _, t := range teachers {
+		if strings.Contains(t.Name, nameCode) || strings.Contains(t.Code, nameCode) {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+func filterStaffs(staffs []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
+	result := make([]*response.OwnerAssignResponse, 0)
+	for _, s := range staffs {
+		if strings.Contains(s.Name, nameCode) || strings.Contains(s.Code, nameCode) {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
+func filterStudents(students []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
+	result := make([]*response.OwnerAssignResponse, 0)
+	for _, s := range students {
+		if strings.Contains(s.Name, nameCode) || strings.Contains(s.Code, nameCode) {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
+func filterParents(parents []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
+	result := make([]*response.OwnerAssignResponse, 0)
+	for _, p := range parents {
+		if strings.Contains(p.Name, nameCode) || strings.Contains(p.Code, nameCode) {
+			result = append(result, p)
+		}
+	}
+	return result
 }

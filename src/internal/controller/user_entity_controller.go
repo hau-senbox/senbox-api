@@ -2374,7 +2374,9 @@ func (receiver *UserEntityController) GetListOwner2Assign(context *gin.Context) 
 		return
 	}
 
-	listOwner, err := receiver.OwnerAssignUseCase.GetListOwner2Assign(context, organizationID)
+	nameCode := context.Query("name_code")
+
+	listOwner, err := receiver.OwnerAssignUseCase.GetListOwner2Assign(context, organizationID, nameCode)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
