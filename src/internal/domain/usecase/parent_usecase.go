@@ -471,3 +471,14 @@ func (uc *ParentUseCase) GetParentByUser4Gw(ctx *gin.Context, userID string) (*r
 
 	return res, nil
 }
+
+func (uc *ParentUseCase) IsParent(ctx context.Context, userID string) (bool, error) {
+	parent, err := uc.ParentRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	if parent == nil {
+		return false, nil
+	}
+	return true, nil
+}

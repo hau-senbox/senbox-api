@@ -16,3 +16,8 @@ type UserSetting struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type UserSettingWelcomeReminder struct {
+	IsEnabled    bool   `json:"is_enabled" binding:"required"`
+	TimeReminder string `json:"time_reminder"`
+}

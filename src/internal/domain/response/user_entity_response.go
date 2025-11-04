@@ -1,6 +1,7 @@
 package response
 
 import (
+	"sen-global-api/internal/domain/entity"
 	"time"
 )
 
@@ -58,9 +59,12 @@ type UserEntityResponseV2 struct {
 
 	Avatars []Avatar `json:"avatars"`
 
-	StudentOrganization []StudentOrganization `json:"student_organization"`
-	ReLoginWeb          bool                  `json:"re_login_web"`
-	Settings            *UserSettingResponse  `json:"settings"`
+	StudentOrganization []StudentOrganization              `json:"student_organization"`
+	ReLoginWeb          bool                               `json:"re_login_web"`
+	Settings            *UserSettingResponse               `json:"settings"`
+	IsParent            bool                               `json:"is_parent"`
+	IsFirstLogin        bool                               `json:"is_first_login"`
+	WelcomeReminder     *entity.UserSettingWelcomeReminder `json:"welcome_reminder"`
 }
 
 type UserEntityResponseData struct {

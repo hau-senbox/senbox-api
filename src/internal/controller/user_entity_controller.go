@@ -162,6 +162,15 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	// get user setting
 	settings, _ := receiver.UserSettingUseCase.GetByOwner(userEntity.ID.String())
 
+	// check is parent
+	isParent, _ := receiver.ParentUseCase.IsParent(context.Request.Context(), userEntity.ID.String())
+
+	// get user is first login
+	isFirstLogin, _ := receiver.UserSettingUseCase.GetUserIsFirstLogin(userEntity.ID.String())
+
+	// get user welcome reminder
+	welcomeReminder, _ := receiver.UserSettingUseCase.GetUserWelcomeReminder(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
@@ -188,6 +197,9 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			StudentOrganization: studentOrgs,
 			ReLoginWeb:          userEntity.ReLoginWeb,
 			Settings:            settings,
+			IsParent:            isParent,
+			IsFirstLogin:        isFirstLogin,
+			WelcomeReminder:     welcomeReminder,
 		},
 	})
 }

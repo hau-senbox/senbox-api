@@ -278,6 +278,33 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			CachingMainService:  cachingMainService,
 		},
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+		ParentUseCase: &usecase.ParentUseCase{
+			DBConn:         dbConn,
+			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
+			ParentMenuRepo: &repository.ParentMenuRepository{DBConn: dbConn},
+			ComponentRepo:  &repository.ComponentRepository{DBConn: dbConn},
+			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
+				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
+			},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
+			},
+			LanguageSettingRepo:      &repository.LanguageSettingRepository{DBConn: dbConn},
+			ParentRepo:               &repository.ParentRepository{DBConn: dbConn},
+			GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
+			CachingMainService:       cachingMainService,
+			UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
+				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
+				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
+				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			},
+			ProfileGateway: profileGw,
+		},
 	}
 
 	userRoleController := &controller.RoleController{
@@ -714,5 +741,18 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		languagesConfig.GET("/parent/:parent_id", languagesConfigController.GetParentLanguageConfig)
 		languagesConfig.POST("/child", languagesConfigController.UploadLanguagesConfig)
 		languagesConfig.POST("/parent", languagesConfigController.UploadLanguagesConfig)
+	}
+
+	// user setting
+	userSettingController := &controller.UserSettingController{
+		UserSettingUsecase: &usecase.UserSettingUseCase{
+			Repo: &repository.UserSettingRepository{DBConn: dbConn},
+		},
+	}
+
+	userSetting := engine.Group("/v1/user/setting", secureMiddleware.Secured())
+	{
+		userSetting.POST("/is-first-login", userSettingController.UploadUserIsFirstLogin)
+		userSetting.POST("/welcome-reminder", userSettingController.UploadUserWelcomeReminder)
 	}
 }
