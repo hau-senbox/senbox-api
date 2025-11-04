@@ -517,3 +517,25 @@ func (uc *ParentUseCase) GetAllParentsByOrganizationID(ctx context.Context, orga
 
 	return parents, nil
 }
+
+func (uc *ParentUseCase) GetAllParents4Gateway(ctx *gin.Context, organizationID string) ([]response.GetParent4Gateway, error) {
+	parents, err := uc.GetAllParentsByOrganizationID(ctx.Request.Context(), organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]response.GetParent4Gateway, 0, len(parents))
+	for _, p := range parents {
+		user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: p.UserID})
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
+		code, _ := uc.ProfileGateway.GetParentCode(ctx, p.ID.String())
+		res = append(res, response.GetParent4Gateway{
+			ParentID:   p.ID.String(),
+			ParentName: user.Nickname,
+			Avatar:     avatar,
+			Code:       code,
+		})
+	}
+
+	return res, nil
+}
