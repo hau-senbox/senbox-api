@@ -97,7 +97,8 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, key stri
 	case UploadPrivate:
 		return p.GetFileUploaded(ctx, key, nil)
 	case UploadPublic:
-		duration := time.Now().AddDate(10, 0, 0).Sub(time.Now())
+		// duration := time.Now().AddDate(10, 0, 0).Sub(time.Now())
+		duration := 100 * 365 * 24 * time.Hour // ~100 năm
 		return p.GetFileUploaded(ctx, key, &duration)
 	default:
 		return nil, errors.New("invalid upload mode")
