@@ -417,6 +417,15 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	// get org name of student for parent
 	studentOrgs, _ := receiver.StudentApplicationUseCase.GetStudentOrganizationsByUser(userEntity.ID.String())
 
+	// check is parent
+	isParent, _ := receiver.ParentUseCase.IsParent(context.Request.Context(), userEntity.ID.String())
+
+	// get user is first login
+	isFirstLogin, _ := receiver.UserSettingUseCase.GetUserIsFirstLogin(userEntity.ID.String())
+
+	// get user welcome reminder
+	welcomeReminder, _ := receiver.UserSettingUseCase.GetUserWelcomeReminder(userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -442,6 +451,9 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			Settings:               settings,
 			StudentOrganization:    studentOrgs,
 			CreatedIndex:           userEntity.CreatedIndex,
+			IsParent:               isParent,
+			IsFirstLogin:           isFirstLogin,
+			WelcomeReminder:        welcomeReminder,
 		},
 	})
 }

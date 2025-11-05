@@ -26,9 +26,12 @@ type UserEntityResponse struct {
 	Roles   *[]RoleListResponseData `json:"roles"`
 	Devices *[]string               `json:"devices"`
 
-	UserOrganizationActive UserOrganizationActive `json:"user_organization_active"`
-	Avatars                []Avatar               `json:"avatars"`
-	Settings               *UserSettingResponse   `json:"settings"`
+	UserOrganizationActive UserOrganizationActive             `json:"user_organization_active"`
+	Avatars                []Avatar                           `json:"avatars"`
+	Settings               *UserSettingResponse               `json:"settings"`
+	IsParent               bool                               `json:"is_parent"`
+	IsFirstLogin           bool                               `json:"is_first_login"`
+	WelcomeReminder        *entity.UserSettingWelcomeReminder `json:"welcome_reminder"`
 
 	StudentOrganization []StudentOrganization `json:"student_organization"`
 }
