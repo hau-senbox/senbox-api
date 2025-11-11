@@ -83,7 +83,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 		})
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStaff)
-		code, _ := uc.ProfileGateway.GetTeacherCode(ctx, s.ID.String())
+		code, _ := uc.ProfileGateway.GetStaffCode(ctx, s.ID.String())
 
 		listResp.Staffs = append(listResp.Staffs,
 			mapper.MapStaffToOwnerAssignResponse(&s, user.Nickname, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, user.CreatedIndex, code),
@@ -94,7 +94,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 	for _, s := range students {
 		// get avatar key & url
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(s.ID.String(), value.OwnerRoleStudent)
-		code, _ := uc.ProfileGateway.GetTeacherCode(ctx, s.ID.String())
+		code, _ := uc.ProfileGateway.GetStudentCode(ctx, s.ID.String())
 		listResp.Students = append(listResp.Students,
 			mapper.MapStudentToOwnerAssignResponse(&s, s.StudentName, avatar.ImageKey, avatar.ImageUrl, s.CreatedIndex, code),
 		)
