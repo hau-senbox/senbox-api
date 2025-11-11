@@ -539,3 +539,27 @@ func (uc *ParentUseCase) GetAllParents4Gateway(ctx *gin.Context, organizationID 
 
 	return res, nil
 }
+
+func (uc *ParentUseCase) GetParentByID4Gateway(ctx *gin.Context, parentID string) (*response.GetParent4Gateway, error) {
+	parent, err := uc.ParentRepo.GetByID(ctx, parentID)
+	if err != nil {
+		return nil, err
+	}
+	if parent == nil {
+		return nil, errors.New("parent not found")
+	}
+
+	// get avts
+	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(parent.ID.String(), value.OwnerRoleParent)
+	code, _ := uc.ProfileGateway.GetParentCode(ctx, parent.ID.String())
+	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
+
+	res := &response.GetParent4Gateway{
+		ParentID:   parent.ID.String(),
+		ParentName: user.Nickname,
+		Avatar:     avatar,
+		Code:       code,
+	}
+
+	return res, nil
+}

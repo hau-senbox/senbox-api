@@ -2640,3 +2640,27 @@ func (receiver *UserEntityController) GenerateChildCode(c *gin.Context) {
 		Data: nil,
 	})
 }
+
+func (receiver *UserEntityController) GetParentByID4Gateway(context *gin.Context) {
+	parentID := context.Param("parent_id")
+	if parentID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing parent ID",
+		})
+		return
+	}
+	parent, err := receiver.ParentUseCase.GetParentByID4Gateway(context, parentID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get parent",
+			Error:   err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: parent,
+	})
+}
