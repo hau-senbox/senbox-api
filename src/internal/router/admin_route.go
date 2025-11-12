@@ -518,6 +518,10 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		profileGw,
 		generateOwnerCodeUseCase,
 		cachingMainService,
+		&usecase.ValuesAppCurrentUseCase{
+			Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			ProfileGateway: profileGw,
+		},
 	)
 
 	childUseCase := usecase.NewChildUseCase(

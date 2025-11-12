@@ -32,6 +32,7 @@ type StudentApplicationUseCase struct {
 	StudentBlockSettingRepository *repository.StudentBlockSettingRepository
 	GenerateOwnerCodeUseCase      GenerateOwnerCodeUseCase
 	CachingMainService            caching.CachingMainService
+	ValuesAppCurrentUseCase       *ValuesAppCurrentUseCase
 }
 
 func NewStudentApplicationUseCase(
@@ -49,6 +50,7 @@ func NewStudentApplicationUseCase(
 	profileGw gateway.ProfileGateway,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 	cachingMainService caching.CachingMainService,
+	valuesAppCurrentUseCase *ValuesAppCurrentUseCase,
 ) *StudentApplicationUseCase {
 	return &StudentApplicationUseCase{
 		StudentAppRepo:                studentRepo,
@@ -65,6 +67,7 @@ func NewStudentApplicationUseCase(
 		ProfileGateway:                profileGw,
 		GenerateOwnerCodeUseCase:      generateOwnerCodeUseCase,
 		CachingMainService:            cachingMainService,
+		ValuesAppCurrentUseCase:       valuesAppCurrentUseCase,
 	}
 }
 
@@ -163,7 +166,7 @@ func (uc *StudentApplicationUseCase) GetAllStudents() ([]response.StudentRespons
 // 	}, nil
 // }
 
-func (uc *StudentApplicationUseCase) GetByID4WebAdmin(studentID string) (*response.StudentResponseBase, error) {
+func (uc *StudentApplicationUseCase) GetByID4WebAdmin(ctx *gin.Context, studentID string) (*response.StudentResponseBase, error) {
 	studentApp, err := uc.StudentAppRepo.GetByID(uuid.MustParse(studentID))
 	if err != nil {
 		return nil, err
@@ -250,6 +253,9 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(studentID string) (*respon
 	// get avts
 	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(studentID, value.OwnerRoleStudent)
 
+	// get list loged device
+	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Student(ctx, studentID)
+
 	return &response.StudentResponseBase{
 		StudentID:      studentID,
 		StudentName:    studentApp.StudentName,
@@ -262,6 +268,7 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(studentID string) (*respon
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
 		CreatedIndex:   studentApp.CreatedIndex,
+		LogedDevices:   logedDevices,
 	}, nil
 }
 

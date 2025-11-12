@@ -43,3 +43,19 @@ func (r *ValuesAppCurrentRepository) FindByDeviceID(deviceID string) (*entity.Va
 	}
 	return &log, nil
 }
+
+func (r *ValuesAppCurrentRepository) GetAllDevicesByStudentID(studentID string) ([]entity.ValuesAppCurrent, error) {
+	var logs []entity.ValuesAppCurrent
+	if err := r.DBConn.Where("value1 = ?", studentID).Find(&logs).Error; err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func (r *ValuesAppCurrentRepository) GetAllDevicesByUserID(userID string) ([]entity.ValuesAppCurrent, error) {
+	var logs []entity.ValuesAppCurrent
+	if err := r.DBConn.Where("value3 = ?", userID).Find(&logs).Error; err != nil {
+		return nil, err
+	}
+	return logs, nil
+}

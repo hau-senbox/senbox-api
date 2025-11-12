@@ -12,6 +12,12 @@ type StudentResponseBase struct {
 	LanguageConfig *LanguagesConfigResponse     `json:"language_config"`
 	Avatars        []Avatar                     `json:"avatars"`
 	CreatedIndex   int                          `json:"created_index"`
+	LogedDevices   []LogedDevice                `json:"loged_devices"`
+}
+
+type LogedDevice struct {
+	DeviceID   string `json:"device_id"`
+	DeviceCode string `json:"device_code"`
 }
 
 type GetStudent4Gateway struct {
