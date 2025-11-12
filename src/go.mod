@@ -14,7 +14,7 @@ require (
 	github.com/go-co-op/gocron v1.31.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/consul/api v1.31.0
-	github.com/hung-senbox/senbox-cache-service v1.0.7
+	github.com/hung-senbox/senbox-cache-service v1.0.8
 	github.com/ilyakaznacheev/cleanenv v1.3.1
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.16.0

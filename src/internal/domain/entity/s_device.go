@@ -3,6 +3,8 @@ package entity
 import (
 	"sen-global-api/internal/domain/value"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type SDevice struct {
@@ -20,4 +22,16 @@ type SDevice struct {
 	DeviceComponentValues   SDeviceComponentValues `gorm:"foreignKey:DeviceComponentValuesID;references:id;constraint:OnDelete:CASCADE"`
 	CreatedAt               time.Time              `gorm:"default:CURRENT_TIMESTAMP;not null"`
 	UpdatedAt               time.Time              `gorm:"default:CURRENT_TIMESTAMP;not null"`
+	CreatedIndex            int                    `gorm:"type:int;not null;default:0"`
+}
+
+func (d *SDevice) BeforeCreate(tx *gorm.DB) error {
+	var maxIndex int
+	if err := tx.Model(&SDevice{}).
+		Select("COALESCE(MAX(created_index), 0)").
+		Scan(&maxIndex).Error; err != nil {
+		return err
+	}
+	d.CreatedIndex = maxIndex + 1
+	return nil
 }

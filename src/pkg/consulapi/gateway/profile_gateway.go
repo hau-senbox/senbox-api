@@ -653,10 +653,10 @@ func (pg *profileGateway) GetChildCode(ctx *gin.Context, ownerID string) (string
 }
 
 func (pg *profileGateway) GetDeviceCode(ctx *gin.Context, ownerID string) (string, error) {
-	// cachedData, _ := pg.cachedProfileGateway.GetDeviceCode(ctx, ownerID)
-	// if cachedData != "" {
-	// 	return cachedData, nil
-	// }
+	cachedData, _ := pg.cachedProfileGateway.GetDeviceCode(ctx, ownerID)
+	if cachedData != "" {
+		return cachedData, nil
+	}
 
 	// Lấy token từ context (được set ở SecuredMiddleware)
 	token, exists := ctx.Get("token")
@@ -695,7 +695,7 @@ func (pg *profileGateway) GetDeviceCode(ctx *gin.Context, ownerID string) (strin
 		return "", fmt.Errorf("call gateway get device code fail: %s", gwResp.Message)
 	}
 
-	//pg.cachingProfileGateway.SetDeviceCode(ctx, ownerID, gwResp.Data)
+	pg.cachingProfileGateway.SetDeviceCode(ctx, ownerID, gwResp.Data)
 
 	return gwResp.Data, nil
 }

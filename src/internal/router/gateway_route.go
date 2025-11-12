@@ -248,6 +248,14 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ParentUseCase: parentUsecase,
 		ChildUseCase:  childUseCase,
 	}
+
+	// device
+	deviceController := &controller.DeviceController{
+		DeviceUsecase: &usecase.DeviceUsecase{
+			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+			ProfileGateway:   profileGw,
+		},
+	}
 	api := r.Group("/v1/gateway", secureMiddleware.Secured())
 	{
 
@@ -304,6 +312,12 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		org := api.Group("/organizations")
 		{
 			org.GET("", orgCtrl.GetAllOrganizations4Gateway)
+		}
+
+		// device
+		device := api.Group("/devices")
+		{
+			device.POST("/code/generate", deviceController.GenerateDevicesCode)
 		}
 
 		// menu

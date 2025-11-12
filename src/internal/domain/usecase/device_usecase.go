@@ -7,9 +7,11 @@ import (
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/mapper"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -19,6 +21,7 @@ type DeviceUsecase struct {
 	*DeviceMenuUseCase
 	*repository.ValuesAppCurrentRepository
 	*GetImageUseCase
+	ProfileGateway gateway.ProfileGateway
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -138,4 +141,12 @@ func (receiver *DeviceUsecase) UploadDeviceNickName4Web(orgID string, deviceID s
 
 func (receiver *DeviceUsecase) DeleteDeviceByOrg(orgID string, deviceID string) error {
 	return receiver.DeviceRepository.DeleteDeviceByOrg(orgID, deviceID)
+}
+
+func (receiver *DeviceUsecase) GenerateDevicesCode(ctx *gin.Context) {
+	devices, _ := receiver.DeviceRepository.GetAllDevices()
+
+	for _, device := range devices {
+		_, _ = receiver.ProfileGateway.GenerateDeviceCode(ctx, device.ID, device.CreatedIndex)
+	}
 }

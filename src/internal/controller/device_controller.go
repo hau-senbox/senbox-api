@@ -1668,3 +1668,12 @@ func (receiver *DeviceController) UploadValuesCurrent(c *gin.Context) {
 		Data:    nil,
 	})
 }
+
+func (receiver *DeviceController) GenerateDevicesCode(c *gin.Context) {
+	receiver.DeviceUsecase.GenerateDevicesCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Generate devices code successfully",
+		Data:    nil,
+	})
+}

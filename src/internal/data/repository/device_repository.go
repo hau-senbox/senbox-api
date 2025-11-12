@@ -554,3 +554,11 @@ func (r *DeviceRepository) GetMaxCreatedIndexByOrgID(organizationID string) (int
 	}
 	return maxIndex, nil
 }
+
+func (r *DeviceRepository) GetAllDevices() ([]entity.SDevice, error) {
+	var devices []entity.SDevice
+	if err := r.DBConn.Find(&devices).Error; err != nil {
+		return nil, err
+	}
+	return devices, nil
+}
