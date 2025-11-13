@@ -6,12 +6,14 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/mapper"
+	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -21,7 +23,9 @@ type DeviceUsecase struct {
 	*DeviceMenuUseCase
 	*repository.ValuesAppCurrentRepository
 	*GetImageUseCase
-	ProfileGateway gateway.ProfileGateway
+	UserEntityRepository *repository.UserEntityRepository
+	StudentRepo          *repository.StudentApplicationRepository
+	ProfileGateway       gateway.ProfileGateway
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -113,7 +117,26 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 	if values, err := receiver.ValuesAppCurrentRepository.FindByDeviceID(deviceID); err == nil {
 		//get image url
 		url, _ := receiver.GetImageUseCase.GetUrlByKey(values.ImageKey, uploader.UploadPrivate)
-		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(values, url)
+		userNickName := ""
+		studentName := ""
+
+		// get user nick name tu value 1
+		if userID, err := uuid.Parse(values.Value1); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			if user != nil {
+				userNickName = user.Nickname
+			}
+		}
+
+		// get student tu value 3
+		if studentID, err := uuid.Parse(values.Value3); err == nil && studentID != uuid.Nil {
+			student, _ := receiver.StudentRepo.GetByID(studentID)
+			if student != nil {
+				studentName = student.StudentName
+			}
+		}
+
+		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(userNickName, values.Value2, studentName, url)
 	}
 
 	return resp, nil

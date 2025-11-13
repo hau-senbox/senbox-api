@@ -975,6 +975,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UploadProvider:  s3Provider,
 				ImageRepository: &repository.ImageRepository{DBConn: dbConn},
 			},
+			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			StudentRepo:          &repository.StudentApplicationRepository{DB: dbConn},
+			ProfileGateway:       profileGw,
 		},
 	}
 

@@ -1,16 +1,14 @@
 package mapper
 
 import (
-	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
 )
 
-func ToGetValuesAppCurrentResponse(values *entity.ValuesAppCurrent, imageUrl *string) *response.GetValuesAppCurrentResponse {
+func ToGetValuesAppCurrentResponse(value1, value2, value3 string, imageUrl *string) *response.GetValuesAppCurrentResponse {
 	return &response.GetValuesAppCurrentResponse{
-		Value1:   values.Value1,
-		Value2:   values.Value2,
-		Value3:   values.Value3,
-		ImageKey: values.ImageKey,
+		Value1:   value1,
+		Value2:   value2,
+		Value3:   value3,
 		ImageUrl: imageUrl,
 	}
 }
