@@ -154,9 +154,14 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	}
 
 	// ---- Tạo Parent - Child mapping ----
-	if err := uc.parentRepo.WithTx(tx).Create(ctx, &entity.SParent{ID: uuid.New(), UserID: userID.String()}); err != nil {
-		tx.Rollback()
-		return fmt.Errorf("create parent-child failed: %w", err)
+
+	// check if parent is already exists
+	parent, _ := uc.parentRepo.GetByUserID(ctx, userID.String())
+	if parent == nil {
+		if err := uc.parentRepo.WithTx(tx).Create(ctx, &entity.SParent{ID: uuid.New(), UserID: userID.String()}); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("create parent-child failed: %w", err)
+		}
 	}
 
 	if err := uc.parentChildsRepo.WithTx(tx).Create(ctx, &entity.SParentChilds{ParentID: userID.String(), ChildID: childID.String()}); err != nil {
@@ -171,6 +176,13 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 
 	// generate child code
 	uc.generateOwnerCodeUseCase.GenerateChildCode(ctx, childID.String())
+
+	// generate parent code
+	// get parent theo userID
+	parent, _ = uc.parentRepo.GetByUserID(ctx, userID.String())
+	if parent != nil {
+		_, _ = uc.generateOwnerCodeUseCase.GenerateParentCode(ctx, parent.ID.String())
+	}
 
 	return nil
 }
