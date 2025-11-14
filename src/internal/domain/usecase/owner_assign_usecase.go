@@ -124,7 +124,7 @@ func (uc *OwnerAssignUseCase) GetListOwner2Assign(
 func filterTeachers(teachers []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
 	result := make([]*response.OwnerAssignResponse, 0)
 	for _, t := range teachers {
-		if strings.Contains(t.Name, nameCode) || strings.Contains(t.Code, nameCode) {
+		if strings.Contains(strings.ToLower(t.Name), strings.ToLower(nameCode)) || strings.Contains(strings.ToLower(t.Code), strings.ToLower(nameCode)) {
 			result = append(result, t)
 		}
 	}
@@ -134,7 +134,7 @@ func filterTeachers(teachers []*response.OwnerAssignResponse, nameCode string) [
 func filterStaffs(staffs []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
 	result := make([]*response.OwnerAssignResponse, 0)
 	for _, s := range staffs {
-		if strings.Contains(s.Name, nameCode) || strings.Contains(s.Code, nameCode) {
+		if strings.Contains(strings.ToLower(s.Name), strings.ToLower(nameCode)) || strings.Contains(strings.ToLower(s.Code), strings.ToLower(nameCode)) {
 			result = append(result, s)
 		}
 	}
@@ -144,7 +144,7 @@ func filterStaffs(staffs []*response.OwnerAssignResponse, nameCode string) []*re
 func filterStudents(students []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
 	result := make([]*response.OwnerAssignResponse, 0)
 	for _, s := range students {
-		if strings.Contains(s.Name, nameCode) || strings.Contains(s.Code, nameCode) {
+		if strings.Contains(strings.ToLower(s.Name), strings.ToLower(nameCode)) || strings.Contains(strings.ToLower(s.Code), strings.ToLower(nameCode)) {
 			result = append(result, s)
 		}
 	}
@@ -154,7 +154,7 @@ func filterStudents(students []*response.OwnerAssignResponse, nameCode string) [
 func filterParents(parents []*response.OwnerAssignResponse, nameCode string) []*response.OwnerAssignResponse {
 	result := make([]*response.OwnerAssignResponse, 0)
 	for _, p := range parents {
-		if strings.Contains(p.Name, nameCode) || strings.Contains(p.Code, nameCode) {
+		if strings.Contains(strings.ToLower(p.Name), strings.ToLower(nameCode)) || strings.Contains(strings.ToLower(p.Code), strings.ToLower(nameCode)) {
 			result = append(result, p)
 		}
 	}
