@@ -19,6 +19,7 @@ type ValuesAppCurrentUseCase struct {
 	TeacherRepo    *repository.TeacherApplicationRepository
 	StaffRepo      *repository.StaffApplicationRepository
 	ParentRepo     *repository.ParentRepository
+	UserRepo       *repository.UserEntityRepository
 	ProfileGateway gateway.ProfileGateway
 }
 
@@ -49,17 +50,17 @@ func (u *ValuesAppCurrentUseCase) Upload(req request.UploadValuesAppCurrentReque
 	return u.Repo.Update(exist)
 }
 
-func (u *ValuesAppCurrentUseCase) GetLogedDevices4Student(ctx *gin.Context, studentID string) ([]response.LogedDevice, error) {
+func (u *ValuesAppCurrentUseCase) GetLogedDevices4Student(ctx *gin.Context, studentID string) ([]response.LoggedDevice, error) {
 	values, _ := u.Repo.GetAllDevicesByStudentID(studentID)
 
-	logedDevices := make([]response.LogedDevice, 0, len(values))
+	logedDevices := make([]response.LoggedDevice, 0, len(values))
 	for _, value := range values {
 		// get device personal code
 		deviceCode, err := u.ProfileGateway.GetDeviceCode(ctx, value.DeviceID)
 		if err != nil {
 			return nil, err
 		}
-		logedDevices = append(logedDevices, response.LogedDevice{
+		logedDevices = append(logedDevices, response.LoggedDevice{
 			DeviceID:   value.DeviceID,
 			DeviceCode: deviceCode,
 		})
@@ -68,19 +69,23 @@ func (u *ValuesAppCurrentUseCase) GetLogedDevices4Student(ctx *gin.Context, stud
 	return logedDevices, nil
 }
 
-func (u *ValuesAppCurrentUseCase) GetLogedDevices4Teacher(ctx *gin.Context, teacherID string) ([]response.LogedDevice, error) {
+func (u *ValuesAppCurrentUseCase) GetLogedDevices4Teacher(ctx *gin.Context, teacherID string) ([]response.LoggedDevice, error) {
 	teacher, _ := u.TeacherRepo.GetByID(uuid.MustParse(teacherID))
+
+	if teacher == nil {
+		return nil, errors.New("teacher not found")
+	}
 
 	values, _ := u.Repo.GetAllDevicesByUserID(teacher.UserID.String())
 
-	logedDevices := make([]response.LogedDevice, 0, len(values))
+	logedDevices := make([]response.LoggedDevice, 0, len(values))
 	for _, value := range values {
 		// get device personal code
 		deviceCode, err := u.ProfileGateway.GetDeviceCode(ctx, value.DeviceID)
 		if err != nil {
 			return nil, err
 		}
-		logedDevices = append(logedDevices, response.LogedDevice{
+		logedDevices = append(logedDevices, response.LoggedDevice{
 			DeviceID:   value.DeviceID,
 			DeviceCode: deviceCode,
 		})
@@ -89,19 +94,19 @@ func (u *ValuesAppCurrentUseCase) GetLogedDevices4Teacher(ctx *gin.Context, teac
 	return logedDevices, nil
 }
 
-func (u *ValuesAppCurrentUseCase) GetLogedDevices4Staff(ctx *gin.Context, staffID string) ([]response.LogedDevice, error) {
+func (u *ValuesAppCurrentUseCase) GetLogedDevices4Staff(ctx *gin.Context, staffID string) ([]response.LoggedDevice, error) {
 	staff, _ := u.StaffRepo.GetByID(uuid.MustParse(staffID))
 
 	values, _ := u.Repo.GetAllDevicesByUserID(staff.UserID.String())
 
-	logedDevices := make([]response.LogedDevice, 0, len(values))
+	logedDevices := make([]response.LoggedDevice, 0, len(values))
 	for _, value := range values {
 		// get device personal code
 		deviceCode, err := u.ProfileGateway.GetDeviceCode(ctx, value.DeviceID)
 		if err != nil {
 			return nil, err
 		}
-		logedDevices = append(logedDevices, response.LogedDevice{
+		logedDevices = append(logedDevices, response.LoggedDevice{
 			DeviceID:   value.DeviceID,
 			DeviceCode: deviceCode,
 		})
@@ -109,19 +114,39 @@ func (u *ValuesAppCurrentUseCase) GetLogedDevices4Staff(ctx *gin.Context, staffI
 	return logedDevices, nil
 }
 
-func (u *ValuesAppCurrentUseCase) GetLogedDevices4Parent(ctx *gin.Context, parentID string) ([]response.LogedDevice, error) {
+func (u *ValuesAppCurrentUseCase) GetLogedDevices4Parent(ctx *gin.Context, parentID string) ([]response.LoggedDevice, error) {
 	parent, _ := u.ParentRepo.GetByID(ctx, parentID)
 
 	values, _ := u.Repo.GetAllDevicesByUserID(parent.UserID)
 
-	logedDevices := make([]response.LogedDevice, 0, len(values))
+	logedDevices := make([]response.LoggedDevice, 0, len(values))
 	for _, value := range values {
 		// get device personal code
 		deviceCode, err := u.ProfileGateway.GetDeviceCode(ctx, value.DeviceID)
 		if err != nil {
 			return nil, err
 		}
-		logedDevices = append(logedDevices, response.LogedDevice{
+		logedDevices = append(logedDevices, response.LoggedDevice{
+			DeviceID:   value.DeviceID,
+			DeviceCode: deviceCode,
+		})
+	}
+	return logedDevices, nil
+}
+
+func (u *ValuesAppCurrentUseCase) GetLogedDevices4User(ctx *gin.Context, userID string) ([]response.LoggedDevice, error) {
+	user, _ := u.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: userID})
+
+	values, _ := u.Repo.GetAllDevicesByUserID(user.ID.String())
+
+	logedDevices := make([]response.LoggedDevice, 0, len(values))
+	for _, value := range values {
+		// get device personal code
+		deviceCode, err := u.ProfileGateway.GetDeviceCode(ctx, value.DeviceID)
+		if err != nil {
+			return nil, err
+		}
+		logedDevices = append(logedDevices, response.LoggedDevice{
 			DeviceID:   value.DeviceID,
 			DeviceCode: deviceCode,
 		})

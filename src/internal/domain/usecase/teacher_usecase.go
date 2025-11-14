@@ -31,6 +31,7 @@ type TeacherApplicationUseCase struct {
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
+	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -192,7 +193,7 @@ func (uc *TeacherApplicationUseCase) mapTeacherAppsToResponse(ctx *gin.Context, 
 	return res
 }
 
-func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response.TeacherResponseBase, error) {
+func (uc *TeacherApplicationUseCase) GetTeacherByID4Web(ctx *gin.Context, teacherID string) (*response.TeacherResponseBase, error) {
 	// Lấy thông tin application của giáo viên
 	teacherApp, err := uc.TeacherRepo.GetByID(uuid.MustParse(teacherID))
 	if err != nil {
@@ -277,6 +278,9 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 	// get avts
 	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(teacherID, value.OwnerRoleTeacher)
 
+	// get list loged device
+	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Teacher(ctx, teacherID)
+
 	return &response.TeacherResponseBase{
 		TeacherID:      teacherID,
 		UserID:         userEntity.ID.String(),
@@ -289,6 +293,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByID(teacherID string) (*response
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
 		CreatedIndex:   teacherApp.CreatedIndex,
+		LogedDevices:   logedDevices,
 	}, nil
 }
 

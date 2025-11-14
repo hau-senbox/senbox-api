@@ -56,6 +56,7 @@ type UserEntityController struct {
 	*usecase.UserEntityUseCase
 	*usecase.PreRegisterUseCase
 	usecase.GenerateOwnerCodeUseCase
+	*usecase.ValuesAppCurrentUseCase
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -426,6 +427,9 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	// get user welcome reminder
 	welcomeReminder, _ := receiver.UserSettingUseCase.GetUserWelcomeReminder(userEntity.ID.String())
 
+	// get list loged device
+	logedDevices, _ := receiver.ValuesAppCurrentUseCase.GetLogedDevices4User(context, userEntity.ID.String())
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -454,6 +458,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			IsParent:               isParent,
 			IsFirstLogin:           isFirstLogin,
 			WelcomeReminder:        welcomeReminder,
+			LogedDevices:           logedDevices,
 		},
 	})
 }
@@ -1663,7 +1668,7 @@ func (receiver *UserEntityController) GetTeacher4WebAdmin(context *gin.Context) 
 		return
 	}
 
-	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByID(teacherID)
+	teacher, err := receiver.TeacherApplicationUseCase.GetTeacherByID4Web(context, teacherID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,
@@ -1691,7 +1696,7 @@ func (receiver *UserEntityController) GetStaff4WebAdmin(context *gin.Context) {
 		return
 	}
 
-	staff, err := receiver.StaffApplicationUseCase.GetStaffByID(staffID)
+	staff, err := receiver.StaffApplicationUseCase.GetStaffByID4Web(context, staffID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:    http.StatusInternalServerError,

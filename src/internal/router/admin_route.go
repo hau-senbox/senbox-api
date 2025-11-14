@@ -584,6 +584,14 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 		generateOwnerCodeUseCase,
 		cachingMainService,
+		&usecase.ValuesAppCurrentUseCase{
+			Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			ProfileGateway: profileGw,
+			StaffRepo:      &repository.StaffApplicationRepository{DBConn: dbConn},
+			TeacherRepo:    &repository.TeacherApplicationRepository{DBConn: dbConn},
+			ParentRepo:     &repository.ParentRepository{DBConn: dbConn},
+			DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
+		},
 	)
 
 	parentUseCase := usecase.NewParentUseCase(
@@ -607,6 +615,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		},
 		generateOwnerCodeUseCase,
 		cachingMainService,
+		&usecase.ValuesAppCurrentUseCase{
+			Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			ProfileGateway: profileGw,
+			ParentRepo:     &repository.ParentRepository{DBConn: dbConn},
+			DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -660,6 +674,14 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
 				TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
 				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
+			},
+			ValuesAppCurrentUseCase: &usecase.ValuesAppCurrentUseCase{
+				Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+				ProfileGateway: profileGw,
+				TeacherRepo:    &repository.TeacherApplicationRepository{DBConn: dbConn},
+				StaffRepo:      &repository.StaffApplicationRepository{DBConn: dbConn},
+				ParentRepo:     &repository.ParentRepository{DBConn: dbConn},
+				DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
 			},
 		},
 		UpdateUserEntityUseCase: &usecase.UpdateUserEntityUseCase{

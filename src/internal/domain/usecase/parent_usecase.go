@@ -31,6 +31,7 @@ type ParentUseCase struct {
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
+	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
 }
 
 func NewParentUseCase(
@@ -47,6 +48,7 @@ func NewParentUseCase(
 	userBlockSettingUsecase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 	cachingMainService caching.CachingMainService,
+	valuesAppCurrentUseCase *ValuesAppCurrentUseCase,
 ) *ParentUseCase {
 	return &ParentUseCase{
 		UserRepo:                 userRepo,
@@ -62,6 +64,7 @@ func NewParentUseCase(
 		UserBlockSettingUsecase:  userBlockSettingUsecase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		ValuesAppCurrentUseCase:  valuesAppCurrentUseCase,
 	}
 }
 
@@ -155,7 +158,7 @@ func (uc *ParentUseCase) GetParentByID(parentID string) (*response.ParentRespons
 	}, nil
 }
 
-func (uc *ParentUseCase) GetParentByID4Web(ctx context.Context, parentID string) (*response.ParentResponseBase, error) {
+func (uc *ParentUseCase) GetParentByID4Web(ctx *gin.Context, parentID string) (*response.ParentResponseBase, error) {
 	parent, err := uc.ParentRepo.GetByID(ctx, parentID)
 	if err != nil {
 		return nil, err
@@ -235,6 +238,9 @@ func (uc *ParentUseCase) GetParentByID4Web(ctx context.Context, parentID string)
 	// get user
 	user, _ := uc.UserRepo.GetByID(request.GetUserEntityByIDRequest{ID: parent.UserID})
 
+	// get list loged device
+	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Parent(ctx, parentID)
+
 	return &response.ParentResponseBase{
 		ParentID:       parentID,
 		ParentName:     user.Nickname,
@@ -245,6 +251,7 @@ func (uc *ParentUseCase) GetParentByID4Web(ctx context.Context, parentID string)
 		Avatars:        avatars,
 		CustomID:       "",
 		CreatedIndex:   parent.CreatedIndex,
+		LogedDevices:   logedDevices,
 	}, nil
 }
 

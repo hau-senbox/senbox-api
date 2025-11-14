@@ -114,6 +114,14 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		},
 		generateOwnerCodeUseCase,
 		cachingMainService,
+		&usecase.ValuesAppCurrentUseCase{
+			Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			ProfileGateway: profileGw,
+			StaffRepo:      &repository.StaffApplicationRepository{DBConn: dbConn},
+			TeacherRepo:    &repository.TeacherApplicationRepository{DBConn: dbConn},
+			ParentRepo:     &repository.ParentRepository{DBConn: dbConn},
+			DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
+		},
 	)
 
 	userEntityController := &controller.UserEntityController{
@@ -304,6 +312,12 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				StaffRepo:   &repository.StaffApplicationRepository{DBConn: dbConn},
 			},
 			ProfileGateway: profileGw,
+		},
+		ValuesAppCurrentUseCase: &usecase.ValuesAppCurrentUseCase{
+			Repo:           &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			ProfileGateway: profileGw,
+			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
+			DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
 		},
 	}
 

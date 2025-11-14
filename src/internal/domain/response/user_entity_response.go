@@ -34,6 +34,8 @@ type UserEntityResponse struct {
 	WelcomeReminder        *entity.UserSettingWelcomeReminder `json:"welcome_reminder"`
 
 	StudentOrganization []StudentOrganization `json:"student_organization"`
+
+	LogedDevices []LoggedDevice `json:"loged_devices"`
 }
 
 type UserEntityResponseV2 struct {

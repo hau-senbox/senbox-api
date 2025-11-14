@@ -31,6 +31,7 @@ type StaffApplicationUseCase struct {
 	UserBlockSettingUsecase  *UserBlockSettingUsecase
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
+	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
 }
 
 func NewStaffApplicationUseCase(
@@ -48,6 +49,7 @@ func NewStaffApplicationUseCase(
 	userBlockSettingUseCase *UserBlockSettingUsecase,
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase,
 	cachingMainService caching.CachingMainService,
+	valuesAppCurrentUseCase *ValuesAppCurrentUseCase,
 ) *StaffApplicationUseCase {
 	return &StaffApplicationUseCase{
 		StaffAppRepo:             staffRepo,
@@ -64,6 +66,7 @@ func NewStaffApplicationUseCase(
 		UserBlockSettingUsecase:  userBlockSettingUseCase,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		ValuesAppCurrentUseCase:  valuesAppCurrentUseCase,
 	}
 }
 
@@ -240,7 +243,7 @@ func (uc *StaffApplicationUseCase) mapStaffAppsToResponse(ctx *gin.Context, staf
 	return res
 }
 
-func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.StaffResponseBase, error) {
+func (uc *StaffApplicationUseCase) GetStaffByID4Web(ctx *gin.Context, staffID string) (*response.StaffResponseBase, error) {
 	// Lấy thông tin application của staff
 	staff, err := uc.StaffAppRepo.GetByID(uuid.MustParse(staffID))
 	if err != nil {
@@ -328,6 +331,9 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 	// get avts
 	avatars, _ := uc.UserImagesUsecase.GetAvt4Owner(staffID, value.OwnerRoleStaff)
 
+	// get list loged device
+	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Staff(ctx, staffID)
+
 	return &response.StaffResponseBase{
 		StaffID:        staffID,
 		UserID:         userEntity.ID.String(),
@@ -340,6 +346,7 @@ func (uc *StaffApplicationUseCase) GetStaffByID(staffID string) (*response.Staff
 		LanguageConfig: languageConfig,
 		Avatars:        avatars,
 		CreatedIndex:   staff.CreatedIndex,
+		LogedDevices:   logedDevices,
 	}, nil
 }
 

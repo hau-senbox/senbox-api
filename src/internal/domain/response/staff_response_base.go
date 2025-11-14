@@ -12,6 +12,7 @@ type StaffResponseBase struct {
 	LanguageConfig *LanguagesConfigResponse `json:"language_config"`
 	Avatars        []Avatar                 `json:"avatars"`
 	CreatedIndex   int                      `json:"created_index"`
+	LogedDevices   []LoggedDevice           `json:"logged_devices"`
 }
 
 type GetStaff4Gateway struct {
