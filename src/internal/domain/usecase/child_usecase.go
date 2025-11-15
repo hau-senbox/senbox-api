@@ -6,7 +6,6 @@ import (
 	"sen-global-api/helper"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
-	"sen-global-api/internal/domain/entity/components"
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/value"
@@ -88,15 +87,7 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		return errors.New("invalid user_id type in context")
 	}
 
-	childID := uuid.New()
-	child := &entity.SChild{
-		ID:        childID,
-		ChildName: req.ChildName,
-		Age:       req.Age,
-		ParentID:  userID,
-	}
-
-	// Bắt đầu Transaction
+	// Start Transaction
 	tx := uc.dbConn.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -109,13 +100,22 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		}
 	}()
 
+	childID := uuid.New()
+
 	// ---- Create Child ----
+	child := &entity.SChild{
+		ID:        childID,
+		ChildName: req.ChildName,
+		Age:       req.Age,
+		ParentID:  userID,
+	}
+
 	if err := uc.childRepo.WithTx(tx).Create(child); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("create child failed: %w", err)
 	}
 
-	// ---- Tạo menu cho child ----
+	// ---- Create menu for child ----
 	childRoleOrg, _ := uc.roleOrgRepo.WithTx(tx).GetByRoleName(string(value.RoleChild))
 	if childRoleOrg != nil {
 		comps, _ := uc.componentRepo.WithTx(tx).GetBySectionID(childRoleOrg.ID.String())
@@ -123,24 +123,10 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		for index, component := range comps {
 			visible, _ := helper.GetVisibleToValueComponent(string(component.Value))
 
-			newComponent := &components.Component{
-				ID:        uuid.New(),
-				Name:      component.Name,
-				Type:      component.Type,
-				Key:       component.Key,
-				SectionID: component.SectionID,
-				Value:     component.Value,
-			}
-
-			if err := uc.componentRepo.WithTx(tx).Create(newComponent); err != nil {
-				tx.Rollback()
-				return fmt.Errorf("create component failed: %w", err)
-			}
-
 			childMenu := &entity.ChildMenu{
 				ID:          uuid.New(),
 				ChildID:     childID,
-				ComponentID: newComponent.ID,
+				ComponentID: component.ID,
 				Order:       index,
 				IsShow:      true,
 				Visible:     visible,
@@ -153,33 +139,41 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 		}
 	}
 
-	// ---- Tạo Parent - Child mapping ----
+	// ---- Create Parent (if not exists) ----
+	parent, _ := uc.parentRepo.WithTx(tx).GetByUserID(ctx, userID.String())
 
-	// check if parent is already exists
-	parent, _ := uc.parentRepo.GetByUserID(ctx, userID.String())
-	if parent == nil {
-		if err := uc.parentRepo.WithTx(tx).Create(ctx, &entity.SParent{ID: uuid.New(), UserID: userID.String()}); err != nil {
+	if parent == nil || parent.ID == uuid.Nil {
+		parent = &entity.SParent{
+			ID:     uuid.New(),
+			UserID: userID.String(),
+		}
+
+		if err := uc.parentRepo.WithTx(tx).Create(ctx, parent); err != nil {
 			tx.Rollback()
-			return fmt.Errorf("create parent-child failed: %w", err)
+			return fmt.Errorf("create parent failed: %w", err)
 		}
 	}
 
-	if err := uc.parentChildsRepo.WithTx(tx).Create(ctx, &entity.SParentChilds{ParentID: userID.String(), ChildID: childID.String()}); err != nil {
+	// ---- Create Parent-Child mapping ----
+	if err := uc.parentChildsRepo.WithTx(tx).Create(ctx, &entity.SParentChilds{
+		ParentID: parent.ID.String(),
+		ChildID:  childID.String(),
+	}); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("create parent-child failed: %w", err)
 	}
 
-	// Commit nếu tất cả OK
+	// ---- Commit ----
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
 
-	// generate child code
+	// ---- Generate codes AFTER commit ----
 	uc.generateOwnerCodeUseCase.GenerateChildCode(ctx, childID.String())
 
-	// generate parent code
-	// get parent theo userID
+	// Refresh parent from database after commit
 	parent, _ = uc.parentRepo.GetByUserID(ctx, userID.String())
+
 	if parent != nil {
 		_, _ = uc.generateOwnerCodeUseCase.GenerateParentCode(ctx, parent.ID.String())
 	}
