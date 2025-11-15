@@ -5,3 +5,9 @@ type GetTeacherOrganizationMenuRequest struct {
 	OrganizationID string `json:"organization_id" binding:"required"`
 	DeviceID       string `json:"device_id" binding:"required"`
 }
+
+type GetStudentOrganizationMenuRequest struct {
+	StudentID      string `json:"user_id" binding:"required"`
+	OrganizationID string `json:"organization_id" binding:"required"`
+	DeviceID       string `json:"device_id" binding:"required"`
+}

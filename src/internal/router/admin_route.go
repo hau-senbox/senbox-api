@@ -388,6 +388,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			DepartmentMenuOrganizationRepository: &repository.DepartmentMenuOrganizationRepository{DBConn: dbConn},
 			SuperAdminEmergencyMenuRepository:    &repository.SuperAdminEmergencyMenuRepository{DBConn: dbConn},
 			OrganizationEmergencyMenuRepository:  &repository.OrganizationEmergencyMenuRepository{DBConn: dbConn},
+			StudentMenuOrganizationRepository:    &repository.StudentMenuOrganizationRepository{DBConn: dbConn},
 		},
 		ChildMenuUseCase: &usecase.ChildMenuUseCase{
 			Repo:          &repository.ChildMenuRepository{DBConn: dbConn},
@@ -435,6 +436,15 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepo:                     &repository.ComponentRepository{DBConn: dbConn},
 			LanguageSettingRepo:               &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
+		StudentMenuOrganizationUseCase: &usecase.StudentMenuOrganizationUseCase{
+			StudentMenuOrganizationRepository: &repository.StudentMenuOrganizationRepository{DBConn: dbConn},
+			ComponentRepo:                     &repository.ComponentRepository{DBConn: dbConn},
+			StudentRepo:                       &repository.StudentApplicationRepository{DB: dbConn},
+			UserImagesUsecase: &usecase.UserImagesUsecase{
+				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
+				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+			},
+		},
 	}
 
 	menu := engine.Group("/v1/admin/menu", secureMiddleware.Secured())
@@ -455,6 +465,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		menu.PUT("/teacher", menuController.UpdateIsShowTeacherMenu)
 		menu.POST("/section/teacher/organization", menuController.UploadTeacherMenuOrganization)
 		menu.GET("/section/teacher/:teacher_id/organization/:organization_id", menuController.GetTeacherMenuOrganization4Admin)
+		menu.POST("/section/student/organization", menuController.UploadStudentMenuOrganization)
+		menu.GET("/section/student/:student_id/organization/:organization_id", menuController.GetStudentMenuOrganization4Admin)
 
 		// get user menu
 		menu.GET("/user/:id", menuController.GetUserMenu4Web)
