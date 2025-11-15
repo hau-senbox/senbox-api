@@ -26,6 +26,7 @@ type DeviceUsecase struct {
 	UserEntityRepository *repository.UserEntityRepository
 	StudentRepo          *repository.StudentApplicationRepository
 	ProfileGateway       gateway.ProfileGateway
+	OrganizationRepo     *repository.OrganizationRepository
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -119,12 +120,21 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		url, _ := receiver.GetImageUseCase.GetUrlByKey(values.ImageKey, uploader.UploadPrivate)
 		userNickName := ""
 		studentName := ""
+		organizationName := ""
 
 		// get user nick name tu value 1
 		if userID, err := uuid.Parse(values.Value1); err == nil && userID != uuid.Nil {
 			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
 			if user != nil {
 				userNickName = user.Nickname
+			}
+		}
+
+		// get orginzation name tu value 2
+		if orgID, err := uuid.Parse(values.Value2); err == nil && orgID != uuid.Nil {
+			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
+			if org != nil {
+				organizationName = org.OrganizationNickName
 			}
 		}
 
@@ -136,7 +146,7 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 			}
 		}
 
-		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(userNickName, values.Value2, studentName, url)
+		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(userNickName, organizationName, studentName, url)
 	}
 
 	return resp, nil
