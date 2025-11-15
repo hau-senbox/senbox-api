@@ -831,18 +831,20 @@ func (receiver *GetMenuUseCase) GetSectionMenu4App(context *gin.Context) ([]resp
 
 	// Get Parent Menu
 	parent, _ := receiver.ParentRepo.GetByUserID(context, userID)
-	parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(context, parent.ID.String(), userID)
-	img, _ := receiver.UserImageUsecase.GetImg4Ownewr(parent.ID.String(), value.OwnerRoleParent)
-	menuIconKey := ""
-	if img != nil {
-		menuIconKey = img.Key
-	}
-	if err == nil && parentMenu.ParentID != "" && len(parentMenu.Components) > 0 {
-		result = append(result, response.GetMenuSectionResponse{
-			SectionName: "Parent Menu",
-			MenuIconKey: menuIconKey,
-			Components:  parentMenu.Components,
-		})
+	if parent != nil && parent.ID != uuid.Nil {
+		parentMenu, err := receiver.ParentMenuUsecase.GetByParentID(context, parent.ID.String(), userID)
+		img, _ := receiver.UserImageUsecase.GetImg4Ownewr(parent.ID.String(), value.OwnerRoleParent)
+		menuIconKey := ""
+		if img != nil {
+			menuIconKey = img.Key
+		}
+		if err == nil && parentMenu.ParentID != "" && len(parentMenu.Components) > 0 {
+			result = append(result, response.GetMenuSectionResponse{
+				SectionName: "Parent Menu",
+				MenuIconKey: menuIconKey,
+				Components:  parentMenu.Components,
+			})
+		}
 	}
 
 	// get department menu
