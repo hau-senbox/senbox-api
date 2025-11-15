@@ -33,6 +33,7 @@ type StudentApplicationUseCase struct {
 	GenerateOwnerCodeUseCase      GenerateOwnerCodeUseCase
 	CachingMainService            caching.CachingMainService
 	ValuesAppCurrentUseCase       *ValuesAppCurrentUseCase
+	ParentRepo                    *repository.ParentRepository
 }
 
 func NewStudentApplicationUseCase(
@@ -609,4 +610,36 @@ func (uc *StudentApplicationUseCase) GenerateStudentCode(ctx *gin.Context) {
 		// call profile gateway to generate student code
 		_, _ = uc.ProfileGateway.GenerateStudentCode(ctx, student.ID.String(), student.CreatedIndex)
 	}
+}
+
+func (uc *StudentApplicationUseCase) GetStudentsByParentID4Gw(ctx *gin.Context, parentID string) ([]*response.GetStudent4Gateway, error) {
+	// get parent lay user id
+	parent, err := uc.ParentRepo.GetByID(ctx, parentID)
+	if err != nil {
+		return nil, err
+	}
+	if parent == nil || parent.ID == uuid.Nil {
+		return nil, errors.New("parent not found")
+	}
+
+	students, err := uc.StudentAppRepo.GetByUserIDApproved(parent.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if len(students) == 0 {
+		return nil, errors.New("no students found")
+	}
+
+	res := make([]*response.GetStudent4Gateway, 0, len(students))
+	for _, student := range students {
+		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(student.ID.String(), value.OwnerRoleStudent)
+		code, _ := uc.ProfileGateway.GetStudentCode(ctx, student.ID.String())
+		res = append(res, &response.GetStudent4Gateway{
+			StudentID:   student.ID.String(),
+			StudentName: student.StudentName,
+			Avatar:      avatar,
+			Code:        code,
+		})
+	}
+	return res, nil
 }
