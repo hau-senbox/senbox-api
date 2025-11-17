@@ -32,6 +32,7 @@ type ParentUseCase struct {
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
 	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
+	DepartmentGateway        gateway.DepartmentGateway
 }
 
 func NewParentUseCase(
@@ -569,4 +570,16 @@ func (uc *ParentUseCase) GetParentByID4Gateway(ctx *gin.Context, parentID string
 	}
 
 	return res, nil
+}
+
+func (uc *ParentUseCase) MigrateParentDepartmentGroup(ctx *gin.Context) {
+	// get all parents
+	parents, err := uc.ParentRepo.GetAll(ctx)
+	if err != nil {
+		return
+	}
+
+	for _, pr := range parents {
+		uc.DepartmentGateway.MigrateParentDepartmentGroup(ctx, pr.ID.String())
+	}
 }

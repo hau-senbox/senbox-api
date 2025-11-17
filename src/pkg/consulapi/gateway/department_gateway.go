@@ -12,6 +12,8 @@ import (
 
 type DepartmentGateway interface {
 	GetDepartmentsByUser(context *gin.Context) ([]*response.DepartmentGateway, error)
+	GetDepartmentsByOrganization(context *gin.Context, orgID string) ([]*response.DepartmentGateway, error)
+	MigrateParentDepartmentGroup(context *gin.Context, parentID string)
 }
 
 type departmentGateway struct {
@@ -110,4 +112,50 @@ func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, 
 
 	return gwResp.Data, nil
 
+}
+
+func (dg *departmentGateway) MigrateParentDepartmentGroup(context *gin.Context, parentID string) {
+	token, exists := context.Get("token")
+	if !exists {
+		return
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return
+	}
+
+	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
+	if err != nil {
+		return
+	}
+
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	type AssignParentDepartmentGroupRequest struct {
+		ParentID string `json:"parent_id"`
+	}
+
+	req := AssignParentDepartmentGroupRequest{
+		ParentID: parentID,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/parent-group", req, headers)
+	if err != nil {
+		return
+	}
+
+	var gwResp response.APIGateWayResponse[string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return
+	}
+
+	if gwResp.StatusCode != 200 {
+		return
+	}
 }

@@ -131,6 +131,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ProfileGateway:           profileGw,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		DepartmentGateway:        departmentGW,
 	}
 
 	// child
@@ -302,6 +303,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			parent.GET("/:parent_id", userEntityCtrl.GetParentByID4Gateway)
 			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
 			parent.GET("/organization/:organization_id", userEntityCtrl.GetParentsByOrg4Gateway)
+			parent.POST("/migrate/department-group", userEntityCtrl.MigrateParentDepartmentGroup) // private method
 		}
 
 		// child
