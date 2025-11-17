@@ -444,6 +444,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
 			},
+			LanguageSettingRepo: &repository.LanguageSettingRepository{DBConn: dbConn},
 		},
 	}
 
