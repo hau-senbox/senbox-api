@@ -31,6 +31,7 @@ type ChildUseCase struct {
 	parentChildsRepo         *repository.ParentChildsRepository
 	profileGateway           gateway.ProfileGateway
 	generateOwnerCodeUseCase GenerateOwnerCodeUseCase
+	departmentGateway        gateway.DepartmentGateway
 }
 
 func NewChildUseCase(
@@ -48,6 +49,7 @@ func NewChildUseCase(
 	parentChildsRepo *repository.ParentChildsRepository,
 	profileGateway gateway.ProfileGateway,
 	gengenerateOwnerCodeUseCase GenerateOwnerCodeUseCase,
+	departmentGateway gateway.DepartmentGateway,
 ) *ChildUseCase {
 	return &ChildUseCase{
 		dbConn:                   dbConn,
@@ -64,6 +66,7 @@ func NewChildUseCase(
 		parentChildsRepo:         parentChildsRepo,
 		profileGateway:           profileGateway,
 		generateOwnerCodeUseCase: gengenerateOwnerCodeUseCase,
+		departmentGateway:        departmentGateway,
 	}
 }
 
@@ -175,7 +178,10 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	parent, _ = uc.parentRepo.GetByUserID(ctx, userID.String())
 
 	if parent != nil {
+		// generate parent code
 		_, _ = uc.generateOwnerCodeUseCase.GenerateParentCode(ctx, parent.ID.String())
+		// assign parent department group
+		uc.departmentGateway.AssignParentDepartmentGroup(ctx, parent.ID.String())
 	}
 
 	return nil

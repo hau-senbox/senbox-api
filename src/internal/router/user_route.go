@@ -81,6 +81,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
 		generateOwnerCodeUseCase,
+		departmentGW,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

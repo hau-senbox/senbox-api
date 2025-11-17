@@ -14,6 +14,7 @@ type DepartmentGateway interface {
 	GetDepartmentsByUser(context *gin.Context) ([]*response.DepartmentGateway, error)
 	GetDepartmentsByOrganization(context *gin.Context, orgID string) ([]*response.DepartmentGateway, error)
 	MigrateParentDepartmentGroup(context *gin.Context, parentID string)
+	AssignParentDepartmentGroup(context *gin.Context, parentID string) error
 }
 
 type departmentGateway struct {
@@ -158,4 +159,52 @@ func (dg *departmentGateway) MigrateParentDepartmentGroup(context *gin.Context, 
 	if gwResp.StatusCode != 200 {
 		return
 	}
+}
+
+func (dg *departmentGateway) AssignParentDepartmentGroup(context *gin.Context, parentID string) error {
+	token, exists := context.Get("token")
+	if !exists {
+		return fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
+	if err != nil {
+		return fmt.Errorf("create gateway client fail: %w", err)
+	}
+
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	type AssignParentDepartmentGroupRequest struct {
+		ParentID string `json:"parent_id"`
+	}
+
+	req := AssignParentDepartmentGroupRequest{
+		ParentID: parentID,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/parent-group", req, headers)
+	if err != nil {
+		return fmt.Errorf("call gateway assign parent department group fail: %w", err)
+	}
+
+	var gwResp response.APIGateWayResponse[string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return fmt.Errorf("call gateway assign parent department group fail: %s", gwResp.Message)
+	}
+
+	return nil
 }

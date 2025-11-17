@@ -87,6 +87,7 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
 		generateOwnerCodeUseCase,
+		nil,
 	)
 	deviceController := &controller.DeviceController{
 		DBConn: dbConn,

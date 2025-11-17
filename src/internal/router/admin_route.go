@@ -551,6 +551,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
 		generateOwnerCodeUseCase,
+		nil,
 	)
 
 	staffUsecase := usecase.NewStaffApplicationUseCase(

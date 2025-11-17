@@ -162,6 +162,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		&repository.ParentChildsRepository{DBConn: dbConn},
 		profileGw,
 		generateOwnerCodeUseCase,
+		departmentGW,
 	)
 	// organization ctl
 	orgCtrl := &controller.OrganizationController{
