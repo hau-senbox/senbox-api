@@ -37,6 +37,7 @@ type MenuController struct {
 	*usecase.TeacherMenuOrganizationUseCase
 	*usecase.DepartmentMenuUseCase
 	*usecase.DepartmentMenuOrganizationUseCase
+	*usecase.StudentMenuOrganizationUseCase
 }
 
 type componentResponse struct {
@@ -1310,6 +1311,30 @@ func (receiver *MenuController) UploadTeacherMenuOrganization(context *gin.Conte
 	})
 }
 
+func (receiver *MenuController) UploadStudentMenuOrganization(context *gin.Context) {
+	var req request.UploadSectionMenuStudentOrganizationRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+	err := receiver.UploadSectionMenuUseCase.UploadStudentMenuOrganization(context, req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Section menu was upload successfully",
+	})
+}
+
 func (receiver *MenuController) GetTeacherMenuOrganization4Admin(c *gin.Context) {
 	teacherID := c.Param("teacher_id")
 	orgID := c.Param("organization_id")
@@ -1361,6 +1386,58 @@ func (receiver *MenuController) GetTeacherMenuOrganization4App(c *gin.Context) {
 		c.JSON(http.StatusOK, response.SucceedResponse{
 			Code: http.StatusOK,
 			Data: nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
+func (receiver *MenuController) GetStudentMenuOrganization4Admin(c *gin.Context) {
+	studentID := c.Param("student_id")
+	orgID := c.Param("organization_id")
+
+	if studentID == "" || orgID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "student_id and organization_id are required",
+		})
+		return
+	}
+
+	menus, err := receiver.StudentMenuOrganizationUseCase.GetStudentMenuOrg4Admin(c, studentID, orgID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: menus,
+	})
+}
+
+func (receiver *MenuController) GetStudentMenuOrganization4App(c *gin.Context) {
+	var req request.GetStudentOrganizationMenuRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	menus, err := receiver.StudentMenuOrganizationUseCase.GetStudentMenuOrg4App(c, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: err.Error(),
 		})
 		return
 	}
