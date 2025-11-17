@@ -103,6 +103,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.MessageLanguage{},
 		&entity.SParent{},
 		&entity.SParentChilds{},
+		&entity.StudentMenuOrganization{},
 	)
 
 	// Seed

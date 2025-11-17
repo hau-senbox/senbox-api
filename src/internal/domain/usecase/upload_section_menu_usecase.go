@@ -1482,7 +1482,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenuOrganization(ctx *gin
 	}
 
 	// 2. Lấy role teacher trong org
-	roleOrgTeacher, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleTeacher))
+	roleOrgStudent, err := receiver.RoleOrgSignUpRepository.GetByRoleName(string(value.RoleStudent))
 	if err != nil {
 		logrus.Error("Rollback by error getting role by role name:", err)
 		tx.Rollback()
@@ -1499,7 +1499,7 @@ func (receiver *UploadSectionMenuUseCase) UploadStudentMenuOrganization(ctx *gin
 			Type:       components.ComponentType(compReq.Type),
 			Key:        compReq.Key,
 			Value:      datatypes.JSON([]byte(compReq.Value)),
-			SectionID:  roleOrgTeacher.ID.String(),
+			SectionID:  roleOrgStudent.ID.String(),
 			LanguageID: req.LanguageID,
 		}
 
