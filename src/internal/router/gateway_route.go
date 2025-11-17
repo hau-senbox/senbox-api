@@ -74,6 +74,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ProfileGateway:           profileGw,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		ParentRepo:               &repository.ParentRepository{DBConn: dbConn},
 	}
 
 	// teacher
@@ -273,6 +274,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		{
 			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)
 			student.POST("/code/generate", userEntityCtrl.GenerateStudentCode)
+			student.GET("/parent/:parent_id", userEntityCtrl.GetStudentsByParentID4Gw)
 		}
 
 		// teacher
