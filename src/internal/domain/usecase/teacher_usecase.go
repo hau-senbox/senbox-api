@@ -326,6 +326,9 @@ func (uc *TeacherApplicationUseCase) ApproveTeacherApplication(ctx *gin.Context,
 	application.ApprovedAt = time.Now()
 	application.IsAdminBlock = false // Reset block status when approving
 
+	// assign teacher department group
+	uc.DepartmentGateway.AssignTeacherDepartmentGroup(ctx, application.ID.String(), application.OrganizationID.String())
+
 	// Lưu lại
 	return uc.TeacherRepo.Update(application)
 }

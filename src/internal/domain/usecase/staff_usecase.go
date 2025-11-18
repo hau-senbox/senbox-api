@@ -151,6 +151,9 @@ func (uc *StaffApplicationUseCase) ApproveStaffApplication(ctx *gin.Context, app
 	application.ApprovedAt = time.Now()
 	application.IsAdminBlock = false // Reset block status when approving
 
+	// assign staff department group
+	uc.DepartmentGateway.AssignStaffDepartmentGroup(ctx, application.ID.String(), application.OrganizationID.String())
+
 	// Lưu lại
 	return uc.StaffAppRepo.Update(application)
 }

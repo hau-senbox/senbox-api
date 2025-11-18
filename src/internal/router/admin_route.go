@@ -48,7 +48,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	cachingMainService := caching.NewCachingMainService(cacheClientRedis, 0)
 	cachingProfileService := caching.NewCachingProfileService(cacheClientRedis, 0)
 	profileGw := gateway.NewProfileGateway("profile-service", consulClient, cachedProfileGateway, cachingProfileService)
-
+	departmentGW := gateway.NewDepartmentGateway("department-service", consulClient)
 	s3Provider := uploader.NewS3Provider(
 		config.S3.SenboxFormSubmitBucket.AccessKey,
 		config.S3.SenboxFormSubmitBucket.SecretKey,
@@ -835,6 +835,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			},
 			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
+			DepartmentGateway:    departmentGW,
 		},
 		StudentAppUsecase: &usecase.StudentApplicationUseCase{
 			StudentAppRepo:  &repository.StudentApplicationRepository{DB: dbConn},
@@ -845,7 +846,8 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 				UserEntityRepository:   &repository.UserEntityRepository{DBConn: dbConn},
 				OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 			},
-			OrganizationRepo: &repository.OrganizationRepository{DBConn: dbConn},
+			OrganizationRepo:  &repository.OrganizationRepository{DBConn: dbConn},
+			DepartmentGateway: departmentGW,
 		},
 		TeacherAppUsecase: &usecase.TeacherApplicationUseCase{
 			TeacherRepo: &repository.TeacherApplicationRepository{DBConn: dbConn},
@@ -858,6 +860,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			ComponentRepo:        &repository.ComponentRepository{DBConn: dbConn},
 			RoleOrgRepo:          &repository.RoleOrgSignUpRepository{DBConn: dbConn},
 			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
+			DepartmentGateway:    departmentGW,
 		},
 		SyncDataUsecase: syncDataUsecase,
 	}

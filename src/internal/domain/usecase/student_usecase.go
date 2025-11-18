@@ -436,6 +436,9 @@ func (uc *StudentApplicationUseCase) ApproveStudentApplication(ctx *gin.Context,
 	application.ApprovedAt = time.Now()
 	application.IsAdminBlock = false // Reset block status when approving
 
+	// assign student department group
+	uc.DepartmentGateway.AssignStudentDepartmentGroup(ctx, application.ID.String(), application.OrganizationID.String())
+
 	// Lưu lại
 	return uc.StudentAppRepo.Update(application)
 }
