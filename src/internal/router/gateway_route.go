@@ -135,6 +135,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
 		DepartmentGateway:        departmentGW,
+		StudentRepo:              studentRepo,
 	}
 
 	// child
