@@ -2710,7 +2710,6 @@ func (receiver *UserEntityController) MigrateParentDepartmentGroup(context *gin.
 		Data: nil,
 	})
 
-	return
 }
 
 func (receiver *UserEntityController) MigrateTeacherDepartmentGroup(context *gin.Context) {
@@ -2728,7 +2727,6 @@ func (receiver *UserEntityController) MigrateTeacherDepartmentGroup(context *gin
 		Data: nil,
 	})
 
-	return
 }
 
 func (receiver *UserEntityController) MigrateStaffDepartmentGroup(context *gin.Context) {
@@ -2746,7 +2744,6 @@ func (receiver *UserEntityController) MigrateStaffDepartmentGroup(context *gin.C
 		Data: nil,
 	})
 
-	return
 }
 
 func (receiver *UserEntityController) MigrateStudentDepartmentGroup(context *gin.Context) {
@@ -2763,5 +2760,4 @@ func (receiver *UserEntityController) MigrateStudentDepartmentGroup(context *gin
 		Data: nil,
 	})
 
-	return
 }
