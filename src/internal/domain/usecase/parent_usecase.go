@@ -572,14 +572,21 @@ func (uc *ParentUseCase) GetParentByID4Gateway(ctx *gin.Context, parentID string
 	return res, nil
 }
 
-func (uc *ParentUseCase) MigrateParentDepartmentGroup(ctx *gin.Context) {
-	// get all parents
-	parents, err := uc.ParentRepo.GetAll(ctx)
+func (uc *ParentUseCase) MigrateParentDepartmentGroup(ctx *gin.Context, organizationID string) {
+
+	// get all students by organizationID
+	students, err := uc.StudentRepo.GetByOrganizationID(organizationID)
 	if err != nil {
 		return
 	}
 
-	for _, pr := range parents {
-		uc.DepartmentGateway.MigrateParentDepartmentGroup(ctx, pr.ID.String())
+	for _, student := range students {
+		parent, err := uc.ParentRepo.GetByUserID(ctx, student.UserID.String())
+		if err != nil {
+			continue
+		}
+		if parent != nil {
+			uc.DepartmentGateway.AssignParentDepartmentGroup(ctx, parent.ID.String(), organizationID)
+		}
 	}
 }

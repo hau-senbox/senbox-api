@@ -32,6 +32,7 @@ type TeacherApplicationUseCase struct {
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
 	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
+	DepartmentGateway        gateway.DepartmentGateway
 }
 
 func NewTeacherApplicationUseCase(repo *repository.TeacherApplicationRepository) *TeacherApplicationUseCase {
@@ -566,5 +567,17 @@ func (uc *TeacherApplicationUseCase) GenerateTeacherCode(ctx *gin.Context) {
 	for _, tr := range teachers {
 		// call profile gateway to generate teacher code
 		_, _ = uc.ProfileGateway.GenerateTeacherCode(ctx, tr.ID.String(), tr.CreatedIndex)
+	}
+}
+
+func (uc *TeacherApplicationUseCase) MigrateTeacherDepartmentGroup(ctx *gin.Context, organizationID string) {
+	// get all teachers
+	teachers, err := uc.TeacherRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return
+	}
+
+	for _, tr := range teachers {
+		uc.DepartmentGateway.AssignTeacherDepartmentGroup(ctx, tr.ID.String(), organizationID)
 	}
 }

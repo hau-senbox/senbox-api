@@ -34,6 +34,7 @@ type StudentApplicationUseCase struct {
 	CachingMainService            caching.CachingMainService
 	ValuesAppCurrentUseCase       *ValuesAppCurrentUseCase
 	ParentRepo                    *repository.ParentRepository
+	DepartmentGateway             gateway.DepartmentGateway
 }
 
 func NewStudentApplicationUseCase(
@@ -642,4 +643,16 @@ func (uc *StudentApplicationUseCase) GetStudentsByParentID4Gw(ctx *gin.Context, 
 		})
 	}
 	return res, nil
+}
+
+func (uc *StudentApplicationUseCase) MigrateStudentDepartmentGroup(ctx *gin.Context, organizationID string) {
+	// get all parents
+	students, err := uc.StudentAppRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return
+	}
+
+	for _, student := range students {
+		uc.DepartmentGateway.AssignStudentDepartmentGroup(ctx, student.ID.String(), organizationID)
+	}
 }

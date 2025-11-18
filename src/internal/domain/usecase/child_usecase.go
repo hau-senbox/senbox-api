@@ -180,8 +180,6 @@ func (uc *ChildUseCase) CreateChild(req request.CreateChildRequest, ctx *gin.Con
 	if parent != nil {
 		// generate parent code
 		_, _ = uc.generateOwnerCodeUseCase.GenerateParentCode(ctx, parent.ID.String())
-		// assign parent department group
-		uc.departmentGateway.AssignParentDepartmentGroup(ctx, parent.ID.String())
 	}
 
 	return nil

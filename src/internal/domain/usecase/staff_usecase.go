@@ -32,6 +32,7 @@ type StaffApplicationUseCase struct {
 	GenerateOwnerCodeUseCase GenerateOwnerCodeUseCase
 	CachingMainService       caching.CachingMainService
 	ValuesAppCurrentUseCase  *ValuesAppCurrentUseCase
+	DepartmentGateway        gateway.DepartmentGateway
 }
 
 func NewStaffApplicationUseCase(
@@ -505,5 +506,17 @@ func (uc *StaffApplicationUseCase) GenerateStaffCode(ctx *gin.Context) {
 	for _, sf := range staffs {
 		// call profile gateway to generate staff code
 		_, _ = uc.ProfileGateway.GenerateStaffCode(ctx, sf.ID.String(), sf.CreatedIndex)
+	}
+}
+
+func (uc *StaffApplicationUseCase) MigrateStaffDepartmentGroup(ctx *gin.Context, organizationID string) {
+	// get all staffs
+	staffs, err := uc.StaffAppRepo.GetByOrganizationID(organizationID)
+	if err != nil {
+		return
+	}
+
+	for _, sf := range staffs {
+		uc.DepartmentGateway.AssignStaffDepartmentGroup(ctx, sf.ID.String(), organizationID)
 	}
 }

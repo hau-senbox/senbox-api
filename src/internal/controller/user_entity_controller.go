@@ -2694,3 +2694,74 @@ func (receiver *UserEntityController) GetStudentsByParentID4Gw(context *gin.Cont
 		Data: students,
 	})
 }
+
+func (receiver *UserEntityController) MigrateParentDepartmentGroup(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+	receiver.ParentUseCase.MigrateParentDepartmentGroup(context, organizationID)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+
+	return
+}
+
+func (receiver *UserEntityController) MigrateTeacherDepartmentGroup(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+	receiver.TeacherApplicationUseCase.MigrateTeacherDepartmentGroup(context, organizationID)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+
+	return
+}
+
+func (receiver *UserEntityController) MigrateStaffDepartmentGroup(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+		return
+	}
+	receiver.StaffApplicationUseCase.MigrateStaffDepartmentGroup(context, organizationID)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+
+	return
+}
+
+func (receiver *UserEntityController) MigrateStudentDepartmentGroup(context *gin.Context) {
+	organizationID := context.Param("organization_id")
+	if organizationID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing organization ID",
+		})
+	}
+	receiver.StudentApplicationUseCase.MigrateStudentDepartmentGroup(context, organizationID)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: nil,
+	})
+
+	return
+}

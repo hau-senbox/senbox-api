@@ -13,8 +13,10 @@ import (
 type DepartmentGateway interface {
 	GetDepartmentsByUser(context *gin.Context) ([]*response.DepartmentGateway, error)
 	GetDepartmentsByOrganization(context *gin.Context, orgID string) ([]*response.DepartmentGateway, error)
-	MigrateParentDepartmentGroup(context *gin.Context, parentID string)
-	AssignParentDepartmentGroup(context *gin.Context, parentID string) error
+	AssignParentDepartmentGroup(context *gin.Context, parentID string, organizationID string) error
+	AssignStudentDepartmentGroup(context *gin.Context, studentID string, organizationID string) error
+	AssignTeacherDepartmentGroup(context *gin.Context, teacherID string, organizationID string) error
+	AssignStaffDepartmentGroup(context *gin.Context, staffID string, organizationID string) error
 }
 
 type departmentGateway struct {
@@ -115,53 +117,7 @@ func (dg *departmentGateway) GetDepartmentsByOrganization(context *gin.Context, 
 
 }
 
-func (dg *departmentGateway) MigrateParentDepartmentGroup(context *gin.Context, parentID string) {
-	token, exists := context.Get("token")
-	if !exists {
-		return
-	}
-
-	tokenStr, ok := token.(string)
-	if !ok || tokenStr == "" {
-		return
-	}
-
-	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
-	if err != nil {
-		return
-	}
-
-	appLanguage, _ := context.Get("app_language")
-
-	headers := make(map[string]string)
-	if lang, ok := appLanguage.(uint); ok {
-		headers["X-App-Language"] = strconv.Itoa(int(lang))
-	}
-
-	type AssignParentDepartmentGroupRequest struct {
-		ParentID string `json:"parent_id"`
-	}
-
-	req := AssignParentDepartmentGroupRequest{
-		ParentID: parentID,
-	}
-
-	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/parent-group", req, headers)
-	if err != nil {
-		return
-	}
-
-	var gwResp response.APIGateWayResponse[string]
-	if err := json.Unmarshal(resp, &gwResp); err != nil {
-		return
-	}
-
-	if gwResp.StatusCode != 200 {
-		return
-	}
-}
-
-func (dg *departmentGateway) AssignParentDepartmentGroup(context *gin.Context, parentID string) error {
+func (dg *departmentGateway) AssignParentDepartmentGroup(context *gin.Context, parentID string, organizationID string) error {
 	token, exists := context.Get("token")
 	if !exists {
 		return fmt.Errorf("token not found in context")
@@ -185,11 +141,13 @@ func (dg *departmentGateway) AssignParentDepartmentGroup(context *gin.Context, p
 	}
 
 	type AssignParentDepartmentGroupRequest struct {
-		ParentID string `json:"parent_id"`
+		ParentID       string `json:"parent_id"`
+		OrganizationID string `json:"organization_id"`
 	}
 
 	req := AssignParentDepartmentGroupRequest{
-		ParentID: parentID,
+		ParentID:       parentID,
+		OrganizationID: organizationID,
 	}
 
 	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/parent-group", req, headers)
@@ -204,6 +162,156 @@ func (dg *departmentGateway) AssignParentDepartmentGroup(context *gin.Context, p
 
 	if gwResp.StatusCode != 200 {
 		return fmt.Errorf("call gateway assign parent department group fail: %s", gwResp.Message)
+	}
+
+	return nil
+}
+
+func (dg *departmentGateway) AssignStudentDepartmentGroup(context *gin.Context, studentID string, organizationID string) error {
+	token, exists := context.Get("token")
+	if !exists {
+		return fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
+	if err != nil {
+		return fmt.Errorf("create gateway client fail: %w", err)
+	}
+
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	type AssignStudentDepartmentGroupRequest struct {
+		StudentID      string `json:"student_id"`
+		OrganizationID string `json:"organization_id"`
+	}
+
+	req := AssignStudentDepartmentGroupRequest{
+		StudentID:      studentID,
+		OrganizationID: organizationID,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/student-group", req, headers)
+	if err != nil {
+		return fmt.Errorf("call gateway assign student department group fail: %w", err)
+	}
+
+	var gwResp response.APIGateWayResponse[string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return fmt.Errorf("call gateway assign student department group fail: %s", gwResp.Message)
+	}
+
+	return nil
+}
+
+func (dg *departmentGateway) AssignTeacherDepartmentGroup(context *gin.Context, teacherID string, organizationID string) error {
+	token, exists := context.Get("token")
+	if !exists {
+		return fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
+	if err != nil {
+		return fmt.Errorf("create gateway client fail: %w", err)
+	}
+
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	type AssignTeacherDepartmentGroupRequest struct {
+		TeacherID      string `json:"teacher_id"`
+		OrganizationID string `json:"organization_id"`
+	}
+
+	req := AssignTeacherDepartmentGroupRequest{
+		TeacherID:      teacherID,
+		OrganizationID: organizationID,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/teacher-group", req, headers)
+	if err != nil {
+		return fmt.Errorf("call gateway assign teacher department group fail: %w", err)
+	}
+
+	var gwResp response.APIGateWayResponse[string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return fmt.Errorf("call gateway assign teacher department group fail: %s", gwResp.Message)
+	}
+
+	return nil
+}
+
+func (dg *departmentGateway) AssignStaffDepartmentGroup(context *gin.Context, staffID string, organizationID string) error {
+	token, exists := context.Get("token")
+	if !exists {
+		return fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(dg.serviceName, tokenStr, dg.consul, nil)
+	if err != nil {
+		return fmt.Errorf("create gateway client fail: %w", err)
+	}
+
+	appLanguage, _ := context.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	type AssignStaffDepartmentGroupRequest struct {
+		StaffID        string `json:"staff_id"`
+		OrganizationID string `json:"organization_id"`
+	}
+
+	req := AssignStaffDepartmentGroupRequest{
+		StaffID:        staffID,
+		OrganizationID: organizationID,
+	}
+
+	resp, err := client.Call("POST", "/api/v1/gateway/departments/assign/staff-group", req, headers)
+	if err != nil {
+		return fmt.Errorf("call gateway assign staff department group fail: %w", err)
+	}
+
+	var gwResp response.APIGateWayResponse[string]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return fmt.Errorf("call gateway assign teacher department group fail: %s", gwResp.Message)
 	}
 
 	return nil

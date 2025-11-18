@@ -75,6 +75,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
 		ParentRepo:               &repository.ParentRepository{DBConn: dbConn},
+		DepartmentGateway:        departmentGW,
 	}
 
 	// teacher
@@ -93,6 +94,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ProfileGateway:           profileGw,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		DepartmentGateway:        departmentGW,
 	}
 
 	// staff
@@ -111,6 +113,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		ProfileGateway:           profileGw,
 		GenerateOwnerCodeUseCase: generateOwnerCodeUseCase,
 		CachingMainService:       cachingMainService,
+		DepartmentGateway:        departmentGW,
 	}
 
 	// parent
@@ -277,6 +280,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			student.GET("/:student_id", userEntityCtrl.GetStudent4Gateway)
 			student.POST("/code/generate", userEntityCtrl.GenerateStudentCode)
 			student.GET("/parent/:parent_id", userEntityCtrl.GetStudentsByParentID4Gw)
+			student.GET("/migrate/department-group/:organization_id", userEntityCtrl.MigrateStudentDepartmentGroup) // private method
 		}
 
 		// teacher
@@ -286,6 +290,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			teacher.GET("/get-by-user/:user_id", userEntityCtrl.GetTeachersByUser4Gateway)
 			teacher.GET("/organization/:organization_id/user/:user_id", userEntityCtrl.GetTeacherByOrgAndUser4Gateway)
 			teacher.POST("/code/generate", userEntityCtrl.GenerateTeacherCode)
+			teacher.GET("/migrate/department-group/:organization_id", userEntityCtrl.MigrateTeacherDepartmentGroup) // private method
 		}
 
 		// staff
@@ -295,6 +300,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			staff.GET("/get-by-user/:user_id", userEntityCtrl.GetStaffsByUser4Gateway)
 			staff.GET("/organization/:organization_id/user/:user_id", userEntityCtrl.GetStaffByOrgAndUser4Gateway)
 			staff.POST("/code/generate", userEntityCtrl.GenerateStaffCode)
+			staff.GET("/migrate/department-group/:organization_id", userEntityCtrl.MigrateStaffDepartmentGroup) // private method
 		}
 
 		// prarent
@@ -304,7 +310,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			parent.GET("/:parent_id", userEntityCtrl.GetParentByID4Gateway)
 			parent.POST("/code/generate", userEntityCtrl.GenerateParentCode)
 			parent.GET("/organization/:organization_id", userEntityCtrl.GetParentsByOrg4Gateway)
-			parent.POST("/migrate/department-group", userEntityCtrl.MigrateParentDepartmentGroup) // private method
+			parent.GET("/migrate/department-group/:organization_id", userEntityCtrl.MigrateParentDepartmentGroup) // private method
 		}
 
 		// child
