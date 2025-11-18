@@ -237,6 +237,34 @@ func (receiver *GetMenuUseCase) GetOrgMenu4App(ctx *gin.Context, orgID string) (
 }
 
 func (receiver *GetMenuUseCase) GetStudentMenu4App(ctx *gin.Context, studentID string) (*response.GetStudentMenuResponse, error) {
+	userID := ctx.GetString("user_id")
+	if userID == "" {
+		return nil, errors.New("user_id is required")
+	}
+
+	parent, err := receiver.ParentRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if parent == nil {
+		return nil, errors.New("parent not found")
+	}
+
+	// kiem tra student co thuoc parent hay khong
+	student, err := receiver.StudentAppRepo.GetByID(uuid.MustParse(studentID))
+	if err != nil {
+		return nil, err
+	}
+
+	if student == nil {
+		return nil, errors.New("student not found")
+	}
+
+	if student.UserID.String() != parent.UserID {
+		return nil, errors.New("student does not belong to parent")
+	}
+
 	studentMenu, err := receiver.StudentMenuUseCase.GetByStudentID(ctx, studentID, true)
 
 	if err != nil {
