@@ -234,6 +234,7 @@ func (uc *StaffApplicationUseCase) mapStaffAppsToResponse(ctx *gin.Context, staf
 		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4Staff(staff.ID.String())
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(staff.ID.String(), value.OwnerRoleStaff)
 		Code, _ := uc.ProfileGateway.GetStaffCode(ctx, staff.ID.String())
+		isLoggedDevice, _ := uc.ValuesAppCurrentUseCase.GetIsLoggedDevice4Staff(ctx, staff.ID.String())
 		res = append(res, response.StaffResponse{
 			StaffID:          staff.ID.String(),
 			StaffName:        userEntity.Nickname,
@@ -242,6 +243,7 @@ func (uc *StaffApplicationUseCase) mapStaffAppsToResponse(ctx *gin.Context, staf
 			IsDeactive:       isDeactive,
 			Avatar:           avatar,
 			Code:             Code,
+			IsLoggedDevice:   isLoggedDevice,
 		})
 	}
 	return res

@@ -30,13 +30,14 @@ type ChildrenResponse struct {
 }
 
 type StudentResponse struct {
-	StudentID    string   `json:"id"`
-	StudentName  string   `json:"nickname"`
-	IsDeactive   bool     `json:"is_deactive"`
-	CreatedIndex int      `json:"created_index"`
-	Avatar       Avatar   `json:"avatar"`
-	Code         string   `json:"code"`
-	LanguageKeys []string `json:"lang_keys"`
+	StudentID      string   `json:"id"`
+	StudentName    string   `json:"nickname"`
+	IsDeactive     bool     `json:"is_deactive"`
+	CreatedIndex   int      `json:"created_index"`
+	Avatar         Avatar   `json:"avatar"`
+	Code           string   `json:"code"`
+	LanguageKeys   []string `json:"lang_keys"`
+	IsLoggedDevice bool     `json:"is_logged_device"`
 }
 
 type TeacherResponse struct {
@@ -48,6 +49,7 @@ type TeacherResponse struct {
 	UserCreatedIndex int      `json:"user_created_index"`
 	Code             string   `json:"code"`
 	LanguageKeys     []string `json:"lang_keys"`
+	IsLoggedDevice   bool     `json:"is_logged_device"`
 }
 
 type StaffResponse struct {
@@ -59,6 +61,7 @@ type StaffResponse struct {
 	UserCreatedIndex int      `json:"user_created_index"`
 	Code             string   `json:"code"`
 	LanguageKeys     []string `json:"lang_keys"`
+	IsLoggedDevice   bool     `json:"is_logged_device"`
 }
 
 type ParentResponse struct {
@@ -70,4 +73,5 @@ type ParentResponse struct {
 	UserCreatedIndex int      `json:"user_created_index"`
 	Code             string   `json:"code"`
 	LanguageKeys     []string `json:"lang_keys"`
+	IsLoggedDevice   bool     `json:"is_logged_device"`
 }

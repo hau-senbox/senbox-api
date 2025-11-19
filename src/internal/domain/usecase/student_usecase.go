@@ -394,15 +394,16 @@ func (uc *StudentApplicationUseCase) mapStudentAppsToResponse(ctx *gin.Context, 
 		isDeactive, _ := uc.StudentBlockSettingRepository.GetIsDeactiveByStudentID(std.ID.String())
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(std.ID.String(), value.OwnerRoleStudent)
 		code, _ := uc.ProfileGateway.GetStudentCode(ctx, std.ID.String())
+		isLoggedDevice, _ := uc.ValuesAppCurrentUseCase.GetIsLoggedDevice4Student(ctx, std.ID.String())
 		res = append(res, response.StudentResponse{
-			StudentID:    std.ID.String(),
-			StudentName:  std.StudentName,
-			CreatedIndex: std.CreatedIndex,
-			IsDeactive:   isDeactive,
-			Avatar:       avatar,
-			LanguageKeys: []string{"vietnamese", "english"},
-
-			Code: code,
+			StudentID:      std.ID.String(),
+			StudentName:    std.StudentName,
+			CreatedIndex:   std.CreatedIndex,
+			IsDeactive:     isDeactive,
+			Avatar:         avatar,
+			LanguageKeys:   []string{"vietnamese", "english"},
+			Code:           code,
+			IsLoggedDevice: isLoggedDevice,
 		})
 	}
 	return res

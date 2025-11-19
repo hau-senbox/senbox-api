@@ -153,3 +153,43 @@ func (u *ValuesAppCurrentUseCase) GetLogedDevices4User(ctx *gin.Context, userID 
 	}
 	return logedDevices, nil
 }
+
+func (u *ValuesAppCurrentUseCase) GetIsLoggedDevice4User(ctx *gin.Context, userID string) (bool, error) {
+	values, _ := u.Repo.GetAllDevicesByUserID(userID)
+	if len(values) > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *ValuesAppCurrentUseCase) GetIsLoggedDevice4Student(ctx *gin.Context, studentID string) (bool, error) {
+	values, _ := u.Repo.GetAllDevicesByStudentID(studentID)
+	if len(values) > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *ValuesAppCurrentUseCase) GetIsLoggedDevice4Teacher(ctx *gin.Context, teacherID string) (bool, error) {
+	values, _ := u.Repo.GetAllDevicesByUserID(teacherID)
+	if len(values) > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *ValuesAppCurrentUseCase) GetIsLoggedDevice4Staff(ctx *gin.Context, staffID string) (bool, error) {
+	values, _ := u.Repo.GetAllDevicesByUserID(staffID)
+	if len(values) > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *ValuesAppCurrentUseCase) GetIsLoggedDevice4Parent(ctx *gin.Context, parentID string) (bool, error) {
+	values, _ := u.Repo.GetAllDevicesByUserID(parentID)
+	if len(values) > 0 {
+		return true, nil
+	}
+	return false, nil
+}

@@ -180,6 +180,7 @@ func (uc *TeacherApplicationUseCase) mapTeacherAppsToResponse(ctx *gin.Context, 
 		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4Teacher(teacher.ID.String())
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(teacher.ID.String(), value.OwnerRoleStaff)
 		Code, _ := uc.ProfileGateway.GetTeacherCode(ctx, teacher.ID.String())
+		isLoggedDevice, _ := uc.ValuesAppCurrentUseCase.GetIsLoggedDevice4Teacher(ctx, teacher.ID.String())
 		res = append(res, response.TeacherResponse{
 			TeacherID:        teacher.ID.String(),
 			TeacherName:      userEntity.Nickname,
@@ -189,6 +190,7 @@ func (uc *TeacherApplicationUseCase) mapTeacherAppsToResponse(ctx *gin.Context, 
 			Avatar:           avatar,
 			LanguageKeys:     []string{"vietnamese", "english"},
 			Code:             Code,
+			IsLoggedDevice:   isLoggedDevice,
 		})
 	}
 	return res

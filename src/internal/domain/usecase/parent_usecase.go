@@ -424,6 +424,7 @@ func (uc *ParentUseCase) mapParentEntitiesToResponse(ctx *gin.Context, parents [
 		isDeactive, _ := uc.UserBlockSettingUsecase.GetDeactive4User(p.ID.String())
 		avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(p.ID.String(), value.OwnerRoleParent)
 		code, _ := uc.ProfileGateway.GetParentCode(ctx, p.ID.String())
+		isLoggedDevice, _ := uc.ValuesAppCurrentUseCase.GetIsLoggedDevice4Parent(ctx, p.ID.String())
 		res = append(res, response.ParentResponse{
 			ParentID:         p.ID.String(),
 			ParentName:       userEntity.Nickname,
@@ -433,6 +434,7 @@ func (uc *ParentUseCase) mapParentEntitiesToResponse(ctx *gin.Context, parents [
 			Avatar:           avatar,
 			Code:             code,
 			LanguageKeys:     []string{"vietnamese", "english"},
+			IsLoggedDevice:   isLoggedDevice,
 		})
 	}
 
