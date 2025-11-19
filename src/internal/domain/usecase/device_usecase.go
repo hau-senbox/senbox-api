@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -185,7 +186,7 @@ func (receiver *DeviceUsecase) GenerateDevicesCode(ctx *gin.Context) {
 	}
 }
 
-func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context) ([]response.GetLoggedDevicesResponse, error) {
+func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context, deviceCode string) ([]response.GetLoggedDevicesResponse, error) {
 	// get all devices
 	devices, _ := receiver.DeviceRepository.GetAllDevices()
 
@@ -209,6 +210,13 @@ func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context) ([]re
 			DeviceID:            device.ID,
 			DeviceCode:          deviceCode,
 			OrganizationDevices: organizationDevices,
+		})
+	}
+
+	// filter devices by device code
+	if deviceCode != "" {
+		logedDevices = lo.Filter(logedDevices, func(item response.GetLoggedDevicesResponse, _ int) bool {
+			return strings.Contains(strings.ToLower(item.DeviceCode), strings.ToLower(deviceCode))
 		})
 	}
 

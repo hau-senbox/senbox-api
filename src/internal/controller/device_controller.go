@@ -1679,7 +1679,8 @@ func (receiver *DeviceController) GenerateDevicesCode(c *gin.Context) {
 }
 
 func (receiver *DeviceController) GetAllPersonalDevices4Web(c *gin.Context) {
-	devices, err := receiver.DeviceUsecase.GetAllPersonalDevices4Web(c)
+	deviceCode := c.Query("device_code")
+	devices, err := receiver.DeviceUsecase.GetAllPersonalDevices4Web(c, deviceCode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.FailedResponse{
 			Code:  http.StatusInternalServerError,
