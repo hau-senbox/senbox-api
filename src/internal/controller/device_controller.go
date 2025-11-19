@@ -1677,3 +1677,18 @@ func (receiver *DeviceController) GenerateDevicesCode(c *gin.Context) {
 		Data:    nil,
 	})
 }
+
+func (receiver *DeviceController) GetAllPersonalDevices4Web(c *gin.Context) {
+	devices, err := receiver.DeviceUsecase.GetAllPersonalDevices4Web(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: devices,
+	})
+}

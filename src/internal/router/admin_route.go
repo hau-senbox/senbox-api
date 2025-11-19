@@ -1038,6 +1038,12 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 		org.GET("/:organization_id", orgController.GetOrganizationByID4Web)
 	}
 
+	// devices
+	devices := engine.Group("/v1/admin/devices", secureMiddleware.Secured())
+	{
+		devices.GET("", secureMiddleware.ValidateSuperAdminRole(), deviceController.GetAllPersonalDevices4Web)
+	}
+
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())
 	{
 		sync.POST("/form", applicationController.SyncDataDemoV3)

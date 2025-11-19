@@ -428,7 +428,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	welcomeReminder, _ := receiver.UserSettingUseCase.GetUserWelcomeReminder(userEntity.ID.String())
 
 	// get list loged device
-	logedDevices, _ := receiver.ValuesAppCurrentUseCase.GetLogedDevices4User(context, userEntity.ID.String())
+	loggedDevices, _ := receiver.ValuesAppCurrentUseCase.GetLogedDevices4User(context, userEntity.ID.String())
 
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
@@ -458,7 +458,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			IsParent:               isParent,
 			IsFirstLogin:           isFirstLogin,
 			WelcomeReminder:        welcomeReminder,
-			LogedDevices:           logedDevices,
+			LoggedDevices:          loggedDevices,
 		},
 	})
 }

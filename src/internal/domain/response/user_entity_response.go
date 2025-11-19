@@ -35,7 +35,7 @@ type UserEntityResponse struct {
 
 	StudentOrganization []StudentOrganization `json:"student_organization"`
 
-	LogedDevices []LoggedDevice `json:"loged_devices"`
+	LoggedDevices []LoggedDevice `json:"logged_devices"`
 }
 
 type UserEntityResponseV2 struct {

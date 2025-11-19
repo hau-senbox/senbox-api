@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -182,4 +183,34 @@ func (receiver *DeviceUsecase) GenerateDevicesCode(ctx *gin.Context) {
 	for _, device := range devices {
 		_, _ = receiver.ProfileGateway.GenerateDeviceCode(ctx, device.ID, device.CreatedIndex)
 	}
+}
+
+func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context) ([]response.GetLoggedDevicesResponse, error) {
+	// get all devices
+	devices, _ := receiver.DeviceRepository.GetAllDevices()
+
+	logedDevices := make([]response.GetLoggedDevicesResponse, 0, len(devices))
+	for _, device := range devices {
+		// get all device trong org device
+		orgDevices, _ := receiver.DeviceRepository.GetOrgsByDeviceID(device.ID)
+		organizationDevices := make([]response.OrganizationDevices, 0)
+		for _, orgDevice := range orgDevices {
+			organizationDevices = append(organizationDevices, response.OrganizationDevices{
+				OrganizationID:         orgDevice.OrganizationID.String(),
+				OrganizationName:       orgDevice.Organization.OrganizationName,
+				OrganizationDeviceCode: "O.D." + strconv.Itoa(orgDevice.CreatedIndex),
+			})
+		}
+
+		// get device personal code
+		deviceCode, _ := receiver.ProfileGateway.GetDeviceCode(ctx, device.ID)
+
+		logedDevices = append(logedDevices, response.GetLoggedDevicesResponse{
+			DeviceID:            device.ID,
+			DeviceCode:          deviceCode,
+			OrganizationDevices: organizationDevices,
+		})
+	}
+
+	return logedDevices, nil
 }
