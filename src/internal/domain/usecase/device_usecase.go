@@ -197,7 +197,7 @@ func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context) ([]re
 		for _, orgDevice := range orgDevices {
 			organizationDevices = append(organizationDevices, response.OrganizationDevices{
 				OrganizationID:         orgDevice.OrganizationID.String(),
-				OrganizationName:       orgDevice.Organization.OrganizationName,
+				OrganizationName:       orgDevice.Organization.OrganizationNickName,
 				OrganizationDeviceCode: "O.D." + strconv.Itoa(orgDevice.CreatedIndex),
 			})
 		}
