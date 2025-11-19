@@ -1017,6 +1017,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			UserEntityRepository: &repository.UserEntityRepository{DBConn: dbConn},
 			StudentRepo:          &repository.StudentApplicationRepository{DB: dbConn},
 			ProfileGateway:       profileGw,
+			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
 
