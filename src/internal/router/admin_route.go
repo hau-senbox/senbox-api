@@ -1018,6 +1018,9 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 			StudentRepo:          &repository.StudentApplicationRepository{DB: dbConn},
 			ProfileGateway:       profileGw,
 			OrganizationRepo:     &repository.OrganizationRepository{DBConn: dbConn},
+			TeacherRepo:          &repository.TeacherApplicationRepository{DBConn: dbConn},
+			StaffRepo:            &repository.StaffApplicationRepository{DBConn: dbConn},
+			ParentRepo:           &repository.ParentRepository{DBConn: dbConn},
 		},
 	}
 
@@ -1043,6 +1046,7 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 	devices := engine.Group("/v1/admin/devices", secureMiddleware.Secured())
 	{
 		devices.GET("", secureMiddleware.ValidateSuperAdminRole(), deviceController.GetAllPersonalDevices4Web)
+		devices.GET("/:device_id", deviceController.GetPersonalDeviceInfo4Web)
 	}
 
 	sync := engine.Group("/v1/admin/sync", secureMiddleware.ValidateSuperAdminRole())

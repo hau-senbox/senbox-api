@@ -173,6 +173,10 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		GetOrganizationUseCase: &usecase.GetOrganizationUseCase{
 			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
+		OrganizationUsecase: &usecase.OrganizationUsecase{
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
+			ProfileGateway:         profileGw,
+		},
 	}
 
 	// menu ctl
@@ -324,6 +328,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		org := api.Group("/organizations")
 		{
 			org.GET("", orgCtrl.GetAllOrganizations4Gateway)
+			org.POST("/code/generate", orgCtrl.GenerateOrganizationCode)
 		}
 
 		// device

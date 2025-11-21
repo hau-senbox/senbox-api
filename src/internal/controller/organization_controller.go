@@ -26,6 +26,7 @@ type OrganizationController struct {
 	*usecase.UploadOrgAvatarUseCase
 	*usecase.OrganizationSettingUsecase
 	*usecase.AuthorizeUseCase
+	*usecase.OrganizationUsecase
 }
 
 func (receiver OrganizationController) GetAllOrganization(context *gin.Context) {
@@ -902,5 +903,14 @@ func (receiver OrganizationController) GetOrganizationByID4App(context *gin.Cont
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: organization,
+	})
+}
+
+func (receiver *OrganizationController) GenerateOrganizationCode(c *gin.Context) {
+	receiver.OrganizationUsecase.GenerateOrganizationCode(c)
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "Generate organization code successfully",
+		Data:    nil,
 	})
 }

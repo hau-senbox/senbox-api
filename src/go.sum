@@ -259,6 +259,8 @@ github.com/hung-senbox/senbox-cache-service v1.0.7 h1:Xo3oeJV7Eyk49PiayIB/P17CHI
 github.com/hung-senbox/senbox-cache-service v1.0.7/go.mod h1:RxeWouaeEU40gJXfUayd8yo0XEn9U2JQUgOpBJuZBaQ=
 github.com/hung-senbox/senbox-cache-service v1.0.8 h1:rOB1GfQtc04GjrFfSypp1nQdYsn51LwFPQ9j+h3YN18=
 github.com/hung-senbox/senbox-cache-service v1.0.8/go.mod h1:RxeWouaeEU40gJXfUayd8yo0XEn9U2JQUgOpBJuZBaQ=
+github.com/hung-senbox/senbox-cache-service v1.0.9 h1:xJnmlswrKv/ko2HQ6guPoYaW3rFA73tYZmyug8tQ4uA=
+github.com/hung-senbox/senbox-cache-service v1.0.9/go.mod h1:RxeWouaeEU40gJXfUayd8yo0XEn9U2JQUgOpBJuZBaQ=
 github.com/ilyakaznacheev/cleanenv v1.3.1 h1:mwL1WVgvuto5zBeo6zL28fmU8u/3Db2WN6Tj+l2VaSA=
 github.com/ilyakaznacheev/cleanenv v1.3.1/go.mod h1:i0owW+HDxeGKE0/JPREJOdSCPIyOnmh6C0xhWAkF/xA=
 github.com/jackc/chunkreader/v2 v2.0.1 h1:i+RDz65UE+mmpjTfyz0MoVTnzeYxroil2G82ki7MGG8=

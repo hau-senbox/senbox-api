@@ -1532,7 +1532,7 @@ func (receiver *DeviceController) GetDevice4Web(c *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DeviceUsecase.GetDeviceInfo4Web(orgID, deviceID)
+	res, err := receiver.DeviceUsecase.GetOrganizationDeviceInfo4Web(orgID, deviceID)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError, response.FailedResponse{
@@ -1691,5 +1691,29 @@ func (receiver *DeviceController) GetAllPersonalDevices4Web(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: devices,
+	})
+}
+
+func (receiver *DeviceController) GetPersonalDeviceInfo4Web(c *gin.Context) {
+	deviceID := c.Param("device_id")
+	if deviceID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "device id is required",
+		})
+		return
+	}
+
+	device, err := receiver.DeviceUsecase.GetPersonalDeviceInfo4Web(c, deviceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: device,
 	})
 }

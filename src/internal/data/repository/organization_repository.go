@@ -421,3 +421,13 @@ func (receiver *OrganizationRepository) GetManagerByOrganizationID(organizationI
 
 	return &manager, nil
 }
+
+func (receiver *OrganizationRepository) GetAllOrganizations() ([]entity.SOrganization, error) {
+	var organizations []entity.SOrganization
+	err := receiver.DBConn.Find(&organizations).Error
+	if err != nil {
+		log.Error("OrganizationRepository.GetAll: " + err.Error())
+		return nil, errors.New("failed to get all organizations")
+	}
+	return organizations, nil
+}

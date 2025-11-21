@@ -8,3 +8,14 @@ type GetDeviceInfoResponse struct {
 	DeviceNickName   string                       `json:"device_nick_name"`
 	CurrentAppValues *GetValuesAppCurrentResponse `json:"current_app_values"`
 }
+
+type GetPersonalDeviceInfoResponse struct {
+	DeviceID       string                         `json:"device_id"`
+	DeviceCode     string                         `json:"device_code"`
+	Organizations  []OrganizationDevices          `json:"organizations"`
+	Teachers       []TeacherResponse              `json:"teachers"`
+	Staffs         []StaffResponse                `json:"staffs"`
+	Students       []StudentResponse              `json:"students"`
+	Parents        []ParentResponse               `json:"parents"`
+	ValueHistories []*GetValuesAppCurrentResponse `json:"value_histories"`
+}

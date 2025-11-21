@@ -29,6 +29,9 @@ type DeviceUsecase struct {
 	StudentRepo          *repository.StudentApplicationRepository
 	ProfileGateway       gateway.ProfileGateway
 	OrganizationRepo     *repository.OrganizationRepository
+	TeacherRepo          *repository.TeacherApplicationRepository
+	StaffRepo            *repository.StaffApplicationRepository
+	ParentRepo           *repository.ParentRepository
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -94,7 +97,7 @@ func (receiver *DeviceUsecase) GetDeviceInfoFromOrg4App(deviceID string) ([]resp
 	return responses, nil
 }
 
-func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) (*response.GetDeviceInfoResponse, error) {
+func (receiver *DeviceUsecase) GetOrganizationDeviceInfo4Web(orgID string, deviceID string) (*response.GetDeviceInfoResponse, error) {
 	// : Lấy thông tin org device
 	orgDevice, err := receiver.GetOrgDeviceByDeviceIdAndOrgID(orgID, deviceID)
 	if err != nil {
@@ -116,40 +119,8 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		log.Printf("GetDeviceMenu error for device %s: %v", deviceID, err)
 	}
 
-	// get values app current
-	if values, err := receiver.ValuesAppCurrentRepository.FindByDeviceID(deviceID); err == nil {
-		//get image url
-		url, _ := receiver.GetImageUseCase.GetUrlByKey(values.ImageKey, uploader.UploadPrivate)
-		userNickName := ""
-		studentName := ""
-		organizationName := ""
-
-		// get student tu value 1
-		if studentID, err := uuid.Parse(values.Value1); err == nil && studentID != uuid.Nil {
-			student, _ := receiver.StudentRepo.GetByID(studentID)
-			if student != nil {
-				studentName = student.StudentName
-			}
-		}
-
-		// get orginzation name tu value 2
-		if orgID, err := uuid.Parse(values.Value2); err == nil && orgID != uuid.Nil {
-			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
-			if org != nil {
-				organizationName = org.OrganizationName
-			}
-		}
-
-		// get user tu value 3
-		if userID, err := uuid.Parse(values.Value3); err == nil && userID != uuid.Nil {
-			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
-			if user != nil {
-				userNickName = user.Nickname
-			}
-		}
-
-		resp.CurrentAppValues = mapper.ToGetValuesAppCurrentResponse(userNickName, organizationName, studentName, url)
-	}
+	valueHistory, _ := receiver.getValueHisAppCurrentByDeviceIDAndOrgID(deviceID, orgID)
+	resp.CurrentAppValues = valueHistory
 
 	return resp, nil
 }
@@ -221,4 +192,207 @@ func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context, devic
 	}
 
 	return logedDevices, nil
+}
+
+func (receiver *DeviceUsecase) GetPersonalDeviceInfo4Web(ctx *gin.Context, deviceID string) (*response.GetPersonalDeviceInfoResponse, error) {
+	// get device info
+	device, _ := receiver.DeviceRepository.GetDeviceByID(deviceID)
+	if device == nil {
+		return nil, errors.New("device not found")
+	}
+	// get device personal code
+	deviceCode, _ := receiver.ProfileGateway.GetDeviceCode(ctx, deviceID)
+
+	values, err := receiver.ValuesAppCurrentRepository.GetAllByDeviceID(deviceID)
+	if err != nil {
+		return &response.GetPersonalDeviceInfoResponse{
+			DeviceID:       deviceID,
+			DeviceCode:     deviceCode,
+			Students:       make([]response.StudentResponse, 0),
+			Teachers:       make([]response.TeacherResponse, 0),
+			Parents:        make([]response.ParentResponse, 0),
+			Staffs:         make([]response.StaffResponse, 0),
+			ValueHistories: make([]*response.GetValuesAppCurrentResponse, 0),
+		}, nil
+	}
+
+	// get students by device id
+	students := make([]response.StudentResponse, 0)
+	for _, value := range values {
+		if studentID, err := uuid.Parse(value.Value1); err == nil && studentID != uuid.Nil {
+			student, _ := receiver.StudentRepo.GetByID(studentID)
+			code, _ := receiver.ProfileGateway.GetStudentCode(ctx, studentID.String())
+			if student != nil {
+				students = append(students, response.StudentResponse{
+					StudentID:   studentID.String(),
+					StudentName: student.StudentName,
+					Code:        code,
+				})
+			}
+		}
+	}
+	// get organizationDevices
+	organizationDevices := make([]response.OrganizationDevices, 0)
+	for _, value := range values {
+		if orgID, err := uuid.Parse(value.Value2); err == nil && orgID != uuid.Nil {
+			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
+			if org != nil {
+				organizationDevices = append(organizationDevices, response.OrganizationDevices{
+					OrganizationID:         orgID.String(),
+					OrganizationName:       org.OrganizationName,
+					OrganizationDeviceCode: "O.D." + strconv.Itoa(org.CreatedIndex),
+				})
+			}
+		}
+	}
+
+	// get teachers
+	teachers := make([]response.TeacherResponse, 0)
+	for _, value := range values {
+		// get user tu value 3
+		if userID, err := uuid.Parse(value.Value3); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			teacher, _ := receiver.TeacherRepo.GetByUserID(userID.String())
+			code, _ := receiver.ProfileGateway.GetTeacherCode(ctx, teacher.ID.String())
+			if teacher.ID != uuid.Nil && user != nil {
+				teachers = append(teachers, response.TeacherResponse{
+					TeacherID:   teacher.ID.String(),
+					TeacherName: user.Nickname,
+					Code:        code,
+				})
+			}
+		}
+	}
+
+	// get staffs
+	staffs := make([]response.StaffResponse, 0)
+	for _, value := range values {
+		if userID, err := uuid.Parse(value.Value3); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			staff, _ := receiver.StaffRepo.GetByUserID(userID.String())
+			code, _ := receiver.ProfileGateway.GetStaffCode(ctx, staff.ID.String())
+			if staff.ID != uuid.Nil && user != nil {
+				staffs = append(staffs, response.StaffResponse{
+					StaffID:   staff.ID.String(),
+					StaffName: user.Nickname,
+					Code:      code,
+				})
+			}
+		}
+	}
+
+	// get parents tu students
+	parents := make([]response.ParentResponse, 0)
+	if len(students) > 0 {
+		for _, student := range students {
+			std, _ := receiver.StudentRepo.GetByID(uuid.MustParse(student.StudentID))
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: std.UserID.String()})
+			if user != nil {
+				parent, _ := receiver.ParentRepo.GetByUserID(ctx, std.UserID.String())
+				code, _ := receiver.ProfileGateway.GetParentCode(ctx, parent.ID.String())
+				parents = append(parents, response.ParentResponse{
+					ParentID:   parent.ID.String(),
+					ParentName: parent.ParentName,
+					Code:       code,
+				})
+			}
+		}
+	}
+	// get value histories
+	valueHistories, err := receiver.getValueHisAppCurrentByDeviceID(deviceID)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToGetPersonalDeviceInfoResponse(device, deviceCode, organizationDevices, teachers, students, parents, staffs, valueHistories), nil
+}
+
+func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceID(deviceID string) ([]*response.GetValuesAppCurrentResponse, error) {
+	valueHistories := make([]*response.GetValuesAppCurrentResponse, 0)
+	values, err := receiver.ValuesAppCurrentRepository.GetAllByDeviceID(deviceID)
+	if err != nil {
+		return nil, err
+	}
+	for _, value := range values {
+		//get image url
+		url, _ := receiver.GetImageUseCase.GetUrlByKey(value.ImageKey, uploader.UploadPrivate)
+		userNickName := ""
+		studentName := ""
+		organizationName := ""
+
+		// get student tu value 1
+		if studentID, err := uuid.Parse(value.Value1); err == nil && studentID != uuid.Nil {
+			student, _ := receiver.StudentRepo.GetByID(studentID)
+			if student != nil {
+				studentName = student.StudentName
+			}
+		}
+
+		// get orginzation name tu value 2
+		if orgID, err := uuid.Parse(value.Value2); err == nil && orgID != uuid.Nil {
+			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
+			if org != nil {
+				organizationName = org.OrganizationName
+			}
+		}
+
+		// get user tu value 3
+		if userID, err := uuid.Parse(value.Value3); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			if user != nil {
+				userNickName = user.Nickname
+			}
+		}
+		valueHistories = append(valueHistories, &response.GetValuesAppCurrentResponse{
+			Value1:   studentName,
+			Value2:   organizationName,
+			Value3:   userNickName,
+			ImageKey: value.ImageKey,
+			ImageUrl: url,
+		})
+	}
+	return valueHistories, nil
+}
+
+func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID string, orgID string) (*response.GetValuesAppCurrentResponse, error) {
+
+	valueHistory, err := receiver.ValuesAppCurrentRepository.FindByDeviceIDAndOrgID(deviceID, orgID)
+	if err != nil {
+		return nil, err
+	}
+	//get image url
+	url, _ := receiver.GetImageUseCase.GetUrlByKey(valueHistory.ImageKey, uploader.UploadPrivate)
+	userNickName := ""
+	studentName := ""
+	organizationName := ""
+
+	// get student tu value 1
+	if studentID, err := uuid.Parse(valueHistory.Value1); err == nil && studentID != uuid.Nil {
+		student, _ := receiver.StudentRepo.GetByID(studentID)
+		if student != nil {
+			studentName = student.StudentName
+		}
+	}
+
+	// get orginzation name tu value 2
+	if orgID, err := uuid.Parse(valueHistory.Value2); err == nil && orgID != uuid.Nil {
+		org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
+		if org != nil {
+			organizationName = org.OrganizationName
+		}
+	}
+
+	// get user tu value 3
+	if userID, err := uuid.Parse(valueHistory.Value3); err == nil && userID != uuid.Nil {
+		user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+		if user != nil {
+			userNickName = user.Nickname
+		}
+	}
+	return &response.GetValuesAppCurrentResponse{
+		Value1:   studentName,
+		Value2:   organizationName,
+		Value3:   userNickName,
+		ImageKey: valueHistory.ImageKey,
+		ImageUrl: url,
+	}, nil
 }
