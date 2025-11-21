@@ -673,7 +673,7 @@ func (receiver OrganizationController) GetOrgSetting4Web(c *gin.Context) {
 			c.JSON(http.StatusOK, response.SucceedResponse{
 				Code:    http.StatusOK,
 				Message: "Not Found",
-				Data:    nil,
+				Data:    orgSetting,
 			})
 			return
 		}
