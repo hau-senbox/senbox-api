@@ -10,7 +10,6 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -167,10 +166,11 @@ func (receiver *DeviceUsecase) GetAllPersonalDevices4Web(ctx *gin.Context, devic
 		orgDevices, _ := receiver.DeviceRepository.GetOrgsByDeviceID(device.ID)
 		organizationDevices := make([]response.OrganizationDevices, 0)
 		for _, orgDevice := range orgDevices {
+			code, _ := receiver.ProfileGateway.GetOrganizationCode(ctx, orgDevice.OrganizationID.String())
 			organizationDevices = append(organizationDevices, response.OrganizationDevices{
 				OrganizationID:         orgDevice.OrganizationID.String(),
 				OrganizationName:       orgDevice.Organization.OrganizationNickName,
-				OrganizationDeviceCode: "O.D." + strconv.Itoa(orgDevice.CreatedIndex),
+				OrganizationDeviceCode: code,
 			})
 		}
 
@@ -237,10 +237,11 @@ func (receiver *DeviceUsecase) GetPersonalDeviceInfo4Web(ctx *gin.Context, devic
 		if orgID, err := uuid.Parse(value.Value2); err == nil && orgID != uuid.Nil {
 			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
 			if org != nil {
+				code, _ := receiver.ProfileGateway.GetOrganizationCode(ctx, orgID.String())
 				organizationDevices = append(organizationDevices, response.OrganizationDevices{
 					OrganizationID:         orgID.String(),
 					OrganizationName:       org.OrganizationName,
-					OrganizationDeviceCode: "O.D." + strconv.Itoa(org.CreatedIndex),
+					OrganizationDeviceCode: code,
 				})
 			}
 		}
