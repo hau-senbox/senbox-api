@@ -136,7 +136,7 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		if orgID, err := uuid.Parse(values.Value2); err == nil && orgID != uuid.Nil {
 			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
 			if org != nil {
-				organizationName = org.OrganizationNickName
+				organizationName = org.OrganizationName
 			}
 		}
 
