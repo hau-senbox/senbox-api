@@ -124,11 +124,11 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 		studentName := ""
 		organizationName := ""
 
-		// get user nick name tu value 1
-		if userID, err := uuid.Parse(values.Value1); err == nil && userID != uuid.Nil {
-			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
-			if user != nil {
-				userNickName = user.Nickname
+		// get student tu value 1
+		if studentID, err := uuid.Parse(values.Value1); err == nil && studentID != uuid.Nil {
+			student, _ := receiver.StudentRepo.GetByID(studentID)
+			if student != nil {
+				studentName = student.StudentName
 			}
 		}
 
@@ -140,11 +140,11 @@ func (receiver *DeviceUsecase) GetDeviceInfo4Web(orgID string, deviceID string) 
 			}
 		}
 
-		// get student tu value 3
-		if studentID, err := uuid.Parse(values.Value3); err == nil && studentID != uuid.Nil {
-			student, _ := receiver.StudentRepo.GetByID(studentID)
-			if student != nil {
-				studentName = student.StudentName
+		// get user tu value 3
+		if userID, err := uuid.Parse(values.Value3); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			if user != nil {
+				userNickName = user.Nickname
 			}
 		}
 
