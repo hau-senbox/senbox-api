@@ -24,13 +24,14 @@ type DeviceUsecase struct {
 	*DeviceMenuUseCase
 	*repository.ValuesAppCurrentRepository
 	*GetImageUseCase
-	UserEntityRepository *repository.UserEntityRepository
-	StudentRepo          *repository.StudentApplicationRepository
-	ProfileGateway       gateway.ProfileGateway
-	OrganizationRepo     *repository.OrganizationRepository
-	TeacherRepo          *repository.TeacherApplicationRepository
-	StaffRepo            *repository.StaffApplicationRepository
-	ParentRepo           *repository.ParentRepository
+	UserEntityRepository   *repository.UserEntityRepository
+	StudentRepo            *repository.StudentApplicationRepository
+	ProfileGateway         gateway.ProfileGateway
+	OrganizationRepo       *repository.OrganizationRepository
+	TeacherRepo            *repository.TeacherApplicationRepository
+	StaffRepo              *repository.StaffApplicationRepository
+	ValuesAppHistoriesRepo *repository.ValuesAppHistoriesRepository
+	ParentRepo             *repository.ParentRepository
 }
 
 func NewDeviceUsecase(db *gorm.DB) *GetDeviceByIDUseCase {
@@ -118,8 +119,11 @@ func (receiver *DeviceUsecase) GetOrganizationDeviceInfo4Web(orgID string, devic
 		log.Printf("GetDeviceMenu error for device %s: %v", deviceID, err)
 	}
 
-	valueHistory, _ := receiver.getValueHisAppCurrentByDeviceIDAndOrgID(deviceID, orgID)
-	resp.CurrentAppValues = &valueHistory
+	currentValuesApp, _ := receiver.getValueAppCurrentByDeviceIDAndOrgID(deviceID, orgID)
+	resp.CurrentAppValues = &currentValuesApp
+
+	valueHistories, _ := receiver.getValueHisAppByDeviceIDAndOrgID(deviceID, orgID)
+	resp.ValueHistories = valueHistories
 
 	return resp, nil
 }
@@ -212,7 +216,7 @@ func (receiver *DeviceUsecase) GetPersonalDeviceInfo4Web(ctx *gin.Context, devic
 			Teachers:       make([]response.TeacherResponse, 0),
 			Parents:        make([]response.ParentResponse, 0),
 			Staffs:         make([]response.StaffResponse, 0),
-			ValueHistories: make([]*response.GetValuesAppCurrentResponse, 0),
+			ValueHistories: make([]*response.GetValuesAppResponse, 0),
 		}, nil
 	}
 
@@ -300,16 +304,16 @@ func (receiver *DeviceUsecase) GetPersonalDeviceInfo4Web(ctx *gin.Context, devic
 		}
 	}
 	// get value histories
-	valueHistories, err := receiver.getValueHisAppCurrentByDeviceID(deviceID)
+	valueHistories, err := receiver.getValueHisAppByDeviceID(deviceID)
 	if err != nil {
 		return nil, err
 	}
 	return mapper.ToGetPersonalDeviceInfoResponse(device, deviceCode, organizationDevices, teachers, students, parents, staffs, valueHistories), nil
 }
 
-func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceID(deviceID string) ([]*response.GetValuesAppCurrentResponse, error) {
-	valueHistories := make([]*response.GetValuesAppCurrentResponse, 0)
-	values, err := receiver.ValuesAppCurrentRepository.GetAllByDeviceID(deviceID)
+func (receiver *DeviceUsecase) getValueHisAppByDeviceID(deviceID string) ([]*response.GetValuesAppResponse, error) {
+	valueHistories := make([]*response.GetValuesAppResponse, 0)
+	values, err := receiver.ValuesAppHistoriesRepo.GetByDeviceID(deviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +347,7 @@ func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceID(deviceID string) 
 				userNickName = user.Nickname
 			}
 		}
-		valueHistories = append(valueHistories, &response.GetValuesAppCurrentResponse{
+		valueHistories = append(valueHistories, &response.GetValuesAppResponse{
 			Value1:   studentName,
 			Value2:   organizationName,
 			Value3:   userNickName,
@@ -354,11 +358,58 @@ func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceID(deviceID string) 
 	return valueHistories, nil
 }
 
-func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID string, orgID string) (response.GetValuesAppCurrentResponse, error) {
+func (receiver *DeviceUsecase) getValueHisAppByDeviceIDAndOrgID(deviceID string, orgID string) ([]*response.GetValuesAppResponse, error) {
+	valueHistories := make([]*response.GetValuesAppResponse, 0)
+	values, err := receiver.ValuesAppHistoriesRepo.GetByDeviceIDAndOrgID(deviceID, orgID)
+	if err != nil {
+		return valueHistories, err
+	}
+	for _, value := range values {
+		//get image url
+		url, _ := receiver.GetImageUseCase.GetUrlByKey(value.ImageKey, uploader.UploadPrivate)
+		userNickName := ""
+		studentName := ""
+		organizationName := ""
+
+		// get student tu value 1
+		if studentID, err := uuid.Parse(value.Value1); err == nil && studentID != uuid.Nil {
+			student, _ := receiver.StudentRepo.GetByID(studentID)
+			if student != nil {
+				studentName = student.StudentName
+			}
+		}
+
+		// get orginzation name tu value 2
+		if orgID, err := uuid.Parse(value.Value2); err == nil && orgID != uuid.Nil {
+			org, _ := receiver.OrganizationRepo.GetByID(orgID.String())
+			if org != nil {
+				organizationName = org.OrganizationName
+			}
+		}
+
+		// get user tu value 3
+		if userID, err := uuid.Parse(value.Value3); err == nil && userID != uuid.Nil {
+			user, _ := receiver.UserEntityRepository.GetByID(request.GetUserEntityByIDRequest{ID: userID.String()})
+			if user != nil {
+				userNickName = user.Nickname
+			}
+		}
+		valueHistories = append(valueHistories, &response.GetValuesAppResponse{
+			Value1:   studentName,
+			Value2:   organizationName,
+			Value3:   userNickName,
+			ImageKey: value.ImageKey,
+			ImageUrl: url,
+		})
+	}
+	return valueHistories, nil
+}
+
+func (receiver *DeviceUsecase) getValueAppCurrentByDeviceIDAndOrgID(deviceID string, orgID string) (response.GetValuesAppResponse, error) {
 
 	valueHistory, err := receiver.ValuesAppCurrentRepository.FindByDeviceIDAndOrgID(deviceID, orgID)
 	if err != nil {
-		return response.GetValuesAppCurrentResponse{}, err
+		return response.GetValuesAppResponse{}, err
 	}
 	//get image url
 	url, _ := receiver.GetImageUseCase.GetUrlByKey(valueHistory.ImageKey, uploader.UploadPrivate)
@@ -389,7 +440,7 @@ func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID 
 			userNickName = user.Nickname
 		}
 	}
-	return response.GetValuesAppCurrentResponse{
+	return response.GetValuesAppResponse{
 		Value1:   studentName,
 		Value2:   organizationName,
 		Value3:   userNickName,

@@ -180,11 +180,13 @@ func setupDeviceRoutes(engine *gin.Engine, dbConn *gorm.DB, userSpreadsheet *she
 		},
 		ChildUseCase: childUseCase,
 		DeviceUsecase: &usecase.DeviceUsecase{
-			DeviceRepository: &repository.DeviceRepository{DBConn: dbConn},
+			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
+			ValuesAppHistoriesRepo: &repository.ValuesAppHistoriesRepository{DBConn: dbConn},
 		},
 		ValuesAppCurrentUseCase: &usecase.ValuesAppCurrentUseCase{
-			Repo:       &repository.ValuesAppCurrentRepository{DBConn: dbConn},
-			DeviceRepo: deviceRepository,
+			Repo:          &repository.ValuesAppCurrentRepository{DBConn: dbConn},
+			DeviceRepo:    deviceRepository,
+			HistoriesRepo: &repository.ValuesAppHistoriesRepository{DBConn: dbConn},
 		},
 	}
 

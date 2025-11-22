@@ -13,7 +13,7 @@ func ToGetPersonalDeviceInfoResponse(
 	students []response.StudentResponse,
 	parents []response.ParentResponse,
 	staffs []response.StaffResponse,
-	valueHistories []*response.GetValuesAppCurrentResponse,
+	valueHistories []*response.GetValuesAppResponse,
 ) *response.GetPersonalDeviceInfoResponse {
 	return &response.GetPersonalDeviceInfoResponse{
 		DeviceID:       device.ID,

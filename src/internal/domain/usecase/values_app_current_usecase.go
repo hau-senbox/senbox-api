@@ -7,6 +7,7 @@ import (
 	"sen-global-api/internal/domain/request"
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/pkg/consulapi/gateway"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,6 +21,7 @@ type ValuesAppCurrentUseCase struct {
 	StaffRepo      *repository.StaffApplicationRepository
 	ParentRepo     *repository.ParentRepository
 	UserRepo       *repository.UserEntityRepository
+	HistoriesRepo  *repository.ValuesAppHistoriesRepository
 	ProfileGateway gateway.ProfileGateway
 }
 
@@ -36,6 +38,16 @@ func (u *ValuesAppCurrentUseCase) Upload(req request.UploadValuesAppCurrentReque
 			Value3:   req.Value3,
 			ImageKey: req.ImageKey,
 		}
+		// tao history
+		history := &entity.ValuesAppHistories{
+			DeviceID:  req.DeviceID,
+			Value1:    req.Value1,
+			Value2:    req.Value2,
+			Value3:    req.Value3,
+			ImageKey:  req.ImageKey,
+			CreatedAt: time.Now(),
+		}
+		u.HistoriesRepo.Create(history)
 		return u.Repo.Create(newLog)
 	} else if err != nil {
 		return err
@@ -46,6 +58,17 @@ func (u *ValuesAppCurrentUseCase) Upload(req request.UploadValuesAppCurrentReque
 	exist.Value2 = req.Value2
 	exist.Value3 = req.Value3
 	exist.ImageKey = req.ImageKey
+
+	// tạo history
+	history := &entity.ValuesAppHistories{
+		DeviceID:  exist.DeviceID,
+		Value1:    exist.Value1,
+		Value2:    exist.Value2,
+		Value3:    exist.Value3,
+		ImageKey:  exist.ImageKey,
+		CreatedAt: time.Now(),
+	}
+	u.HistoriesRepo.Create(history)
 
 	return u.Repo.Update(exist)
 }
