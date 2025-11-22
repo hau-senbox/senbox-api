@@ -119,7 +119,7 @@ func (receiver *DeviceUsecase) GetOrganizationDeviceInfo4Web(orgID string, devic
 	}
 
 	valueHistory, _ := receiver.getValueHisAppCurrentByDeviceIDAndOrgID(deviceID, orgID)
-	resp.CurrentAppValues = valueHistory
+	resp.CurrentAppValues = &valueHistory
 
 	return resp, nil
 }
@@ -354,11 +354,11 @@ func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceID(deviceID string) 
 	return valueHistories, nil
 }
 
-func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID string, orgID string) (*response.GetValuesAppCurrentResponse, error) {
+func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID string, orgID string) (response.GetValuesAppCurrentResponse, error) {
 
 	valueHistory, err := receiver.ValuesAppCurrentRepository.FindByDeviceIDAndOrgID(deviceID, orgID)
 	if err != nil {
-		return nil, err
+		return response.GetValuesAppCurrentResponse{}, err
 	}
 	//get image url
 	url, _ := receiver.GetImageUseCase.GetUrlByKey(valueHistory.ImageKey, uploader.UploadPrivate)
@@ -389,7 +389,7 @@ func (receiver *DeviceUsecase) getValueHisAppCurrentByDeviceIDAndOrgID(deviceID 
 			userNickName = user.Nickname
 		}
 	}
-	return &response.GetValuesAppCurrentResponse{
+	return response.GetValuesAppCurrentResponse{
 		Value1:   studentName,
 		Value2:   organizationName,
 		Value3:   userNickName,

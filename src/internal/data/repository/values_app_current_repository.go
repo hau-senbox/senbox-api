@@ -70,7 +70,7 @@ func (r *ValuesAppCurrentRepository) GetAllByDeviceID(deviceID string) ([]*entit
 
 func (r *ValuesAppCurrentRepository) FindByDeviceIDAndOrgID(deviceID string, orgID string) (*entity.ValuesAppCurrent, error) {
 	var log entity.ValuesAppCurrent
-	if err := r.DBConn.Where("device_id = ? AND org_id = ?", deviceID, orgID).First(&log).Error; err != nil {
+	if err := r.DBConn.Where("device_id = ? AND value2 = ?", deviceID, orgID).First(&log).Error; err != nil {
 		return nil, err
 	}
 	return &log, nil

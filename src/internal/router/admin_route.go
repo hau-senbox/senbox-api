@@ -309,13 +309,13 @@ func setupAdminRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConf
 
 		// language setting
 		system.POST("/language", systemController.UploadLanguageSetting)
-		//system.GET("/language", systemController.GetLanguageSettings4Web)
+		system.GET("/language", systemController.GetLanguageSettings4Web)
 	}
 
 	publicSystem := engine.Group("/v1/admin/settings")
 	{
 		publicSystem.GET("/language-published", systemController.GetAllIsPublished)
-		publicSystem.GET("/language", systemController.GetLanguageSettings4Web)
+		//publicSystem.GET("/language", systemController.GetLanguageSettings4Web)
 		//publicSystem.GET("/study-languages", systemController.GetAllIsPublished)
 	}
 
