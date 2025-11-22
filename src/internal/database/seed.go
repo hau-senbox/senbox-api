@@ -104,6 +104,7 @@ func Seed(db *gorm.DB, config *common.Config, seedSQLFile string) error {
 		&entity.SParent{},
 		&entity.SParentChilds{},
 		&entity.StudentMenuOrganization{},
+		&entity.ValuesAppHistories{},
 	)
 
 	// Seed
