@@ -11,6 +11,8 @@ import (
 	"sen-global-api/pkg/consulapi/gateway"
 	"time"
 
+	gw_response "sen-global-api/pkg/consulapi/gateway/dto/response"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/hung-senbox/senbox-cache-service/pkg/cache/caching"
@@ -259,17 +261,11 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(ctx *gin.Context, studentI
 	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Student(ctx, studentID)
 
 	// get student profile
-	information := response.StudentInformation{}
-	studentProfile, _ := uc.ProfileGateway.GetStudentProfile(ctx, studentID)
-	if studentProfile != nil {
-		information = response.StudentInformation{
-			DOB:               studentProfile.StudentInformation.DOB,
-			Gender:            studentProfile.StudentInformation.Gender,
-			StudyLevel:        studentProfile.StudentInformation.StudyLevel,
-			MinWaterMustDrink: studentProfile.StudentInformation.MinWaterMustDrink,
-			Description:       studentProfile.StudentInformation.Description,
-			Mode:              studentProfile.StudentInformation.Mode,
-		}
+	information := &gw_response.StudentInformation{}
+	if studentProfile, _ := uc.ProfileGateway.GetStudentProfile(ctx, studentID); studentProfile != nil {
+		information = &studentProfile.StudentInformation
+	} else {
+		information = nil
 	}
 
 	return &response.StudentResponseBase{
