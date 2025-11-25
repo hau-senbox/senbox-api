@@ -8,7 +8,7 @@ type StudentProfileResponse struct {
 
 type StudentInformation struct {
 	DOB               time.Time `json:"dob"`
-	Gender            string    `json:"gender"`
+	Gender            uint      `json:"gender"`
 	StudyLevel        uint      `json:"study_level"`
 	MinWaterMustDrink uint      `json:"min_water_must_drink"`
 	Description       string    `json:"description"`
