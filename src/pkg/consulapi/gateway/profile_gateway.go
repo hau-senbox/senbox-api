@@ -34,6 +34,9 @@ type ProfileGateway interface {
 	GetChildCode(ctx *gin.Context, childID string) (string, error)
 	GetDeviceCode(ctx *gin.Context, deviceID string) (string, error)
 	GetOrganizationCode(ctx *gin.Context, organizationID string) (string, error)
+
+	// profiles
+	GetStudentProfile(ctx *gin.Context, studentID string) (*response.StudentProfileResponse, error)
 }
 
 type profileGateway struct {
@@ -792,4 +795,50 @@ func (pg *profileGateway) GetOrganizationCode(ctx *gin.Context, organizationID s
 	}
 
 	return gwResp.Data, nil
+}
+
+func (pg *profileGateway) GetStudentProfile(ctx *gin.Context, studentID string) (*response.StudentProfileResponse, error) {
+	// cachedData, _ := pg.cachedProfileGateway.GetStudentProfile(ctx, studentID)
+	// if cachedData != nil {
+	// 	return cachedData, nil
+	// }
+
+	// Lấy token từ context (được set ở SecuredMiddleware)
+	token, exists := ctx.Get("token")
+	if !exists {
+		return nil, fmt.Errorf("token not found in context")
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok || tokenStr == "" {
+		return nil, fmt.Errorf("invalid token in context")
+	}
+
+	client, err := NewGatewayClient(pg.serviceName, tokenStr, pg.consul, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	appLanguage, _ := ctx.Get("app_language")
+
+	headers := make(map[string]string)
+	if lang, ok := appLanguage.(uint); ok {
+		headers["X-App-Language"] = strconv.Itoa(int(lang))
+	}
+
+	resp, err := client.Call("GET", fmt.Sprintf("/api/v1/gateway/profiles/student/%s", studentID), nil, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	var gwResp response.APIGateWayResponse[response.StudentProfileResponse]
+	if err := json.Unmarshal(resp, &gwResp); err != nil {
+		return nil, fmt.Errorf("unmarshal response fail: %w", err)
+	}
+
+	if gwResp.StatusCode != 200 {
+		return nil, fmt.Errorf("call gateway get student profile fail: %s", gwResp.Message)
+	}
+
+	return &gwResp.Data, nil
 }

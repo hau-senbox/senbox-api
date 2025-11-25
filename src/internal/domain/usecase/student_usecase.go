@@ -258,6 +258,20 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(ctx *gin.Context, studentI
 	// get list loged device
 	logedDevices, _ := uc.ValuesAppCurrentUseCase.GetLogedDevices4Student(ctx, studentID)
 
+	// get student profile
+	information := response.StudentInformation{}
+	studentProfile, _ := uc.ProfileGateway.GetStudentProfile(ctx, studentID)
+	if studentProfile != nil {
+		information = response.StudentInformation{
+			DOB:               studentProfile.StudentInformation.DOB,
+			Gender:            studentProfile.StudentInformation.Gender,
+			StudyLevel:        studentProfile.StudentInformation.StudyLevel,
+			MinWaterMustDrink: studentProfile.StudentInformation.MinWaterMustDrink,
+			Description:       studentProfile.StudentInformation.Description,
+			Mode:              studentProfile.StudentInformation.Mode,
+		}
+	}
+
 	return &response.StudentResponseBase{
 		StudentID:      studentID,
 		StudentName:    studentApp.StudentName,
@@ -271,6 +285,7 @@ func (uc *StudentApplicationUseCase) GetByID4WebAdmin(ctx *gin.Context, studentI
 		Avatars:        avatars,
 		CreatedIndex:   studentApp.CreatedIndex,
 		LogedDevices:   logedDevices,
+		Information:    information,
 	}, nil
 }
 

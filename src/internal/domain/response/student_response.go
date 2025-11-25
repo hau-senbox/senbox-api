@@ -1,5 +1,7 @@
 package response
 
+import "time"
+
 type StudentResponseBase struct {
 	StudentID      string                       `json:"id"`
 	StudentName    string                       `json:"name"`
@@ -13,6 +15,7 @@ type StudentResponseBase struct {
 	Avatars        []Avatar                     `json:"avatars"`
 	CreatedIndex   int                          `json:"created_index"`
 	LogedDevices   []LoggedDevice               `json:"logged_devices"`
+	Information    StudentInformation           `json:"information"`
 }
 
 type LoggedDevice struct {
@@ -26,4 +29,13 @@ type GetStudent4Gateway struct {
 	StudentName    string `json:"name"`
 	Avatar         Avatar `json:"avatar"`
 	Code           string `json:"code"`
+}
+
+type StudentInformation struct {
+	DOB               time.Time `json:"dob"`
+	Gender            string    `json:"gender"`
+	StudyLevel        uint      `json:"study_level"`
+	MinWaterMustDrink uint      `json:"min_water_must_drink"`
+	Description       string    `json:"description"`
+	Mode              string    `json:"mode"`
 }
