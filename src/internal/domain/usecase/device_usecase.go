@@ -348,11 +348,12 @@ func (receiver *DeviceUsecase) getValueHisAppByDeviceID(deviceID string) ([]*res
 			}
 		}
 		valueHistories = append(valueHistories, &response.GetValuesAppResponse{
-			Value1:   studentName,
-			Value2:   organizationName,
-			Value3:   userNickName,
-			ImageKey: value.ImageKey,
-			ImageUrl: url,
+			Value1:    studentName,
+			Value2:    organizationName,
+			Value3:    userNickName,
+			ImageKey:  value.ImageKey,
+			ImageUrl:  url,
+			CreatedAt: value.CreatedAt,
 		})
 	}
 	return valueHistories, nil
