@@ -10,6 +10,8 @@ type LoginResponseData struct {
 	Token             string             `json:"token"`
 	Expired           time.Time          `json:"expired"`
 	OrganizationAdmin *OrganizationAdmin `json:"organization_admin"`
+	RedirectUrl       string             `json:"redirect_url"`
+	AllowedRouters    []string           `json:"allowed_routers"`
 }
 
 type LoginResponse struct {

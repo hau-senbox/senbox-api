@@ -79,6 +79,12 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	//authMiddleware := jwtauth.JwtMiddleware()
 	//token := authMiddleware.TokenGen(user.UserID)
 
+	// hard redirect url va routes cho specical account
+	if user.Username == "specialaccount" {
+		token.RedirectUrl = "/management/media"
+		token.AllowedRouters = []string{"/management/media", "/management/feedbacks"}
+	}
+
 	// set relogin false sau
 	receiver.UpdateUserEntityUseCase.UpdateReLogin(user.ID.String(), false)
 	return token, nil

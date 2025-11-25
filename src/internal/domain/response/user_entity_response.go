@@ -70,6 +70,9 @@ type UserEntityResponseV2 struct {
 	IsParent            bool                               `json:"is_parent"`
 	IsFirstLogin        bool                               `json:"is_first_login"`
 	WelcomeReminder     *entity.UserSettingWelcomeReminder `json:"welcome_reminder"`
+
+	RedirectUrl    string   `json:"redirect_url"`
+	AllowedRouters []string `json:"allowed_routers"`
 }
 
 type UserEntityResponseData struct {

@@ -172,6 +172,14 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	// get user welcome reminder
 	welcomeReminder, _ := receiver.UserSettingUseCase.GetUserWelcomeReminder(userEntity.ID.String())
 
+	// hard redirect url va routes cho specical account
+	redirectUrl := ""
+	allowedRouters := []string{}
+	if userEntity.Username == "specialaccount" {
+		redirectUrl = "/management/media"
+		allowedRouters = []string{"/management/media", "/management/feedbacks"}
+	}
+
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponseV2{
@@ -201,6 +209,8 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 			IsParent:            isParent,
 			IsFirstLogin:        isFirstLogin,
 			WelcomeReminder:     welcomeReminder,
+			RedirectUrl:         redirectUrl,
+			AllowedRouters:      allowedRouters,
 		},
 	})
 }
