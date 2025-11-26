@@ -466,6 +466,7 @@ func (uc *TeacherApplicationUseCase) GetTeacher4Gateway(ctx *gin.Context, teache
 		TeacherName:    userEntity.Nickname,
 		Avatar:         avatar,
 		Code:           code,
+		UserID:         userEntity.ID.String(),
 	}
 
 	uc.CachingMainService.SetTeacherCache(ctx.Request.Context(), teacherID, res)
@@ -490,6 +491,7 @@ func (uc *TeacherApplicationUseCase) GetTeacherByUser4Gateway(userID string) (*r
 		OrganizationID: teacher.OrganizationID.String(),
 		TeacherName:    userEntity.Username,
 		Avatar:         avatar,
+		UserID:         userEntity.ID.String(),
 	}, nil
 }
 

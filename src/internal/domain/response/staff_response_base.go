@@ -21,4 +21,5 @@ type GetStaff4Gateway struct {
 	StaffName      string `json:"name"`
 	Avatar         Avatar `json:"avatar"`
 	Code           string `json:"code"`
+	UserID         string `json:"user_id"`
 }

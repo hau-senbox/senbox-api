@@ -21,4 +21,5 @@ type GetTeacher4Gateway struct {
 	TeacherName    string `json:"name"`
 	Avatar         Avatar `json:"avatar"`
 	Code           string `json:"code"`
+	UserID         string `json:"user_id"`
 }

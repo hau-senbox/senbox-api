@@ -475,6 +475,7 @@ func (uc *ParentUseCase) GetParentByUser4Gw(ctx *gin.Context, userID string) (*r
 		ParentName: user.Nickname,
 		Avatar:     avatar,
 		Code:       code,
+		UserID:     user.ID.String(),
 	}
 
 	uc.CachingMainService.SetParentByUserCacheKey(ctx.Request.Context(), userID, res)
@@ -569,6 +570,7 @@ func (uc *ParentUseCase) GetParentByID4Gateway(ctx *gin.Context, parentID string
 		ParentName: user.Nickname,
 		Avatar:     avatar,
 		Code:       code,
+		UserID:     user.ID.String(),
 	}
 
 	return res, nil

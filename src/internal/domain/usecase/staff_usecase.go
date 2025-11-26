@@ -406,6 +406,7 @@ func (uc *StaffApplicationUseCase) GetStaff4Gateway(ctx *gin.Context, staffID st
 		StaffName:      userEntity.Nickname,
 		Avatar:         avatar,
 		Code:           code,
+		UserID:         userEntity.ID.String(),
 	}
 
 	uc.CachingMainService.SetStaffCache(ctx.Request.Context(), staffID, res)
@@ -430,6 +431,7 @@ func (uc *StaffApplicationUseCase) GetStaffByUser4Gateway(userID string) (*respo
 		OrganizationID: staff.OrganizationID.String(),
 		StaffName:      userEntity.Username,
 		Avatar:         avatar,
+		UserID:         userEntity.ID.String(),
 	}, nil
 }
 

@@ -19,4 +19,5 @@ type GetParent4Gateway struct {
 	ParentName     string `json:"name"`
 	Avatar         Avatar `json:"avatar"`
 	Code           string `json:"code"`
+	UserID         string `json:"user_id"`
 }
