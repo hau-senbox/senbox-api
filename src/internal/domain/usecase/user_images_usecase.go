@@ -35,7 +35,8 @@ func (uc *UserImagesUsecase) UploadAvt(req request.UploadAvatarRequest) error {
 		value.OwnerRoleTeacher,
 		value.OwnerRoleStaff,
 		value.OwnerRoleStudent,
-		value.OwnerRoleChild:
+		value.OwnerRoleChild,
+		value.OwnerRoleParent:
 	default:
 		return fmt.Errorf("invalid owner_role: %s", req.OwnerRole)
 	}
