@@ -164,7 +164,7 @@ func (uc *StudentMenuOrganizationUseCase) GetStudentMenuOrg4App(ctx *gin.Context
 	// get organization
 	orgInfo, _ := uc.OrganizationRepository.GetByID(req.OrganizationID)
 	studentOrgMenus := &response.GetStudentOrganizationMenuResponse{
-		Section:     "Teacher Menu At " + orgInfo.OrganizationName,
+		Section:     "Student Menu At " + orgInfo.OrganizationName,
 		MenuIconKey: menuIconKey,
 		Components:  menus,
 	}

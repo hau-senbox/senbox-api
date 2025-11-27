@@ -493,7 +493,13 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			UserImagesUsecase: &usecase.UserImagesUsecase{
 				Repo:      &repository.UserImagesRepository{DBConn: dbConn},
 				ImageRepo: &repository.ImageRepository{DBConn: dbConn},
+				GetImageUseCase: &usecase.GetImageUseCase{
+					UploadProvider:  provider,
+					ImageRepository: &repository.ImageRepository{DBConn: dbConn},
+				},
 			},
+			DeviceRepository:       &repository.DeviceRepository{DBConn: dbConn},
+			OrganizationRepository: &repository.OrganizationRepository{DBConn: dbConn},
 		},
 	}
 
@@ -675,7 +681,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 		userMenu.GET("/user/super-admin", menuController.GetSuperAdminMenu4App)
 		userMenu.GET("/user/org/:id", menuController.GetOrgMenu4App)
 		userMenu.GET("/student/:id", menuController.GetStudentMenu4App)
-		userMenu.GET("/student/organization", menuController.GetStudentMenuOrganization4App)
+		userMenu.POST("/student/organization", menuController.GetStudentMenuOrganization4App)
 		userMenu.GET("/teacher/:id", menuController.GetTeacherMenu4App)
 		userMenu.GET("/user/:id", menuController.GetUserMenu4App)
 		userMenu.GET("/device/:id", menuController.GetDeviceMenu)
