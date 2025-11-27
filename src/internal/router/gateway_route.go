@@ -258,6 +258,9 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 		},
 		ParentUseCase: parentUsecase,
 		ChildUseCase:  childUseCase,
+		UserSettingUseCase: &usecase.UserSettingUseCase{
+			Repo: &repository.UserSettingRepository{DBConn: dbConn},
+		},
 	}
 
 	// device
@@ -277,6 +280,7 @@ func setupGatewayRoutes(r *gin.Engine, dbConn *gorm.DB, appCfg config.AppConfig,
 			user.GET("/teacher/:teacher_id", userEntityCtrl.GetUserByTeacher)
 			user.GET("/staff/:staff_id", userEntityCtrl.GetUserByStaff)
 			user.POST("/code/generate", userEntityCtrl.GenerateUserCode)
+			user.GET("/app-language/:user_id", userEntityCtrl.GetUserAppLanguage)
 		}
 
 		// student

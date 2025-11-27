@@ -103,7 +103,7 @@ func (uc *StudentMenuOrganizationUseCase) GetStudentMenuOrg4App(ctx *gin.Context
 	if !isExist {
 		return nil, nil
 	}
-	// get teacher by user ID
+	// get student
 	student, err := uc.StudentRepo.GetByID(uuid.MustParse(req.StudentID))
 	if err != nil {
 		return nil, err

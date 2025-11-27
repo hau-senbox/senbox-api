@@ -2771,3 +2771,19 @@ func (receiver *UserEntityController) MigrateStudentDepartmentGroup(context *gin
 	})
 
 }
+
+func (receiver *UserEntityController) GetUserAppLanguage(context *gin.Context) {
+	userID := context.Param("user_id")
+	if userID == "" {
+		context.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Missing user ID",
+		})
+		return
+	}
+	appLanguage := receiver.UserSettingUseCase.GetUserAppLanguage(userID)
+	context.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: appLanguage,
+	})
+}

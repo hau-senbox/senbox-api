@@ -199,3 +199,16 @@ func (uc *UserSettingUseCase) GetUserWelcomeReminder(userID string) (*entity.Use
 	}
 	return &welcomeReminder, nil
 }
+
+func (uc *UserSettingUseCase) GetUserAppLanguage(userID string) uint {
+	setting, err := uc.Repo.GetByOwnerAndKey(userID, string(value.UserSettingLanguage))
+	if err != nil {
+		return 1
+	}
+	var appLanguage uint
+	err = json.Unmarshal(setting.Value, &appLanguage)
+	if err != nil {
+		return 1
+	}
+	return appLanguage
+}
