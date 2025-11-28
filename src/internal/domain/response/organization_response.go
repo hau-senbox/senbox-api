@@ -2,6 +2,7 @@ package response
 
 type OrganizationResponse struct {
 	ID               string                      `json:"id"`
+	Code             string                      `json:"code"`
 	OrganizationName string                      `json:"organization_name"`
 	Avatar           string                      `json:"avatar"`
 	AvatarURL        string                      `json:"avatar_url"`

@@ -338,11 +338,14 @@ func (uc *StudentApplicationUseCase) GetStudentByID4App(ctx *gin.Context, studen
 	// get student main avt url
 	avatar, _ := uc.UserImagesUsecase.GetAvtIsMain4Owner(studentID, value.OwnerRoleStudent)
 
+	// get student code
+	code, _ := uc.ProfileGateway.GetStudentCode(ctx, studentID)
 	return &response.StudentResponseBase{
 		StudentID:   studentID,
 		StudentName: studentApp.StudentName,
 		CustomID:    studentApp.CustomID,
 		AvatarURL:   avatar.ImageUrl,
+		Code:        code,
 	}, nil
 }
 
