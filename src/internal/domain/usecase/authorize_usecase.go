@@ -80,10 +80,29 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	//token := authMiddleware.TokenGen(user.UserID)
 
 	// hard redirect url va routes cho specical account
+	redirectUrl := ""
+	allowedRouters := []response.AllowedRouters{}
 	if user.Username == "specialaccount" {
-		token.RedirectUrl = "/management/media"
-		token.AllowedRouters = []string{"/management/media", "/management/feedbacks"}
+		redirectUrl = "/management/media"
+		// media routes
+		allowedRouters = append(allowedRouters, response.AllowedRouters{
+			Path: "/management/media",
+			ChildRoutes: []string{
+				"/management/media/videos",
+			},
+		})
+
+		// pd certificate routes
+		allowedRouters = append(allowedRouters, response.AllowedRouters{
+			Path: "/management/feedbacks",
+			ChildRoutes: []string{
+				"/management/feedbacks/wiki",
+			},
+		})
 	}
+
+	token.RedirectUrl = redirectUrl
+	token.AllowedRouters = allowedRouters
 
 	// set relogin false sau
 	receiver.UpdateUserEntityUseCase.UpdateReLogin(user.ID.String(), false)
