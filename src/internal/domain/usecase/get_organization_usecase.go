@@ -4,6 +4,7 @@ import (
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/response"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,7 @@ type GetOrganizationUseCase struct {
 	*repository.DeviceRepository
 	*GetImageUseCase
 	*LanguagesConfigUsecase
+	ProfileGateway gateway.ProfileGateway
 }
 
 func (receiver *GetOrganizationUseCase) GetOrganizationByID(id string) (*entity.SOrganization, error) {
@@ -121,9 +123,13 @@ func (receiver *GetOrganizationUseCase) GetOrganizationByID4App(ctx *gin.Context
 		avatarURL = *avtUrl
 	}
 
+	// get organization code
+	code, _ := receiver.ProfileGateway.GetOrganizationCode(ctx, organizationID)
+
 	// map sang response
 	response := response.OrganizationResponse{
 		ID:               organization.ID.String(),
+		Code:             code,
 		OrganizationName: organization.OrganizationName,
 		Avatar:           organization.Avatar,
 		AvatarURL:        avatarURL,

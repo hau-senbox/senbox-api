@@ -10,6 +10,7 @@ import (
 	"sen-global-api/internal/domain/response"
 	"sen-global-api/internal/domain/usecase"
 	"sen-global-api/internal/domain/value"
+	"sen-global-api/pkg/consulapi/gateway"
 	"sen-global-api/pkg/uploader"
 	"strconv"
 	"strings"
@@ -57,6 +58,7 @@ type UserEntityController struct {
 	*usecase.PreRegisterUseCase
 	usecase.GenerateOwnerCodeUseCase
 	*usecase.ValuesAppCurrentUseCase
+	ProfileGateway gateway.ProfileGateway
 }
 
 func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
@@ -454,6 +456,8 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 	// get list loged device
 	loggedDevices, _ := receiver.ValuesAppCurrentUseCase.GetLogedDevices4User(context, userEntity.ID.String())
 
+	// get user code
+	code, _ := receiver.ProfileGateway.GetUserCode(context, userEntity.ID.String())
 	context.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: response.UserEntityResponse{
@@ -483,6 +487,7 @@ func (receiver *UserEntityController) GetUserEntityByID(context *gin.Context) {
 			IsFirstLogin:           isFirstLogin,
 			WelcomeReminder:        welcomeReminder,
 			LoggedDevices:          loggedDevices,
+			Code:                   code,
 		},
 	})
 }

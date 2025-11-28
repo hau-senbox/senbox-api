@@ -22,9 +22,11 @@ type UserEntityResponse struct {
 	CreatedAt    string   `json:"created_at"`
 	CustomID     string   `json:"custom_id"`
 	CreatedIndex int      `json:"created_index"`
+	Code         string   `json:"code"`
 
-	Roles   *[]RoleListResponseData `json:"roles"`
-	Devices *[]string               `json:"devices"`
+	UserAppLanguage uint                    `json:"user_app_language"`
+	Roles           *[]RoleListResponseData `json:"roles"`
+	Devices         *[]string               `json:"devices"`
 
 	UserOrganizationActive UserOrganizationActive             `json:"user_organization_active"`
 	Avatars                []Avatar                           `json:"avatars"`

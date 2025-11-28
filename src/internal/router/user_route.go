@@ -224,6 +224,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 				},
 			},
 			CachingMainService: cachingMainService,
+			ProfileGateway:     profileGw,
 		},
 		UserBlockSettingUsecase: &usecase.UserBlockSettingUsecase{
 			Repo:        &repository.UserBlockSettingRepository{DBConn: dbConn},
@@ -320,6 +321,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			UserRepo:       &repository.UserEntityRepository{DBConn: dbConn},
 			DeviceRepo:     &repository.DeviceRepository{DBConn: dbConn},
 		},
+		ProfileGateway: profileGw,
 	}
 
 	userRoleController := &controller.RoleController{
@@ -732,6 +734,7 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 			LanguagesConfigUsecase: &usecase.LanguagesConfigUsecase{
 				Repo: &repository.LanguagesConfigRepository{DBConn: dbConn},
 			},
+			ProfileGateway: profileGw,
 		},
 	}
 

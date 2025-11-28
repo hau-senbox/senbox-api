@@ -4,6 +4,7 @@ import gw_response "sen-global-api/pkg/consulapi/gateway/dto/response"
 
 type StudentResponseBase struct {
 	StudentID      string                          `json:"id"`
+	Code           string                          `json:"code"`
 	StudentName    string                          `json:"name"`
 	Avatar         string                          `json:"avatar,omitempty"`
 	AvatarURL      string                          `json:"avatar_url"`
