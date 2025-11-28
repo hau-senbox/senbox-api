@@ -83,7 +83,7 @@ func (receiver AuthorizeUseCase) LoginInputDao(req request.UserLoginRequest) (*r
 	redirectUrl := ""
 	allowedRouters := []response.AllowedRouters{}
 	if user.Username == "specialaccount" {
-		redirectUrl = "/management/media"
+		redirectUrl = "/management/media/videos"
 		// media routes
 		allowedRouters = append(allowedRouters, response.AllowedRouters{
 			Path: "/management/media",

@@ -176,7 +176,7 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 	redirectUrl := ""
 	allowedRouters := []response.AllowedRouters{}
 	if userEntity.Username == "specialaccount" {
-		redirectUrl = "/management/media"
+		redirectUrl = "/management/media/videos"
 		// media routes
 		allowedRouters = append(allowedRouters, response.AllowedRouters{
 			Path: "/management/media",
