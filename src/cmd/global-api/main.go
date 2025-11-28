@@ -29,6 +29,9 @@ func main() {
 		log.Panic(err)
 	}
 
+	// set global app config để có thể dùng ở các package khác (config.IsDevMode, ...)
+	config2.SetGlobalAppConfig(appConfig)
+
 	//Config Logger
 	err = logger.InitLogger(appConfig)
 	if err != nil {

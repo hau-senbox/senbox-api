@@ -28,6 +28,6 @@ func Route(
 	setupSubmissionLogRoutes(engine, dbConn, appConfig)
 	setupUserRoutes(engine, dbConn, appConfig, consulClient, cacheClientRedis)
 	setupOrganizationRoutes(engine, dbConn, appConfig)
-	setupAppRoutes(engine, dbConn, appConfig)
+	setupAppRoutes(engine, dbConn)
 	setupGatewayRoutes(engine, dbConn, appConfig, consulClient, cacheClientRedis)
 }

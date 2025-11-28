@@ -6,4 +6,5 @@ type UserBlockSettingRequest struct {
 	IsViewMessage   *bool  `json:"is_view_message" binding:"required"`
 	MessageBox      string `json:"message_box"`
 	MessageDeactive string `json:"message_deactive"`
+	IsNeedToUpdate  bool   `json:"is_need_to_update"`
 }

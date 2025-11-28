@@ -51,3 +51,24 @@ func (r *UserBlockSettingRepository) GetIsDeactiveByUserID(userID string) (bool,
 	}
 	return isDeactive, nil
 }
+
+func (r *UserBlockSettingRepository) OnIsNeedToUpdate() error {
+	return r.DBConn.Model(&entity.UserBlockSetting{}).
+		Where("is_need_to_update = ?", false).
+		Update("is_need_to_update", true).Error
+}
+
+func (r *UserBlockSettingRepository) OffIsNeedToUpdate(userID string) error {
+	return r.DBConn.Model(&entity.UserBlockSetting{}).
+		Where("user_id = ?", userID).
+		Update("is_need_to_update", false).Error
+}
+
+func (r *UserBlockSettingRepository) GetAll() ([]entity.UserBlockSetting, error) {
+	var userBlockSettings []entity.UserBlockSetting
+	err := r.DBConn.Find(&userBlockSettings).Error
+	if err != nil {
+		return nil, err
+	}
+	return userBlockSettings, nil
+}
