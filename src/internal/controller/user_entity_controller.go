@@ -174,10 +174,24 @@ func (receiver *UserEntityController) GetCurrentUser(context *gin.Context) {
 
 	// hard redirect url va routes cho specical account
 	redirectUrl := ""
-	allowedRouters := []string{}
+	allowedRouters := []response.AllowedRouters{}
 	if userEntity.Username == "specialaccount" {
 		redirectUrl = "/management/media"
-		allowedRouters = []string{"/management/media", "/management/feedbacks"}
+		// media routes
+		allowedRouters = append(allowedRouters, response.AllowedRouters{
+			Path: "/management/media",
+			ChildRoutes: []string{
+				"/management/media/videos",
+			},
+		})
+
+		// pd certificate routes
+		allowedRouters = append(allowedRouters, response.AllowedRouters{
+			Path: "/management/feedbacks",
+			ChildRoutes: []string{
+				"/management/feedbacks/wiki",
+			},
+		})
 	}
 
 	context.JSON(http.StatusOK, response.SucceedResponse{

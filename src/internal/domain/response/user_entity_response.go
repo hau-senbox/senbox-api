@@ -71,8 +71,8 @@ type UserEntityResponseV2 struct {
 	IsFirstLogin        bool                               `json:"is_first_login"`
 	WelcomeReminder     *entity.UserSettingWelcomeReminder `json:"welcome_reminder"`
 
-	RedirectUrl    string   `json:"redirect_url"`
-	AllowedRouters []string `json:"allowed_routers"`
+	RedirectUrl    string           `json:"redirect_url"`
+	AllowedRouters []AllowedRouters `json:"allowed_routers"`
 }
 
 type UserEntityResponseData struct {
@@ -124,4 +124,9 @@ type StudentOrganization struct {
 	OrganizationName string `json:"organization_name"`
 	Avatar           string `json:"avatar"`
 	AvatarURL        string `json:"avatar_url"`
+}
+
+type AllowedRouters struct {
+	Path        string   `json:"path"`
+	ChildRoutes []string `json:"child_routes"`
 }
