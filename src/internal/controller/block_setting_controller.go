@@ -72,6 +72,60 @@ func (ctl *BlockSettingController) GetByUserID(c *gin.Context) {
 	})
 }
 
+func (ctl *BlockSettingController) GetByUserID4App(c *gin.Context) {
+	userID := c.Param("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "user_id is required",
+		})
+		return
+	}
+
+	if _, err := uuid.Parse(userID); err != nil {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "invalid user_id format (must be UUID)",
+		})
+		return
+	}
+
+	result, err := ctl.UserBlockUsecase.GetByUserID4App(userID)
+	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, response.SucceedResponse{
+				Code:    http.StatusOK,
+				Message: "not found",
+				Data:    nil,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	if result == nil {
+		c.JSON(http.StatusNotFound, response.SucceedResponse{
+			Code:    http.StatusNotFound,
+			Message: "not found",
+			Data:    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data:    result,
+	})
+}
+
 // POST /user-block-setting
 func (ctl *BlockSettingController) UpsertUserBlockSetting(c *gin.Context) {
 	var req request.UserBlockSettingRequest
@@ -173,5 +227,44 @@ func (ctl *BlockSettingController) UpsertStudentBlockSetting(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code:    http.StatusOK,
 		Message: "student block setting upserted successfully",
+	})
+}
+
+func (ctl *BlockSettingController) OffIsNeedToUpdateByUser(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, response.FailedResponse{
+			Code:  http.StatusBadRequest,
+			Error: "user_id is required",
+		})
+		return
+	}
+
+	if err := ctl.UserBlockUsecase.OffIsNeedToUpdateByUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "off is need to update by user successfully",
+	})
+}
+
+func (ctl *BlockSettingController) MigrateFirestore(c *gin.Context) {
+	if err := ctl.UserBlockUsecase.MigrateFirestore(); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code:    http.StatusOK,
+		Message: "migrate firestore successfully",
 	})
 }

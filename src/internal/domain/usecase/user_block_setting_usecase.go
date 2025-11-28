@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"sen-global-api/config"
 	"sen-global-api/internal/data/repository"
 	"sen-global-api/internal/domain/entity"
 	"sen-global-api/internal/domain/request"
@@ -38,6 +39,29 @@ func (uc *UserBlockSettingUsecase) GetByUserID(userID string) (*response.UserBlo
 
 	return &response.UserBlockSettingResponse{
 		ID:              setting.ID,
+		UserID:          setting.UserID,
+		IsDeactive:      setting.IsDeactive,
+		IsViewMessage:   setting.IsViewMessage,
+		MessageBox:      setting.MessageBox,
+		MessageDeactive: setting.MessageDeactive,
+		CreatedAt:       setting.CreatedAt,
+		UpdatedAt:       setting.UpdatedAt,
+	}, nil
+}
+
+func (uc *UserBlockSettingUsecase) GetByUserID4App(userID string) (*response.UserBlockSettingResponse4App, error) {
+	setting, err := uc.Repo.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if setting == nil {
+		return nil, nil
+	}
+
+	return &response.UserBlockSettingResponse4App{
+		ID:              setting.ID,
+		IsNeedToUpdate:  setting.IsNeedToUpdate,
 		UserID:          setting.UserID,
 		IsDeactive:      setting.IsDeactive,
 		IsViewMessage:   setting.IsViewMessage,
@@ -104,7 +128,7 @@ func (uc *UserBlockSettingUsecase) Upsert(req request.UserBlockSettingRequest) e
 	}
 
 	// Sau khi cập nhật thành công → ghi Firestore
-	return uc.pushToFirestore(req)
+	return uc.pushToFirestore(setting)
 }
 
 // Delete block setting by ID
@@ -112,22 +136,28 @@ func (uc *UserBlockSettingUsecase) Delete(id int) error {
 	return uc.Repo.Delete(id)
 }
 
-func (uc *UserBlockSettingUsecase) pushToFirestore(req request.UserBlockSettingRequest) error {
+func (uc *UserBlockSettingUsecase) pushToFirestore(setting *entity.UserBlockSetting) error {
 	client := firebase.InitFirestoreClient()
 	ctx := context.Background()
 
 	data := map[string]interface{}{
-		"user_id":          req.UserID,
-		"is_deactive":      req.IsDeactive != nil && *req.IsDeactive,
-		"is_view_message":  req.IsViewMessage != nil && *req.IsViewMessage,
-		"message_box":      req.MessageBox,
-		"message_deactive": req.MessageDeactive,
-		"updated_at":       time.Now(),
+		"user_id":           setting.UserID,
+		"is_deactive":       setting.IsDeactive,
+		"is_view_message":   setting.IsViewMessage,
+		"message_box":       setting.MessageBox,
+		"message_deactive":  setting.MessageDeactive,
+		"is_need_to_update": setting.IsNeedToUpdate,
+		"updated_at":        time.Now(),
 	}
 
 	// upsert by user id
-	_, err := client.Collection("user_block_settings").
-		Doc(req.UserID).
+	collection := "user_block_settings"
+	// get app config
+	if config.IsDevMode() {
+		collection = "dev_user_block_settings"
+	}
+	_, err := client.Collection(collection).
+		Doc(setting.UserID).
 		Set(ctx, data, firestore.MergeAll)
 	return err
 }
@@ -191,4 +221,43 @@ func (uc *UserBlockSettingUsecase) GetDeactive4Staff(staffID string) (bool, erro
 	}
 
 	return isDeactive, nil
+}
+
+func (uc *UserBlockSettingUsecase) OnIsNeedToUpdate() error {
+
+	err := uc.Repo.OnIsNeedToUpdate()
+	if err != nil {
+		return err
+	}
+
+	//
+
+	// update firestore
+	// err = uc.pushToFirestore(request.UserBlockSettingRequest{
+	// 	UserID:         "all",
+	// 	IsNeedToUpdate: true,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
+}
+
+func (uc *UserBlockSettingUsecase) OffIsNeedToUpdateByUser(userID string) error {
+	return uc.Repo.OffIsNeedToUpdate(userID)
+}
+
+func (uc *UserBlockSettingUsecase) MigrateFirestore() error {
+	// get all user block settings
+	userBlockSettings, err := uc.Repo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	for _, userBlockSetting := range userBlockSettings {
+		uc.pushToFirestore(&userBlockSetting)
+	}
+
+	return nil
 }

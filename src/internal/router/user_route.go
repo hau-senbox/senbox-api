@@ -598,7 +598,9 @@ func setupUserRoutes(engine *gin.Engine, dbConn *gorm.DB, config config.AppConfi
 
 		block := user.Group("/block")
 		{
-			block.GET("/:user_id", userBlockSettingController.GetByUserID)
+			block.GET("/:user_id", userBlockSettingController.GetByUserID4App)
+			block.PUT("/off/need-update", secureMiddleware.Secured(), userBlockSettingController.OffIsNeedToUpdateByUser)
+			block.GET("/migrate/firestore", userBlockSettingController.MigrateFirestore)
 		}
 
 		aacountsLog := user.Group("/accounts-log")

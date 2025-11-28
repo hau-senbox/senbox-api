@@ -52,6 +52,23 @@ type AppConfig struct {
 	Messaging                       Messaging      `yaml:"messaging"`
 }
 
+// globalAppConfig lưu cấu hình hiện tại của ứng dụng để có thể dùng ở mọi nơi
+var globalAppConfig *AppConfig
+
+// SetGlobalAppConfig được gọi 1 lần lúc khởi động app (trong main)
+func SetGlobalAppConfig(cfg *AppConfig) {
+	globalAppConfig = cfg
+}
+
+// IsDevMode là helper dùng ở các package khác nhau (router, usecase, ...)
+// Nó sử dụng globalAppConfig hiện tại; nếu chưa được set thì default là false.
+func IsDevMode() bool {
+	if globalAppConfig == nil || globalAppConfig.Config == nil {
+		return false
+	}
+	return globalAppConfig.IsDevMode()
+}
+
 func (a *AppConfig) IsDevMode() bool {
 	return a.Config.Env == common.ModeDevelopment
 }

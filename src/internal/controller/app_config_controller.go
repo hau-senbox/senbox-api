@@ -10,7 +10,8 @@ import (
 )
 
 type AppConfigController struct {
-	AppConfigUsecase *usecase.AppConfigUseCase
+	AppConfigUsecase        *usecase.AppConfigUseCase
+	UserBlockSettingUsecase *usecase.UserBlockSettingUsecase
 }
 
 // Get all configs
@@ -51,5 +52,21 @@ func (ctrl *AppConfigController) Upload(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SucceedResponse{
 		Code: http.StatusOK,
 		Data: "Uploaded successfully",
+	})
+}
+
+// On is need to update
+func (ctrl *AppConfigController) OnIsNeedToUpdate(c *gin.Context) {
+	if err := ctrl.UserBlockSettingUsecase.OnIsNeedToUpdate(); err != nil {
+		c.JSON(http.StatusInternalServerError, response.FailedResponse{
+			Code:  http.StatusInternalServerError,
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SucceedResponse{
+		Code: http.StatusOK,
+		Data: "On is need to update successfully",
 	})
 }
